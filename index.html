@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trackly - Personal Tracking App</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Trackly</h1>
+            <p class="subtitle">Track your habits, tasks, expenses, and moods</p>
+            <p class="quote">"This is my life in Trackly"</p>
+        </header>
+
+        <div class="app-layout">
+            <!-- Main Content -->
+            <main class="main-content">
+                <app-tabs class="tabs">
+                    <button class="tab-btn active" data-tab="home">Home</button>
+                    <button class="tab-btn" data-tab="entries">Entries</button>
+                </app-tabs>
+
+                <!-- Home Tab -->
+                <div id="home-tab" class="tab-content active">
+                    <entity-grid></entity-grid>
+                </div>
+
+                <!-- Entries Tab -->
+                <div id="entries-tab" class="tab-content">
+                    <entry-list></entry-list>
+                </div>
+            </main>
+        </div>
+
+        <!-- Slide-up Panel -->
+        <slide-up-panel></slide-up-panel>
+
+        <!-- Hidden form templates -->
+        <div style="display: none;">
+            <entity-upsert-form id="entity-upsert-form-template"></entity-upsert-form>
+            <entry-form id="entry-form-template"></entry-form>
+        </div>
+    </div>
+
+    <script type="module" src="dist/app.js"></script>
+</body>
+</html>

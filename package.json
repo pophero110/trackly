@@ -1,0 +1,27 @@
+{
+  "name": "trackly",
+  "version": "1.0.0",
+  "description": "A component-based web app for tracking habits, tasks, expenses, and moods",
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "watch": "concurrently \"tsc --watch\" \"live-server --wait=500\"",
+    "clean": "rm -rf dist",
+    "dev": "npm run watch"
+  },
+  "keywords": [
+    "tracking",
+    "habits",
+    "tasks",
+    "expenses",
+    "mood",
+    "typescript"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "typescript": "^5.3.3",
+    "concurrently": "^8.2.2",
+    "live-server": "^1.2.2"
+  }
+}

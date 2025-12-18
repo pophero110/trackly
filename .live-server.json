@@ -1,0 +1,9 @@
+{
+  "port": 8080,
+  "host": "localhost",
+  "root": ".",
+  "file": "index.html",
+  "wait": 500,
+  "logLevel": 1,
+  "open": true
+}
