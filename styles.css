@@ -476,9 +476,10 @@ form {
   background: var(--card-background);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  padding: 16px;
+  padding: 0;
   transition: var(--transition);
   cursor: pointer;
+  overflow: hidden;
 }
 
 .entity-card:hover {
@@ -489,6 +490,12 @@ form {
   background: #eff6ff;
   border-color: var(--primary);
   box-shadow: 0 0 0 1px var(--primary);
+}
+
+.entity-metadata {
+  background: var(--background);
+  padding: 16px;
+  border-bottom: 1px solid var(--border);
 }
 
 .btn-expand-card {
@@ -772,10 +779,8 @@ form {
 
 /* Entity Recent Entry */
 .entity-recent-entry {
-  margin: 10px 0 8px 0;
-  padding: 8px;
-  background: var(--background);
-  border-radius: var(--radius-sm);
+  padding: 16px;
+  background: var(--card-background);
 }
 
 .entity-properties-compact {
@@ -865,12 +870,19 @@ form {
   background: var(--card-background);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
-  padding: 12px;
+  padding: 0;
   transition: var(--transition);
+  overflow: hidden;
 }
 
 .entry-card:hover {
   border-color: var(--text-muted);
+}
+
+.entry-metadata {
+  background: var(--background);
+  padding: 12px;
+  border-bottom: 1px solid var(--border);
 }
 
 .entry-header {
@@ -879,6 +891,29 @@ form {
   align-items: center;
   margin-bottom: 8px;
   gap: 8px;
+}
+
+.entry-entity-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.entry-entity-info .entity-name {
+  font-size: 0.875rem;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.entry-content {
+  padding: 12px;
+  border-bottom: 1px solid var(--border);
+}
+
+.entry-attachments {
+  padding: 12px;
+  background: var(--background);
 }
 
 .entry-timestamp {

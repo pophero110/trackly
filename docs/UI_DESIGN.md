@@ -77,6 +77,30 @@ Based on 8px grid system:
 - **Medium**: `0 4px 6px rgba(0, 0, 0, 0.1)` - Cards
 - **Large**: `0 10px 25px rgba(0, 0, 0, 0.15)` - Modals, dropdowns
 
+## Visual Hierarchy
+
+### Metadata vs Content Separation
+
+Cards use a two-section layout to clearly separate entity/entry metadata from content:
+
+**Entity Cards**:
+- **Metadata Section** (`.entity-metadata`): Light gray background containing entity name, type badge, and categories
+- **Entry Section** (`.entity-recent-entry`): White background containing the most recent entry data
+- Separated by a subtle border for clear visual hierarchy
+
+**Entry Cards**:
+- **Metadata Section** (`.entry-metadata`): Light gray background containing timestamp, entity type, and entity name
+- **Data Section** (`.entry-content`): White background containing value and property values (the actual logged data)
+- **Attachments Section** (`.entry-attachments`): Light gray background containing notes and images (supplementary information)
+- Each section separated by subtle borders
+
+This three-section layout provides:
+- Clear visual distinction between metadata (when/what entity), data (logged values), and attachments (notes/images)
+- Improved scannability when viewing multiple cards
+- Better information hierarchy
+- Semantic grouping of related information
+- Consistent pattern across entity and entry views
+
 ## Component Designs
 
 ### 1. Entity Grid
@@ -97,14 +121,14 @@ Based on 8px grid system:
   - Value display with formatting
   - Custom property values (compact display)
   - Notes preview (truncated)
-- **Expand Button**: Top-right corner (’), visible on hover
+- **Expand Button**: Top-right corner (ï¿½), visible on hover
 - **Actions**: Right-click context menu (Edit, Delete)
 
 **Interactions**:
-- Click card ’ Open log entry form
-- Click expand button ’ View entry list
-- Right-click ’ Context menu
-- Hover ’ Highlight card, show expand button
+- Click card ï¿½ Open log entry form
+- Click expand button ï¿½ View entry list
+- Right-click ï¿½ Context menu
+- Hover ï¿½ Highlight card, show expand button
 
 ### 2. Entry List
 
@@ -123,10 +147,10 @@ Based on 8px grid system:
 - **Images**: Thumbnail grid if present
 
 **Interactions**:
-- Click card ’ Edit entry
-- Click delete ’ Confirm and delete
-- Click back ’ Return to grid
-- Click "Log Entry" ’ Open form
+- Click card ï¿½ Edit entry
+- Click delete ï¿½ Confirm and delete
+- Click back ï¿½ Return to grid
+- Click "Log Entry" ï¿½ Open form
 
 ### 3. Modal Forms
 
@@ -137,17 +161,17 @@ Based on 8px grid system:
 **Structure**:
 - **Backdrop**: Semi-transparent overlay (rgba(0, 0, 0, 0.5))
 - **Dialog**: Centered, max-width 600px, 90% width
-- **Header**: Title + close button (×)
+- **Header**: Title + close button (ï¿½)
 - **Body**: Form content with scrolling
 - **Actions**: Primary/secondary buttons
 
 **Animations**:
-- **Open**: Fade in + scale up (0.95 ’ 1.0) over 200ms
-- **Close**: Fade out + scale down (1.0 ’ 0.95) over 200ms
+- **Open**: Fade in + scale up (0.95 ï¿½ 1.0) over 200ms
+- **Close**: Fade out + scale down (1.0 ï¿½ 0.95) over 200ms
 
 **Closing**:
 - Click backdrop
-- Click close button (×)
+- Click close button (ï¿½)
 - Press ESC key
 - Submit form
 
@@ -159,7 +183,7 @@ Based on 8px grid system:
 - Categories (comma/space separated, hashtag syntax optional)
 - Value type (optional select)
 - Custom properties section:
-  - Add Property button ’ Opens property modal
+  - Add Property button ï¿½ Opens property modal
   - Property list with type badges and remove buttons
 
 **Entry Form**:
@@ -168,8 +192,8 @@ Based on 8px grid system:
 - Custom property inputs (dynamic based on entity properties)
 - Notes (textarea)
 - Images:
-  - Upload button (=Á)
-  - Camera button (=÷)
+  - Upload button (=ï¿½)
+  - Camera button (=ï¿½)
   - Preview grid with remove buttons
 
 **Property Modal**:
@@ -247,7 +271,7 @@ For select-type values (Task, Decision, Goal, Plan):
 **Camera Capture**:
 - Full-screen camera modal
 - Live video preview
-- Capture button (=ø)
+- Capture button (=ï¿½)
 - Front/back camera toggle (if available)
 - Image saved as base64 JPEG (0.8 quality)
 
@@ -255,7 +279,7 @@ For select-type values (Task, Decision, Goal, Plan):
 - Grid layout (2-3 columns)
 - Responsive sizing
 - Thumbnail view in cards
-- Remove button (×) overlay on hover
+- Remove button (ï¿½) overlay on hover
 
 ### 9. Context Menu
 
@@ -369,13 +393,13 @@ Currently not implemented. Light mode only.
 ## Icons
 
 Emoji icons used for simplicity:
-- =Á Upload
-- =÷ Camera
-- × Close/Remove
-- ’ Expand
+- =ï¿½ Upload
+- =ï¿½ Camera
+- ï¿½ Close/Remove
+- ï¿½ Expand
 -  Checkbox checked
 -  Checkbox unchecked
-- <µ Audio/Video media
+- <ï¿½ Audio/Video media
 
 **Rationale**: No icon library dependency, universal recognition, accessible
 

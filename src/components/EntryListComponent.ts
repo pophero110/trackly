@@ -89,14 +89,21 @@ export class EntryListComponent extends WebComponent {
 
         return `
             <div class="entry-card" data-entry-id="${entry.id}" style="cursor: pointer;">
-                <div class="entry-header">
-                    <span class="entry-timestamp">${formatDate(entry.timestamp)}</span>
-                    <button class="btn btn-danger btn-sm" data-entry-id="${entry.id}" data-action="delete">Delete</button>
+                <div class="entry-metadata">
+                    <div class="entry-header">
+                        <span class="entry-timestamp">${formatDate(entry.timestamp)}</span>
+                        <button class="btn btn-danger btn-sm" data-entry-id="${entry.id}" data-action="delete">Delete</button>
+                    </div>
+                    ${entity ? `<div class="entry-entity-info"><span class="entity-type ${entity.type.toLowerCase()}">${entity.type}</span><span class="entity-name">${escapeHtml(entity.name)}</span></div>` : ''}
                 </div>
-                ${valueHtml}
-                ${propertiesHtml}
-                ${notesHtml}
-                ${imagesHtml}
+                <div class="entry-content">
+                    ${valueHtml}
+                    ${propertiesHtml}
+                </div>
+                <div class="entry-attachments">
+                    ${notesHtml}
+                    ${imagesHtml}
+                </div>
             </div>
         `;
     }

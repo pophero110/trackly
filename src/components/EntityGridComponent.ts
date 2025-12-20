@@ -73,15 +73,17 @@ export class EntityGridComponent extends WebComponent {
         return `
             <div class="entity-card ${isSelected ? 'selected' : ''}" data-entity-id="${entity.id}">
                 <button class="btn-expand-card" data-action="expand" title="View all entries">→</button>
-                <div class="entity-card-header">
-                    <h3>${escapeHtml(entity.name)}</h3>
-                </div>
-                <span class="entity-type ${entity.type.toLowerCase()}">${entity.type}</span>
-                ${entity.categories.length > 0 ? `
-                    <div class="entity-categories">
-                        ${entity.categories.map(cat => `<span class="category-tag">${escapeHtml(cat)}</span>`).join('')}
+                <div class="entity-metadata">
+                    <div class="entity-card-header">
+                        <h3>${escapeHtml(entity.name)}</h3>
                     </div>
-                ` : ''}
+                    <span class="entity-type ${entity.type.toLowerCase()}">${entity.type}</span>
+                    ${entity.categories.length > 0 ? `
+                        <div class="entity-categories">
+                            ${entity.categories.map(cat => `<span class="category-tag">${escapeHtml(cat)}</span>`).join('')}
+                        </div>
+                    ` : ''}
+                </div>
                 ${mostRecentEntry ? `
                     <div class="entity-recent-entry">
                         <div class="recent-entry-timestamp">${formatDate(mostRecentEntry.timestamp)}</div>
