@@ -269,6 +269,13 @@ For select-type values (Task, Decision, Goal, Plan):
 - Base64 encoding for localStorage
 - Immediate preview after selection
 
+**Paste Images**:
+- Paste images directly into Notes textarea (Ctrl/Cmd+V)
+- Automatically detects and extracts images from clipboard
+- Supports screenshots, copied images, and files from clipboard
+- Prevents pasting image data as text
+- Images immediately added to preview grid
+
 **Camera Capture**:
 - Full-screen camera modal
 - Live video preview

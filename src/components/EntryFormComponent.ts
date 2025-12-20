@@ -235,6 +235,9 @@ export class EntryFormComponent extends WebComponent {
 
         // Attach range input listener for initial render
         this.attachRangeListener();
+
+        // Attach paste handler for notes textarea
+        this.attachNotesAreaPasteHandler();
     }
 
     private attachRangeListener(): void {
@@ -245,6 +248,39 @@ export class EntryFormComponent extends WebComponent {
             rangeInput.addEventListener('input', () => {
                 rangeDisplay.textContent = rangeInput.value;
             });
+        }
+    }
+
+    private attachNotesAreaPasteHandler(): void {
+        const notesArea = this.querySelector('#entry-notes') as HTMLTextAreaElement;
+
+        if (notesArea) {
+            notesArea.addEventListener('paste', (e) => this.handleNotesPaste(e));
+        }
+    }
+
+    private handleNotesPaste(e: ClipboardEvent): void {
+        const items = e.clipboardData?.items;
+        if (!items) return;
+
+        // Check if clipboard contains images
+        for (let i = 0; i < items.length; i++) {
+            const item = items[i];
+
+            if (item.type.startsWith('image/')) {
+                e.preventDefault(); // Prevent default paste of image data as text
+
+                const file = item.getAsFile();
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = (event) => {
+                        const result = event.target?.result as string;
+                        this.images.push(result);
+                        this.renderImagePreview();
+                    };
+                    reader.readAsDataURL(file);
+                }
+            }
         }
     }
 
