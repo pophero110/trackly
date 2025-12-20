@@ -1,0 +1,10 @@
+node_modules
+.git
+.gitignore
+README.md
+.claude
+.live-server.json
+app.js.backup
+docs
+*.md
+.DS_Store

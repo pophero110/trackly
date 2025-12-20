@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "build": "tsc",
+    "start": "npx serve -s . -l 8080",
     "watch": "concurrently \"tsc --watch\" \"live-server --wait=500\"",
     "clean": "rm -rf dist",
     "dev": "npm run watch"
