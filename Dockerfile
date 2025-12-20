@@ -23,9 +23,12 @@ COPY --from=builder /app/dist /usr/share/nginx/html/dist
 COPY --from=builder /app/index.html /usr/share/nginx/html/
 COPY --from=builder /app/styles.css /usr/share/nginx/html/
 
-# Copy nginx configuration
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+# Copy nginx configuration template
+COPY nginx.conf /etc/nginx/templates/default.conf.template
 
-EXPOSE 80
+# Railway provides PORT env variable, default to 8080
+ENV PORT=8080
+
+EXPOSE $PORT
 
 CMD ["nginx", "-g", "daemon off;"]
