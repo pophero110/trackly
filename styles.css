@@ -145,7 +145,7 @@ form {
   padding: 8px 12px;
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
-  font-size: 0.875rem;
+  font-size: 16px;
   color: var(--text-primary);
   background: var(--card-background);
   transition: var(--transition);
