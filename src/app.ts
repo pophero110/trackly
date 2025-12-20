@@ -2,7 +2,7 @@ import { Store } from './state/Store.js';
 import { storeRegistry } from './state/StoreRegistry.js';
 import { URLStateManager } from './utils/urlState.js';
 import { AppTabs } from './components/AppTabs.js';
-import { SlideUpPanel } from './components/SlideUpPanel.js';
+import { ModalPanel } from './components/ModalPanel.js';
 import { EntityUpsertFormComponent } from './components/EntityUpsertFormComponent.js';
 import { EntityListComponent } from './components/EntityListComponent.js';
 import { EntityGridComponent } from './components/EntityGridComponent.js';
@@ -167,7 +167,7 @@ class TracklyApp {
     private registerComponents(): void {
         // Register custom elements
         customElements.define('app-tabs', AppTabs);
-        customElements.define('slide-up-panel', SlideUpPanel);
+        customElements.define('slide-up-panel', ModalPanel);
         customElements.define('entity-upsert-form', EntityUpsertFormComponent);
         customElements.define('entity-list', EntityListComponent);
         customElements.define('entity-grid', EntityGridComponent);

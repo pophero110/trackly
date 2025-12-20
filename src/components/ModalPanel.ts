@@ -1,9 +1,9 @@
 import { URLStateManager } from '../utils/urlState.js';
 
 /**
- * SlideUpPanel component for displaying forms in a centered modal
+ * ModalPanel component for displaying forms in a centered modal
  */
-export class SlideUpPanel extends HTMLElement {
+export class ModalPanel extends HTMLElement {
     private isOpen: boolean = false;
 
     connectedCallback(): void {
