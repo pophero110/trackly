@@ -50,6 +50,7 @@ export class EntityGridComponent extends WebComponent {
             </div>
             <div class="context-menu" id="entity-context-menu">
                 <div class="context-menu-item" data-action="edit">Edit</div>
+                <div class="context-menu-item" data-action="clone">Clone</div>
                 <div class="context-menu-item danger" data-action="delete">Delete</div>
             </div>
         `;
@@ -374,6 +375,8 @@ export class EntityGridComponent extends WebComponent {
             this.handleDelete(entityId);
         } else if (action === 'edit') {
             this.handleEdit(entityId);
+        } else if (action === 'clone') {
+            this.handleClone(entityId);
         }
     }
 
@@ -382,5 +385,12 @@ export class EntityGridComponent extends WebComponent {
         if (!entity) return;
 
         URLStateManager.openEditEntityPanel(entity.name);
+    }
+
+    private handleClone(entityId: string): void {
+        const entity = this.store.getEntityById(entityId);
+        if (!entity) return;
+
+        URLStateManager.openCloneEntityPanel(entity.name);
     }
 }

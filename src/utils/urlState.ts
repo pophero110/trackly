@@ -62,6 +62,12 @@ export class URLStateManager {
         return encoded ? URLStateManager.decodeEntityName(encoded) : null;
     }
 
+    static getCloneEntityName(): string | null {
+        const params = new URLSearchParams(window.location.search);
+        const encoded = params.get('clone');
+        return encoded ? URLStateManager.decodeEntityName(encoded) : null;
+    }
+
     /**
      * Set selected entity name in URL
      */
@@ -139,6 +145,16 @@ export class URLStateManager {
         const params = new URLSearchParams(window.location.search);
         params.set('panel', 'edit-entity');
         params.set('edit', URLStateManager.encodeEntityName(entityName));
+        URLStateManager.updateURL(params);
+    }
+
+    /**
+     * Open clone entity panel
+     */
+    static openCloneEntityPanel(entityName: string): void {
+        const params = new URLSearchParams(window.location.search);
+        params.set('panel', 'clone-entity');
+        params.set('clone', URLStateManager.encodeEntityName(entityName));
         URLStateManager.updateURL(params);
     }
 

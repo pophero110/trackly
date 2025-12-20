@@ -41,6 +41,35 @@ export class EntityUpsertFormComponent extends WebComponent {
         }
     }
 
+    // For clone mode - provide entity to clone
+    setCloneMode(sourceEntity: Entity): void {
+        this.isEditMode = false;
+        this.entityId = null;
+        this.entity = null;
+        // Clone properties from source entity
+        this.properties = sourceEntity.properties ? sourceEntity.properties.map(prop => ({
+            ...prop,
+            id: generateId() // Generate new IDs for cloned properties
+        })) : [];
+        this.render();
+        this.attachEventListeners();
+
+        // Pre-fill form with source entity data
+        const nameInput = this.querySelector('#entity-name') as HTMLInputElement;
+        const typeSelect = this.querySelector('#entity-type') as HTMLSelectElement;
+        const valueTypeSelect = this.querySelector('#entity-value-type') as HTMLSelectElement;
+
+        if (nameInput) {
+            nameInput.value = `${sourceEntity.name} (Copy)`;
+        }
+        if (typeSelect) {
+            typeSelect.value = sourceEntity.type;
+        }
+        if (valueTypeSelect && sourceEntity.valueType) {
+            valueTypeSelect.value = sourceEntity.valueType;
+        }
+    }
+
     render(): void {
         const buttonText = this.isEditMode ? 'Update Entity' : 'Create Entity';
 

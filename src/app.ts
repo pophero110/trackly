@@ -135,6 +135,26 @@ class TracklyApp {
                     panel.open('Edit Entity', formClone);
                 }
             }
+        } else if (panelType === 'clone-entity') {
+            // Open clone entity panel
+            const cloneEntityName = URLStateManager.getCloneEntityName();
+            const entity = cloneEntityName ? this.store.getEntityByName(cloneEntityName) : null;
+
+            if (entity) {
+                const formTemplate = document.querySelector('#entity-upsert-form-template');
+                if (formTemplate && !panel.getIsOpen()) {
+                    const formClone = formTemplate.cloneNode(true) as HTMLElement;
+                    formClone.removeAttribute('id');
+                    formClone.style.display = 'block';
+
+                    const upsertForm = formClone as any;
+                    if (upsertForm && typeof upsertForm.setCloneMode === 'function') {
+                        upsertForm.setCloneMode(entity);
+                    }
+
+                    panel.open('Clone Entity', formClone);
+                }
+            }
         } else if (panelType === 'edit-entry') {
             // Open edit entry panel
             const entryId = URLStateManager.getEntryId();
