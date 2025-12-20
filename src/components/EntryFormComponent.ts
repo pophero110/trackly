@@ -155,6 +155,18 @@ export class EntryFormComponent extends WebComponent {
                 `;
             }
 
+            if (prop.valueType === 'select' && prop.options) {
+                return `
+                    <div class="form-group">
+                        <label for="${propId}">${escapeHtml(prop.name)}${prop.required ? ' *' : ''}</label>
+                        <select id="${propId}" ${requiredAttr}>
+                            <option value="">Select...</option>
+                            ${prop.options.map(opt => `<option value="${escapeHtml(opt.value)}">${escapeHtml(opt.label)}</option>`).join('')}
+                        </select>
+                    </div>
+                `;
+            }
+
             const attrs: string[] = [
                 `type="${config.inputType}"`,
                 `id="${propId}"`,

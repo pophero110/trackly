@@ -22,8 +22,9 @@ export class EntryListComponent extends WebComponent {
         // Get selected entity name for header
         const selectedEntity = selectedEntityId ? this.store.getEntityById(selectedEntityId) : null;
         const headerText = selectedEntity
-            ? `Entries for ${selectedEntity.name}`
+            ? `${selectedEntity.name}`
             : 'Recent Entries';
+        const entityType = selectedEntity ? `<span class="entity-type ${selectedEntity.type.toLowerCase()}">${selectedEntity.type}</span>` : '';
 
         if (entries.length === 0) {
             const emptyMessage = selectedEntity
@@ -34,7 +35,10 @@ export class EntryListComponent extends WebComponent {
                 <div class="section">
                     ${selectedEntity ? '<button class="btn-back" id="back-to-grid">← Back</button>' : ''}
                     <div class="section-header">
-                        <h2>${headerText}</h2>
+                        <div class="section-header-title">
+                            <h2>${headerText}</h2>
+                            ${entityType}
+                        </div>
                         <button class="btn btn-primary" id="log-entry-btn">+ Log Entry</button>
                     </div>
                     <div class="empty-state">${emptyMessage}</div>
@@ -55,7 +59,10 @@ export class EntryListComponent extends WebComponent {
             <div class="section">
                 ${selectedEntity ? '<button class="btn-back" id="back-to-grid">← Back</button>' : ''}
                 <div class="section-header">
-                    <h2>${headerText}</h2>
+                    <div class="section-header-title">
+                        <h2>${headerText}</h2>
+                        ${entityType}
+                    </div>
                     <button class="btn btn-primary" id="log-entry-btn">+ Log Entry</button>
                 </div>
                 <div class="entries-list">
@@ -67,13 +74,19 @@ export class EntryListComponent extends WebComponent {
         // Attach event handlers after rendering
         this.attachLogEntryButtonHandler();
         this.attachBackButtonHandler();
-        this.attachDeleteHandlers();
+        this.attachMenuHandlers();
         this.attachCardClickHandlers();
     }
 
     private renderEntryCard(entry: Entry): string {
         const entity = this.store.getEntityById(entry.entityId);
-        const valueHtml = entry.value !== undefined ? `<div class="entry-value">${this.formatValue(entry.value, entry.valueDisplay, entity?.valueType)}</div>` : '';
+
+        // Entry title (value)
+        const entryTitle = entry.value !== undefined
+            ? `<div class="entry-title">${this.formatValue(entry.value, entry.valueDisplay, entity?.valueType)}</div>`
+            : '';
+
+        // Notes content
         const notesHtml = entry.notes ? `<div class="entry-notes">${this.formatNotes(entry.notes)}</div>` : '';
 
         // Render custom properties
@@ -81,28 +94,44 @@ export class EntryListComponent extends WebComponent {
             ? this.renderPropertyValues(entity.properties, entry.propertyValues, entry.propertyValueDisplays)
             : '';
 
+        // Image attachments with media card styling
         const imagesHtml = entry.images && entry.images.length > 0 ? `
-            <div class="entry-images">
-                ${entry.images.map(img => `<img src="${img}" alt="Entry image" class="entry-image">`).join('')}
+            <div class="entry-media-grid">
+                ${entry.images.map(img => `
+                    <div class="entry-media-card">
+                        <img src="${img}" alt="Entry image" class="entry-media-image">
+                    </div>
+                `).join('')}
             </div>
         ` : '';
 
+        const hasContent = notesHtml;
+        const hasAttachments = imagesHtml;
+
         return `
-            <div class="entry-card" data-entry-id="${entry.id}" style="cursor: pointer;">
+            <div class="entry-card" data-entry-id="${entry.id}">
                 <div class="entry-metadata">
                     <div class="entry-header">
                         <span class="entry-timestamp">${formatDate(entry.timestamp)}</span>
-                        <button class="btn btn-danger btn-sm" data-entry-id="${entry.id}" data-action="delete">Delete</button>
+                        <button class="entry-menu-btn" data-entry-id="${entry.id}" data-action="menu">⋮</button>
                     </div>
-                </div>
-                <div class="entry-content">
-                    ${valueHtml}
+                    ${entryTitle}
                     ${propertiesHtml}
                 </div>
-                <div class="entry-attachments">
-                    ${notesHtml}
-                    ${imagesHtml}
-                </div>
+                ${hasContent ? `
+                    <div class="entry-content">
+                        ${notesHtml}
+                    </div>
+                ` : ''}
+                ${hasAttachments ? `
+                    <div class="entry-attachments">
+                        ${imagesHtml}
+                    </div>
+                ` : ''}
+            </div>
+            <div class="entry-context-menu" id="entry-menu-${entry.id}" style="display: none;">
+                <div class="context-menu-item" data-entry-id="${entry.id}" data-action="edit">Edit</div>
+                <div class="context-menu-item danger" data-entry-id="${entry.id}" data-action="delete">Delete</div>
             </div>
         `;
     }
@@ -114,12 +143,7 @@ export class EntryListComponent extends WebComponent {
                 const value = propertyValues[prop.id];
                 const displayValue = propertyValueDisplays?.[prop.id];
                 const formattedValue = this.formatPropertyValue(value, prop.valueType, displayValue);
-                return `
-                    <div class="property-value-item">
-                        <span class="property-label">${escapeHtml(prop.name)}:</span>
-                        <span class="property-value">${formattedValue}</span>
-                    </div>
-                `;
+                return `<span class="property-tag">${escapeHtml(prop.name)}: ${formattedValue}</span>`;
             })
             .join('');
 
@@ -133,17 +157,17 @@ export class EntryListComponent extends WebComponent {
 
         // Handle different value types
         if (valueType === 'checkbox') {
-            return value === true || value === 'true' ? '✓ Yes' : '✗ No';
+            return value === true || value === 'true' ? '✓' : '✗';
         }
 
         if (valueType === 'url') {
             // Use displayValue (fetched title) if available, otherwise show URL
             const linkText = displayValue || valueStr;
-            return `<a href="${escapeHtml(valueStr)}" target="_blank" rel="noopener noreferrer" style="color: var(--primary); text-decoration: underline;">${escapeHtml(linkText)}</a>`;
+            return `<a href="${escapeHtml(valueStr)}" target="_blank" rel="noopener noreferrer">${escapeHtml(linkText)}</a>`;
         }
 
         if (valueType === 'duration') {
-            return `${valueStr} minutes`;
+            return `${valueStr}min`;
         }
 
         if (valueType === 'rating') {
@@ -160,6 +184,9 @@ export class EntryListComponent extends WebComponent {
 
     private formatNotes(notes: string): string {
         let formattedNotes = escapeHtml(notes);
+
+        // Convert newlines to <br> tags for proper display
+        formattedNotes = formattedNotes.replace(/\n/g, '<br>');
 
         // First, convert [[title::url]] format to clickable links with titles
         const titleUrlRegex = /\[\[([^\]]+?)::(.+?)\]\]/g;
@@ -299,10 +326,12 @@ export class EntryListComponent extends WebComponent {
         this.querySelectorAll('.entry-card').forEach(card => {
             card.addEventListener('click', (e) => {
                 const target = e.target as HTMLElement;
-                // Don't trigger if clicking on delete button
-                if (target.closest('[data-action="delete"]')) {
+
+                // Don't trigger if clicking on menu button
+                if (target.closest('[data-action="menu"]')) {
                     return;
                 }
+
                 // Don't trigger if clicking on a link
                 if (target.tagName === 'A' || target.closest('a')) {
                     return;
@@ -316,16 +345,58 @@ export class EntryListComponent extends WebComponent {
         });
     }
 
-    private attachDeleteHandlers(): void {
-        this.querySelectorAll('[data-action="delete"]').forEach(btn => {
+    private attachMenuHandlers(): void {
+        // Menu button click
+        this.querySelectorAll('[data-action="menu"]').forEach(btn => {
             btn.addEventListener('click', (e) => {
-                e.stopPropagation(); // Prevent card click
+                e.stopPropagation();
                 const target = e.target as HTMLElement;
                 const entryId = target.dataset.entryId;
                 if (entryId) {
-                    this.handleDelete(entryId);
+                    this.toggleMenu(entryId, e as MouseEvent);
                 }
             });
+        });
+
+        // Menu item clicks
+        this.querySelectorAll('.entry-context-menu .context-menu-item').forEach(item => {
+            item.addEventListener('click', (e) => {
+                const target = e.target as HTMLElement;
+                const entryId = target.dataset.entryId;
+                const action = target.dataset.action;
+
+                if (entryId && action) {
+                    if (action === 'edit') {
+                        URLStateManager.openEditEntryPanel(entryId);
+                    } else if (action === 'delete') {
+                        this.handleDelete(entryId);
+                    }
+                }
+                this.hideAllMenus();
+            });
+        });
+
+        // Click outside to close menus
+        document.addEventListener('click', () => this.hideAllMenus());
+    }
+
+    private toggleMenu(entryId: string, e: MouseEvent): void {
+        const menu = this.querySelector(`#entry-menu-${entryId}`) as HTMLElement;
+        if (!menu) return;
+
+        // Hide all other menus first
+        this.hideAllMenus();
+
+        // Position and show this menu
+        menu.style.display = 'block';
+        menu.style.position = 'absolute';
+        menu.style.left = `${e.pageX - 120}px`;
+        menu.style.top = `${e.pageY + 5}px`;
+    }
+
+    private hideAllMenus(): void {
+        this.querySelectorAll('.entry-context-menu').forEach(menu => {
+            (menu as HTMLElement).style.display = 'none';
         });
     }
 

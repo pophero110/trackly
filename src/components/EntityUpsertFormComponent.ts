@@ -1,6 +1,6 @@
 import { WebComponent } from './WebComponent.js';
 import { Entity } from '../models/Entity.js';
-import { EntityFormData, EntityType, EntityProperty, ValueType } from '../types/index.js';
+import { EntityFormData, EntityType, EntityProperty, ValueType, SelectOption } from '../types/index.js';
 import { URLStateManager } from '../utils/urlState.js';
 import { generateId } from '../utils/helpers.js';
 
@@ -190,7 +190,16 @@ export class EntityUpsertFormComponent extends WebComponent {
                             <option value="time">Time</option>
                             <option value="duration">Duration (minutes)</option>
                             <option value="rating">Rating (1-5)</option>
+                            <option value="select">Select (dropdown)</option>
                         </select>
+                    </div>
+                    <div class="form-group" id="select-options-group" style="display: none;">
+                        <label>Options *</label>
+                        <div id="options-list"></div>
+                        <div style="display: flex; gap: 8px; margin-top: 8px;">
+                            <input type="text" id="option-input" placeholder="Enter option">
+                            <button type="button" class="btn btn-secondary btn-sm" id="add-option-btn">+ Add</button>
+                        </div>
                     </div>
                     <div class="form-group">
                         <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
@@ -209,6 +218,62 @@ export class EntityUpsertFormComponent extends WebComponent {
 
         const propertyForm = modal.querySelector('#property-form') as HTMLFormElement;
         const cancelBtn = modal.querySelector('#cancel-property-btn') as HTMLButtonElement;
+        const propertyTypeSelect = modal.querySelector('#property-type') as HTMLSelectElement;
+        const selectOptionsGroup = modal.querySelector('#select-options-group') as HTMLElement;
+        const optionInput = modal.querySelector('#option-input') as HTMLInputElement;
+        const addOptionBtn = modal.querySelector('#add-option-btn') as HTMLButtonElement;
+        const optionsList = modal.querySelector('#options-list') as HTMLElement;
+
+        let selectOptions: string[] = [];
+
+        // Show/hide select options based on type
+        propertyTypeSelect.addEventListener('change', () => {
+            if (propertyTypeSelect.value === 'select') {
+                selectOptionsGroup.style.display = 'block';
+            } else {
+                selectOptionsGroup.style.display = 'none';
+            }
+        });
+
+        // Add option to list
+        const renderOptions = () => {
+            if (selectOptions.length === 0) {
+                optionsList.innerHTML = '<p style="color: var(--text-muted); font-size: 0.875rem;">No options added yet.</p>';
+            } else {
+                optionsList.innerHTML = selectOptions.map((opt, idx) => `
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 4px 0;">
+                        <span>${opt}</span>
+                        <button type="button" class="btn-remove-option" data-index="${idx}" style="background: none; border: none; color: var(--danger); cursor: pointer; padding: 4px 8px;">✕</button>
+                    </div>
+                `).join('');
+
+                // Attach remove handlers
+                optionsList.querySelectorAll('.btn-remove-option').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        const index = parseInt((e.target as HTMLElement).dataset.index || '0');
+                        selectOptions.splice(index, 1);
+                        renderOptions();
+                    });
+                });
+            }
+        };
+
+        addOptionBtn.addEventListener('click', () => {
+            const value = optionInput.value.trim();
+            if (value && !selectOptions.includes(value)) {
+                selectOptions.push(value);
+                optionInput.value = '';
+                renderOptions();
+            }
+        });
+
+        // Allow Enter key to add option
+        optionInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                addOptionBtn.click();
+            }
+        });
 
         const cleanup = () => {
             document.body.removeChild(modal);
@@ -220,6 +285,12 @@ export class EntityUpsertFormComponent extends WebComponent {
             const valueType = (modal.querySelector('#property-type') as HTMLSelectElement).value as ValueType;
             const required = (modal.querySelector('#property-required') as HTMLInputElement).checked;
 
+            // Validate select type has options
+            if (valueType === 'select' && selectOptions.length === 0) {
+                alert('Please add at least one option for the select field.');
+                return;
+            }
+
             if (name) {
                 const newProperty: EntityProperty = {
                     id: generateId(),
@@ -227,6 +298,15 @@ export class EntityUpsertFormComponent extends WebComponent {
                     valueType,
                     required
                 };
+
+                // Add options if select type
+                if (valueType === 'select') {
+                    newProperty.options = selectOptions.map(opt => ({
+                        value: opt.toLowerCase().replace(/\s+/g, '-'),
+                        label: opt
+                    } as SelectOption));
+                }
+
                 this.properties.push(newProperty);
                 this.updatePropertiesList();
                 cleanup();

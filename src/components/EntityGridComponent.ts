@@ -154,6 +154,9 @@ export class EntityGridComponent extends WebComponent {
     private formatNotes(notes: string): string {
         let formattedNotes = escapeHtml(notes);
 
+        // Convert newlines to <br> tags for proper display
+        formattedNotes = formattedNotes.replace(/\n/g, '<br>');
+
         // Convert [[title::url]] format to clickable links with titles (truncated for grid)
         const titleUrlRegex = /\[\[([^\]]+?)::(.+?)\]\]/g;
         formattedNotes = formattedNotes.replace(titleUrlRegex, (_match, title, url) => {

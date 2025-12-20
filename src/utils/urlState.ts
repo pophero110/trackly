@@ -4,7 +4,7 @@
 
 type StateChangeCallback = () => void;
 
-export type PanelType = 'log-entry' | 'create-entity' | 'edit-entity' | 'edit-entry' | null;
+export type PanelType = 'log-entry' | 'create-entity' | 'edit-entity' | 'clone-entity' | 'edit-entry' | null;
 
 export class URLStateManager {
     private static listeners: StateChangeCallback[] = [];
@@ -47,7 +47,7 @@ export class URLStateManager {
         const params = new URLSearchParams(window.location.search);
         const panel = params.get('panel');
 
-        if (panel === 'log-entry' || panel === 'create-entity' || panel === 'edit-entity' || panel === 'edit-entry') {
+        if (panel === 'log-entry' || panel === 'create-entity' || panel === 'edit-entity' || panel === 'clone-entity' || panel === 'edit-entry') {
             return panel;
         }
         return null;
