@@ -94,7 +94,6 @@ export class EntryListComponent extends WebComponent {
                         <span class="entry-timestamp">${formatDate(entry.timestamp)}</span>
                         <button class="btn btn-danger btn-sm" data-entry-id="${entry.id}" data-action="delete">Delete</button>
                     </div>
-                    ${entity ? `<div class="entry-entity-info"><span class="entity-type ${entity.type.toLowerCase()}">${entity.type}</span><span class="entity-name">${escapeHtml(entity.name)}</span></div>` : ''}
                 </div>
                 <div class="entry-content">
                     ${valueHtml}

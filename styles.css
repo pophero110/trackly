@@ -889,21 +889,7 @@ form {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 8px;
   gap: 8px;
-}
-
-.entry-entity-info {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-top: 4px;
-}
-
-.entry-entity-info .entity-name {
-  font-size: 0.875rem;
-  color: var(--text-muted);
-  font-weight: 500;
 }
 
 .entry-content {

@@ -89,17 +89,18 @@ Cards use a two-section layout to clearly separate entity/entry metadata from co
 - Separated by a subtle border for clear visual hierarchy
 
 **Entry Cards**:
-- **Metadata Section** (`.entry-metadata`): Light gray background containing timestamp, entity type, and entity name
+- **Metadata Section** (`.entry-metadata`): Light gray background containing only the timestamp and delete button
 - **Data Section** (`.entry-content`): White background containing value and property values (the actual logged data)
 - **Attachments Section** (`.entry-attachments`): Light gray background containing notes and images (supplementary information)
 - Each section separated by subtle borders
 
 This three-section layout provides:
-- Clear visual distinction between metadata (when/what entity), data (logged values), and attachments (notes/images)
+- Minimal metadata section (timestamp only) to reduce noise
+- Clear visual distinction between when (metadata), what was measured (data), and supplementary info (attachments)
 - Improved scannability when viewing multiple cards
 - Better information hierarchy
 - Semantic grouping of related information
-- Consistent pattern across entity and entry views
+- Clean, uncluttered design focused on the data
 
 ## Component Designs
 
