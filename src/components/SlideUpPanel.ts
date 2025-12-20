@@ -1,5 +1,7 @@
+import { URLStateManager } from '../utils/urlState.js';
+
 /**
- * SlideUpPanel component for displaying forms in a modal panel
+ * SlideUpPanel component for displaying forms in a centered modal
  */
 export class SlideUpPanel extends HTMLElement {
     private isOpen: boolean = false;
@@ -11,45 +13,45 @@ export class SlideUpPanel extends HTMLElement {
 
     private render(): void {
         this.innerHTML = `
-            <div class="panel-backdrop">
-                <div class="panel-container">
-                    <div class="panel-header">
-                        <h2 class="panel-title"></h2>
-                        <button class="panel-close" aria-label="Close">×</button>
+            <div class="modal-backdrop">
+                <div class="modal-dialog">
+                    <div class="modal-header">
+                        <h2 class="modal-title"></h2>
+                        <button class="modal-close" aria-label="Close">×</button>
                     </div>
-                    <div class="panel-content"></div>
+                    <div class="modal-body"></div>
                 </div>
             </div>
         `;
     }
 
     private attachEventListeners(): void {
-        const backdrop = this.querySelector('.panel-backdrop');
-        const closeBtn = this.querySelector('.panel-close');
+        const backdrop = this.querySelector('.modal-backdrop');
+        const closeBtn = this.querySelector('.modal-close');
 
         // Close on backdrop click
         backdrop?.addEventListener('click', (e) => {
             if (e.target === backdrop) {
-                this.close();
+                URLStateManager.closePanel();
             }
         });
 
         // Close on close button click
         closeBtn?.addEventListener('click', () => {
-            this.close();
+            URLStateManager.closePanel();
         });
 
         // Close on escape key
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape' && this.isOpen) {
-                this.close();
+                URLStateManager.closePanel();
             }
         });
     }
 
     open(title: string, contentElement: HTMLElement): void {
-        const titleEl = this.querySelector('.panel-title');
-        const contentEl = this.querySelector('.panel-content');
+        const titleEl = this.querySelector('.modal-title');
+        const contentEl = this.querySelector('.modal-body');
 
         if (titleEl && contentEl) {
             titleEl.textContent = title;
@@ -67,13 +69,11 @@ export class SlideUpPanel extends HTMLElement {
         this.classList.remove('active');
         document.body.style.overflow = ''; // Restore scroll
 
-        // Clear content after animation
-        setTimeout(() => {
-            const contentEl = this.querySelector('.panel-content');
-            if (contentEl) {
-                contentEl.innerHTML = '';
-            }
-        }, 300);
+        // Clear content immediately (no animation delay needed)
+        const contentEl = this.querySelector('.modal-body');
+        if (contentEl) {
+            contentEl.innerHTML = '';
+        }
     }
 
     getIsOpen(): boolean {

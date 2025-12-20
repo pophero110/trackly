@@ -1,37 +1,63 @@
 import { WebComponent } from './WebComponent.js';
 import { Entry } from '../models/Entry.js';
-import { EntryFormData, ValueType, EntityProperty } from '../types/index.js';
-import { getCurrentTimestamp, escapeHtml, fetchUrlMetadata, extractUrls, replaceUrlsWithTitles } from '../utils/helpers.js';
+import { ValueType, EntityProperty } from '../types/index.js';
+import { escapeHtml, extractUrls, replaceUrlsWithTitles, fetchUrlMetadata } from '../utils/helpers.js';
 import { URLStateManager } from '../utils/urlState.js';
 import { getValueTypeInputConfig } from '../config/valueTypeConfig.js';
 
 /**
- * EntryForm Web Component for logging new entries
+ * EntryEditForm Web Component for editing existing entries
  */
-export class EntryFormComponent extends WebComponent {
+export class EntryEditFormComponent extends WebComponent {
+    private entryId: string | null = null;
+    private entry: Entry | null = null;
     private images: string[] = [];
 
+    connectedCallback(): void {
+        this.unsubscribe = this.store.subscribe(() => {
+            // Only re-render if entry is already set
+            if (this.entry) {
+                this.render();
+            }
+        });
+        // Don't auto-render, wait for setEntry()
+    }
+
+    setEntry(entryId: string): void {
+        this.entryId = entryId;
+        const entries = this.store.getEntries();
+        const foundEntry = entries.find(e => e.id === entryId);
+
+        if (foundEntry) {
+            this.entry = foundEntry;
+            this.images = foundEntry.images ? [...foundEntry.images] : [];
+            this.render();
+            this.attachEventListeners();
+        } else {
+            this.innerHTML = '<p>Entry not found</p>';
+        }
+    }
+
     render(): void {
-        const entities = this.store.getEntities();
-        const selectedEntityId = this.store.getSelectedEntityId();
+        if (!this.entry) {
+            this.innerHTML = '<p>Entry not found</p>';
+            return;
+        }
 
-        const entitiesOptions = entities
-            .sort((a, b) => a.name.localeCompare(b.name))
-            .map(entity => `<option value="${entity.id}" ${entity.id === selectedEntityId ? 'selected' : ''}>${escapeHtml(entity.name)} (${entity.type})</option>`)
-            .join('');
+        const entity = this.store.getEntityById(this.entry.entityId);
+        if (!entity) {
+            this.innerHTML = '<p>Associated entity not found</p>';
+            return;
+        }
 
-        // Get selected entity to show appropriate value input
-        const selectedEntity = selectedEntityId ? this.store.getEntityById(selectedEntityId) : null;
-        const valueInputHtml = selectedEntity && selectedEntity.valueType ? this.renderValueInput(selectedEntity.valueType, selectedEntity.options) : '';
+        // Get value input based on entity type (only if entity has valueType)
+        const valueInputHtml = entity.valueType ? this.renderValueInput(entity.valueType, this.entry.value, entity.options) : '';
 
         this.innerHTML = `
-            <form id="entry-form">
+            <form id="entry-edit-form">
                 <div class="form-group">
-                    <label for="entry-entity">Select Entity *</label>
-                    <select id="entry-entity" required>
-                        <option value="">Select entity...</option>
-                        ${entitiesOptions}
-                    </select>
+                    <label>Entity</label>
+                    <input type="text" value="${escapeHtml(entity.name)} (${entity.type})" disabled style="background: var(--background); color: var(--text-muted);">
                 </div>
 
                 <div id="value-input-container">
@@ -39,12 +65,12 @@ export class EntryFormComponent extends WebComponent {
                 </div>
 
                 <div id="properties-input-container">
-                    ${selectedEntity && selectedEntity.properties && selectedEntity.properties.length > 0 ? this.renderPropertyInputs(selectedEntity.properties) : ''}
+                    ${entity.properties && entity.properties.length > 0 ? this.renderPropertyInputs(entity.properties, this.entry.propertyValues || {}) : ''}
                 </div>
 
                 <div class="form-group">
                     <label for="entry-notes">Notes (optional)</label>
-                    <textarea id="entry-notes" rows="3"></textarea>
+                    <textarea id="entry-notes" rows="3">${escapeHtml(this.entry.notes || '')}</textarea>
                 </div>
 
                 <div class="form-group">
@@ -57,14 +83,16 @@ export class EntryFormComponent extends WebComponent {
                     <div id="image-preview" class="image-preview"></div>
                 </div>
 
-                <button type="submit" class="btn btn-primary">Log Entry</button>
+                <button type="submit" class="btn btn-primary">Update Entry</button>
             </form>
         `;
 
-        this.attachEventListeners();
+        // Render existing images
+        this.renderImagePreview();
     }
 
-    private renderValueInput(valueType: ValueType, entityOptions?: Array<{value: string; label: string}>): string {
+    private renderValueInput(valueType: ValueType, currentValue?: string | number | boolean, entityOptions?: Array<{value: string; label: string}>): string {
+        const valueStr = currentValue !== undefined ? String(currentValue) : '';
         const config = getValueTypeInputConfig(valueType);
 
         if (config.inputType === 'select') {
@@ -72,9 +100,10 @@ export class EntryFormComponent extends WebComponent {
             const options = entityOptions || config.options || [];
             const optionsHtml = [
                 '<option value="">Select...</option>',
-                ...options.map(opt =>
-                    `<option value="${opt.value}">${escapeHtml(opt.label)}</option>`
-                )
+                ...options.map(opt => {
+                    const selected = opt.value === valueStr ? 'selected' : '';
+                    return `<option value="${opt.value}" ${selected}>${escapeHtml(opt.label)}</option>`;
+                })
             ].join('');
 
             return `
@@ -88,10 +117,11 @@ export class EntryFormComponent extends WebComponent {
         }
 
         if (config.inputType === 'checkbox') {
+            const isChecked = currentValue === true || currentValue === 'true';
             return `
                 <div class="form-group">
                     <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
-                        <input type="checkbox" id="entry-value" value="true">
+                        <input type="checkbox" id="entry-value" value="true" ${isChecked ? 'checked' : ''}>
                         <span>${escapeHtml(config.label)}</span>
                     </label>
                 </div>
@@ -99,12 +129,13 @@ export class EntryFormComponent extends WebComponent {
         }
 
         if (config.inputType === 'range') {
+            const rangeValue = currentValue !== undefined ? String(currentValue) : String(config.min || 0);
             return `
                 <div class="form-group">
                     <label for="entry-value">${escapeHtml(config.label)} *</label>
                     <div style="display: flex; align-items: center; gap: 12px;">
-                        <input type="range" id="entry-value" min="${config.min || 0}" max="${config.max || 100}" step="${config.step || 1}" value="${config.min || 0}" style="flex: 1;" required>
-                        <span id="range-value-display" style="min-width: 3rem; text-align: right; font-weight: 500;">${config.min || 0}</span>
+                        <input type="range" id="entry-value" min="${config.min || 0}" max="${config.max || 100}" step="${config.step || 1}" value="${rangeValue}" style="flex: 1;" required>
+                        <span id="range-value-display" style="min-width: 3rem; text-align: right; font-weight: 500;">${rangeValue}</span>
                     </div>
                 </div>
             `;
@@ -116,6 +147,18 @@ export class EntryFormComponent extends WebComponent {
             'id="entry-value"',
             'required'
         ];
+
+        // Add value for all input types
+        // Text-based inputs need escaping
+        if (config.inputType === 'text' || config.inputType === 'url' || config.inputType === 'email' ||
+            config.inputType === 'tel' || config.inputType === 'date' || config.inputType === 'time' ||
+            config.inputType === 'datetime-local' || config.inputType === 'month' || config.inputType === 'week' ||
+            config.inputType === 'color') {
+            attrs.push(`value="${escapeHtml(valueStr)}"`);
+        } else {
+            // Number and range inputs don't need escaping
+            attrs.push(`value="${valueStr}"`);
+        }
 
         if (config.placeholder) {
             attrs.push(`placeholder="${escapeHtml(config.placeholder)}"`);
@@ -138,28 +181,39 @@ export class EntryFormComponent extends WebComponent {
         `;
     }
 
-    private renderPropertyInputs(properties: EntityProperty[]): string {
+    private renderPropertyInputs(properties: EntityProperty[], propertyValues: Record<string, string | number | boolean>): string {
         return properties.map(prop => {
             const config = getValueTypeInputConfig(prop.valueType);
             const propId = `property-${prop.id}`;
             const requiredAttr = prop.required ? 'required' : '';
+            const currentValue = propertyValues[prop.id];
 
             if (config.inputType === 'checkbox') {
+                const isChecked = currentValue === true || currentValue === 'true';
                 return `
                     <div class="form-group">
                         <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
-                            <input type="checkbox" id="${propId}" value="true">
+                            <input type="checkbox" id="${propId}" value="true" ${isChecked ? 'checked' : ''}>
                             <span>${escapeHtml(prop.name)}${prop.required ? ' *' : ''}</span>
                         </label>
                     </div>
                 `;
             }
 
+            const valueStr = currentValue !== undefined ? String(currentValue) : '';
             const attrs: string[] = [
                 `type="${config.inputType}"`,
                 `id="${propId}"`,
                 requiredAttr
             ];
+
+            // Add value attribute
+            if (config.inputType === 'text' || config.inputType === 'url' || config.inputType === 'email' ||
+                config.inputType === 'tel' || config.inputType === 'date' || config.inputType === 'time') {
+                attrs.push(`value="${escapeHtml(valueStr)}"`);
+            } else {
+                attrs.push(`value="${valueStr}"`);
+            }
 
             if (config.placeholder) {
                 attrs.push(`placeholder="${escapeHtml(config.placeholder)}"`);
@@ -184,38 +238,13 @@ export class EntryFormComponent extends WebComponent {
     }
 
     protected attachEventListeners(): void {
-        const form = this.querySelector('#entry-form') as HTMLFormElement;
-        const entitySelect = this.querySelector('#entry-entity') as HTMLSelectElement;
+        const form = this.querySelector('#entry-edit-form') as HTMLFormElement;
         const uploadBtn = this.querySelector('#upload-image-btn') as HTMLButtonElement;
         const captureBtn = this.querySelector('#capture-image-btn') as HTMLButtonElement;
         const fileInput = this.querySelector('#image-upload') as HTMLInputElement;
 
         if (form) {
             form.addEventListener('submit', (e) => this.handleSubmit(e));
-        }
-
-        if (entitySelect) {
-            entitySelect.addEventListener('change', () => {
-                const selectedEntityId = entitySelect.value;
-                const selectedEntity = selectedEntityId ? this.store.getEntityById(selectedEntityId) : null;
-                const valueContainer = this.querySelector('#value-input-container');
-                const propertiesContainer = this.querySelector('#properties-input-container');
-
-                if (valueContainer) {
-                    if (selectedEntity && selectedEntity.valueType) {
-                        valueContainer.innerHTML = this.renderValueInput(selectedEntity.valueType, selectedEntity.options);
-                        this.attachRangeListener();
-                    } else {
-                        valueContainer.innerHTML = '';
-                    }
-                }
-
-                if (propertiesContainer && selectedEntity) {
-                    propertiesContainer.innerHTML = selectedEntity.properties && selectedEntity.properties.length > 0
-                        ? this.renderPropertyInputs(selectedEntity.properties)
-                        : '';
-                }
-            });
         }
 
         // Image upload/capture handlers
@@ -233,7 +262,7 @@ export class EntryFormComponent extends WebComponent {
             captureBtn.addEventListener('click', () => this.handleCameraCapture());
         }
 
-        // Attach range input listener for initial render
+        // Attach range input listener
         this.attachRangeListener();
     }
 
@@ -355,35 +384,12 @@ export class EntryFormComponent extends WebComponent {
         });
     }
 
-    private isUrl(text: string): boolean {
-        try {
-            const url = new URL(text);
-            return url.protocol === 'http:' || url.protocol === 'https:';
-        } catch {
-            return false;
-        }
-    }
-
-    private async fetchAndUpdateTitle(entryId: string, url: string): Promise<void> {
-        try {
-            const metadata = await fetchUrlMetadata(url);
-            // Only update if we got a meaningful title
-            if (metadata.title && metadata.title !== url) {
-                this.store.updateEntry(entryId, { valueDisplay: metadata.title });
-            }
-        } catch (error) {
-            console.error('Failed to fetch page title:', error);
-        }
-    }
-
     private async processTextWithUrls(entryId: string, text: string, field: 'value' | 'notes'): Promise<void> {
         try {
             const urls = extractUrls(text);
             if (urls.length === 0) return;
 
             const result = await replaceUrlsWithTitles(text);
-
-            // Update the entry with processed text
             if (result.text !== text) {
                 const updates: Partial<{ value?: string; notes?: string }> = {};
                 if (field === 'value') {
@@ -395,6 +401,15 @@ export class EntryFormComponent extends WebComponent {
             }
         } catch (error) {
             console.error('Failed to process URLs in text:', error);
+        }
+    }
+
+    private isUrl(text: string): boolean {
+        try {
+            const url = new URL(text);
+            return url.protocol === 'http:' || url.protocol === 'https:';
+        } catch {
+            return false;
         }
     }
 
@@ -434,18 +449,19 @@ export class EntryFormComponent extends WebComponent {
     private async handleSubmit(e: Event): Promise<void> {
         e.preventDefault();
 
-        try {
-            const entityId = (this.querySelector('#entry-entity') as HTMLSelectElement).value;
-            const entity = this.store.getEntityById(entityId);
+        if (!this.entry || !this.entryId) {
+            return;
+        }
 
+        try {
+            const entity = this.store.getEntityById(this.entry.entityId);
             if (!entity) {
-                throw new Error('Please select a valid entity');
+                throw new Error('Entity not found');
             }
 
-            // Get value based on valueType (only if entity has a valueType)
+            // Get value based on valueType (only if entity has valueType)
             let value: string | number | boolean | undefined;
-            let valueDisplay: string | undefined;
-            const valueInput = this.querySelector('#entry-value') as HTMLInputElement | HTMLSelectElement;
+            const valueInput = this.querySelector('#entry-value') as HTMLInputElement;
 
             if (valueInput && entity.valueType) {
                 switch (entity.valueType) {
@@ -467,15 +483,6 @@ export class EntryFormComponent extends WebComponent {
                     case 'email':
                     case 'tel':
                         value = valueInput.value;
-                        // Check if text contains a URL
-                        if (this.isUrl(valueInput.value)) {
-                            try {
-                                const urlObj = new URL(valueInput.value);
-                                valueDisplay = urlObj.hostname.replace('www.', '');
-                            } catch {
-                                // Not a valid URL, use as-is
-                            }
-                        }
                         break;
 
                     // Date/Time types
@@ -504,83 +511,56 @@ export class EntryFormComponent extends WebComponent {
                     case 'video':
                     case 'hyperlink':
                         value = valueInput.value;
-                        // Use URL as initial display value
-                        try {
-                            const urlObj = new URL(valueInput.value);
-                            valueDisplay = urlObj.hostname.replace('www.', '');
-                        } catch {
-                            // Invalid URL, use as-is
-                        }
                         break;
                 }
             }
 
-            const formData: EntryFormData = {
-                timestamp: getCurrentTimestamp(),
-                value: value,
-                valueDisplay: valueDisplay,
-                notes: (this.querySelector('#entry-notes') as HTMLTextAreaElement).value
-            };
-
-            const entry = Entry.fromFormData(formData, entity);
-
-            // Add images if any
-            if (this.images.length > 0) {
-                entry.images = [...this.images];
-            }
+            const notes = (this.querySelector('#entry-notes') as HTMLTextAreaElement).value;
 
             // Collect property values
+            let propertyValues: Record<string, string | number | boolean> | undefined;
             if (entity.properties && entity.properties.length > 0) {
-                const propertyValues: Record<string, string | number | boolean> = {};
+                propertyValues = {};
                 entity.properties.forEach(prop => {
                     const input = this.querySelector(`#property-${prop.id}`) as HTMLInputElement;
                     if (input) {
                         if (prop.valueType === 'checkbox') {
-                            propertyValues[prop.id] = input.checked;
+                            propertyValues![prop.id] = input.checked;
                         } else if (prop.valueType === 'number' || prop.valueType === 'duration' || prop.valueType === 'rating') {
-                            propertyValues[prop.id] = parseFloat(input.value) || 0;
+                            propertyValues![prop.id] = parseFloat(input.value) || 0;
                         } else {
-                            propertyValues[prop.id] = input.value;
+                            propertyValues![prop.id] = input.value;
                         }
                     }
                 });
-                entry.propertyValues = propertyValues;
             }
 
-            this.store.addEntry(entry);
+            // Update the entry
+            this.store.updateEntry(this.entryId, {
+                value: value,
+                notes: notes,
+                images: this.images.length > 0 ? this.images : undefined,
+                propertyValues: propertyValues
+            });
 
-            // Process URLs asynchronously
-            const notesValue = (this.querySelector('#entry-notes') as HTMLTextAreaElement).value;
-
-            // For single URL values (hyperlink, image, audio, video)
-            if (value && typeof value === 'string' && this.isUrl(value)) {
-                this.fetchAndUpdateTitle(entry.id, value);
+            // Process URLs asynchronously in text fields
+            if (value && typeof value === 'string' && entity.valueType === 'text') {
+                this.processTextWithUrls(this.entryId, value, 'value');
             }
-            // For text values that may contain URLs
-            else if (value && typeof value === 'string' && entity.valueType === 'text') {
-                this.processTextWithUrls(entry.id, value, 'value');
-            }
-
-            // Process URLs in notes field
-            if (notesValue && notesValue.trim()) {
-                this.processTextWithUrls(entry.id, notesValue, 'notes');
+            if (notes && notes.trim()) {
+                this.processTextWithUrls(this.entryId, notes, 'notes');
             }
 
             // Fetch titles for URL-type properties
-            if (entity.properties && entity.properties.length > 0 && entry.propertyValues) {
-                this.fetchPropertyUrlTitles(entry.id, entity.properties, entry.propertyValues);
+            if (entity.properties && entity.properties.length > 0 && propertyValues) {
+                this.fetchPropertyUrlTitles(this.entryId, entity.properties, propertyValues);
             }
 
-            // Close the panel via URL
+            // Close the panel
             URLStateManager.closePanel();
-
-            // Reset form and images
-            (e.target as HTMLFormElement).reset();
-            this.images = [];
-            this.renderImagePreview();
         } catch (error) {
             const message = error instanceof Error ? error.message : 'Unknown error';
-            alert(`Error logging entry: ${message}`);
+            alert(`Error updating entry: ${message}`);
         }
     }
 }

@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Trackly - Personal Tracking App</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%232563eb' rx='20'/><path fill='white' d='M25 70 L40 55 L55 65 L75 35' stroke='white' stroke-width='6' fill='none'/><circle cx='40' cy='55' r='4' fill='white'/><circle cx='55' cy='65' r='4' fill='white'/><circle cx='75' cy='35' r='4' fill='white'/></svg>">
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -17,19 +18,9 @@
         <div class="app-layout">
             <!-- Main Content -->
             <main class="main-content">
-                <app-tabs class="tabs">
-                    <button class="tab-btn active" data-tab="home">Home</button>
-                    <button class="tab-btn" data-tab="entries">Entries</button>
-                </app-tabs>
-
-                <!-- Home Tab -->
-                <div id="home-tab" class="tab-content active">
+                <div class="content-view active">
                     <entity-grid></entity-grid>
-                </div>
-
-                <!-- Entries Tab -->
-                <div id="entries-tab" class="tab-content">
-                    <entry-list></entry-list>
+                    <entry-list style="display: none;"></entry-list>
                 </div>
             </main>
         </div>
@@ -41,6 +32,7 @@
         <div style="display: none;">
             <entity-upsert-form id="entity-upsert-form-template"></entity-upsert-form>
             <entry-form id="entry-form-template"></entry-form>
+            <entry-edit-form id="entry-edit-form-template"></entry-edit-form>
         </div>
     </div>
 

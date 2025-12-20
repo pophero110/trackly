@@ -1,5 +1,62 @@
 import { generateId } from '../utils/helpers.js';
-import { IEntity, EntityType, EntityFormData } from '../types/index.js';
+import { IEntity, EntityType, EntityFormData, ValueType, SelectOption, EntityProperty } from '../types/index.js';
+
+/**
+ * Maps entity types to their default value types
+ */
+export function getDefaultValueType(entityType: EntityType): ValueType {
+  const mapping: Record<EntityType, ValueType> = {
+    'Habit': 'checkbox',     // Daily habit tracker
+    'Task': 'select',        // Task status (select from options)
+    'Mood': 'range',         // Mood scale slider
+    'Node': 'text',          // General notes
+    'Event': 'datetime-local', // When did it happen?
+    'Idea': 'text',          // Description
+    'Book': 'number',        // Pages read
+    'Article': 'hyperlink',  // Article URL
+    'Paper': 'number',       // Pages read
+    'Project': 'number',     // Hours worked
+    'Concept': 'text',       // Description
+    'Decision': 'select',    // Decision outcome (select from options)
+    'Communication': 'text', // Communication notes
+    'Exercise': 'duration',  // Workout duration in minutes
+    'Metric': 'number',      // Numeric metrics
+    'Activity': 'text',      // Activity description
+    'Goal': 'select',        // Goal status (select from options)
+    'Plan': 'select'         // Plan status (select from options)
+  };
+  return mapping[entityType];
+}
+
+/**
+ * Get default options for select value types based on entity type
+ */
+export function getDefaultSelectOptions(entityType: EntityType): SelectOption[] | undefined {
+  const optionsMapping: Partial<Record<EntityType, SelectOption[]>> = {
+    'Task': [
+      { value: 'todo', label: 'To Do' },
+      { value: 'in-progress', label: 'In Progress' },
+      { value: 'done', label: 'Done' }
+    ],
+    'Decision': [
+      { value: 'yes', label: 'Yes' },
+      { value: 'no', label: 'No' },
+      { value: 'pending', label: 'Pending' }
+    ],
+    'Goal': [
+      { value: 'not-started', label: 'Not Started' },
+      { value: 'in-progress', label: 'In Progress' },
+      { value: 'completed', label: 'Completed' }
+    ],
+    'Plan': [
+      { value: 'draft', label: 'Draft' },
+      { value: 'active', label: 'Active' },
+      { value: 'completed', label: 'Completed' },
+      { value: 'on-hold', label: 'On Hold' }
+    ]
+  };
+  return optionsMapping[entityType];
+}
 
 /**
  * Entity model representing a trackable item
@@ -9,6 +66,9 @@ export class Entity implements IEntity {
   name: string;
   type: EntityType;
   categories: string[];
+  valueType?: ValueType;
+  options?: SelectOption[];
+  properties?: EntityProperty[];
   createdAt: string;
 
   constructor(data: Partial<IEntity> & { name: string; type: EntityType }) {
@@ -16,6 +76,9 @@ export class Entity implements IEntity {
     this.name = data.name;
     this.type = data.type;
     this.categories = data.categories || [];
+    this.valueType = data.valueType;
+    this.options = data.options;
+    this.properties = data.properties || [];
     this.createdAt = data.createdAt || new Date().toISOString();
   }
 
@@ -36,7 +99,7 @@ export class Entity implements IEntity {
       errors.push('Name is required');
     }
 
-    const validTypes: EntityType[] = ['Habit', 'Task', 'Expense', 'Mood', 'Node'];
+    const validTypes: EntityType[] = ['Habit', 'Task', 'Mood', 'Node', 'Event', 'Idea', 'Book', 'Article', 'Paper', 'Project', 'Concept', 'Decision', 'Communication', 'Exercise', 'Metric', 'Activity', 'Goal', 'Plan'];
     if (!this.type || !validTypes.includes(this.type)) {
       errors.push('Valid type is required');
     }
@@ -50,6 +113,9 @@ export class Entity implements IEntity {
       name: this.name,
       type: this.type,
       categories: this.categories,
+      valueType: this.valueType,
+      options: this.options,
+      properties: this.properties,
       createdAt: this.createdAt
     };
   }

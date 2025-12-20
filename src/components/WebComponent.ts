@@ -21,7 +21,6 @@ export abstract class WebComponent extends HTMLElement {
 
         // Initial render
         this.render();
-        this.attachEventListeners();
     }
 
     disconnectedCallback(): void {

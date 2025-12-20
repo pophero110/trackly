@@ -25,8 +25,33 @@ export class Store {
         const entitiesData = Storage.load<IEntity[]>('entities') || [];
         const entriesData = Storage.load<IEntry[]>('entries') || [];
 
-        this.entities = entitiesData.map(data => new Entity(data));
+        // Migrate Task entities from 'number'/'status' to 'select' valueType
+        const migratedEntities = entitiesData.map(data => {
+            // Check for old 'status' or 'number' value types for Task entities
+            if (data.type === 'Task' && (data.valueType === 'number' || (data.valueType as string) === 'status')) {
+                return {
+                    ...data,
+                    valueType: 'select' as const,
+                    options: [
+                        { value: 'todo', label: 'To Do' },
+                        { value: 'in-progress', label: 'In Progress' },
+                        { value: 'done', label: 'Done' }
+                    ]
+                };
+            }
+            return data;
+        });
+
+        this.entities = migratedEntities.map(data => new Entity(data));
         this.entries = entriesData.map(data => new Entry(data));
+
+        // Save migrated data if any migrations occurred
+        const hadMigrations = migratedEntities.some((entity, index) =>
+            entity.valueType !== entitiesData[index].valueType
+        );
+        if (hadMigrations) {
+            this.saveData();
+        }
     }
 
     // Save data to localStorage
@@ -55,6 +80,10 @@ export class Store {
 
     getEntityById(id: string): Entity | undefined {
         return this.entities.find(e => e.id === id);
+    }
+
+    getEntityByName(name: string): Entity | undefined {
+        return this.entities.find(e => e.name === name);
     }
 
     addEntity(entity: Entity): void {

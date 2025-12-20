@@ -1,6 +1,8 @@
 import { WebComponent } from './WebComponent.js';
 import { Entity } from '../models/Entity.js';
-import { EntityFormData, EntityType } from '../types/index.js';
+import { EntityFormData, EntityType, EntityProperty, ValueType } from '../types/index.js';
+import { URLStateManager } from '../utils/urlState.js';
+import { generateId } from '../utils/helpers.js';
 
 /**
  * EntityUpsertForm Web Component for creating or updating entities
@@ -10,6 +12,7 @@ export class EntityUpsertFormComponent extends WebComponent {
     private entityId: string | null = null;
     private entity: Entity | null = null;
     private isEditMode: boolean = false;
+    private properties: EntityProperty[] = [];
 
     connectedCallback(): void {
         // Don't auto-render, wait for setEntity() or just render for create
@@ -20,6 +23,7 @@ export class EntityUpsertFormComponent extends WebComponent {
         this.isEditMode = false;
         this.entityId = null;
         this.entity = null;
+        this.properties = [];
         this.render();
         this.attachEventListeners();
     }
@@ -31,6 +35,7 @@ export class EntityUpsertFormComponent extends WebComponent {
         if (foundEntity) {
             this.isEditMode = true;
             this.entity = foundEntity;
+            this.properties = foundEntity.properties ? [...foundEntity.properties] : [];
             this.render();
             this.attachEventListeners();
         }
@@ -63,10 +68,31 @@ export class EntityUpsertFormComponent extends WebComponent {
                         <option value="">Select type...</option>
                         <option value="Habit" ${typeValue === 'Habit' ? 'selected' : ''}>Habit</option>
                         <option value="Task" ${typeValue === 'Task' ? 'selected' : ''}>Task</option>
-                        <option value="Expense" ${typeValue === 'Expense' ? 'selected' : ''}>Expense</option>
                         <option value="Mood" ${typeValue === 'Mood' ? 'selected' : ''}>Mood</option>
                         <option value="Node" ${typeValue === 'Node' ? 'selected' : ''}>Node</option>
+                        <option value="Event" ${typeValue === 'Event' ? 'selected' : ''}>Event</option>
+                        <option value="Idea" ${typeValue === 'Idea' ? 'selected' : ''}>Idea</option>
+                        <option value="Book" ${typeValue === 'Book' ? 'selected' : ''}>Book</option>
+                        <option value="Article" ${typeValue === 'Article' ? 'selected' : ''}>Article</option>
+                        <option value="Paper" ${typeValue === 'Paper' ? 'selected' : ''}>Paper</option>
+                        <option value="Project" ${typeValue === 'Project' ? 'selected' : ''}>Project</option>
+                        <option value="Concept" ${typeValue === 'Concept' ? 'selected' : ''}>Concept</option>
+                        <option value="Decision" ${typeValue === 'Decision' ? 'selected' : ''}>Decision</option>
+                        <option value="Communication" ${typeValue === 'Communication' ? 'selected' : ''}>Communication</option>
+                        <option value="Exercise" ${typeValue === 'Exercise' ? 'selected' : ''}>Exercise</option>
+                        <option value="Metric" ${typeValue === 'Metric' ? 'selected' : ''}>Metric</option>
+                        <option value="Activity" ${typeValue === 'Activity' ? 'selected' : ''}>Activity</option>
+                        <option value="Goal" ${typeValue === 'Goal' ? 'selected' : ''}>Goal</option>
+                        <option value="Plan" ${typeValue === 'Plan' ? 'selected' : ''}>Plan</option>
                     </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Custom Properties</label>
+                    <div id="properties-list">
+                        ${this.renderPropertiesList()}
+                    </div>
+                    <button type="button" class="btn btn-secondary" id="add-property-btn">+ Add Property</button>
                 </div>
 
                 <button type="submit" class="btn btn-primary">${buttonText}</button>
@@ -74,10 +100,131 @@ export class EntityUpsertFormComponent extends WebComponent {
         `;
     }
 
+    private renderPropertiesList(): string {
+        if (this.properties.length === 0) {
+            return '<p style="color: var(--text-muted); font-size: 0.875rem;">No custom properties added yet.</p>';
+        }
+
+        return this.properties.map((prop, index) => `
+            <div class="property-item" data-index="${index}">
+                <div class="property-info">
+                    <strong>${prop.name}</strong>
+                    <span class="property-type">${prop.valueType}</span>
+                    ${prop.required ? '<span class="property-required">Required</span>' : ''}
+                </div>
+                <button type="button" class="btn-remove-property" data-index="${index}">Remove</button>
+            </div>
+        `).join('');
+    }
+
     protected attachEventListeners(): void {
         const form = this.querySelector('#entity-upsert-form') as HTMLFormElement;
+        const addPropertyBtn = this.querySelector('#add-property-btn') as HTMLButtonElement;
+
         if (form) {
             form.addEventListener('submit', (e) => this.handleSubmit(e));
+        }
+
+        if (addPropertyBtn) {
+            addPropertyBtn.addEventListener('click', () => this.handleAddProperty());
+        }
+
+        // Attach remove handlers
+        this.querySelectorAll('.btn-remove-property').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const index = parseInt((e.target as HTMLElement).dataset.index || '0');
+                this.handleRemoveProperty(index);
+            });
+        });
+    }
+
+    private handleAddProperty(): void {
+        // Create a modal for adding property
+        const modal = document.createElement('div');
+        modal.className = 'property-modal';
+        modal.innerHTML = `
+            <div class="modal-container">
+                <h3>Add Property</h3>
+                <form id="property-form">
+                    <div class="form-group">
+                        <label for="property-name">Property Name *</label>
+                        <input type="text" id="property-name" required placeholder="e.g., Sets, Reps, Pages">
+                    </div>
+                    <div class="form-group">
+                        <label for="property-type">Type *</label>
+                        <select id="property-type" required>
+                            <option value="number">Number</option>
+                            <option value="text">Text</option>
+                            <option value="url">URL</option>
+                            <option value="checkbox">Checkbox</option>
+                            <option value="date">Date</option>
+                            <option value="time">Time</option>
+                            <option value="duration">Duration (minutes)</option>
+                            <option value="rating">Rating (1-5)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                            <input type="checkbox" id="property-required">
+                            <span>Required</span>
+                        </label>
+                    </div>
+                    <div class="modal-actions">
+                        <button type="submit" class="btn btn-primary">Add</button>
+                        <button type="button" class="btn btn-secondary" id="cancel-property-btn">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        `;
+        document.body.appendChild(modal);
+
+        const propertyForm = modal.querySelector('#property-form') as HTMLFormElement;
+        const cancelBtn = modal.querySelector('#cancel-property-btn') as HTMLButtonElement;
+
+        const cleanup = () => {
+            document.body.removeChild(modal);
+        };
+
+        propertyForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const name = (modal.querySelector('#property-name') as HTMLInputElement).value.trim();
+            const valueType = (modal.querySelector('#property-type') as HTMLSelectElement).value as ValueType;
+            const required = (modal.querySelector('#property-required') as HTMLInputElement).checked;
+
+            if (name) {
+                const newProperty: EntityProperty = {
+                    id: generateId(),
+                    name,
+                    valueType,
+                    required
+                };
+                this.properties.push(newProperty);
+                this.updatePropertiesList();
+                cleanup();
+            }
+        });
+
+        cancelBtn.addEventListener('click', cleanup);
+    }
+
+    private handleRemoveProperty(index: number): void {
+        if (confirm('Are you sure you want to remove this property?')) {
+            this.properties.splice(index, 1);
+            this.updatePropertiesList();
+        }
+    }
+
+    private updatePropertiesList(): void {
+        const container = this.querySelector('#properties-list');
+        if (container) {
+            container.innerHTML = this.renderPropertiesList();
+            // Re-attach event listeners for remove buttons
+            container.querySelectorAll('.btn-remove-property').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const index = parseInt((e.target as HTMLElement).dataset.index || '0');
+                    this.handleRemoveProperty(index);
+                });
+            });
         }
     }
 
@@ -111,19 +258,18 @@ export class EntityUpsertFormComponent extends WebComponent {
                 this.store.updateEntity(this.entityId, {
                     name: formData.name,
                     type: formData.type,
-                    categories: hashtags
+                    categories: hashtags,
+                    properties: this.properties
                 });
             } else {
                 // Create new entity
                 const entity = Entity.fromFormData(formData);
+                entity.properties = this.properties;
                 this.store.addEntity(entity);
             }
 
-            // Close the panel
-            const panel = document.querySelector('slide-up-panel');
-            if (panel && typeof (panel as any).close === 'function') {
-                (panel as any).close();
-            }
+            // Close the panel via URL
+            URLStateManager.closePanel();
 
             // Reset form
             (e.target as HTMLFormElement).reset();
