@@ -8,9 +8,6 @@ import { EntityProperty } from '../types/index.js';
  * EntityGrid Web Component for displaying entities in a grid layout on the home page
  */
 export class EntityGridComponent extends WebComponent {
-    private contextMenu: HTMLElement | null = null;
-    private contextMenuEntityId: string | null = null;
-
     render(): void {
         const entities = this.store.getEntities();
 
@@ -23,13 +20,8 @@ export class EntityGridComponent extends WebComponent {
                     </div>
                     <div class="empty-state">No entities yet. Create your first entity to get started!</div>
                 </div>
-                <div class="context-menu" id="entity-context-menu">
-                    <div class="context-menu-item" data-action="edit">Edit</div>
-                    <div class="context-menu-item danger" data-action="delete">Delete</div>
-                </div>
             `;
             this.attachCreateButtonHandler();
-            this.attachContextMenuHandlers();
             return;
         }
 
@@ -48,16 +40,10 @@ export class EntityGridComponent extends WebComponent {
                     ${entitiesHtml}
                 </div>
             </div>
-            <div class="context-menu" id="entity-context-menu">
-                <div class="context-menu-item" data-action="edit">Edit</div>
-                <div class="context-menu-item" data-action="clone">Clone</div>
-                <div class="context-menu-item danger" data-action="delete">Delete</div>
-            </div>
         `;
 
         // Attach event handlers after rendering
         this.attachCreateButtonHandler();
-        this.attachExpandButtonHandlers();
         this.attachCardClickHandlers();
         this.attachContextMenuHandlers();
     }
@@ -73,10 +59,10 @@ export class EntityGridComponent extends WebComponent {
 
         return `
             <div class="entity-card ${isSelected ? 'selected' : ''}" data-entity-id="${entity.id}">
-                <button class="btn-expand-card" data-action="expand" title="View all entries">→</button>
                 <div class="entity-metadata">
                     <div class="entity-card-header">
                         <h3>${escapeHtml(entity.name)}</h3>
+                        <button class="entity-menu-btn" data-entity-id="${entity.id}" data-action="menu">⋮</button>
                     </div>
                     <span class="entity-type ${entity.type.toLowerCase()}">${entity.type}</span>
                     ${entity.categories.length > 0 ? `
@@ -93,6 +79,12 @@ export class EntityGridComponent extends WebComponent {
                         ${mostRecentEntry.notes ? `<div class="recent-entry-notes">${this.formatNotes(mostRecentEntry.notes)}</div>` : ''}
                     </div>
                 ` : ''}
+            </div>
+            <div class="entity-context-menu" id="entity-menu-${entity.id}" style="display: none;">
+                <div class="context-menu-item" data-entity-id="${entity.id}" data-action="log-entry">Log</div>
+                <div class="context-menu-item" data-entity-id="${entity.id}" data-action="edit">Edit</div>
+                <div class="context-menu-item" data-entity-id="${entity.id}" data-action="clone">Clone</div>
+                <div class="context-menu-item danger" data-entity-id="${entity.id}" data-action="delete">Delete</div>
             </div>
         `;
     }
@@ -176,7 +168,7 @@ export class EntityGridComponent extends WebComponent {
         // Step 4: Convert hashtags to clickable filter links (but not in URLs)
         // Match hashtags that are NOT preceded by :/ (to avoid matching URL fragments)
         const hashtagRegex = /(?<!:\/[^\s]*)(^|\s)#([a-zA-Z0-9_]+)/g;
-        formattedNotes = formattedNotes.replace(hashtagRegex, (match, whitespace, tag) => {
+        formattedNotes = formattedNotes.replace(hashtagRegex, (_match, whitespace, tag) => {
             return `${whitespace}<a href="#" class="hashtag" data-tag="${tag}" style="color: var(--primary); text-decoration: none; font-weight: 500;">#${tag}</a>`;
         });
 
@@ -280,12 +272,17 @@ export class EntityGridComponent extends WebComponent {
         }
     }
 
-    private attachExpandButtonHandlers(): void {
-        this.querySelectorAll('.btn-expand-card[data-action="expand"]').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                e.stopPropagation(); // Prevent card click
-                const card = (e.target as HTMLElement).closest('.entity-card') as HTMLElement;
-                const entityId = card?.dataset.entityId;
+    private attachCardClickHandlers(): void {
+        this.querySelectorAll('.entity-card').forEach(card => {
+            card.addEventListener('click', (e) => {
+                const target = e.target as HTMLElement;
+
+                // Don't trigger if clicking on menu button
+                if (target.closest('[data-action="menu"]')) {
+                    return;
+                }
+
+                const entityId = (card as HTMLElement).dataset.entityId;
                 if (entityId) {
                     const entity = this.store.getEntityById(entityId);
                     if (entity) {
@@ -293,18 +290,21 @@ export class EntityGridComponent extends WebComponent {
                     }
                 }
             });
-        });
-    }
 
-    private attachCardClickHandlers(): void {
-        this.querySelectorAll('.entity-card').forEach(card => {
-            card.addEventListener('click', () => {
+            // Right-click to show context menu
+            card.addEventListener('contextmenu', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                const target = e.target as HTMLElement;
+
+                // Don't trigger if clicking on menu button
+                if (target.closest('[data-action="menu"]')) {
+                    return;
+                }
+
                 const entityId = (card as HTMLElement).dataset.entityId;
                 if (entityId) {
-                    const entity = this.store.getEntityById(entityId);
-                    if (entity) {
-                        URLStateManager.openLogEntryPanel(entity.name);
-                    }
+                    this.toggleMenu(entityId, e as MouseEvent);
                 }
             });
         });
@@ -327,56 +327,54 @@ export class EntityGridComponent extends WebComponent {
     }
 
     private attachContextMenuHandlers(): void {
-        this.contextMenu = this.querySelector('#entity-context-menu');
-
-        // Add right-click listeners to entity cards
-        this.querySelectorAll('.entity-card').forEach(card => {
-            card.addEventListener('contextmenu', (e) => {
-                e.preventDefault();
-                const entityId = (card as HTMLElement).dataset.entityId;
+        // Menu button click
+        this.querySelectorAll('[data-action="menu"]').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const target = e.target as HTMLElement;
+                const entityId = target.dataset.entityId;
                 if (entityId) {
-                    this.showContextMenu(e as MouseEvent, entityId);
+                    this.toggleMenu(entityId, e as MouseEvent);
                 }
             });
         });
 
-        // Handle menu item clicks
-        if (this.contextMenu) {
-            this.contextMenu.querySelectorAll('.context-menu-item').forEach(item => {
-                item.addEventListener('click', () => {
-                    const action = (item as HTMLElement).dataset.action;
-                    if (action && this.contextMenuEntityId) {
-                        this.handleContextMenuAction(action, this.contextMenuEntityId);
-                    }
-                    this.hideContextMenu();
-                });
+        // Menu item clicks
+        this.querySelectorAll('.entity-context-menu .context-menu-item').forEach(item => {
+            item.addEventListener('click', (e) => {
+                const target = e.target as HTMLElement;
+                const entityId = target.dataset.entityId;
+                const action = target.dataset.action;
+
+                if (entityId && action) {
+                    this.handleContextMenuAction(action, entityId);
+                }
+                this.hideAllMenus();
             });
-        }
-
-        // Hide context menu when clicking elsewhere
-        document.addEventListener('click', () => this.hideContextMenu());
-        document.addEventListener('contextmenu', (e) => {
-            // Only hide if not right-clicking on an entity card
-            if (!(e.target as HTMLElement).closest('.entity-card')) {
-                this.hideContextMenu();
-            }
         });
+
+        // Click outside to close menus
+        document.addEventListener('click', () => this.hideAllMenus());
     }
 
-    private showContextMenu(e: MouseEvent, entityId: string): void {
-        if (!this.contextMenu) return;
+    private toggleMenu(entityId: string, e: MouseEvent): void {
+        const menu = this.querySelector(`#entity-menu-${entityId}`) as HTMLElement;
+        if (!menu) return;
 
-        this.contextMenuEntityId = entityId;
-        this.contextMenu.classList.add('active');
-        this.contextMenu.style.left = `${e.pageX}px`;
-        this.contextMenu.style.top = `${e.pageY}px`;
+        // Hide all other menus first
+        this.hideAllMenus();
+
+        // Position and show this menu
+        menu.style.display = 'block';
+        menu.style.position = 'fixed';
+        menu.style.left = `${e.clientX}px`;
+        menu.style.top = `${e.clientY}px`;
     }
 
-    private hideContextMenu(): void {
-        if (this.contextMenu) {
-            this.contextMenu.classList.remove('active');
-        }
-        this.contextMenuEntityId = null;
+    private hideAllMenus(): void {
+        this.querySelectorAll('.entity-context-menu').forEach(menu => {
+            (menu as HTMLElement).style.display = 'none';
+        });
     }
 
     private handleContextMenuAction(action: string, entityId: string): void {
@@ -386,6 +384,8 @@ export class EntityGridComponent extends WebComponent {
             this.handleEdit(entityId);
         } else if (action === 'clone') {
             this.handleClone(entityId);
+        } else if (action === 'log-entry') {
+            this.handleLogEntry(entityId);
         }
     }
 
@@ -401,5 +401,12 @@ export class EntityGridComponent extends WebComponent {
         if (!entity) return;
 
         URLStateManager.openCloneEntityPanel(entity.name);
+    }
+
+    private handleLogEntry(entityId: string): void {
+        const entity = this.store.getEntityById(entityId);
+        if (!entity) return;
+
+        URLStateManager.openLogEntryPanel(entity.name);
     }
 }

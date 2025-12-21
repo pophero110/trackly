@@ -491,50 +491,16 @@ form {
   border-color: var(--text-muted);
 }
 
-.entity-card.selected {
-  background: #eff6ff;
-  border-color: var(--primary);
-  box-shadow: 0 0 0 1px var(--primary);
-}
-
 .entity-metadata {
   background: var(--background);
   padding: 16px;
   border-bottom: 1px solid var(--border);
 }
 
-.btn-expand-card {
-  position: absolute;
-  top: 12px;
-  right: 12px;
-  background: var(--background);
-  border: 1px solid var(--border);
-  color: var(--text-secondary);
-  width: 28px;
-  height: 28px;
-  border-radius: 6px;
-  font-size: 1.125rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: var(--transition);
+.entity-card-header {
   display: flex;
   align-items: center;
-  justify-content: center;
-  padding: 0;
-  opacity: 0;
-}
-
-.entity-card:hover .btn-expand-card {
-  opacity: 1;
-}
-
-.btn-expand-card:hover {
-  background: var(--primary);
-  color: white;
-  border-color: var(--primary);
-}
-
-.entity-card-header {
+  justify-content: space-between;
   margin-bottom: 6px;
 }
 
@@ -544,6 +510,24 @@ form {
   color: var(--text-primary);
   margin: 0;
   letter-spacing: -0.025em;
+  flex-grow: 1;
+}
+
+.entity-menu-btn {
+  background: none;
+  border: none;
+  border-radius: 4px;
+  color: var(--text-muted);
+  font-size: 1.25rem;
+  cursor: pointer;
+  padding: 2px 6px;
+  line-height: 1;
+  transition: all 0.2s;
+}
+
+.entity-menu-btn:hover {
+  color: var(--text-primary);
+  background: var(--background);
 }
 
 .entity-stats {
@@ -821,6 +805,7 @@ form {
 .entity-recent-entry {
   padding: 16px;
   background: var(--card-background);
+  position: relative;
 }
 
 .entity-properties-compact {
@@ -870,6 +855,33 @@ form {
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
+}
+
+.btn-log-entry {
+  margin-top: 12px;
+  padding: 6px 12px;
+  background: var(--background);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--primary);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  width: 100%;
+  opacity: 0;
+  transform: translateY(-4px);
+}
+
+.entity-card:hover .btn-log-entry {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.btn-log-entry:hover {
+  background: var(--primary);
+  color: white;
+  border-color: var(--primary);
 }
 
 /* Entity Actions */
@@ -1312,7 +1324,9 @@ slide-up-panel:not(.active) .modal-dialog {
 }
 
 /* Context Menu */
-.context-menu {
+.context-menu,
+.entity-context-menu,
+.entry-context-menu {
   position: fixed;
   background: var(--card-background);
   border: 1px solid var(--border);

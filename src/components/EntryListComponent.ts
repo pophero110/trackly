@@ -257,7 +257,7 @@ export class EntryListComponent extends WebComponent {
         // Step 4: Convert hashtags to clickable filter links (but not in URLs)
         // Match hashtags that are NOT preceded by :/ (to avoid matching URL fragments)
         const hashtagRegex = /(?<!:\/[^\s]*)(^|\s)#([a-zA-Z0-9_]+)/g;
-        formattedNotes = formattedNotes.replace(hashtagRegex, (match, whitespace, tag) => {
+        formattedNotes = formattedNotes.replace(hashtagRegex, (_match, whitespace, tag) => {
             return `${whitespace}<a href="#" class="hashtag" data-tag="${tag}" style="color: var(--primary); text-decoration: none; font-weight: 500;">#${tag}</a>`;
         });
 
