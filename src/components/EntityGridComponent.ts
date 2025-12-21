@@ -152,31 +152,37 @@ export class EntityGridComponent extends WebComponent {
     }
 
     private formatNotes(notes: string): string {
-        let formattedNotes = escapeHtml(notes);
+        // Step 1: Extract and store markdown link patterns with placeholders
+        const linkPatterns: Array<{placeholder: string, html: string}> = [];
 
-        // Convert newlines to <br> tags for proper display
-        formattedNotes = formattedNotes.replace(/\n/g, '<br>');
-
-        // Convert [[title::url]] format to clickable links with titles (truncated for grid)
-        const titleUrlRegex = /\[\[([^\]]+?)::(.+?)\]\]/g;
-        formattedNotes = formattedNotes.replace(titleUrlRegex, (_match, title, url) => {
-            const unescapedUrl = url.replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"');
-            const unescapedTitle = title.replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"');
+        // Extract markdown links [title](url)
+        let tempNotes = notes.replace(/\[([^\]]+?)\]\((.+?)\)/g, (_match, title, url) => {
+            const placeholder = `___LINK_${linkPatterns.length}___`;
             // Truncate title for grid display
-            const displayTitle = unescapedTitle.length > 30 ? unescapedTitle.substring(0, 30) + '...' : unescapedTitle;
-            return `<a href="${unescapedUrl}" target="_blank" rel="noopener noreferrer" style="color: var(--primary); text-decoration: underline;">${displayTitle}</a>`;
+            const displayTitle = title.length > 30 ? title.substring(0, 30) + '...' : title;
+            linkPatterns.push({
+                placeholder,
+                html: `<a href="${url}" target="_blank" rel="noopener noreferrer" style="color: var(--primary); text-decoration: underline;">${displayTitle}</a>`
+            });
+            return placeholder;
         });
 
-        // Convert remaining raw URLs (backwards compatibility)
-        const urlRegex = /(https?:\/\/[^\s]+)/g;
-        formattedNotes = formattedNotes.replace(urlRegex, (url) => {
-            if (formattedNotes.includes(`href="${url}"`)) {
-                return url;
-            }
-            const unescapedUrl = url.replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"');
-            // Show truncated URL for grid
-            const displayUrl = url.length > 30 ? url.substring(0, 30) + '...' : url;
-            return `<a href="${unescapedUrl}" target="_blank" rel="noopener noreferrer" style="color: var(--primary); text-decoration: underline;">${displayUrl}</a>`;
+        // Step 2: Escape HTML
+        let formattedNotes = escapeHtml(tempNotes);
+
+        // Step 3: Convert newlines to <br> tags
+        formattedNotes = formattedNotes.replace(/\n/g, '<br>');
+
+        // Step 4: Convert hashtags to clickable filter links (but not in URLs)
+        // Match hashtags that are NOT preceded by :/ (to avoid matching URL fragments)
+        const hashtagRegex = /(?<!:\/[^\s]*)(^|\s)#([a-zA-Z0-9_]+)/g;
+        formattedNotes = formattedNotes.replace(hashtagRegex, (match, whitespace, tag) => {
+            return `${whitespace}<a href="#" class="hashtag" data-tag="${tag}" style="color: var(--primary); text-decoration: none; font-weight: 500;">#${tag}</a>`;
+        });
+
+        // Step 5: Restore link patterns
+        linkPatterns.forEach(({placeholder, html}) => {
+            formattedNotes = formattedNotes.replace(placeholder, html);
         });
 
         return formattedNotes;

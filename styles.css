@@ -597,6 +597,36 @@ form {
   margin: 0;
 }
 
+/* Hashtag Filter Badge */
+.hashtag-filter-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 6px;
+  background: var(--primary);
+  color: white;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  margin-left: 8px;
+}
+
+.hashtag-filter-badge .clear-hashtag {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 1rem;
+  line-height: 1;
+  padding: 0 2px;
+  cursor: pointer;
+  opacity: 0.8;
+  transition: opacity 0.2s;
+}
+
+.hashtag-filter-badge .clear-hashtag:hover {
+  opacity: 1;
+}
+
 .entity-type.habit {
   background: #dbeafe;
   color: #1e40af;
@@ -963,6 +993,38 @@ form {
   line-height: 1.6;
   margin-top: 0;
   max-width: 70ch;
+}
+
+/* Entry References - URL Links Section */
+.entry-references {
+  padding: 12px 18px;
+  border-top: 1px solid rgba(0, 0, 0, 0.03);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.entry-references:empty {
+  display: none;
+}
+
+.reference-link {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  background: var(--background);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-size: 0.8125rem;
+  color: var(--primary);
+  text-decoration: none;
+  transition: all 0.2s;
+}
+
+.reference-link:hover {
+  background: var(--primary);
+  color: white;
+  transform: translateY(-1px);
 }
 
 /* Entry Attachments - Media Section */

@@ -116,18 +116,22 @@ export async function fetchUrlMetadata(url: string): Promise<{ title: string; ur
 }
 
 /**
- * Extract all URLs from a text string
+ * Extract all URLs from a text string that are NOT already in markdown links
  */
 export function extractUrls(text: string): string[] {
+    // First, remove all markdown links to avoid matching URLs inside them
+    const textWithoutMarkdownLinks = text.replace(/\[([^\]]+?)\]\((.+?)\)/g, '');
+
+    // Now extract URLs from the remaining text
     const urlRegex = /(https?:\/\/[^\s]+)/g;
-    const matches = text.match(urlRegex);
+    const matches = textWithoutMarkdownLinks.match(urlRegex);
     return matches || [];
 }
 
 /**
  * Replace URLs in text with their fetched titles
  * Returns both the processed text and a map of URL -> title
- * Format: [[title::url]] to preserve both title and URL
+ * Format: [title](url) - markdown link format
  */
 export async function replaceUrlsWithTitles(text: string): Promise<{ text: string; urlMap: Map<string, string> }> {
     const urls = extractUrls(text);
@@ -137,18 +141,36 @@ export async function replaceUrlsWithTitles(text: string): Promise<{ text: strin
         return { text, urlMap };
     }
 
+    // Get unique URLs to avoid duplicate fetches
+    const uniqueUrls = Array.from(new Set(urls));
+
     // Fetch all titles in parallel
-    const titlePromises = urls.map(url => fetchUrlMetadata(url));
+    const titlePromises = uniqueUrls.map(url => fetchUrlMetadata(url));
     const results = await Promise.all(titlePromises);
 
-    let processedText = text;
+    // Create URL to title mapping
+    const urlToTitle = new Map<string, string>();
     results.forEach((result, index) => {
-        const url = urls[index];
+        const url = uniqueUrls[index];
+        urlToTitle.set(url, result.title);
         urlMap.set(url, result.title);
-        // Replace URL with format [[title::url]] to preserve both
-        const replacement = `[[${result.title}::${url}]]`;
-        // Use split/join to replace all occurrences safely without regex issues
-        processedText = processedText.split(url).join(replacement);
+    });
+
+    // Replace URLs with placeholders first to avoid nested replacements
+    const placeholders = new Map<string, string>();
+    let processedText = text;
+
+    uniqueUrls.forEach((url, index) => {
+        const placeholder = `___URL_PLACEHOLDER_${index}___`;
+        const title = urlToTitle.get(url) || url;
+        placeholders.set(placeholder, `[${title}](${url})`);
+        // Replace all occurrences of this URL with the placeholder
+        processedText = processedText.split(url).join(placeholder);
+    });
+
+    // Replace all placeholders with markdown links
+    placeholders.forEach((markdown, placeholder) => {
+        processedText = processedText.split(placeholder).join(markdown);
     });
 
     return { text: processedText, urlMap };

@@ -177,6 +177,29 @@ export class URLStateManager {
     }
 
     /**
+     * Get hashtag filter from URL
+     */
+    static getHashtagFilter(): string | null {
+        const params = new URLSearchParams(window.location.search);
+        return params.get('hashtag');
+    }
+
+    /**
+     * Set hashtag filter in URL
+     */
+    static setHashtagFilter(hashtag: string | null): void {
+        const params = new URLSearchParams(window.location.search);
+
+        if (hashtag) {
+            params.set('hashtag', hashtag);
+        } else {
+            params.delete('hashtag');
+        }
+
+        URLStateManager.updateURL(params);
+    }
+
+    /**
      * Close panel
      */
     static closePanel(): void {

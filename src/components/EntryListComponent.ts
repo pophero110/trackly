@@ -19,12 +19,27 @@ export class EntryListComponent extends WebComponent {
             entries = entries.filter(e => e.entityId === selectedEntityId);
         }
 
+        // Filter entries by hashtag if one is selected
+        const hashtagFilter = URLStateManager.getHashtagFilter();
+        if (hashtagFilter) {
+            entries = entries.filter(e => {
+                if (!e.notes) return false;
+                const hashtagRegex = new RegExp(`#${hashtagFilter}\\b`, 'i');
+                return hashtagRegex.test(e.notes);
+            });
+        }
+
         // Get selected entity name for header
         const selectedEntity = selectedEntityId ? this.store.getEntityById(selectedEntityId) : null;
         const headerText = selectedEntity
             ? `${selectedEntity.name}`
             : 'Recent Entries';
         const entityType = selectedEntity ? `<span class="entity-type ${selectedEntity.type.toLowerCase()}">${selectedEntity.type}</span>` : '';
+
+        // Hashtag filter badge
+        const hashtagBadge = hashtagFilter
+            ? `<span class="hashtag-filter-badge">#${hashtagFilter} <button class="clear-hashtag" data-action="clear-hashtag">×</button></span>`
+            : '';
 
         if (entries.length === 0) {
             const emptyMessage = selectedEntity
@@ -38,6 +53,7 @@ export class EntryListComponent extends WebComponent {
                         <div class="section-header-title">
                             <h2>${headerText}</h2>
                             ${entityType}
+                            ${hashtagBadge}
                         </div>
                         <button class="btn btn-primary" id="log-entry-btn">+ Log Entry</button>
                     </div>
@@ -46,6 +62,7 @@ export class EntryListComponent extends WebComponent {
             `;
             this.attachLogEntryButtonHandler();
             this.attachBackButtonHandler();
+            this.attachHashtagClearHandler();
             return;
         }
 
@@ -62,6 +79,7 @@ export class EntryListComponent extends WebComponent {
                     <div class="section-header-title">
                         <h2>${headerText}</h2>
                         ${entityType}
+                        ${hashtagBadge}
                     </div>
                     <button class="btn btn-primary" id="log-entry-btn">+ Log Entry</button>
                 </div>
@@ -76,6 +94,8 @@ export class EntryListComponent extends WebComponent {
         this.attachBackButtonHandler();
         this.attachMenuHandlers();
         this.attachCardClickHandlers();
+        this.attachHashtagHandlers();
+        this.attachHashtagClearHandler();
     }
 
     private renderEntryCard(entry: Entry): string {
@@ -88,6 +108,9 @@ export class EntryListComponent extends WebComponent {
 
         // Notes content
         const notesHtml = entry.notes ? `<div class="entry-notes">${this.formatNotes(entry.notes)}</div>` : '';
+
+        // Extract URLs for reference section
+        const referencesHtml = entry.notes ? this.renderReferences(entry.notes) : '';
 
         // Render custom properties
         const propertiesHtml = entity && entity.properties && entity.properties.length > 0 && entry.propertyValues
@@ -107,6 +130,7 @@ export class EntryListComponent extends WebComponent {
 
         const hasContent = notesHtml;
         const hasAttachments = imagesHtml;
+        const hasReferences = referencesHtml;
 
         return `
             <div class="entry-card" data-entry-id="${entry.id}">
@@ -123,6 +147,11 @@ export class EntryListComponent extends WebComponent {
                         ${notesHtml}
                     </div>
                 ` : ''}
+                ${hasReferences ? `
+                    <div class="entry-references">
+                        ${referencesHtml}
+                    </div>
+                ` : ''}
                 ${hasAttachments ? `
                     <div class="entry-attachments">
                         ${imagesHtml}
@@ -134,6 +163,29 @@ export class EntryListComponent extends WebComponent {
                 <div class="context-menu-item danger" data-entry-id="${entry.id}" data-action="delete">Delete</div>
             </div>
         `;
+    }
+
+    private renderReferences(notes: string): string {
+        const urls: Array<{title: string, url: string}> = [];
+
+        // Extract markdown links [title](url)
+        const markdownRegex = /\[([^\]]+?)\]\((.+?)\)/g;
+        let match;
+        while ((match = markdownRegex.exec(notes)) !== null) {
+            urls.push({ title: match[1], url: match[2] });
+        }
+
+        if (urls.length === 0) {
+            return '';
+        }
+
+        const referenceLinks = urls.map(({title, url}) => {
+            const escapedTitle = escapeHtml(title);
+            const escapedUrl = escapeHtml(url);
+            return `<a href="${escapedUrl}" target="_blank" rel="noopener noreferrer" class="reference-link">${escapedTitle}</a>`;
+        }).join('');
+
+        return referenceLinks;
     }
 
     private renderPropertyValues(properties: EntityProperty[], propertyValues: Record<string, string | number | boolean>, propertyValueDisplays?: Record<string, string>): string {
@@ -183,30 +235,35 @@ export class EntryListComponent extends WebComponent {
     }
 
     private formatNotes(notes: string): string {
-        let formattedNotes = escapeHtml(notes);
+        // Step 1: Extract and store markdown link patterns with placeholders
+        const linkPatterns: Array<{placeholder: string, html: string}> = [];
 
-        // Convert newlines to <br> tags for proper display
-        formattedNotes = formattedNotes.replace(/\n/g, '<br>');
-
-        // First, convert [[title::url]] format to clickable links with titles
-        const titleUrlRegex = /\[\[([^\]]+?)::(.+?)\]\]/g;
-        formattedNotes = formattedNotes.replace(titleUrlRegex, (_match, title, url) => {
-            // Unescape the parts that were escaped by escapeHtml
-            const unescapedUrl = url.replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"');
-            const unescapedTitle = title.replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"');
-            return `<a href="${unescapedUrl}" target="_blank" rel="noopener noreferrer" style="color: var(--primary); text-decoration: underline;">${unescapedTitle}</a>`;
+        // Extract markdown links [title](url)
+        let tempNotes = notes.replace(/\[([^\]]+?)\]\((.+?)\)/g, (_match, title, url) => {
+            const placeholder = `___LINK_${linkPatterns.length}___`;
+            linkPatterns.push({
+                placeholder,
+                html: `<a href="${url}" target="_blank" rel="noopener noreferrer" style="color: var(--primary); text-decoration: underline;">${title}</a>`
+            });
+            return placeholder;
         });
 
-        // Then, convert any remaining raw URLs to clickable links (for backwards compatibility)
-        const urlRegex = /(https?:\/\/[^\s]+)/g;
-        formattedNotes = formattedNotes.replace(urlRegex, (url) => {
-            // Skip if this URL is already part of a link (check if preceded by href=")
-            if (formattedNotes.includes(`href="${url}"`)) {
-                return url;
-            }
-            // Unescape the URL that was escaped by escapeHtml
-            const unescapedUrl = url.replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"');
-            return `<a href="${unescapedUrl}" target="_blank" rel="noopener noreferrer" style="color: var(--primary); text-decoration: underline;">${url}</a>`;
+        // Step 2: Escape HTML
+        let formattedNotes = escapeHtml(tempNotes);
+
+        // Step 3: Convert newlines to <br> tags
+        formattedNotes = formattedNotes.replace(/\n/g, '<br>');
+
+        // Step 4: Convert hashtags to clickable filter links (but not in URLs)
+        // Match hashtags that are NOT preceded by :/ (to avoid matching URL fragments)
+        const hashtagRegex = /(?<!:\/[^\s]*)(^|\s)#([a-zA-Z0-9_]+)/g;
+        formattedNotes = formattedNotes.replace(hashtagRegex, (match, whitespace, tag) => {
+            return `${whitespace}<a href="#" class="hashtag" data-tag="${tag}" style="color: var(--primary); text-decoration: none; font-weight: 500;">#${tag}</a>`;
+        });
+
+        // Step 5: Restore link patterns
+        linkPatterns.forEach(({placeholder, html}) => {
+            formattedNotes = formattedNotes.replace(placeholder, html);
         });
 
         return formattedNotes;
@@ -410,6 +467,29 @@ export class EntryListComponent extends WebComponent {
         } catch (error) {
             const message = error instanceof Error ? error.message : 'Unknown error';
             alert(`Error deleting entry: ${message}`);
+        }
+    }
+
+    private attachHashtagHandlers(): void {
+        this.querySelectorAll('.hashtag').forEach(hashtag => {
+            hashtag.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                const target = e.target as HTMLElement;
+                const tag = target.dataset.tag;
+                if (tag) {
+                    URLStateManager.setHashtagFilter(tag);
+                }
+            });
+        });
+    }
+
+    private attachHashtagClearHandler(): void {
+        const clearBtn = this.querySelector('[data-action="clear-hashtag"]');
+        if (clearBtn) {
+            clearBtn.addEventListener('click', () => {
+                URLStateManager.setHashtagFilter(null);
+            });
         }
     }
 }
