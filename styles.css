@@ -340,12 +340,6 @@ form {
   color: var(--text-muted);
 }
 
-/* Notes textarea - takes most of the vertical space */
-#entry-notes {
-  min-height: 60vh;
-  resize: vertical;
-}
-
 /* Buttons - Minimal */
 .btn {
   padding: 8px 16px;
