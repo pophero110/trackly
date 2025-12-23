@@ -1624,10 +1624,7 @@ slide-up-panel:not(.active) .modal-dialog {
 }
 
 .image-dropdown-menu {
-  position: absolute;
-  top: 100%;
-  left: 0;
-  margin-top: 4px;
+  position: fixed;
   background: var(--card-background);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);

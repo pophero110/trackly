@@ -293,7 +293,16 @@ export class EntryFormComponent extends WebComponent {
             imageMenuBtn.addEventListener('click', (e) => {
                 e.stopPropagation();
                 const isVisible = imageMenu.style.display === 'block';
-                imageMenu.style.display = isVisible ? 'none' : 'block';
+
+                if (!isVisible) {
+                    // Position the menu below the button
+                    const rect = imageMenuBtn.getBoundingClientRect();
+                    imageMenu.style.top = `${rect.bottom + 4}px`;
+                    imageMenu.style.left = `${rect.left}px`;
+                    imageMenu.style.display = 'block';
+                } else {
+                    imageMenu.style.display = 'none';
+                }
             });
 
             // Close menu when clicking outside
