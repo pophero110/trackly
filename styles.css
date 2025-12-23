@@ -465,6 +465,11 @@ form {
   margin-top: 12px;
 }
 
+.image-preview:empty {
+  margin-top: 0;
+  display: none;
+}
+
 .image-preview-item {
   position: relative;
   aspect-ratio: 1;
