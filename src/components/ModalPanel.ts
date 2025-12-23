@@ -49,6 +49,17 @@ export class ModalPanel extends HTMLElement {
                 if (zenOverlay && zenOverlay.style.display !== 'none') {
                     return; // Let zen mode handle the escape
                 }
+
+                // Don't close if user is typing in an input or textarea
+                const activeElement = document.activeElement;
+                if (activeElement && (
+                    activeElement.tagName === 'INPUT' ||
+                    activeElement.tagName === 'TEXTAREA' ||
+                    activeElement.tagName === 'SELECT'
+                )) {
+                    return; // Let the input field handle the escape (blur)
+                }
+
                 this.tryClose();
             }
         });
