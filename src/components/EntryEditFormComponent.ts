@@ -69,12 +69,15 @@ export class EntryEditFormComponent extends WebComponent {
                 </div>
 
                 <div class="form-group">
-                    <label for="entry-notes">Notes (optional)</label>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                        <label for="entry-notes" style="margin-bottom: 0;">Notes</label>
+                        <button type="button" id="zen-mode-btn" class="btn-zen-mode" title="Zen mode (focus on writing)">🧘</button>
+                    </div>
                     <textarea id="entry-notes" rows="3">${escapeHtml(this.entry.notes || '')}</textarea>
                 </div>
 
                 <div class="form-group">
-                    <label>Images (optional)</label>
+                    <label>Images</label>
                     <div class="image-controls">
                         <input type="file" id="image-upload" accept="image/*" style="display: none;" multiple>
                         <button type="button" class="btn btn-secondary" id="upload-image-btn">📁 Upload Image</button>
@@ -85,6 +88,16 @@ export class EntryEditFormComponent extends WebComponent {
 
                 <button type="submit" class="btn btn-primary">Update Entry</button>
             </form>
+
+            <div id="zen-mode-overlay" class="zen-mode-overlay" style="display: none;">
+                <div class="zen-mode-container">
+                    <div class="zen-mode-header">
+                        <span class="zen-mode-title">Notes</span>
+                        <button type="button" id="zen-mode-close" class="btn-zen-close" title="Exit zen mode (Esc)">✕</button>
+                    </div>
+                    <textarea id="zen-mode-textarea" class="zen-mode-textarea" placeholder="Write your notes here..."></textarea>
+                </div>
+            </div>
         `;
 
         // Render existing images
@@ -255,9 +268,19 @@ export class EntryEditFormComponent extends WebComponent {
         const uploadBtn = this.querySelector('#upload-image-btn') as HTMLButtonElement;
         const captureBtn = this.querySelector('#capture-image-btn') as HTMLButtonElement;
         const fileInput = this.querySelector('#image-upload') as HTMLInputElement;
+        const zenModeBtn = this.querySelector('#zen-mode-btn') as HTMLButtonElement;
+        const zenModeClose = this.querySelector('#zen-mode-close') as HTMLButtonElement;
 
         if (form) {
             form.addEventListener('submit', (e) => this.handleSubmit(e));
+        }
+
+        if (zenModeBtn) {
+            zenModeBtn.addEventListener('click', () => this.openZenMode());
+        }
+
+        if (zenModeClose) {
+            zenModeClose.addEventListener('click', () => this.closeZenMode());
         }
 
         // Image upload/capture handlers
@@ -454,6 +477,12 @@ export class EntryEditFormComponent extends WebComponent {
     }
 
     private isUrl(text: string): boolean {
+        // Check if it starts with www.
+        if (text.startsWith('www.')) {
+            return true;
+        }
+
+        // Check if it's a valid URL with http(s) protocol
         try {
             const url = new URL(text);
             return url.protocol === 'http:' || url.protocol === 'https:';
@@ -471,8 +500,10 @@ export class EntryEditFormComponent extends WebComponent {
                 if (prop.valueType === 'url' && propertyValues[prop.id]) {
                     const url = String(propertyValues[prop.id]);
                     if (this.isUrl(url)) {
-                        const promise = fetchUrlMetadata(url).then(metadata => {
-                            if (metadata.title && metadata.title !== url) {
+                        // Normalize www URLs to include https://
+                        const normalizedUrl = url.startsWith('www.') ? 'https://' + url : url;
+                        const promise = fetchUrlMetadata(normalizedUrl).then(metadata => {
+                            if (metadata.title && metadata.title !== normalizedUrl) {
                                 propertyValueDisplays[prop.id] = metadata.title;
                             }
                         }).catch(error => {
@@ -493,6 +524,48 @@ export class EntryEditFormComponent extends WebComponent {
         } catch (error) {
             console.error('Failed to fetch property URL titles:', error);
         }
+    }
+
+    private openZenMode(): void {
+        const notesTextarea = this.querySelector('#entry-notes') as HTMLTextAreaElement;
+        const zenOverlay = this.querySelector('#zen-mode-overlay') as HTMLElement;
+        const zenTextarea = this.querySelector('#zen-mode-textarea') as HTMLTextAreaElement;
+
+        if (!notesTextarea || !zenOverlay || !zenTextarea) return;
+
+        // Copy content to zen mode textarea
+        zenTextarea.value = notesTextarea.value;
+
+        // Show zen mode overlay
+        zenOverlay.style.display = 'flex';
+
+        // Focus on zen mode textarea
+        setTimeout(() => zenTextarea.focus(), 100);
+
+        // Add escape key listener with stopPropagation to prevent closing the modal
+        const handleEscape = (e: KeyboardEvent) => {
+            if (e.key === 'Escape') {
+                e.preventDefault();
+                e.stopPropagation();
+                this.closeZenMode();
+                document.removeEventListener('keydown', handleEscape);
+            }
+        };
+        document.addEventListener('keydown', handleEscape, true);
+    }
+
+    private closeZenMode(): void {
+        const notesTextarea = this.querySelector('#entry-notes') as HTMLTextAreaElement;
+        const zenOverlay = this.querySelector('#zen-mode-overlay') as HTMLElement;
+        const zenTextarea = this.querySelector('#zen-mode-textarea') as HTMLTextAreaElement;
+
+        if (!notesTextarea || !zenOverlay || !zenTextarea) return;
+
+        // Copy content back to notes textarea
+        notesTextarea.value = zenTextarea.value;
+
+        // Hide zen mode overlay
+        zenOverlay.style.display = 'none';
     }
 
     private async handleSubmit(e: Event): Promise<void> {

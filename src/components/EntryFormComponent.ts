@@ -10,6 +10,9 @@ import { getValueTypeInputConfig } from '../config/valueTypeConfig.js';
  */
 export class EntryFormComponent extends WebComponent {
     private images: string[] = [];
+    private static readonly DRAFT_KEY = 'trackly_entry_draft';
+    private autoSaveTimeout: number | null = null;
+    private skipAutoSave: boolean = false;
 
     render(): void {
         const entities = this.store.getEntities();
@@ -25,6 +28,10 @@ export class EntryFormComponent extends WebComponent {
         const valueInputHtml = selectedEntity && selectedEntity.valueType ? this.renderValueInput(selectedEntity.valueType, selectedEntity.options) : '';
 
         this.innerHTML = `
+            <div id="draft-indicator" class="draft-indicator" style="display: none;">
+                <span>📝 Draft saved</span>
+                <button type="button" id="clear-draft-btn" class="btn-clear-draft">Clear draft</button>
+            </div>
             <form id="entry-form">
                 <div class="form-group">
                     <label for="entry-entity">Select Entity *</label>
@@ -43,12 +50,15 @@ export class EntryFormComponent extends WebComponent {
                 </div>
 
                 <div class="form-group">
-                    <label for="entry-notes">Notes (optional)</label>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                        <label for="entry-notes" style="margin-bottom: 0;">Notes</label>
+                        <button type="button" id="zen-mode-btn" class="btn-zen-mode" title="Zen mode (focus on writing)">🧘</button>
+                    </div>
                     <textarea id="entry-notes" rows="3"></textarea>
                 </div>
 
                 <div class="form-group">
-                    <label>Images (optional)</label>
+                    <label>Images</label>
                     <div class="image-controls">
                         <input type="file" id="image-upload" accept="image/*" style="display: none;" multiple>
                         <button type="button" class="btn btn-secondary" id="upload-image-btn">📁 Upload Image</button>
@@ -59,9 +69,20 @@ export class EntryFormComponent extends WebComponent {
 
                 <button type="submit" class="btn btn-primary">Log Entry</button>
             </form>
+
+            <div id="zen-mode-overlay" class="zen-mode-overlay" style="display: none;">
+                <div class="zen-mode-container">
+                    <div class="zen-mode-header">
+                        <span class="zen-mode-title">Notes</span>
+                        <button type="button" id="zen-mode-close" class="btn-zen-close" title="Exit zen mode (Esc)">✕</button>
+                    </div>
+                    <textarea id="zen-mode-textarea" class="zen-mode-textarea" placeholder="Write your notes here..."></textarea>
+                </div>
+            </div>
         `;
 
         this.attachEventListeners();
+        this.restoreDraft();
     }
 
     private renderValueInput(valueType: ValueType, entityOptions?: Array<{value: string; label: string}>): string {
@@ -201,9 +222,27 @@ export class EntryFormComponent extends WebComponent {
         const uploadBtn = this.querySelector('#upload-image-btn') as HTMLButtonElement;
         const captureBtn = this.querySelector('#capture-image-btn') as HTMLButtonElement;
         const fileInput = this.querySelector('#image-upload') as HTMLInputElement;
+        const clearDraftBtn = this.querySelector('#clear-draft-btn') as HTMLButtonElement;
+        const zenModeBtn = this.querySelector('#zen-mode-btn') as HTMLButtonElement;
+        const zenModeClose = this.querySelector('#zen-mode-close') as HTMLButtonElement;
 
         if (form) {
             form.addEventListener('submit', (e) => this.handleSubmit(e));
+            // Auto-save on any input change
+            form.addEventListener('input', () => this.scheduleAutoSave());
+            form.addEventListener('change', () => this.scheduleAutoSave());
+        }
+
+        if (clearDraftBtn) {
+            clearDraftBtn.addEventListener('click', () => this.clearDraft());
+        }
+
+        if (zenModeBtn) {
+            zenModeBtn.addEventListener('click', () => this.openZenMode());
+        }
+
+        if (zenModeClose) {
+            zenModeClose.addEventListener('click', () => this.closeZenMode());
         }
 
         if (entitySelect) {
@@ -217,6 +256,7 @@ export class EntryFormComponent extends WebComponent {
                     if (selectedEntity && selectedEntity.valueType) {
                         valueContainer.innerHTML = this.renderValueInput(selectedEntity.valueType, selectedEntity.options);
                         this.attachRangeListener();
+                        this.restoreDraftValue();
                     } else {
                         valueContainer.innerHTML = '';
                     }
@@ -226,6 +266,7 @@ export class EntryFormComponent extends WebComponent {
                     propertiesContainer.innerHTML = selectedEntity.properties && selectedEntity.properties.length > 0
                         ? this.renderPropertyInputs(selectedEntity.properties)
                         : '';
+                    this.restoreDraftProperties();
                 }
             });
         }
@@ -404,6 +445,12 @@ export class EntryFormComponent extends WebComponent {
     }
 
     private isUrl(text: string): boolean {
+        // Check if it starts with www.
+        if (text.startsWith('www.')) {
+            return true;
+        }
+
+        // Check if it's a valid URL with http(s) protocol
         try {
             const url = new URL(text);
             return url.protocol === 'http:' || url.protocol === 'https:';
@@ -414,9 +461,11 @@ export class EntryFormComponent extends WebComponent {
 
     private async fetchAndUpdateTitle(entryId: string, url: string): Promise<void> {
         try {
-            const metadata = await fetchUrlMetadata(url);
+            // Normalize www URLs to include https://
+            const normalizedUrl = url.startsWith('www.') ? 'https://' + url : url;
+            const metadata = await fetchUrlMetadata(normalizedUrl);
             // Only update if we got a meaningful title
-            if (metadata.title && metadata.title !== url) {
+            if (metadata.title && metadata.title !== normalizedUrl) {
                 this.store.updateEntry(entryId, { valueDisplay: metadata.title });
             }
         } catch (error) {
@@ -455,8 +504,10 @@ export class EntryFormComponent extends WebComponent {
                 if (prop.valueType === 'url' && propertyValues[prop.id]) {
                     const url = String(propertyValues[prop.id]);
                     if (this.isUrl(url)) {
-                        const promise = fetchUrlMetadata(url).then(metadata => {
-                            if (metadata.title && metadata.title !== url) {
+                        // Normalize www URLs to include https://
+                        const normalizedUrl = url.startsWith('www.') ? 'https://' + url : url;
+                        const promise = fetchUrlMetadata(normalizedUrl).then(metadata => {
+                            if (metadata.title && metadata.title !== normalizedUrl) {
                                 propertyValueDisplays[prop.id] = metadata.title;
                             }
                         }).catch(error => {
@@ -477,6 +528,231 @@ export class EntryFormComponent extends WebComponent {
         } catch (error) {
             console.error('Failed to fetch property URL titles:', error);
         }
+    }
+
+    private openZenMode(): void {
+        const notesTextarea = this.querySelector('#entry-notes') as HTMLTextAreaElement;
+        const zenOverlay = this.querySelector('#zen-mode-overlay') as HTMLElement;
+        const zenTextarea = this.querySelector('#zen-mode-textarea') as HTMLTextAreaElement;
+
+        if (!notesTextarea || !zenOverlay || !zenTextarea) return;
+
+        // Copy content to zen mode textarea
+        zenTextarea.value = notesTextarea.value;
+
+        // Show zen mode overlay
+        zenOverlay.style.display = 'flex';
+
+        // Focus on zen mode textarea
+        setTimeout(() => zenTextarea.focus(), 100);
+
+        // Add escape key listener with stopPropagation to prevent closing the modal
+        const handleEscape = (e: KeyboardEvent) => {
+            if (e.key === 'Escape') {
+                e.preventDefault();
+                e.stopPropagation();
+                this.closeZenMode();
+                document.removeEventListener('keydown', handleEscape);
+            }
+        };
+        document.addEventListener('keydown', handleEscape, true);
+    }
+
+    private closeZenMode(): void {
+        const notesTextarea = this.querySelector('#entry-notes') as HTMLTextAreaElement;
+        const zenOverlay = this.querySelector('#zen-mode-overlay') as HTMLElement;
+        const zenTextarea = this.querySelector('#zen-mode-textarea') as HTMLTextAreaElement;
+
+        if (!notesTextarea || !zenOverlay || !zenTextarea) return;
+
+        // Copy content back to notes textarea
+        notesTextarea.value = zenTextarea.value;
+
+        // Hide zen mode overlay
+        zenOverlay.style.display = 'none';
+
+        // Trigger auto-save
+        this.scheduleAutoSave();
+    }
+
+    private scheduleAutoSave(): void {
+        // Skip if auto-save is disabled (e.g., during clear draft)
+        if (this.skipAutoSave) {
+            return;
+        }
+
+        // Clear existing timeout
+        if (this.autoSaveTimeout !== null) {
+            window.clearTimeout(this.autoSaveTimeout);
+        }
+
+        // Schedule auto-save after 500ms of inactivity
+        this.autoSaveTimeout = window.setTimeout(() => {
+            this.saveDraft();
+        }, 500);
+    }
+
+    private saveDraft(): void {
+        const entitySelect = this.querySelector('#entry-entity') as HTMLSelectElement;
+        const valueInput = this.querySelector('#entry-value') as HTMLInputElement;
+        const notesInput = this.querySelector('#entry-notes') as HTMLTextAreaElement;
+
+        // Don't save if form is empty
+        if (!entitySelect?.value && !notesInput?.value) {
+            return;
+        }
+
+        const draft = {
+            entityId: entitySelect?.value || '',
+            value: valueInput?.value || '',
+            valueChecked: (valueInput as HTMLInputElement)?.checked || false,
+            notes: notesInput?.value || '',
+            images: this.images,
+            propertyValues: this.collectPropertyValues(),
+            timestamp: Date.now()
+        };
+
+        localStorage.setItem(EntryFormComponent.DRAFT_KEY, JSON.stringify(draft));
+        this.showDraftIndicator();
+    }
+
+    private collectPropertyValues(): Record<string, any> {
+        const propertyValues: Record<string, any> = {};
+        const propertyInputs = this.querySelectorAll('[id^="property-"]');
+
+        propertyInputs.forEach(input => {
+            const htmlInput = input as HTMLInputElement;
+            const propId = htmlInput.id.replace('property-', '');
+
+            if (htmlInput.type === 'checkbox') {
+                propertyValues[propId] = htmlInput.checked;
+            } else {
+                propertyValues[propId] = htmlInput.value;
+            }
+        });
+
+        return propertyValues;
+    }
+
+    private restoreDraft(): void {
+        const draftJson = localStorage.getItem(EntryFormComponent.DRAFT_KEY);
+        if (!draftJson) return;
+
+        try {
+            const draft = JSON.parse(draftJson);
+
+            // Restore entity selection
+            const entitySelect = this.querySelector('#entry-entity') as HTMLSelectElement;
+            if (entitySelect && draft.entityId) {
+                entitySelect.value = draft.entityId;
+                // Trigger change event to render value input and properties
+                entitySelect.dispatchEvent(new Event('change'));
+            }
+
+            // Restore notes
+            const notesInput = this.querySelector('#entry-notes') as HTMLTextAreaElement;
+            if (notesInput && draft.notes) {
+                notesInput.value = draft.notes;
+            }
+
+            // Restore images
+            if (draft.images && draft.images.length > 0) {
+                this.images = draft.images;
+                this.renderImagePreview();
+            }
+
+            // Show draft indicator
+            this.showDraftIndicator();
+
+            // Restore value and properties after entity change event completes
+            setTimeout(() => {
+                this.restoreDraftValue(draft);
+                this.restoreDraftProperties(draft);
+            }, 0);
+        } catch (error) {
+            console.error('Failed to restore draft:', error);
+        }
+    }
+
+    private restoreDraftValue(draft?: any): void {
+        if (!draft) {
+            const draftJson = localStorage.getItem(EntryFormComponent.DRAFT_KEY);
+            if (!draftJson) return;
+            draft = JSON.parse(draftJson);
+        }
+
+        const valueInput = this.querySelector('#entry-value') as HTMLInputElement;
+        if (!valueInput) return;
+
+        if (valueInput.type === 'checkbox') {
+            valueInput.checked = draft.valueChecked || false;
+        } else if (valueInput.type === 'range') {
+            valueInput.value = draft.value || '';
+            const rangeDisplay = this.querySelector('#range-value-display');
+            if (rangeDisplay) {
+                rangeDisplay.textContent = draft.value || '';
+            }
+        } else {
+            valueInput.value = draft.value || '';
+        }
+    }
+
+    private restoreDraftProperties(draft?: any): void {
+        if (!draft) {
+            const draftJson = localStorage.getItem(EntryFormComponent.DRAFT_KEY);
+            if (!draftJson) return;
+            draft = JSON.parse(draftJson);
+        }
+
+        if (!draft.propertyValues) return;
+
+        Object.keys(draft.propertyValues).forEach(propId => {
+            const input = this.querySelector(`#property-${propId}`) as HTMLInputElement;
+            if (input) {
+                if (input.type === 'checkbox') {
+                    input.checked = draft.propertyValues[propId];
+                } else {
+                    input.value = draft.propertyValues[propId];
+                }
+            }
+        });
+    }
+
+    private showDraftIndicator(): void {
+        const indicator = this.querySelector('#draft-indicator') as HTMLElement;
+        if (indicator) {
+            indicator.style.display = 'flex';
+        }
+    }
+
+    private hideDraftIndicator(): void {
+        const indicator = this.querySelector('#draft-indicator') as HTMLElement;
+        if (indicator) {
+            indicator.style.display = 'none';
+        }
+    }
+
+    private clearDraft(): void {
+        // Disable auto-save temporarily
+        this.skipAutoSave = true;
+
+        localStorage.removeItem(EntryFormComponent.DRAFT_KEY);
+        this.hideDraftIndicator();
+
+        // Reset form
+        const form = this.querySelector('#entry-form') as HTMLFormElement;
+        if (form) {
+            form.reset();
+        }
+
+        // Clear images
+        this.images = [];
+        this.renderImagePreview();
+
+        // Re-enable auto-save after a short delay
+        setTimeout(() => {
+            this.skipAutoSave = false;
+        }, 100);
     }
 
     private async handleSubmit(e: Event): Promise<void> {
@@ -622,10 +898,8 @@ export class EntryFormComponent extends WebComponent {
             // Close the panel via URL
             URLStateManager.closePanel();
 
-            // Reset form and images
-            (e.target as HTMLFormElement).reset();
-            this.images = [];
-            this.renderImagePreview();
+            // Clear draft
+            this.clearDraft();
         } catch (error) {
             const message = error instanceof Error ? error.message : 'Unknown error';
             alert(`Error logging entry: ${message}`);

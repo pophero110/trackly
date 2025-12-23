@@ -78,7 +78,11 @@ export class EntityGridComponent extends WebComponent {
                         ${entity.properties && entity.properties.length > 0 && mostRecentEntry.propertyValues ? this.renderPropertyValues(entity.properties, mostRecentEntry.propertyValues, mostRecentEntry.propertyValueDisplays) : ''}
                         ${mostRecentEntry.notes ? `<div class="recent-entry-notes">${this.formatNotes(mostRecentEntry.notes)}</div>` : ''}
                     </div>
-                ` : ''}
+                ` : `
+                    <div class="entity-recent-entry">
+                        <div class="entity-no-entries">No entries yet</div>
+                    </div>
+                `}
             </div>
             <div class="entity-context-menu" id="entity-menu-${entity.id}" style="display: none;">
                 <div class="context-menu-item" data-entity-id="${entity.id}" data-action="log-entry">Log</div>
