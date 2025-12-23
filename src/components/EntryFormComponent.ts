@@ -58,12 +58,17 @@ export class EntryFormComponent extends WebComponent {
                 </div>
 
                 <div class="form-group">
-                    <label>Images</label>
-                    <div class="image-controls">
-                        <input type="file" id="image-upload" accept="image/*" style="display: none;" multiple>
-                        <button type="button" class="btn btn-secondary" id="upload-image-btn">📁 Upload Image</button>
-                        <button type="button" class="btn btn-secondary" id="capture-image-btn">📷 Take Photo</button>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                        <label style="margin-bottom: 0;">Images</label>
+                        <div style="position: relative;">
+                            <button type="button" id="image-menu-btn" class="btn-zen-mode" title="Add images">📎</button>
+                            <div id="image-menu" class="context-menu" style="display: none; top: 100%; right: 0; margin-top: 4px;">
+                                <div class="context-menu-item" id="upload-image-menu-item">📁 Upload Image</div>
+                                <div class="context-menu-item" id="capture-image-menu-item">📷 Take Photo</div>
+                            </div>
+                        </div>
                     </div>
+                    <input type="file" id="image-upload" accept="image/*" style="display: none;" multiple>
                     <div id="image-preview" class="image-preview"></div>
                 </div>
 
@@ -222,8 +227,10 @@ export class EntryFormComponent extends WebComponent {
     protected attachEventListeners(): void {
         const form = this.querySelector('#entry-form') as HTMLFormElement;
         const entitySelect = this.querySelector('#entry-entity') as HTMLSelectElement;
-        const uploadBtn = this.querySelector('#upload-image-btn') as HTMLButtonElement;
-        const captureBtn = this.querySelector('#capture-image-btn') as HTMLButtonElement;
+        const imageMenuBtn = this.querySelector('#image-menu-btn') as HTMLButtonElement;
+        const imageMenu = this.querySelector('#image-menu') as HTMLElement;
+        const uploadMenuItem = this.querySelector('#upload-image-menu-item') as HTMLElement;
+        const captureMenuItem = this.querySelector('#capture-image-menu-item') as HTMLElement;
         const fileInput = this.querySelector('#image-upload') as HTMLInputElement;
         const clearDraftBtn = this.querySelector('#clear-draft-btn') as HTMLButtonElement;
         const zenModeBtn = this.querySelector('#zen-mode-btn') as HTMLButtonElement;
@@ -282,19 +289,40 @@ export class EntryFormComponent extends WebComponent {
             });
         }
 
-        // Image upload/capture handlers
-        if (uploadBtn) {
-            uploadBtn.addEventListener('click', () => {
+        // Image menu handlers
+        if (imageMenuBtn && imageMenu) {
+            imageMenuBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const isVisible = imageMenu.style.display === 'block';
+                imageMenu.style.display = isVisible ? 'none' : 'block';
+            });
+
+            // Close menu when clicking outside
+            document.addEventListener('click', (e) => {
+                if (imageMenu.style.display === 'block' &&
+                    !imageMenu.contains(e.target as Node) &&
+                    e.target !== imageMenuBtn) {
+                    imageMenu.style.display = 'none';
+                }
+            });
+        }
+
+        if (uploadMenuItem) {
+            uploadMenuItem.addEventListener('click', () => {
                 fileInput?.click();
+                if (imageMenu) imageMenu.style.display = 'none';
+            });
+        }
+
+        if (captureMenuItem) {
+            captureMenuItem.addEventListener('click', () => {
+                this.handleCameraCapture();
+                if (imageMenu) imageMenu.style.display = 'none';
             });
         }
 
         if (fileInput) {
             fileInput.addEventListener('change', (e) => this.handleImageUpload(e));
-        }
-
-        if (captureBtn) {
-            captureBtn.addEventListener('click', () => this.handleCameraCapture());
         }
 
         // Attach range input listener for initial render
