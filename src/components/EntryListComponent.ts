@@ -417,6 +417,28 @@ export class EntryListComponent extends WebComponent {
                     URLStateManager.openEditEntryPanel(entryId);
                 }
             });
+
+            // Right-click to show context menu
+            card.addEventListener('contextmenu', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                const target = e.target as HTMLElement;
+
+                // Don't trigger if clicking on menu button
+                if (target.closest('[data-action="menu"]')) {
+                    return;
+                }
+
+                // Don't trigger if clicking on a link
+                if (target.tagName === 'A' || target.closest('a')) {
+                    return;
+                }
+
+                const entryId = (card as HTMLElement).dataset.entryId;
+                if (entryId) {
+                    this.toggleMenu(entryId, e as MouseEvent);
+                }
+            });
         });
     }
 
@@ -464,9 +486,9 @@ export class EntryListComponent extends WebComponent {
 
         // Position and show this menu
         menu.style.display = 'block';
-        menu.style.position = 'absolute';
-        menu.style.left = `${e.pageX - 120}px`;
-        menu.style.top = `${e.pageY + 5}px`;
+        menu.style.position = 'fixed';
+        menu.style.left = `${e.clientX}px`;
+        menu.style.top = `${e.clientY}px`;
     }
 
     private hideAllMenus(): void {
