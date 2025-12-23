@@ -2,6 +2,7 @@ import { WebComponent } from './WebComponent.js';
 import { Entry } from '../models/Entry.js';
 import { ValueType, EntityProperty } from '../types/index.js';
 import { escapeHtml, extractUrls, replaceUrlsWithTitles, fetchUrlMetadata } from '../utils/helpers.js';
+import { URLStateManager } from '../utils/urlState.js';
 import { getValueTypeInputConfig } from '../config/valueTypeConfig.js';
 
 /**
@@ -12,44 +13,18 @@ export class EntryEditFormComponent extends WebComponent {
     private entry: Entry | null = null;
     private images: string[] = [];
     private hasUnsavedChanges: boolean = false;
-    private autoSaveTimeout: number | null = null;
-    private isAutoSaving: boolean = false;
 
     connectedCallback(): void {
         this.unsubscribe = this.store.subscribe(() => {
-            // Don't re-render if we're in the middle of auto-saving
-            // This prevents the form from resetting while user is typing
-            if (this.entry && !this.isAutoSaving) {
-                // Update the local entry reference to reflect store changes
-                if (this.entryId) {
-                    const entries = this.store.getEntries();
-                    const foundEntry = entries.find(e => e.id === this.entryId);
-                    if (foundEntry) {
-                        this.entry = foundEntry;
-                    }
-                }
+            // Only re-render if entry is already set
+            if (this.entry) {
                 this.render();
             }
         });
         // Don't auto-render, wait for setEntry()
     }
 
-    disconnectedCallback(): void {
-        // Save any pending changes when component is removed
-        if (this.autoSaveTimeout !== null) {
-            window.clearTimeout(this.autoSaveTimeout);
-            this.autoSave();
-        }
-        super.disconnectedCallback();
-    }
-
-    async setEntry(entryId: string): Promise<void> {
-        // If there's a pending auto-save, wait for it to complete
-        if (this.autoSaveTimeout !== null) {
-            window.clearTimeout(this.autoSaveTimeout);
-            await this.autoSave();
-        }
-
+    setEntry(entryId: string): void {
         this.entryId = entryId;
         const entries = this.store.getEntries();
         const foundEntry = entries.find(e => e.id === entryId);
@@ -107,6 +82,7 @@ export class EntryEditFormComponent extends WebComponent {
                 <div id="image-preview" class="image-preview"></div>
 
                 <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">Update Entry</button>
                     <div class="action-menu-buttons">
                         <div style="position: relative;">
                             <button type="button" id="image-menu-btn" class="btn-action-menu" title="Add images">📎</button>
@@ -307,17 +283,22 @@ export class EntryEditFormComponent extends WebComponent {
         const zenModeClose = this.querySelector('#zen-mode-close') as HTMLButtonElement;
 
         if (form) {
-            // Remove submit handler, we'll auto-save instead
-            form.addEventListener('submit', (e) => {
-                e.preventDefault(); // Prevent form submission
-            });
+            form.addEventListener('submit', (e) => this.handleSubmit(e));
 
-            // Auto-save on form changes
+            // Track form changes
             form.addEventListener('input', () => {
-                this.scheduleAutoSave();
+                this.hasUnsavedChanges = true;
             });
             form.addEventListener('change', () => {
-                this.scheduleAutoSave();
+                this.hasUnsavedChanges = true;
+            });
+
+            // Add Cmd+Enter keyboard shortcut to submit
+            form.addEventListener('keydown', (e) => {
+                if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
+                    e.preventDefault();
+                    form.requestSubmit();
+                }
             });
         }
 
@@ -689,13 +670,8 @@ export class EntryEditFormComponent extends WebComponent {
         // Update line numbers
         this.updateZenLineNumbers();
 
-        // Add event listeners for line number updates and auto-save
-        zenTextarea.addEventListener('input', () => {
-            this.updateZenLineNumbers();
-            // Copy to main textarea and trigger auto-save
-            notesTextarea.value = zenTextarea.value;
-            this.scheduleAutoSave();
-        });
+        // Add event listeners for line number updates
+        zenTextarea.addEventListener('input', () => this.updateZenLineNumbers());
         zenTextarea.addEventListener('scroll', () => {
             const lineNumbers = this.querySelector('#zen-line-numbers') as HTMLElement;
             if (lineNumbers) {
@@ -718,7 +694,7 @@ export class EntryEditFormComponent extends WebComponent {
         document.addEventListener('keydown', handleEscape, true);
     }
 
-    private async closeZenMode(): Promise<void> {
+    private closeZenMode(): void {
         const notesTextarea = this.querySelector('#entry-notes') as HTMLTextAreaElement;
         const zenOverlay = this.querySelector('#zen-mode-overlay') as HTMLElement;
         const zenTextarea = this.querySelector('#zen-mode-textarea') as HTMLTextAreaElement;
@@ -727,12 +703,6 @@ export class EntryEditFormComponent extends WebComponent {
 
         // Copy content back to notes textarea
         notesTextarea.value = zenTextarea.value;
-
-        // Trigger auto-save if there are pending changes
-        if (this.autoSaveTimeout !== null) {
-            window.clearTimeout(this.autoSaveTimeout);
-            await this.autoSave();
-        }
 
         // Hide zen mode overlay
         zenOverlay.style.display = 'none';
@@ -858,37 +828,11 @@ export class EntryEditFormComponent extends WebComponent {
             // Reset unsaved changes flag
             this.hasUnsavedChanges = false;
 
-            // Don't close the panel for auto-save
-            // URLStateManager.closePanel();
+            // Close the panel
+            URLStateManager.closePanel();
         } catch (error) {
             const message = error instanceof Error ? error.message : 'Unknown error';
-            console.error(`Error updating entry: ${message}`);
-        }
-    }
-
-    private scheduleAutoSave(): void {
-        // Clear existing timeout
-        if (this.autoSaveTimeout !== null) {
-            window.clearTimeout(this.autoSaveTimeout);
-        }
-
-        // Schedule auto-save after 500ms of inactivity
-        this.autoSaveTimeout = window.setTimeout(() => {
-            this.autoSave();
-        }, 500);
-    }
-
-    private async autoSave(): Promise<void> {
-        // Set flag to prevent re-render during save
-        this.isAutoSaving = true;
-
-        try {
-            // Reuse the handleSubmit logic but without closing the panel
-            const fakeEvent = new Event('submit');
-            await this.handleSubmit(fakeEvent);
-        } finally {
-            // Reset flag after save completes
-            this.isAutoSaving = false;
+            alert(`Error updating entry: ${message}`);
         }
     }
 }
