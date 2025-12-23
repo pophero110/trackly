@@ -371,8 +371,27 @@ export class EntityGridComponent extends WebComponent {
         // Position and show this menu
         menu.style.display = 'block';
         menu.style.position = 'fixed';
-        menu.style.left = `${e.clientX}px`;
-        menu.style.top = `${e.clientY}px`;
+
+        // Check if event came from menu button click
+        const target = e.target as HTMLElement;
+        const menuButton = target.closest('[data-action="menu"]') as HTMLElement;
+
+        if (menuButton) {
+            // Menu button click - align menu's right edge with button's right edge
+            const rect = menuButton.getBoundingClientRect();
+
+            // Temporarily show menu to get its dimensions
+            menu.style.visibility = 'hidden';
+            const menuWidth = menu.offsetWidth;
+            menu.style.visibility = 'visible';
+
+            menu.style.left = `${rect.right - menuWidth}px`;
+            menu.style.top = `${rect.bottom + 4}px`;
+        } else {
+            // Right-click - show at cursor position
+            menu.style.left = `${e.clientX}px`;
+            menu.style.top = `${e.clientY}px`;
+        }
     }
 
     private hideAllMenus(): void {
