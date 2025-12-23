@@ -1260,8 +1260,7 @@ form {
   display: inline-flex;
   align-items: center;
   padding: 2px 8px;
-  background: var(--card-background);
-  border: 1px solid rgba(37, 99, 235, 0.3);
+  background: var(--background);
   border-radius: 12px;
   font-size: 0.75rem;
   color: var(--text-muted);
@@ -1273,7 +1272,6 @@ form {
 .reference-link:hover {
   background: var(--primary);
   color: white;
-  border-color: var(--primary);
   transform: translateY(-1px);
   opacity: 1;
 }
@@ -1282,8 +1280,7 @@ form {
   display: inline-flex;
   align-items: center;
   padding: 2px 8px;
-  background: var(--card-background);
-  border: 1px solid rgba(37, 99, 235, 0.3);
+  background: var(--background);
   border-radius: 12px;
   font-size: 0.75rem;
   color: var(--text-muted);
@@ -1296,7 +1293,6 @@ form {
 .reference-tag:hover {
   background: var(--primary);
   color: white;
-  border-color: var(--primary);
   transform: translateY(-1px);
   opacity: 1;
 }
