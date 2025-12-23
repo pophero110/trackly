@@ -44,6 +44,11 @@ export class ModalPanel extends HTMLElement {
         // Close on escape key
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape' && this.isOpen) {
+                // Don't close if zen mode is open
+                const zenOverlay = this.querySelector('#zen-mode-overlay') as HTMLElement;
+                if (zenOverlay && zenOverlay.style.display !== 'none') {
+                    return; // Let zen mode handle the escape
+                }
                 this.tryClose();
             }
         });
