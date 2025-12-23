@@ -13,11 +13,13 @@ export class EntryEditFormComponent extends WebComponent {
     private images: string[] = [];
     private hasUnsavedChanges: boolean = false;
     private autoSaveTimeout: number | null = null;
+    private isAutoSaving: boolean = false;
 
     connectedCallback(): void {
         this.unsubscribe = this.store.subscribe(() => {
-            // Only re-render if entry is already set
-            if (this.entry) {
+            // Don't re-render if we're in the middle of auto-saving
+            // This prevents the form from resetting while user is typing
+            if (this.entry && !this.isAutoSaving) {
                 this.render();
             }
         });
@@ -843,8 +845,16 @@ export class EntryEditFormComponent extends WebComponent {
     }
 
     private async autoSave(): Promise<void> {
-        // Reuse the handleSubmit logic but without closing the panel
-        const fakeEvent = new Event('submit');
-        await this.handleSubmit(fakeEvent);
+        // Set flag to prevent re-render during save
+        this.isAutoSaving = true;
+
+        try {
+            // Reuse the handleSubmit logic but without closing the panel
+            const fakeEvent = new Event('submit');
+            await this.handleSubmit(fakeEvent);
+        } finally {
+            // Reset flag after save completes
+            this.isAutoSaving = false;
+        }
     }
 }
