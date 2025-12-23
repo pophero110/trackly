@@ -10,9 +10,6 @@ import { getValueTypeInputConfig } from '../config/valueTypeConfig.js';
  */
 export class EntryFormComponent extends WebComponent {
     private images: string[] = [];
-    private static readonly DRAFT_KEY = 'trackly_entry_draft';
-    private autoSaveTimeout: number | null = null;
-    private skipAutoSave: boolean = false;
 
     render(): void {
         const entities = this.store.getEntities();
@@ -28,10 +25,6 @@ export class EntryFormComponent extends WebComponent {
         const valueInputHtml = selectedEntity && selectedEntity.valueType ? this.renderValueInput(selectedEntity.valueType, selectedEntity.options) : '';
 
         this.innerHTML = `
-            <div id="draft-indicator" class="draft-indicator" style="display: none;">
-                <span>📝 Draft saved</span>
-                <button type="button" id="clear-draft-btn" class="btn-clear-draft">Clear draft</button>
-            </div>
             <form id="entry-form">
                 <div class="form-group">
                     <label for="entry-entity">Select Entity *</label>
@@ -89,7 +82,6 @@ export class EntryFormComponent extends WebComponent {
         `;
 
         this.attachEventListeners();
-        this.restoreDraft();
     }
 
     private renderValueInput(valueType: ValueType, entityOptions?: Array<{value: string; label: string}>): string {
@@ -231,15 +223,11 @@ export class EntryFormComponent extends WebComponent {
         const uploadMenuItem = this.querySelector('#upload-image-menu-item') as HTMLElement;
         const captureMenuItem = this.querySelector('#capture-image-menu-item') as HTMLElement;
         const fileInput = this.querySelector('#image-upload') as HTMLInputElement;
-        const clearDraftBtn = this.querySelector('#clear-draft-btn') as HTMLButtonElement;
         const zenModeBtn = this.querySelector('#zen-mode-btn') as HTMLButtonElement;
         const zenModeClose = this.querySelector('#zen-mode-close') as HTMLButtonElement;
 
         if (form) {
             form.addEventListener('submit', (e) => this.handleSubmit(e));
-            // Auto-save on any input change
-            form.addEventListener('input', () => this.scheduleAutoSave());
-            form.addEventListener('change', () => this.scheduleAutoSave());
 
             // Add Cmd+Enter keyboard shortcut to submit
             form.addEventListener('keydown', (e) => {
@@ -248,10 +236,6 @@ export class EntryFormComponent extends WebComponent {
                     form.requestSubmit();
                 }
             });
-        }
-
-        if (clearDraftBtn) {
-            clearDraftBtn.addEventListener('click', () => this.clearDraft());
         }
 
         if (zenModeBtn) {
@@ -273,7 +257,6 @@ export class EntryFormComponent extends WebComponent {
                     if (selectedEntity && selectedEntity.valueType) {
                         valueContainer.innerHTML = this.renderValueInput(selectedEntity.valueType, selectedEntity.options);
                         this.attachRangeListener();
-                        this.restoreDraftValue();
                     } else {
                         valueContainer.innerHTML = '';
                     }
@@ -283,7 +266,6 @@ export class EntryFormComponent extends WebComponent {
                     propertiesContainer.innerHTML = selectedEntity.properties && selectedEntity.properties.length > 0
                         ? this.renderPropertyInputs(selectedEntity.properties)
                         : '';
-                    this.restoreDraftProperties();
                 }
             });
         }
@@ -700,189 +682,6 @@ export class EntryFormComponent extends WebComponent {
 
         // Hide zen mode overlay
         zenOverlay.style.display = 'none';
-
-        // Trigger auto-save
-        this.scheduleAutoSave();
-    }
-
-    private scheduleAutoSave(): void {
-        // Skip if auto-save is disabled (e.g., during clear draft)
-        if (this.skipAutoSave) {
-            return;
-        }
-
-        // Clear existing timeout
-        if (this.autoSaveTimeout !== null) {
-            window.clearTimeout(this.autoSaveTimeout);
-        }
-
-        // Schedule auto-save after 500ms of inactivity
-        this.autoSaveTimeout = window.setTimeout(() => {
-            this.saveDraft();
-        }, 500);
-    }
-
-    private saveDraft(): void {
-        const entitySelect = this.querySelector('#entry-entity') as HTMLSelectElement;
-        const valueInput = this.querySelector('#entry-value') as HTMLInputElement;
-        const notesInput = this.querySelector('#entry-notes') as HTMLTextAreaElement;
-
-        // Don't save if form is empty
-        if (!entitySelect?.value && !notesInput?.value) {
-            return;
-        }
-
-        const draft = {
-            entityId: entitySelect?.value || '',
-            value: valueInput?.value || '',
-            valueChecked: (valueInput as HTMLInputElement)?.checked || false,
-            notes: notesInput?.value || '',
-            images: this.images,
-            propertyValues: this.collectPropertyValues(),
-            timestamp: Date.now()
-        };
-
-        localStorage.setItem(EntryFormComponent.DRAFT_KEY, JSON.stringify(draft));
-        this.showDraftIndicator();
-    }
-
-    private collectPropertyValues(): Record<string, any> {
-        const propertyValues: Record<string, any> = {};
-        const propertyInputs = this.querySelectorAll('[id^="property-"]');
-
-        propertyInputs.forEach(input => {
-            const htmlInput = input as HTMLInputElement;
-            const propId = htmlInput.id.replace('property-', '');
-
-            if (htmlInput.type === 'checkbox') {
-                propertyValues[propId] = htmlInput.checked;
-            } else {
-                propertyValues[propId] = htmlInput.value;
-            }
-        });
-
-        return propertyValues;
-    }
-
-    private restoreDraft(): void {
-        const draftJson = localStorage.getItem(EntryFormComponent.DRAFT_KEY);
-        if (!draftJson) return;
-
-        try {
-            const draft = JSON.parse(draftJson);
-
-            // Restore entity selection
-            const entitySelect = this.querySelector('#entry-entity') as HTMLSelectElement;
-            if (entitySelect && draft.entityId) {
-                entitySelect.value = draft.entityId;
-                // Trigger change event to render value input and properties
-                entitySelect.dispatchEvent(new Event('change'));
-            }
-
-            // Restore notes
-            const notesInput = this.querySelector('#entry-notes') as HTMLTextAreaElement;
-            if (notesInput && draft.notes) {
-                notesInput.value = draft.notes;
-            }
-
-            // Restore images
-            if (draft.images && draft.images.length > 0) {
-                this.images = draft.images;
-                this.renderImagePreview();
-            }
-
-            // Show draft indicator
-            this.showDraftIndicator();
-
-            // Restore value and properties after entity change event completes
-            setTimeout(() => {
-                this.restoreDraftValue(draft);
-                this.restoreDraftProperties(draft);
-            }, 0);
-        } catch (error) {
-            console.error('Failed to restore draft:', error);
-        }
-    }
-
-    private restoreDraftValue(draft?: any): void {
-        if (!draft) {
-            const draftJson = localStorage.getItem(EntryFormComponent.DRAFT_KEY);
-            if (!draftJson) return;
-            draft = JSON.parse(draftJson);
-        }
-
-        const valueInput = this.querySelector('#entry-value') as HTMLInputElement;
-        if (!valueInput) return;
-
-        if (valueInput.type === 'checkbox') {
-            valueInput.checked = draft.valueChecked || false;
-        } else if (valueInput.type === 'range') {
-            valueInput.value = draft.value || '';
-            const rangeDisplay = this.querySelector('#range-value-display');
-            if (rangeDisplay) {
-                rangeDisplay.textContent = draft.value || '';
-            }
-        } else {
-            valueInput.value = draft.value || '';
-        }
-    }
-
-    private restoreDraftProperties(draft?: any): void {
-        if (!draft) {
-            const draftJson = localStorage.getItem(EntryFormComponent.DRAFT_KEY);
-            if (!draftJson) return;
-            draft = JSON.parse(draftJson);
-        }
-
-        if (!draft.propertyValues) return;
-
-        Object.keys(draft.propertyValues).forEach(propId => {
-            const input = this.querySelector(`#property-${propId}`) as HTMLInputElement;
-            if (input) {
-                if (input.type === 'checkbox') {
-                    input.checked = draft.propertyValues[propId];
-                } else {
-                    input.value = draft.propertyValues[propId];
-                }
-            }
-        });
-    }
-
-    private showDraftIndicator(): void {
-        const indicator = this.querySelector('#draft-indicator') as HTMLElement;
-        if (indicator) {
-            indicator.style.display = 'flex';
-        }
-    }
-
-    private hideDraftIndicator(): void {
-        const indicator = this.querySelector('#draft-indicator') as HTMLElement;
-        if (indicator) {
-            indicator.style.display = 'none';
-        }
-    }
-
-    private clearDraft(): void {
-        // Disable auto-save temporarily
-        this.skipAutoSave = true;
-
-        localStorage.removeItem(EntryFormComponent.DRAFT_KEY);
-        this.hideDraftIndicator();
-
-        // Reset form
-        const form = this.querySelector('#entry-form') as HTMLFormElement;
-        if (form) {
-            form.reset();
-        }
-
-        // Clear images
-        this.images = [];
-        this.renderImagePreview();
-
-        // Re-enable auto-save after a short delay
-        setTimeout(() => {
-            this.skipAutoSave = false;
-        }, 100);
     }
 
     private async handleSubmit(e: Event): Promise<void> {
@@ -1027,9 +826,6 @@ export class EntryFormComponent extends WebComponent {
 
             // Close the panel via URL
             URLStateManager.closePanel();
-
-            // Clear draft
-            this.clearDraft();
         } catch (error) {
             const message = error instanceof Error ? error.message : 'Unknown error';
             alert(`Error logging entry: ${message}`);
