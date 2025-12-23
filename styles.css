@@ -215,7 +215,6 @@ header h1 {
   overflow-y: hidden;
   white-space: pre;
   font-family: inherit;
-  border-right: 1px solid var(--border);
   min-width: 50px;
 }
 
