@@ -61,6 +61,7 @@ export class EntryFormComponent extends WebComponent {
                 <div id="image-preview" class="image-preview"></div>
 
                 <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">Log Entry</button>
                     <div class="action-menu-buttons">
                         <div style="position: relative;">
                             <button type="button" id="image-menu-btn" class="btn-action-menu" title="Add images">📎</button>
@@ -70,7 +71,6 @@ export class EntryFormComponent extends WebComponent {
                             </div>
                         </div>
                     </div>
-                    <button type="submit" class="btn btn-primary">Log Entry</button>
                 </div>
             </form>
 
