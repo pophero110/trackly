@@ -77,7 +77,6 @@ header h1 {
 /* App Layout */
 .app-layout {
   min-height: calc(100vh - 200px);
-  background: var(--card-background);
 }
 
 .main-content {
