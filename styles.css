@@ -1531,6 +1531,36 @@ slide-up-panel:not(.active) .modal-dialog {
   }
 }
 
+/* Zen Mode - Mobile Responsive */
+@media (max-width: 768px) {
+  .zen-mode-container {
+    padding: 20px 16px;
+  }
+
+  .zen-mode-editor {
+    max-width: 100%;
+  }
+
+  .zen-mode-header {
+    margin-bottom: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .zen-mode-container {
+    padding: 16px 12px;
+  }
+
+  .zen-line-numbers {
+    padding: 16px 8px 16px 12px;
+    min-width: 40px;
+  }
+
+  .zen-mode-textarea {
+    padding: 16px;
+  }
+}
+
 /* Context Menu */
 .context-menu,
 .entity-context-menu,
