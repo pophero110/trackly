@@ -689,8 +689,13 @@ export class EntryEditFormComponent extends WebComponent {
         // Update line numbers
         this.updateZenLineNumbers();
 
-        // Add event listeners for line number updates
-        zenTextarea.addEventListener('input', () => this.updateZenLineNumbers());
+        // Add event listeners for line number updates and auto-save
+        zenTextarea.addEventListener('input', () => {
+            this.updateZenLineNumbers();
+            // Copy to main textarea and trigger auto-save
+            notesTextarea.value = zenTextarea.value;
+            this.scheduleAutoSave();
+        });
         zenTextarea.addEventListener('scroll', () => {
             const lineNumbers = this.querySelector('#zen-line-numbers') as HTMLElement;
             if (lineNumbers) {
@@ -713,7 +718,7 @@ export class EntryEditFormComponent extends WebComponent {
         document.addEventListener('keydown', handleEscape, true);
     }
 
-    private closeZenMode(): void {
+    private async closeZenMode(): Promise<void> {
         const notesTextarea = this.querySelector('#entry-notes') as HTMLTextAreaElement;
         const zenOverlay = this.querySelector('#zen-mode-overlay') as HTMLElement;
         const zenTextarea = this.querySelector('#zen-mode-textarea') as HTMLTextAreaElement;
@@ -722,6 +727,12 @@ export class EntryEditFormComponent extends WebComponent {
 
         // Copy content back to notes textarea
         notesTextarea.value = zenTextarea.value;
+
+        // Trigger auto-save if there are pending changes
+        if (this.autoSaveTimeout !== null) {
+            window.clearTimeout(this.autoSaveTimeout);
+            await this.autoSave();
+        }
 
         // Hide zen mode overlay
         zenOverlay.style.display = 'none';
