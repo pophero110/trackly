@@ -219,6 +219,7 @@ header h1 {
 .zen-line-numbers div {
   text-align: right;
   padding-right: 0;
+  line-height: 1.5;
 }
 
 .zen-mode-textarea {

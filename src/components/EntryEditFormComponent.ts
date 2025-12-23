@@ -558,8 +558,8 @@ export class EntryEditFormComponent extends WebComponent {
 
         // Get textarea's computed styles for accurate measurement
         const textareaStyles = window.getComputedStyle(zenTextarea);
-        const paddingTop = parseFloat(textareaStyles.paddingTop);
         const width = zenTextarea.clientWidth - parseFloat(textareaStyles.paddingLeft) - parseFloat(textareaStyles.paddingRight);
+        const computedLineHeight = parseFloat(textareaStyles.lineHeight);
 
         // Create a hidden div to measure wrapped line heights
         let measuringDiv = document.getElementById('zen-line-measurer') as HTMLDivElement;
@@ -585,15 +585,24 @@ export class EntryEditFormComponent extends WebComponent {
 
         // Generate line numbers with proper positioning
         let html = '';
-        let currentTop = paddingTop;
+        let previousLineHeight = 0;
 
         for (let i = 0; i < lineCount; i++) {
             const lineText = lines[i] || ' '; // Use space for empty lines
             measuringDiv.textContent = lineText;
             const lineVisualHeight = measuringDiv.offsetHeight;
 
-            html += `<div style="height: ${lineVisualHeight}px; line-height: ${lineVisualHeight}px;">${i + 1}</div>`;
-            currentTop += lineVisualHeight;
+            // Position line number at the start of each logical line
+            // First line has no margin, subsequent lines use previous line's height as margin
+            if (i === 0) {
+                html += `<div>${i + 1}</div>`;
+            } else {
+                // Subtract the natural line number height to prevent double-spacing
+                const marginTop = previousLineHeight - computedLineHeight;
+                html += `<div style="margin-top: ${marginTop}px;">${i + 1}</div>`;
+            }
+
+            previousLineHeight = lineVisualHeight;
         }
 
         lineNumbers.innerHTML = html;
