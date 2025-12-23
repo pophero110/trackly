@@ -207,13 +207,15 @@ export class EntryListComponent extends WebComponent {
     }
 
     private renderPropertyValues(properties: EntityProperty[], propertyValues: Record<string, string | number | boolean>, propertyValueDisplays?: Record<string, string>): string {
+        const capitalizeFirstLetter = (str: string) => str.charAt(0).toUpperCase() + str.slice(1);
+
         const propertyItems = properties
             .filter(prop => propertyValues[prop.id] !== undefined && propertyValues[prop.id] !== '')
             .map(prop => {
                 const value = propertyValues[prop.id];
                 const displayValue = propertyValueDisplays?.[prop.id];
                 const formattedValue = this.formatPropertyValue(value, prop.valueType, displayValue);
-                return `<span class="property-tag">${escapeHtml(prop.name)}: ${formattedValue}</span>`;
+                return `<span class="property-tag">${escapeHtml(capitalizeFirstLetter(prop.name))}: ${formattedValue}</span>`;
             })
             .join('');
 

@@ -204,6 +204,8 @@ export class EntryEditFormComponent extends WebComponent {
     }
 
     private renderPropertyInputs(properties: EntityProperty[], propertyValues: Record<string, string | number | boolean>): string {
+        const capitalizeFirstLetter = (str: string) => str.charAt(0).toUpperCase() + str.slice(1);
+
         return properties.map(prop => {
             const config = getValueTypeInputConfig(prop.valueType);
             const propId = `property-${prop.id}`;
@@ -216,7 +218,7 @@ export class EntryEditFormComponent extends WebComponent {
                     <div class="form-group">
                         <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
                             <input type="checkbox" id="${propId}" value="true" ${isChecked ? 'checked' : ''}>
-                            <span>${escapeHtml(prop.name)}${prop.required ? ' *' : ''}</span>
+                            <span>${escapeHtml(capitalizeFirstLetter(prop.name))}${prop.required ? ' *' : ''}</span>
                         </label>
                     </div>
                 `;
@@ -226,7 +228,7 @@ export class EntryEditFormComponent extends WebComponent {
                 const valueStr = currentValue !== undefined ? String(currentValue) : '';
                 return `
                     <div class="form-group">
-                        <label for="${propId}">${escapeHtml(prop.name)}${prop.required ? ' *' : ''}</label>
+                        <label for="${propId}">${escapeHtml(capitalizeFirstLetter(prop.name))}${prop.required ? ' *' : ''}</label>
                         <select id="${propId}" ${requiredAttr}>
                             <option value="">Select...</option>
                             ${prop.options.map(opt => `<option value="${escapeHtml(opt.value)}" ${opt.value === valueStr ? 'selected' : ''}>${escapeHtml(opt.label)}</option>`).join('')}
@@ -265,7 +267,7 @@ export class EntryEditFormComponent extends WebComponent {
 
             return `
                 <div class="form-group">
-                    <label for="${propId}">${escapeHtml(prop.name)}${prop.required ? ' *' : ''}</label>
+                    <label for="${propId}">${escapeHtml(capitalizeFirstLetter(prop.name))}${prop.required ? ' *' : ''}</label>
                     <input ${attrs.filter(a => a).join(' ')}>
                 </div>
             `;

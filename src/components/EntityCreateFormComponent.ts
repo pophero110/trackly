@@ -99,10 +99,12 @@ export class EntityCreateFormComponent extends WebComponent {
             return '<p style="color: var(--text-muted); font-size: 0.875rem;">No custom properties added yet.</p>';
         }
 
+        const capitalizeFirstLetter = (str: string) => str.charAt(0).toUpperCase() + str.slice(1);
+
         return this.properties.map((prop, index) => `
             <div class="property-item" data-index="${index}">
                 <div class="property-info">
-                    <strong>${prop.name}</strong>
+                    <strong>${capitalizeFirstLetter(prop.name)}</strong>
                     <span class="property-type">${prop.valueType}</span>
                     ${prop.required ? '<span class="property-required">Required</span>' : ''}
                 </div>
@@ -141,6 +143,9 @@ export class EntityCreateFormComponent extends WebComponent {
     }
 
     private handleAddProperty(): void {
+        // Helper function to capitalize first letter
+        const capitalizeFirstLetter = (str: string) => str.charAt(0).toUpperCase() + str.slice(1);
+
         // Create a modal for adding property
         const modal = document.createElement('div');
         modal.className = 'property-modal';
@@ -267,7 +272,7 @@ export class EntityCreateFormComponent extends WebComponent {
             if (name) {
                 const newProperty: EntityProperty = {
                     id: generateId(),
-                    name,
+                    name: capitalizeFirstLetter(name),
                     valueType,
                     required
                 };

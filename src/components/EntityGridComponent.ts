@@ -94,6 +94,8 @@ export class EntityGridComponent extends WebComponent {
     }
 
     private renderPropertyValues(properties: EntityProperty[], propertyValues: Record<string, string | number | boolean>, propertyValueDisplays?: Record<string, string>): string {
+        const capitalizeFirstLetter = (str: string) => str.charAt(0).toUpperCase() + str.slice(1);
+
         const propertyItems = properties
             .filter(prop => propertyValues[prop.id] !== undefined && propertyValues[prop.id] !== '')
             .map(prop => {
@@ -102,7 +104,7 @@ export class EntityGridComponent extends WebComponent {
                 const formattedValue = this.formatPropertyValue(value, prop.valueType, displayValue);
                 return `
                     <div class="property-value-item-compact">
-                        <span class="property-label-compact">${escapeHtml(prop.name)}:</span>
+                        <span class="property-label-compact">${escapeHtml(capitalizeFirstLetter(prop.name))}:</span>
                         <span class="property-value-compact">${formattedValue}</span>
                     </div>
                 `;
