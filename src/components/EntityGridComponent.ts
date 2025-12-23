@@ -383,11 +383,10 @@ export class EntityGridComponent extends WebComponent {
             // Temporarily show menu to get its dimensions
             menu.style.visibility = 'hidden';
             const menuWidth = menu.offsetWidth;
-            const menuHeight = menu.offsetHeight;
             menu.style.visibility = 'visible';
 
             menu.style.left = `${rect.right - menuWidth}px`;
-            menu.style.top = `${rect.top - menuHeight - 4}px`;
+            menu.style.top = `${rect.bottom + 4}px`;
         } else {
             // Right-click - show at cursor position
             menu.style.left = `${e.clientX}px`;
