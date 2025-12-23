@@ -1259,11 +1259,11 @@ form {
 .reference-link {
   display: inline-flex;
   align-items: center;
-  padding: 4px 10px;
+  padding: 2px 8px;
   background: var(--card-background);
   border: 1px solid rgba(37, 99, 235, 0.3);
-  border-radius: 16px;
-  font-size: 0.8125rem;
+  border-radius: 12px;
+  font-size: 0.75rem;
   color: var(--text-muted);
   text-decoration: none;
   transition: all 0.2s;
@@ -1281,11 +1281,11 @@ form {
 .reference-tag {
   display: inline-flex;
   align-items: center;
-  padding: 4px 10px;
+  padding: 2px 8px;
   background: var(--card-background);
   border: 1px solid rgba(37, 99, 235, 0.3);
-  border-radius: 16px;
-  font-size: 0.8125rem;
+  border-radius: 12px;
+  font-size: 0.75rem;
   color: var(--text-muted);
   text-decoration: none;
   transition: all 0.2s;
