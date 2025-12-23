@@ -2,7 +2,6 @@ import { WebComponent } from './WebComponent.js';
 import { Entry } from '../models/Entry.js';
 import { ValueType, EntityProperty } from '../types/index.js';
 import { escapeHtml, extractUrls, replaceUrlsWithTitles, fetchUrlMetadata } from '../utils/helpers.js';
-import { URLStateManager } from '../utils/urlState.js';
 import { getValueTypeInputConfig } from '../config/valueTypeConfig.js';
 
 /**
@@ -13,6 +12,7 @@ export class EntryEditFormComponent extends WebComponent {
     private entry: Entry | null = null;
     private images: string[] = [];
     private hasUnsavedChanges: boolean = false;
+    private autoSaveTimeout: number | null = null;
 
     connectedCallback(): void {
         this.unsubscribe = this.store.subscribe(() => {
@@ -91,7 +91,6 @@ export class EntryEditFormComponent extends WebComponent {
                             </div>
                         </div>
                     </div>
-                    <button type="submit" class="btn btn-primary">Update Entry</button>
                 </div>
             </form>
 
@@ -283,22 +282,17 @@ export class EntryEditFormComponent extends WebComponent {
         const zenModeClose = this.querySelector('#zen-mode-close') as HTMLButtonElement;
 
         if (form) {
-            form.addEventListener('submit', (e) => this.handleSubmit(e));
+            // Remove submit handler, we'll auto-save instead
+            form.addEventListener('submit', (e) => {
+                e.preventDefault(); // Prevent form submission
+            });
 
-            // Track form changes
+            // Auto-save on form changes
             form.addEventListener('input', () => {
-                this.hasUnsavedChanges = true;
+                this.scheduleAutoSave();
             });
             form.addEventListener('change', () => {
-                this.hasUnsavedChanges = true;
-            });
-
-            // Add Cmd+Enter keyboard shortcut to submit
-            form.addEventListener('keydown', (e) => {
-                if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
-                    e.preventDefault();
-                    form.requestSubmit();
-                }
+                this.scheduleAutoSave();
             });
         }
 
@@ -828,11 +822,29 @@ export class EntryEditFormComponent extends WebComponent {
             // Reset unsaved changes flag
             this.hasUnsavedChanges = false;
 
-            // Close the panel
-            URLStateManager.closePanel();
+            // Don't close the panel for auto-save
+            // URLStateManager.closePanel();
         } catch (error) {
             const message = error instanceof Error ? error.message : 'Unknown error';
-            alert(`Error updating entry: ${message}`);
+            console.error(`Error updating entry: ${message}`);
         }
+    }
+
+    private scheduleAutoSave(): void {
+        // Clear existing timeout
+        if (this.autoSaveTimeout !== null) {
+            window.clearTimeout(this.autoSaveTimeout);
+        }
+
+        // Schedule auto-save after 500ms of inactivity
+        this.autoSaveTimeout = window.setTimeout(() => {
+            this.autoSave();
+        }, 500);
+    }
+
+    private async autoSave(): Promise<void> {
+        // Reuse the handleSubmit logic but without closing the panel
+        const fakeEvent = new Event('submit');
+        await this.handleSubmit(fakeEvent);
     }
 }
