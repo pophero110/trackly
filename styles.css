@@ -416,6 +416,38 @@ form {
   background: var(--border);
 }
 
+/* Form Actions */
+.form-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 20px;
+  gap: 12px;
+}
+
+.action-menu-buttons {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.btn-action-menu {
+  background: none;
+  border: none;
+  font-size: 1.25rem;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 4px;
+  transition: var(--transition);
+  opacity: 0.6;
+  line-height: 1;
+}
+
+.btn-action-menu:hover {
+  background: var(--background);
+  opacity: 1;
+}
+
 /* Image Controls */
 .image-controls {
   display: flex;

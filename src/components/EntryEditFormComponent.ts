@@ -78,22 +78,21 @@ export class EntryEditFormComponent extends WebComponent {
                     <textarea id="entry-notes" rows="3">${escapeHtml(this.entry.notes || '')}</textarea>
                 </div>
 
-                <div class="form-group">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-                        <label style="margin-bottom: 0;">Images</label>
+                <input type="file" id="image-upload" accept="image/*" style="display: none;" multiple>
+                <div id="image-preview" class="image-preview"></div>
+
+                <div class="form-actions">
+                    <div class="action-menu-buttons">
                         <div style="position: relative;">
-                            <button type="button" id="image-menu-btn" class="btn-zen-mode" title="Add images">📎</button>
+                            <button type="button" id="image-menu-btn" class="btn-action-menu" title="Add images">📎</button>
                             <div id="image-menu" class="image-dropdown-menu" style="display: none;">
                                 <div class="context-menu-item" id="upload-image-menu-item">📁 Upload Image</div>
                                 <div class="context-menu-item" id="capture-image-menu-item">📷 Take Photo</div>
                             </div>
                         </div>
                     </div>
-                    <input type="file" id="image-upload" accept="image/*" style="display: none;" multiple>
-                    <div id="image-preview" class="image-preview"></div>
+                    <button type="submit" class="btn btn-primary">Update Entry</button>
                 </div>
-
-                <button type="submit" class="btn btn-primary">Update Entry</button>
             </form>
 
             <div id="zen-mode-overlay" class="zen-mode-overlay" style="display: none;">
