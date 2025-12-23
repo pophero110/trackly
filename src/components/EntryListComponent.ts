@@ -176,9 +176,13 @@ export class EntryListComponent extends WebComponent {
             urls.push({ title: match[1], url: match[2] });
         }
 
+        // Remove markdown links from notes before extracting hashtags
+        // This prevents matching hashtags inside URLs like #anchor
+        const notesWithoutLinks = notes.replace(/\[([^\]]+?)\]\((.+?)\)/g, '');
+
         // Extract hashtags (not in URLs)
         const hashtagRegex = /(?<!:\/[^\s]*)(^|\s)#([a-zA-Z0-9_]+)/g;
-        while ((match = hashtagRegex.exec(notes)) !== null) {
+        while ((match = hashtagRegex.exec(notesWithoutLinks)) !== null) {
             const tag = match[2];
             if (!hashtags.includes(tag)) {
                 hashtags.push(tag);
