@@ -167,6 +167,7 @@ export class EntryListComponent extends WebComponent {
 
     private renderReferences(notes: string): string {
         const urls: Array<{title: string, url: string}> = [];
+        const hashtags: string[] = [];
 
         // Extract markdown links [title](url)
         const markdownRegex = /\[([^\]]+?)\]\((.+?)\)/g;
@@ -175,7 +176,16 @@ export class EntryListComponent extends WebComponent {
             urls.push({ title: match[1], url: match[2] });
         }
 
-        if (urls.length === 0) {
+        // Extract hashtags (not in URLs)
+        const hashtagRegex = /(?<!:\/[^\s]*)(^|\s)#([a-zA-Z0-9_]+)/g;
+        while ((match = hashtagRegex.exec(notes)) !== null) {
+            const tag = match[2];
+            if (!hashtags.includes(tag)) {
+                hashtags.push(tag);
+            }
+        }
+
+        if (urls.length === 0 && hashtags.length === 0) {
             return '';
         }
 
@@ -185,7 +195,11 @@ export class EntryListComponent extends WebComponent {
             return `<a href="${escapedUrl}" target="_blank" rel="noopener noreferrer" class="reference-link">${escapedTitle}</a>`;
         }).join('');
 
-        return referenceLinks;
+        const hashtagLinks = hashtags.map(tag => {
+            return `<a href="#" class="hashtag reference-tag" data-tag="${tag}">#${tag}</a>`;
+        }).join('');
+
+        return referenceLinks + hashtagLinks;
     }
 
     private renderPropertyValues(properties: EntityProperty[], propertyValues: Record<string, string | number | boolean>, propertyValueDisplays?: Record<string, string>): string {

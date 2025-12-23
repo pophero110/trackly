@@ -1199,6 +1199,26 @@ form {
   transform: translateY(-1px);
 }
 
+.reference-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  background: var(--background);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  font-size: 0.8125rem;
+  color: var(--primary);
+  text-decoration: none;
+  transition: all 0.2s;
+  font-weight: 500;
+}
+
+.reference-tag:hover {
+  background: var(--primary);
+  color: white;
+  transform: translateY(-1px);
+}
+
 /* Entry Attachments - Media Section */
 .entry-attachments {
   padding: 16px 18px 14px 18px;
