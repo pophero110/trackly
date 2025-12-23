@@ -32,21 +32,35 @@ export class ModalPanel extends HTMLElement {
         // Close on backdrop click
         backdrop?.addEventListener('click', (e) => {
             if (e.target === backdrop) {
-                URLStateManager.closePanel();
+                this.tryClose();
             }
         });
 
         // Close on close button click
         closeBtn?.addEventListener('click', () => {
-            URLStateManager.closePanel();
+            this.tryClose();
         });
 
         // Close on escape key
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape' && this.isOpen) {
-                URLStateManager.closePanel();
+                this.tryClose();
             }
         });
+    }
+
+    private tryClose(): void {
+        // Check if content component has unsaved changes
+        const contentEl = this.querySelector('.modal-body');
+        if (contentEl && contentEl.firstElementChild) {
+            const component = contentEl.firstElementChild as any;
+            if (typeof component.checkUnsavedChanges === 'function') {
+                if (!component.checkUnsavedChanges()) {
+                    return; // Don't close if user cancels
+                }
+            }
+        }
+        URLStateManager.closePanel();
     }
 
     open(title: string, contentElement: HTMLElement): void {

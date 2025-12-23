@@ -3,7 +3,8 @@ import { storeRegistry } from './state/StoreRegistry.js';
 import { URLStateManager } from './utils/urlState.js';
 import { AppTabs } from './components/AppTabs.js';
 import { ModalPanel } from './components/ModalPanel.js';
-import { EntityUpsertFormComponent } from './components/EntityUpsertFormComponent.js';
+import { EntityCreateFormComponent } from './components/EntityCreateFormComponent.js';
+import { EntityFormComponent } from './components/EntityFormComponent.js';
 import { EntityListComponent } from './components/EntityListComponent.js';
 import { EntityGridComponent } from './components/EntityGridComponent.js';
 import { EntryFormComponent } from './components/EntryFormComponent.js';
@@ -102,15 +103,15 @@ class TracklyApp {
             }
         } else if (panelType === 'create-entity') {
             // Open create entity panel
-            const formTemplate = document.querySelector('#entity-upsert-form-template');
+            const formTemplate = document.querySelector('#entity-create-form-template');
             if (formTemplate && !panel.getIsOpen()) {
                 const formClone = formTemplate.cloneNode(true) as HTMLElement;
                 formClone.removeAttribute('id');
                 formClone.style.display = 'block';
 
-                const upsertForm = formClone as any;
-                if (upsertForm && typeof upsertForm.setCreateMode === 'function') {
-                    upsertForm.setCreateMode();
+                const createForm = formClone as any;
+                if (createForm && typeof createForm.setCreateMode === 'function') {
+                    createForm.setCreateMode();
                 }
 
                 panel.open('Create New Entity', formClone);
@@ -121,15 +122,15 @@ class TracklyApp {
             const entity = editEntityName ? this.store.getEntityByName(editEntityName) : null;
 
             if (entity) {
-                const formTemplate = document.querySelector('#entity-upsert-form-template');
+                const formTemplate = document.querySelector('#entity-form-template');
                 if (formTemplate && !panel.getIsOpen()) {
                     const formClone = formTemplate.cloneNode(true) as HTMLElement;
                     formClone.removeAttribute('id');
                     formClone.style.display = 'block';
 
-                    const upsertForm = formClone as any;
-                    if (upsertForm && typeof upsertForm.setEditMode === 'function') {
-                        upsertForm.setEditMode(entity.id);
+                    const editForm = formClone as any;
+                    if (editForm && typeof editForm.setEditMode === 'function') {
+                        editForm.setEditMode(entity.id);
                     }
 
                     panel.open('Edit Entity', formClone);
@@ -141,15 +142,15 @@ class TracklyApp {
             const entity = cloneEntityName ? this.store.getEntityByName(cloneEntityName) : null;
 
             if (entity) {
-                const formTemplate = document.querySelector('#entity-upsert-form-template');
+                const formTemplate = document.querySelector('#entity-create-form-template');
                 if (formTemplate && !panel.getIsOpen()) {
                     const formClone = formTemplate.cloneNode(true) as HTMLElement;
                     formClone.removeAttribute('id');
                     formClone.style.display = 'block';
 
-                    const upsertForm = formClone as any;
-                    if (upsertForm && typeof upsertForm.setCloneMode === 'function') {
-                        upsertForm.setCloneMode(entity);
+                    const createForm = formClone as any;
+                    if (createForm && typeof createForm.setCloneMode === 'function') {
+                        createForm.setCloneMode(entity);
                     }
 
                     panel.open('Clone Entity', formClone);
@@ -188,7 +189,8 @@ class TracklyApp {
         // Register custom elements
         customElements.define('app-tabs', AppTabs);
         customElements.define('slide-up-panel', ModalPanel);
-        customElements.define('entity-upsert-form', EntityUpsertFormComponent);
+        customElements.define('entity-create-form', EntityCreateFormComponent);
+        customElements.define('entity-form', EntityFormComponent);
         customElements.define('entity-list', EntityListComponent);
         customElements.define('entity-grid', EntityGridComponent);
         customElements.define('entry-form', EntryFormComponent);

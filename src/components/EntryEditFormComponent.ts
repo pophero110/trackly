@@ -12,6 +12,7 @@ export class EntryEditFormComponent extends WebComponent {
     private entryId: string | null = null;
     private entry: Entry | null = null;
     private images: string[] = [];
+    private hasUnsavedChanges: boolean = false;
 
     connectedCallback(): void {
         this.unsubscribe = this.store.subscribe(() => {
@@ -31,6 +32,7 @@ export class EntryEditFormComponent extends WebComponent {
         if (foundEntry) {
             this.entry = foundEntry;
             this.images = foundEntry.images ? [...foundEntry.images] : [];
+            this.hasUnsavedChanges = false; // Reset when loading new entry
             this.render();
             this.attachEventListeners();
         } else {
@@ -273,6 +275,22 @@ export class EntryEditFormComponent extends WebComponent {
 
         if (form) {
             form.addEventListener('submit', (e) => this.handleSubmit(e));
+
+            // Track form changes
+            form.addEventListener('input', () => {
+                this.hasUnsavedChanges = true;
+            });
+            form.addEventListener('change', () => {
+                this.hasUnsavedChanges = true;
+            });
+
+            // Add Cmd+Enter keyboard shortcut to submit
+            form.addEventListener('keydown', (e) => {
+                if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
+                    e.preventDefault();
+                    form.requestSubmit();
+                }
+            });
         }
 
         if (zenModeBtn) {
@@ -568,6 +586,13 @@ export class EntryEditFormComponent extends WebComponent {
         zenOverlay.style.display = 'none';
     }
 
+    public checkUnsavedChanges(): boolean {
+        if (this.hasUnsavedChanges) {
+            return confirm('You have unsaved changes. Are you sure you want to close without saving?');
+        }
+        return true;
+    }
+
     private async handleSubmit(e: Event): Promise<void> {
         e.preventDefault();
 
@@ -677,6 +702,9 @@ export class EntryEditFormComponent extends WebComponent {
             if (entity.properties && entity.properties.length > 0 && propertyValues) {
                 this.fetchPropertyUrlTitles(this.entryId, entity.properties, propertyValues);
             }
+
+            // Reset unsaved changes flag
+            this.hasUnsavedChanges = false;
 
             // Close the panel
             URLStateManager.closePanel();

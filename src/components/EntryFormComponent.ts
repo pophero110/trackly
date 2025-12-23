@@ -231,6 +231,14 @@ export class EntryFormComponent extends WebComponent {
             // Auto-save on any input change
             form.addEventListener('input', () => this.scheduleAutoSave());
             form.addEventListener('change', () => this.scheduleAutoSave());
+
+            // Add Cmd+Enter keyboard shortcut to submit
+            form.addEventListener('keydown', (e) => {
+                if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
+                    e.preventDefault();
+                    form.requestSubmit();
+                }
+            });
         }
 
         if (clearDraftBtn) {
