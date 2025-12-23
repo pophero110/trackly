@@ -31,6 +31,11 @@ body {
   padding: 16px;
 }
 
+/* Text readability: limit line length for better reading comprehension */
+p, .text-content {
+  max-width: 75ch;
+}
+
 .container {
   max-width: 1200px;
   margin: 0 auto;
@@ -196,12 +201,14 @@ header h1 {
   border: 1px solid var(--border);
   border-radius: var(--radius);
   font-size: 1.125rem;
-  line-height: 1.8;
+  line-height: 1.5;
   color: var(--text-primary);
   background: var(--card-background);
   resize: none;
   font-family: inherit;
   transition: var(--transition);
+  max-width: 80ch;
+  margin: 0 auto;
 }
 
 .zen-mode-textarea:focus {
@@ -1100,7 +1107,7 @@ form {
 
 /* Entry Metadata - Header Section */
 .entry-metadata {
-  padding: 8px 14px 6px 14px;
+  padding: 15px 18px;
   border-bottom: 1px solid rgba(0, 0, 0, 0.03);
 }
 
@@ -1117,7 +1124,7 @@ form {
   font-size: 0.6875rem;
   font-weight: 500;
   flex-grow: 1;
-  line-height: 1.3;
+  line-height: 1.4;
 }
 
 .entry-menu-btn {
@@ -1147,12 +1154,12 @@ form {
   color: var(--text-primary);
   font-weight: 600;
   margin: 0;
-  line-height: 1.3;
+  line-height: 1.4;
 }
 
 /* Entry Content - Main Section */
 .entry-content {
-  padding: 12px 18px;
+  padding: 15px 18px;
 }
 
 .entry-content:empty {
@@ -1162,14 +1169,14 @@ form {
 .entry-notes {
   color: var(--text-secondary);
   font-size: 0.875rem;
-  line-height: 1.6;
+  line-height: 1.5;
   margin-top: 0;
-  max-width: 70ch;
+  max-width: 75ch;
 }
 
 /* Entry References - URL Links Section */
 .entry-references {
-  padding: 12px 18px;
+  padding: 15px 18px;
   border-top: 1px solid rgba(0, 0, 0, 0.03);
   display: flex;
   flex-wrap: wrap;
@@ -1221,7 +1228,7 @@ form {
 
 /* Entry Attachments - Media Section */
 .entry-attachments {
-  padding: 16px 18px 14px 18px;
+  padding: 16px 18px 15px 18px;
   background: rgba(0, 0, 0, 0.01);
   border-top: 1px solid rgba(0, 0, 0, 0.03);
 }
