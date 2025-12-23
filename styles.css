@@ -231,6 +231,9 @@ header h1 {
   resize: none;
   font-family: inherit;
   transition: var(--transition);
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 
 .zen-mode-textarea:focus {
