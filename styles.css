@@ -207,15 +207,18 @@ header h1 {
 .zen-line-numbers {
   padding: 20px 12px 20px 20px;
   font-size: 1.125rem;
-  line-height: 1.5;
   color: var(--text-muted);
   background: var(--card-background);
   text-align: right;
   user-select: none;
   overflow-y: hidden;
-  white-space: pre;
   font-family: inherit;
   min-width: 50px;
+}
+
+.zen-line-numbers div {
+  text-align: right;
+  padding-right: 0;
 }
 
 .zen-mode-textarea {

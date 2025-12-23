@@ -556,9 +556,47 @@ export class EntryEditFormComponent extends WebComponent {
         const lines = zenTextarea.value.split('\n');
         const lineCount = lines.length;
 
-        // Generate line numbers
-        const numbersHtml = Array.from({ length: lineCount }, (_, i) => i + 1).join('\n');
-        lineNumbers.textContent = numbersHtml;
+        // Get textarea's computed styles for accurate measurement
+        const textareaStyles = window.getComputedStyle(zenTextarea);
+        const paddingTop = parseFloat(textareaStyles.paddingTop);
+        const width = zenTextarea.clientWidth - parseFloat(textareaStyles.paddingLeft) - parseFloat(textareaStyles.paddingRight);
+
+        // Create a hidden div to measure wrapped line heights
+        let measuringDiv = document.getElementById('zen-line-measurer') as HTMLDivElement;
+        if (!measuringDiv) {
+            measuringDiv = document.createElement('div');
+            measuringDiv.id = 'zen-line-measurer';
+            document.body.appendChild(measuringDiv);
+        }
+
+        // Update measuring div styles to match textarea
+        measuringDiv.style.cssText = `
+            position: absolute;
+            visibility: hidden;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            font-family: ${textareaStyles.fontFamily};
+            font-size: ${textareaStyles.fontSize};
+            line-height: ${textareaStyles.lineHeight};
+            padding: 0;
+            width: ${width}px;
+        `;
+
+        // Generate line numbers with proper positioning
+        let html = '';
+        let currentTop = paddingTop;
+
+        for (let i = 0; i < lineCount; i++) {
+            const lineText = lines[i] || ' '; // Use space for empty lines
+            measuringDiv.textContent = lineText;
+            const lineVisualHeight = measuringDiv.offsetHeight;
+
+            html += `<div style="height: ${lineVisualHeight}px; line-height: ${lineVisualHeight}px;">${i + 1}</div>`;
+            currentTop += lineVisualHeight;
+        }
+
+        lineNumbers.innerHTML = html;
 
         // Sync scroll
         lineNumbers.scrollTop = zenTextarea.scrollTop;
