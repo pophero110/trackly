@@ -295,17 +295,18 @@ export class EntryFormComponent extends WebComponent {
                 const isVisible = imageMenu.style.display === 'block';
 
                 if (!isVisible) {
-                    // Position the menu above the button (top left)
+                    // Position the menu above the button with right edge aligned to button's left edge
                     const rect = imageMenuBtn.getBoundingClientRect();
 
-                    // Temporarily show menu to get its height
+                    // Temporarily show menu to get its dimensions
                     imageMenu.style.visibility = 'hidden';
                     imageMenu.style.display = 'block';
                     const menuHeight = imageMenu.offsetHeight;
+                    const menuWidth = imageMenu.offsetWidth;
                     imageMenu.style.visibility = 'visible';
 
                     imageMenu.style.top = `${rect.top - menuHeight - 4}px`;
-                    imageMenu.style.left = `${rect.left}px`;
+                    imageMenu.style.left = `${rect.left - menuWidth}px`;
                 } else {
                     imageMenu.style.display = 'none';
                 }
