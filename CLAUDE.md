@@ -21,6 +21,10 @@ This file contains guidelines and rules for Claude Code when working on this pro
 - Use TypeScript without transpilation (see ADR 0004)
 - Follow Web Components patterns (see ADR 0001)
 - Use URL as the single source of truth for state (see ADR 0002)
+- **Property names should always be lowercase**
+  - Entity property names must be in lowercase
+  - This ensures consistency across the application
+  - Applies to custom properties created by users
 
 ### UI/UX Principles
 - Minimize visual noise and distractions
