@@ -54,7 +54,7 @@ export class EntryFormComponent extends WebComponent {
                         <label for="entry-notes" style="margin-bottom: 0;">Notes</label>
                         <button type="button" id="zen-mode-btn" class="btn-zen-mode" title="Zen mode (focus on writing)">🧘</button>
                     </div>
-                    <textarea id="entry-notes" rows="3"></textarea>
+                    <textarea id="entry-notes" rows="5"></textarea>
                 </div>
 
                 <input type="file" id="image-upload" accept="image/*" style="display: none;" multiple>
