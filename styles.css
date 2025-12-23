@@ -194,12 +194,37 @@ header h1 {
   color: var(--text-primary);
 }
 
+.zen-mode-editor {
+  flex: 1;
+  display: flex;
+  gap: 0;
+  overflow: hidden;
+  max-width: 80ch;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.zen-line-numbers {
+  padding: 20px 12px 20px 20px;
+  font-size: 1.125rem;
+  line-height: 1.5;
+  color: var(--text-muted);
+  background: var(--card-background);
+  text-align: right;
+  user-select: none;
+  overflow-y: hidden;
+  white-space: pre;
+  font-family: inherit;
+  border-right: 1px solid var(--border);
+  min-width: 50px;
+}
+
 .zen-mode-textarea {
   flex: 1;
   width: 100%;
   padding: 20px;
   border: none;
-  border-radius: var(--radius);
+  border-radius: 0;
   font-size: 1.125rem;
   line-height: 1.5;
   color: var(--text-primary);
@@ -207,8 +232,6 @@ header h1 {
   resize: none;
   font-family: inherit;
   transition: var(--transition);
-  max-width: 80ch;
-  margin: 0 auto;
 }
 
 .zen-mode-textarea:focus {

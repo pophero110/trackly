@@ -76,7 +76,10 @@ export class EntryFormComponent extends WebComponent {
                         <span class="zen-mode-title">Notes</span>
                         <button type="button" id="zen-mode-close" class="btn-zen-close" title="Exit zen mode (Esc)">✕</button>
                     </div>
-                    <textarea id="zen-mode-textarea" class="zen-mode-textarea" placeholder="Write your notes here..."></textarea>
+                    <div class="zen-mode-editor">
+                        <div id="zen-line-numbers" class="zen-line-numbers"></div>
+                        <textarea id="zen-mode-textarea" class="zen-mode-textarea" placeholder="Write your notes here..."></textarea>
+                    </div>
                 </div>
             </div>
         `;
@@ -538,6 +541,23 @@ export class EntryFormComponent extends WebComponent {
         }
     }
 
+    private updateZenLineNumbers(): void {
+        const zenTextarea = this.querySelector('#zen-mode-textarea') as HTMLTextAreaElement;
+        const lineNumbers = this.querySelector('#zen-line-numbers') as HTMLElement;
+
+        if (!zenTextarea || !lineNumbers) return;
+
+        const lines = zenTextarea.value.split('\n');
+        const lineCount = lines.length;
+
+        // Generate line numbers
+        const numbersHtml = Array.from({ length: lineCount }, (_, i) => i + 1).join('\n');
+        lineNumbers.textContent = numbersHtml;
+
+        // Sync scroll
+        lineNumbers.scrollTop = zenTextarea.scrollTop;
+    }
+
     private openZenMode(): void {
         const notesTextarea = this.querySelector('#entry-notes') as HTMLTextAreaElement;
         const zenOverlay = this.querySelector('#zen-mode-overlay') as HTMLElement;
@@ -550,6 +570,18 @@ export class EntryFormComponent extends WebComponent {
 
         // Show zen mode overlay
         zenOverlay.style.display = 'flex';
+
+        // Update line numbers
+        this.updateZenLineNumbers();
+
+        // Add event listeners for line number updates
+        zenTextarea.addEventListener('input', () => this.updateZenLineNumbers());
+        zenTextarea.addEventListener('scroll', () => {
+            const lineNumbers = this.querySelector('#zen-line-numbers') as HTMLElement;
+            if (lineNumbers) {
+                lineNumbers.scrollTop = zenTextarea.scrollTop;
+            }
+        });
 
         // Focus on zen mode textarea
         setTimeout(() => zenTextarea.focus(), 100);
