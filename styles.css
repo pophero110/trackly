@@ -39,7 +39,7 @@ p, .text-content {
 .container {
   max-width: 1200px;
   margin: 0 auto;
-  background: var(--card-background);
+  background: var(--background);
   border-radius: var(--radius);
   box-shadow: var(--shadow-lg);
   overflow: hidden;
