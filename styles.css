@@ -1147,11 +1147,12 @@ form {
 }
 
 .entry-timestamp {
-  color: var(--text-secondary);
+  color: var(--text-muted);
   font-size: 0.875rem;
-  font-weight: 500;
+  font-weight: 400;
   flex-grow: 1;
   line-height: 1.4;
+  opacity: 0.7;
 }
 
 .entry-menu-btn {
@@ -1178,10 +1179,11 @@ form {
 
 .entry-title {
   font-size: 1rem;
-  color: var(--text-primary);
-  font-weight: 600;
+  color: var(--text-secondary);
+  font-weight: 500;
   margin: 0;
   line-height: 1.4;
+  opacity: 0.8;
 }
 
 /* Entry Content - Main Section */
