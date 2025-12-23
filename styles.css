@@ -294,6 +294,7 @@ form {
   border-radius: var(--radius);
   box-shadow: var(--shadow);
   border: 1px solid var(--border);
+  overflow: visible;
 }
 
 .form-group {
@@ -423,12 +424,14 @@ form {
   align-items: center;
   margin-top: 20px;
   gap: 12px;
+  overflow: visible;
 }
 
 .action-menu-buttons {
   display: flex;
   gap: 8px;
   align-items: center;
+  position: relative;
 }
 
 .btn-action-menu {
@@ -1623,15 +1626,16 @@ slide-up-panel:not(.active) .modal-dialog {
 .image-dropdown-menu {
   position: absolute;
   top: 100%;
-  right: 0;
+  left: 0;
   margin-top: 4px;
   background: var(--card-background);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   box-shadow: var(--shadow-lg);
   padding: 4px 0;
-  min-width: 150px;
-  z-index: 2000;
+  min-width: 160px;
+  z-index: 10000;
+  white-space: nowrap;
 }
 
 .context-menu.active {
