@@ -20,13 +20,36 @@ export class EntryEditFormComponent extends WebComponent {
             // Don't re-render if we're in the middle of auto-saving
             // This prevents the form from resetting while user is typing
             if (this.entry && !this.isAutoSaving) {
+                // Update the local entry reference to reflect store changes
+                if (this.entryId) {
+                    const entries = this.store.getEntries();
+                    const foundEntry = entries.find(e => e.id === this.entryId);
+                    if (foundEntry) {
+                        this.entry = foundEntry;
+                    }
+                }
                 this.render();
             }
         });
         // Don't auto-render, wait for setEntry()
     }
 
-    setEntry(entryId: string): void {
+    disconnectedCallback(): void {
+        // Save any pending changes when component is removed
+        if (this.autoSaveTimeout !== null) {
+            window.clearTimeout(this.autoSaveTimeout);
+            this.autoSave();
+        }
+        super.disconnectedCallback();
+    }
+
+    async setEntry(entryId: string): Promise<void> {
+        // If there's a pending auto-save, wait for it to complete
+        if (this.autoSaveTimeout !== null) {
+            window.clearTimeout(this.autoSaveTimeout);
+            await this.autoSave();
+        }
+
         this.entryId = entryId;
         const entries = this.store.getEntries();
         const foundEntry = entries.find(e => e.id === entryId);
