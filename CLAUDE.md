@@ -10,6 +10,11 @@ This file contains guidelines and rules for Claude Code when working on this pro
   - This keeps the git history clean and makes it easier to track individual changes
   - Each commit should represent a complete, logical unit of work
 
+- **Always run git push after committing changes**
+  - After successfully creating a commit, immediately push to the remote repository
+  - This ensures changes are backed up and visible to collaborators
+  - Use `git push` to push commits to the remote branch
+
 ## Project-Specific Guidelines
 
 ### Code Style
