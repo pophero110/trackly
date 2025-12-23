@@ -62,7 +62,7 @@ export class EntryFormComponent extends WebComponent {
                         <label style="margin-bottom: 0;">Images</label>
                         <div style="position: relative;">
                             <button type="button" id="image-menu-btn" class="btn-zen-mode" title="Add images">📎</button>
-                            <div id="image-menu" class="context-menu" style="display: none; top: 100%; right: 0; margin-top: 4px;">
+                            <div id="image-menu" class="image-dropdown-menu" style="display: none;">
                                 <div class="context-menu-item" id="upload-image-menu-item">📁 Upload Image</div>
                                 <div class="context-menu-item" id="capture-image-menu-item">📷 Take Photo</div>
                             </div>

@@ -1588,6 +1588,20 @@ slide-up-panel:not(.active) .modal-dialog {
   display: none;
 }
 
+.image-dropdown-menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 4px;
+  background: var(--card-background);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-lg);
+  padding: 4px 0;
+  min-width: 150px;
+  z-index: 2000;
+}
+
 .context-menu.active {
   display: block;
 }
