@@ -1,5 +1,5 @@
 # Stage 1: Install dependencies and build all packages
-FROM node:20-alpine AS builder
+FROM node:20-slim AS builder
 WORKDIR /app
 
 # Install PNPM
@@ -22,8 +22,11 @@ RUN pnpm --filter @trackly/backend exec prisma generate
 RUN pnpm build
 
 # Stage 2: Production
-FROM node:20-alpine
+FROM node:20-slim
 WORKDIR /app
+
+# Install OpenSSL and required libraries for Prisma
+RUN apt-get update -y && apt-get install -y openssl && rm -rf /var/lib/apt/lists/*
 
 # Install PNPM
 RUN npm install -g pnpm@8.12.0
