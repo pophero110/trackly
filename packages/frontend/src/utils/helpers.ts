@@ -42,11 +42,33 @@ export function getCurrentTimestamp(): string {
     return now.toISOString().slice(0, 19);
 }
 
+// Cache for URL titles to reduce repeated fetches
+const titleCache = new Map<string, string>();
+
+// Load cache from localStorage on startup
+try {
+    const cachedTitles = localStorage.getItem('url_title_cache');
+    if (cachedTitles) {
+        const parsed = JSON.parse(cachedTitles);
+        Object.entries(parsed).forEach(([url, title]) => {
+            titleCache.set(url, title as string);
+        });
+    }
+} catch {
+    // Ignore cache load errors
+}
+
 /**
  * Fetch the title of a webpage from its URL
  * Tries multiple CORS proxies with timeout, falls back to hostname
+ * Caches results to avoid repeated fetches
  */
 export async function fetchPageTitle(url: string): Promise<string> {
+    // Check cache first
+    if (titleCache.has(url)) {
+        return titleCache.get(url)!;
+    }
+
     const proxies = [
         { name: 'corsproxy.io', url: `https://corsproxy.io/?${encodeURIComponent(url)}`, parseJson: false },
         { name: 'allorigins', url: `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`, parseJson: true }
@@ -81,7 +103,11 @@ export async function fetchPageTitle(url: string): Promise<string> {
                 const title = doc.querySelector('title')?.textContent;
 
                 if (title && title.trim()) {
-                    return title.trim();
+                    const trimmedTitle = title.trim();
+                    // Cache the successful result
+                    titleCache.set(url, trimmedTitle);
+                    saveTitleCache();
+                    return trimmedTitle;
                 }
             }
         } catch (error) {
@@ -94,9 +120,27 @@ export async function fetchPageTitle(url: string): Promise<string> {
     try {
         const urlObj = new URL(url);
         const hostname = urlObj.hostname.replace('www.', '');
+        // Cache the fallback result to avoid repeated failures
+        titleCache.set(url, hostname);
+        saveTitleCache();
         return hostname;
     } catch {
+        // Cache the URL itself as last resort
+        titleCache.set(url, url);
+        saveTitleCache();
         return url;
+    }
+}
+
+/**
+ * Save title cache to localStorage
+ */
+function saveTitleCache(): void {
+    try {
+        const cacheObj = Object.fromEntries(titleCache.entries());
+        localStorage.setItem('url_title_cache', JSON.stringify(cacheObj));
+    } catch {
+        // Ignore save errors
     }
 }
 
