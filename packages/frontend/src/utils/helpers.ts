@@ -61,6 +61,11 @@ export async function fetchPageTitle(url: string): Promise<string> {
             const response = await fetch(proxy.url, { signal: controller.signal });
             clearTimeout(timeoutId);
 
+            // Check if response is successful (403, 429, etc. will fail here)
+            if (!response.ok) {
+                continue; // Skip to next proxy silently
+            }
+
             let html: string;
             if (proxy.parseJson) {
                 const data = await response.json();
@@ -80,7 +85,7 @@ export async function fetchPageTitle(url: string): Promise<string> {
                 }
             }
         } catch (error) {
-            // Try next proxy
+            // Try next proxy silently (network errors, timeouts, etc.)
             continue;
         }
     }
