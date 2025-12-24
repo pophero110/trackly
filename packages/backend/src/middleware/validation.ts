@@ -69,6 +69,8 @@ export const createEntrySchema = z.object({
 });
 
 export const updateEntrySchema = z.object({
+  entityId: z.string().optional(),
+  entityName: z.string().optional(),
   timestamp: z.string().datetime().optional(),
   value: z.union([z.string(), z.number(), z.boolean()]).optional(),
   valueDisplay: z.string().optional(),

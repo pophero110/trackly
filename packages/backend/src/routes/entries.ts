@@ -165,8 +165,22 @@ router.put('/:id', validate(updateEntrySchema), async (req: AuthRequest, res, ne
       return;
     }
 
+    // If entityId is being updated, verify the new entity exists and belongs to user
+    if (req.body.entityId && req.body.entityId !== existingEntry.entityId) {
+      const newEntity = await prisma.entity.findFirst({
+        where: { id: req.body.entityId, userId }
+      });
+
+      if (!newEntity) {
+        res.status(404).json({ error: 'New entity not found' });
+        return;
+      }
+    }
+
     // Prepare update data
     const updateData: any = {};
+    if (req.body.entityId !== undefined) updateData.entityId = req.body.entityId;
+    if (req.body.entityName !== undefined) updateData.entityName = req.body.entityName;
     if (req.body.timestamp) updateData.timestamp = new Date(req.body.timestamp);
     if (req.body.value !== undefined) updateData.value = req.body.value?.toString() || null;
     if (req.body.valueDisplay !== undefined) updateData.valueDisplay = req.body.valueDisplay || null;
