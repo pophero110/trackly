@@ -55,11 +55,20 @@ export class EntryEditFormComponent extends WebComponent {
         // Get value input based on entity type (only if entity has valueType)
         const valueInputHtml = entity.valueType ? this.renderValueInput(entity.valueType, this.entry.value, entity.options) : '';
 
+        // Get all entities for the dropdown
+        const allEntities = this.store.getEntities();
+        const entityOptionsHtml = allEntities.map(e => {
+            const selected = e.id === entity.id ? 'selected' : '';
+            return `<option value="${e.id}" ${selected}>${escapeHtml(e.name)} (${e.type})</option>`;
+        }).join('');
+
         this.innerHTML = `
             <form id="entry-edit-form">
                 <div class="form-group">
-                    <label>Entity</label>
-                    <input type="text" value="${escapeHtml(entity.name)} (${entity.type})" disabled style="background: var(--background); color: var(--text-muted);">
+                    <label for="entry-entity">Entity</label>
+                    <select id="entry-entity">
+                        ${entityOptionsHtml}
+                    </select>
                 </div>
 
                 <div id="value-input-container">
@@ -276,6 +285,7 @@ export class EntryEditFormComponent extends WebComponent {
 
     protected attachEventListeners(): void {
         const form = this.querySelector('#entry-edit-form') as HTMLFormElement;
+        const entitySelect = this.querySelector('#entry-entity') as HTMLSelectElement;
         const imageMenuBtn = this.querySelector('#image-menu-btn') as HTMLButtonElement;
         const imageMenu = this.querySelector('#image-menu') as HTMLElement;
         const uploadMenuItem = this.querySelector('#upload-image-menu-item') as HTMLElement;
@@ -283,6 +293,13 @@ export class EntryEditFormComponent extends WebComponent {
         const fileInput = this.querySelector('#image-upload') as HTMLInputElement;
         const zenModeBtn = this.querySelector('#zen-mode-btn') as HTMLButtonElement;
         const zenModeClose = this.querySelector('#zen-mode-close') as HTMLButtonElement;
+
+        // Handle entity change - update value and property inputs
+        if (entitySelect) {
+            entitySelect.addEventListener('change', () => {
+                this.handleEntityChange(entitySelect.value);
+            });
+        }
 
         if (form) {
             form.addEventListener('submit', (e) => this.handleSubmit(e));
@@ -710,6 +727,28 @@ export class EntryEditFormComponent extends WebComponent {
         zenOverlay.style.display = 'none';
     }
 
+    private handleEntityChange(newEntityId: string): void {
+        const newEntity = this.store.getEntityById(newEntityId);
+        if (!newEntity) return;
+
+        // Update value input container
+        const valueContainer = this.querySelector('#value-input-container');
+        if (valueContainer) {
+            const valueInputHtml = newEntity.valueType ? this.renderValueInput(newEntity.valueType, undefined, newEntity.options) : '';
+            valueContainer.innerHTML = valueInputHtml;
+            this.attachRangeListener();
+        }
+
+        // Update properties input container
+        const propertiesContainer = this.querySelector('#properties-input-container');
+        if (propertiesContainer) {
+            const propertiesHtml = newEntity.properties && newEntity.properties.length > 0
+                ? this.renderPropertyInputs(newEntity.properties, {})
+                : '';
+            propertiesContainer.innerHTML = propertiesHtml;
+        }
+    }
+
     public checkUnsavedChanges(): boolean {
         if (this.hasUnsavedChanges) {
             return confirm('You have unsaved changes. Are you sure you want to close without saving?');
@@ -725,7 +764,10 @@ export class EntryEditFormComponent extends WebComponent {
         }
 
         try {
-            const entity = this.store.getEntityById(this.entry.entityId);
+            // Get the selected entity (may be different from original)
+            const entitySelect = this.querySelector('#entry-entity') as HTMLSelectElement;
+            const selectedEntityId = entitySelect ? entitySelect.value : this.entry.entityId;
+            const entity = this.store.getEntityById(selectedEntityId);
             if (!entity) {
                 throw new Error('Entity not found');
             }
@@ -806,13 +848,21 @@ export class EntryEditFormComponent extends WebComponent {
                 });
             }
 
-            // Update the entry
-            this.store.updateEntry(this.entryId, {
+            // Update the entry (include entityId and entityName if changed)
+            const updates: any = {
                 value: value,
                 notes: notes,
                 images: this.images.length > 0 ? this.images : undefined,
                 propertyValues: propertyValues
-            });
+            };
+
+            // Add entityId and entityName if entity was changed
+            if (selectedEntityId !== this.entry.entityId) {
+                updates.entityId = selectedEntityId;
+                updates.entityName = entity.name;
+            }
+
+            this.store.updateEntry(this.entryId, updates);
 
             // Process URLs asynchronously in text fields
             if (value && typeof value === 'string' && entity.valueType === 'text') {
