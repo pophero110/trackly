@@ -1,63 +1,43 @@
-import { Storage } from '../utils/storage.js';
 import { Entity } from '../models/Entity.js';
 import { Entry } from '../models/Entry.js';
 import { IEntity, IEntry, StoreListener, Unsubscribe } from '../types/index.js';
+import { APIClient } from '../api/client.js';
 
 /**
- * Central state management store
+ * Central state management store - API-backed
  */
 export class Store {
     private entities: Entity[];
     private entries: Entry[];
     private listeners: StoreListener[];
     private selectedEntityId: string | null;
+    private isLoaded: boolean;
 
     constructor() {
         this.entities = [];
         this.entries = [];
         this.listeners = [];
         this.selectedEntityId = null;
+        this.isLoaded = false;
         this.loadData();
     }
 
-    // Load data from localStorage
-    private loadData(): void {
-        const entitiesData = Storage.load<IEntity[]>('entities') || [];
-        const entriesData = Storage.load<IEntry[]>('entries') || [];
+    // Load data from API
+    private async loadData(): Promise<void> {
+        try {
+            const [entitiesData, entriesData] = await Promise.all([
+                APIClient.getEntities(),
+                APIClient.getEntries()
+            ]);
 
-        // Migrate Task entities from 'number'/'status' to 'select' valueType
-        const migratedEntities = entitiesData.map(data => {
-            // Check for old 'status' or 'number' value types for Task entities
-            if (data.type === 'Task' && (data.valueType === 'number' || (data.valueType as string) === 'status')) {
-                return {
-                    ...data,
-                    valueType: 'select' as const,
-                    options: [
-                        { value: 'todo', label: 'To Do' },
-                        { value: 'in-progress', label: 'In Progress' },
-                        { value: 'done', label: 'Done' }
-                    ]
-                };
-            }
-            return data;
-        });
-
-        this.entities = migratedEntities.map(data => new Entity(data));
-        this.entries = entriesData.map(data => new Entry(data));
-
-        // Save migrated data if any migrations occurred
-        const hadMigrations = migratedEntities.some((entity, index) =>
-            entity.valueType !== entitiesData[index].valueType
-        );
-        if (hadMigrations) {
-            this.saveData();
+            this.entities = entitiesData.map(data => new Entity(data));
+            this.entries = entriesData.map(data => new Entry(data));
+            this.isLoaded = true;
+            this.notify();
+        } catch (error) {
+            console.error('Error loading data:', error);
+            // If we get a 401, the API client will handle redirect to login
         }
-    }
-
-    // Save data to localStorage
-    private saveData(): void {
-        Storage.save('entities', this.entities.map(e => e.toJSON()));
-        Storage.save('entries', this.entries.map(e => e.toJSON()));
     }
 
     // Subscribe to state changes
@@ -86,7 +66,7 @@ export class Store {
         return this.entities.find(e => e.name === name);
     }
 
-    addEntity(entity: Entity): void {
+    async addEntity(entity: Entity): Promise<void> {
         const errors = entity.validate();
         if (errors.length > 0) {
             throw new Error(errors.join(', '));
@@ -96,33 +76,44 @@ export class Store {
             throw new Error('An entity with this name already exists');
         }
 
-        this.entities.push(entity);
-        this.saveData();
+        // Create entity via API
+        const created = await APIClient.createEntity({
+            name: entity.name,
+            type: entity.type,
+            categories: entity.categories,
+            valueType: entity.valueType,
+            options: entity.options,
+            properties: entity.properties
+        });
+
+        this.entities.push(new Entity(created));
         this.notify();
     }
 
-    updateEntity(id: string, updates: Partial<IEntity>): void {
+    async updateEntity(id: string, updates: Partial<IEntity>): Promise<void> {
         const index = this.entities.findIndex(e => e.id === id);
         if (index === -1) {
             throw new Error('Entity not found');
         }
 
-        const currentEntity = this.entities[index];
-        this.entities[index] = new Entity({ ...currentEntity, ...updates });
+        // Update via API
+        const updated = await APIClient.updateEntity(id, updates);
+        this.entities[index] = new Entity(updated);
 
         const errors = this.entities[index].validate();
         if (errors.length > 0) {
             throw new Error(errors.join(', '));
         }
 
-        this.saveData();
         this.notify();
     }
 
-    deleteEntity(id: string): void {
+    async deleteEntity(id: string): Promise<void> {
+        // Delete via API (cascade deletes entries on backend)
+        await APIClient.deleteEntity(id);
+
         this.entities = this.entities.filter(e => e.id !== id);
         this.entries = this.entries.filter(e => e.entityId !== id);
-        this.saveData();
         this.notify();
     }
 
@@ -135,38 +126,56 @@ export class Store {
         return this.entries.filter(e => e.entityId === entityId);
     }
 
-    addEntry(entry: Entry): void {
+    getEntryById(id: string): Entry | undefined {
+        return this.entries.find(e => e.id === id);
+    }
+
+    async addEntry(entry: Entry): Promise<void> {
         const errors = entry.validate();
         if (errors.length > 0) {
             throw new Error(errors.join(', '));
         }
 
-        this.entries.push(entry);
-        this.saveData();
+        // Create entry via API
+        const created = await APIClient.createEntry({
+            entityId: entry.entityId,
+            entityName: entry.entityName,
+            timestamp: entry.timestamp,
+            value: entry.value,
+            valueDisplay: entry.valueDisplay,
+            notes: entry.notes,
+            images: entry.images,
+            propertyValues: entry.propertyValues,
+            propertyValueDisplays: entry.propertyValueDisplays
+        });
+
+        this.entries.push(new Entry(created));
         this.notify();
     }
 
-    updateEntry(id: string, updates: Partial<IEntry>): void {
+    async updateEntry(id: string, updates: Partial<IEntry>): Promise<void> {
         const index = this.entries.findIndex(e => e.id === id);
         if (index === -1) {
             throw new Error('Entry not found');
         }
 
-        const currentEntry = this.entries[index];
-        this.entries[index] = new Entry({ ...currentEntry, ...updates });
+        // Update via API
+        const updated = await APIClient.updateEntry(id, updates);
+        this.entries[index] = new Entry(updated);
 
         const errors = this.entries[index].validate();
         if (errors.length > 0) {
             throw new Error(errors.join(', '));
         }
 
-        this.saveData();
         this.notify();
     }
 
-    deleteEntry(id: string): void {
+    async deleteEntry(id: string): Promise<void> {
+        // Delete via API
+        await APIClient.deleteEntry(id);
+
         this.entries = this.entries.filter(e => e.id !== id);
-        this.saveData();
         this.notify();
     }
 
@@ -178,5 +187,10 @@ export class Store {
     setSelectedEntityId(entityId: string | null): void {
         this.selectedEntityId = entityId;
         this.notify();
+    }
+
+    // Check if data is loaded
+    getIsLoaded(): boolean {
+        return this.isLoaded;
     }
 }

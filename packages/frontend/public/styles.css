@@ -1663,3 +1663,143 @@ slide-up-panel:not(.active) .modal-dialog {
 .context-menu-item.danger:hover {
   background: #fee2e2;
 }
+     1	
+     2	/* Authentication Component */
+     3	.auth-container {
+     4	  display: flex;
+     5	  align-items: center;
+     6	  justify-content: center;
+     7	  min-height: 100vh;
+     8	  padding: 20px;
+     9	  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    10	}
+    11	
+    12	.auth-card {
+    13	  background: var(--card-background);
+    14	  border-radius: var(--radius);
+    15	  box-shadow: var(--shadow-lg);
+    16	  padding: 40px;
+    17	  max-width: 420px;
+    18	  width: 100%;
+    19	}
+    20	
+    21	.auth-title {
+    22	  font-size: 32px;
+    23	  font-weight: 700;
+    24	  text-align: center;
+    25	  color: var(--text-primary);
+    26	  margin-bottom: 8px;
+    27	}
+    28	
+    29	.auth-subtitle {
+    30	  text-align: center;
+    31	  color: var(--text-secondary);
+    32	  margin-bottom: 32px;
+    33	  font-size: 16px;
+    34	}
+    35	
+    36	.auth-tabs {
+    37	  display: flex;
+    38	  gap: 8px;
+    39	  margin-bottom: 24px;
+    40	  background: var(--background);
+    41	  border-radius: var(--radius-sm);
+    42	  padding: 4px;
+    43	}
+    44	
+    45	.auth-tab {
+    46	  flex: 1;
+    47	  padding: 10px 20px;
+    48	  background: transparent;
+    49	  border: none;
+    50	  border-radius: var(--radius-sm);
+    51	  font-size: 14px;
+    52	  font-weight: 500;
+    53	  color: var(--text-secondary);
+    54	  cursor: pointer;
+    55	  transition: var(--transition);
+    56	}
+    57	
+    58	.auth-tab.active {
+    59	  background: var(--card-background);
+    60	  color: var(--primary);
+    61	  box-shadow: var(--shadow-sm);
+    62	}
+    63	
+    64	.auth-form {
+    65	  display: flex;
+    66	  flex-direction: column;
+    67	  gap: 16px;
+    68	}
+    69	
+    70	.auth-form .form-group {
+    71	  display: flex;
+    72	  flex-direction: column;
+    73	  gap: 6px;
+    74	}
+    75	
+    76	.auth-form label {
+    77	  font-size: 14px;
+    78	  font-weight: 500;
+    79	  color: var(--text-primary);
+    80	}
+    81	
+    82	.auth-form input {
+    83	  padding: 12px 16px;
+    84	  border: 1px solid var(--border);
+    85	  border-radius: var(--radius-sm);
+    86	  font-size: 16px;
+    87	  transition: var(--transition);
+    88	}
+    89	
+    90	.auth-form input:focus {
+    91	  outline: none;
+    92	  border-color: var(--primary);
+    93	  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    94	}
+    95	
+    96	.auth-form small {
+    97	  font-size: 12px;
+    98	  color: var(--text-muted);
+    99	}
+   100	
+   101	.auth-error {
+   102	  padding: 12px;
+   103	  background: #fee2e2;
+   104	  color: #991b1b;
+   105	  border-radius: var(--radius-sm);
+   106	  font-size: 14px;
+   107	  text-align: center;
+   108	}
+   109	
+   110	.auth-submit {
+   111	  margin-top: 8px;
+   112	  padding: 14px;
+   113	  background: var(--primary);
+   114	  color: white;
+   115	  border: none;
+   116	  border-radius: var(--radius-sm);
+   117	  font-size: 16px;
+   118	  font-weight: 600;
+   119	  cursor: pointer;
+   120	  transition: var(--transition);
+   121	}
+   122	
+   123	.auth-submit:hover:not(:disabled) {
+   124	  background: var(--primary-hover);
+   125	}
+   126	
+   127	.auth-submit:disabled {
+   128	  opacity: 0.6;
+   129	  cursor: not-allowed;
+   130	}
+   131	
+   132	@media (max-width: 480px) {
+   133	  .auth-card {
+   134	    padding: 24px;
+   135	  }
+   136	
+   137	  .auth-title {
+   138	    font-size: 28px;
+   139	  }
+   140	}

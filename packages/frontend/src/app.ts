@@ -10,6 +10,8 @@ import { EntityGridComponent } from './components/EntityGridComponent.js';
 import { EntryFormComponent } from './components/EntryFormComponent.js';
 import { EntryEditFormComponent } from './components/EntryEditFormComponent.js';
 import { EntryListComponent } from './components/EntryListComponent.js';
+import './components/AuthComponent.js'; // Register custom element
+import { APIClient } from './api/client.js';
 
 /**
  * Main application orchestrator
@@ -205,6 +207,14 @@ class TracklyApp {
 
 // Initialize app when DOM is ready
 document.addEventListener('DOMContentLoaded', () => {
+    // Check authentication
+    if (!APIClient.isAuthenticated()) {
+        // Show auth component
+        document.body.innerHTML = '<auth-component></auth-component>';
+        return;
+    }
+
+    // User is authenticated, show main app
     (window as any).app = new TracklyApp();
 });
 
