@@ -1,34 +1,63 @@
-# Use Node.js for building TypeScript
-FROM node:18-alpine AS builder
-
+# Stage 1: Install dependencies and build all packages
+FROM node:20-alpine AS builder
 WORKDIR /app
 
-# Copy package files
-COPY package*.json ./
+# Install PNPM
+RUN npm install -g pnpm@8.12.0
 
-# Install dependencies
-RUN npm ci
+# Copy workspace configuration
+COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
+COPY turbo.json ./
 
-# Copy source files
-COPY . .
+# Copy all packages
+COPY packages/ ./packages/
 
-# Build TypeScript
-RUN npm run build
+# Install dependencies for all workspaces
+RUN pnpm install --frozen-lockfile
 
-# Production stage - use nginx to serve static files
-FROM nginx:alpine
+# Generate Prisma Client
+RUN pnpm --filter @trackly/backend exec prisma generate
 
-# Copy built files to nginx
-COPY --from=builder /app/dist /usr/share/nginx/html/dist
-COPY --from=builder /app/index.html /usr/share/nginx/html/
-COPY --from=builder /app/styles.css /usr/share/nginx/html/
+# Build all packages (shared → frontend → backend)
+RUN pnpm build
 
-# Copy nginx configuration template
-COPY nginx.conf /etc/nginx/templates/default.conf.template
+# Stage 2: Production
+FROM node:20-alpine
+WORKDIR /app
 
-# Railway provides PORT env variable, default to 8080
-ENV PORT=8080
+# Install PNPM
+RUN npm install -g pnpm@8.12.0
 
-EXPOSE $PORT
+# Copy workspace configuration
+COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
 
-CMD ["nginx", "-g", "daemon off;"]
+# Copy package.json files for all packages
+COPY packages/frontend/package.json ./packages/frontend/
+COPY packages/backend/package.json ./packages/backend/
+COPY packages/shared/package.json ./packages/shared/
+
+# Install production dependencies only
+RUN pnpm install --prod --frozen-lockfile
+
+# Copy built files from builder
+COPY --from=builder /app/packages/shared/dist ./packages/shared/dist
+COPY --from=builder /app/packages/frontend/dist ./packages/frontend/dist
+COPY --from=builder /app/packages/backend/dist ./packages/backend/dist
+
+# Copy static assets
+COPY packages/frontend/public ./packages/frontend/public
+
+# Copy Prisma files and generated client
+COPY --from=builder /app/packages/backend/prisma ./packages/backend/prisma
+COPY --from=builder /app/packages/backend/node_modules/.prisma ./packages/backend/node_modules/.prisma
+COPY --from=builder /app/packages/backend/node_modules/@prisma ./packages/backend/node_modules/@prisma
+
+# Set environment
+ENV NODE_ENV=production
+ENV PORT=3000
+
+# Expose port
+EXPOSE 3000
+
+# Run migrations and start backend server (which serves frontend)
+CMD ["sh", "-c", "cd packages/backend && pnpm exec prisma migrate deploy && node dist/index.js"]
