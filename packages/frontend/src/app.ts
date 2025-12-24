@@ -204,7 +204,31 @@ class TracklyApp {
     }
 
     private setupSignOut(): void {
+        const hamburgerBtn = document.getElementById('hamburger-btn');
+        const dropdownMenu = document.getElementById('dropdown-menu');
         const signOutBtn = document.getElementById('signout-btn');
+
+        // Toggle dropdown menu
+        if (hamburgerBtn && dropdownMenu) {
+            hamburgerBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                dropdownMenu.classList.toggle('open');
+            });
+
+            // Close dropdown when clicking outside
+            document.addEventListener('click', () => {
+                if (dropdownMenu.classList.contains('open')) {
+                    dropdownMenu.classList.remove('open');
+                }
+            });
+
+            // Prevent dropdown from closing when clicking inside it
+            dropdownMenu.addEventListener('click', (e) => {
+                e.stopPropagation();
+            });
+        }
+
+        // Handle sign out
         if (signOutBtn) {
             signOutBtn.addEventListener('click', () => {
                 if (confirm('Are you sure you want to sign out?')) {
