@@ -470,11 +470,10 @@ form {
 
 .btn-primary:hover {
   background: var(--primary-hover);
-  box-shadow: var(--shadow-md);
 }
 
 .btn-primary:active {
-  transform: translateY(1px);
+  opacity: 0.9;
 }
 
 .btn-icon {
@@ -493,12 +492,11 @@ form {
 }
 
 .btn-icon.btn-primary:hover {
-  transform: scale(1.05);
-  box-shadow: var(--shadow-md);
+  background: var(--primary-hover);
 }
 
 .btn-icon.btn-primary:active {
-  transform: scale(0.95);
+  opacity: 0.9;
 }
 
 .btn-danger {
