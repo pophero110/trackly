@@ -486,6 +486,7 @@ form {
   border: none;
   outline: none;
   border-radius: var(--radius-sm);
+  cursor: pointer;
   transition: var(--transition);
 }
 
