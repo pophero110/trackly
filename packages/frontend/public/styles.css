@@ -484,6 +484,7 @@ form {
   height: 40px;
   padding: 0;
   border: none;
+  outline: none;
   border-radius: var(--radius-sm);
   transition: var(--transition);
 }
