@@ -1,0 +1,68 @@
+// Prisma schema for Trackly
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String   // Hashed with bcrypt
+  name      String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  entities  Entity[]
+  entries   Entry[]
+
+  @@index([email])
+}
+
+model Entity {
+  id         String   @id @default(cuid())
+  name       String
+  type       String
+  categories String[] // PostgreSQL array
+  valueType  String?
+  options    Json?    // Store as JSONB
+  properties Json?    // Store as JSONB
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  entries    Entry[]
+
+  @@index([userId])
+  @@index([name])
+}
+
+model Entry {
+  id                    String   @id @default(cuid())
+  entityId              String
+  entityName            String   // Denormalized for faster queries
+  timestamp             DateTime
+  value                 String?
+  valueDisplay          String?
+  notes                 String?
+  images                String[] // Base64 or URLs
+  propertyValues        Json?
+  propertyValueDisplays Json?
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  userId                String
+  user                  User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  entity                Entity   @relation(fields: [entityId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([entityId])
+  @@index([timestamp])
+}
