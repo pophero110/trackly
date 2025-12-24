@@ -15,8 +15,10 @@ app.use(corsMiddleware);
 app.use(express.json({ limit: '10mb' })); // For base64 images
 
 // Serve frontend static files from monorepo
-const frontendPublicPath = path.join(__dirname, '../../../frontend/public');
-const frontendDistPath = path.join(__dirname, '../../../frontend/dist');
+// __dirname when running tsx is the source directory: packages/backend/src
+// Go up to packages/backend, then to packages/, then to frontend/
+const frontendPublicPath = path.join(__dirname, '../../frontend/public');
+const frontendDistPath = path.join(__dirname, '../../frontend/dist');
 app.use(express.static(frontendPublicPath));
 app.use('/dist', express.static(frontendDistPath));
 
