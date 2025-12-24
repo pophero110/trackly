@@ -60,5 +60,5 @@ ENV PORT=3000
 # Expose port
 EXPOSE 3000
 
-# Run migrations and start backend server (which serves frontend)
-CMD ["sh", "-c", "cd packages/backend && pnpm exec prisma migrate deploy && node dist/index.js"]
+# Run migrations (if DATABASE_URL is set) and start backend server
+CMD ["sh", "-c", "cd packages/backend && if [ -n \"$DATABASE_URL\" ]; then pnpm exec prisma migrate deploy; fi && node dist/index.js"]
