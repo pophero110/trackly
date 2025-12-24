@@ -3,6 +3,9 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { corsMiddleware } from './middleware/cors.js';
 import { errorHandler, notFoundHandler } from './middleware/errorHandler.js';
+import authRoutes from './routes/auth.js';
+import entityRoutes from './routes/entities.js';
+import entryRoutes from './routes/entries.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -22,10 +25,10 @@ const frontendDistPath = path.join(__dirname, '../../frontend/dist');
 app.use(express.static(frontendPublicPath));
 app.use('/dist', express.static(frontendDistPath));
 
-// API Routes (to be added)
-// app.use('/api/auth', authRoutes);
-// app.use('/api/entities', entityRoutes);
-// app.use('/api/entries', entryRoutes);
+// API Routes
+app.use('/api/auth', authRoutes);
+app.use('/api/entities', entityRoutes);
+app.use('/api/entries', entryRoutes);
 
 // Health check
 app.get('/api/health', (_req, res) => {
