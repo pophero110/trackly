@@ -1,28 +1,39 @@
 {
-  "name": "trackly",
+  "name": "trackly-monorepo",
   "version": "1.0.0",
-  "description": "A component-based web app for tracking habits, tasks, expenses, and moods",
-  "type": "module",
+  "description": "A hybrid monolith app for tracking habits, tasks, expenses, and moods",
+  "private": true,
+  "workspaces": [
+    "packages/*"
+  ],
   "scripts": {
-    "build": "tsc",
-    "start": "npx serve -s . -l 8080",
-    "watch": "concurrently \"tsc --watch\" \"live-server --wait=500\"",
-    "clean": "rm -rf dist",
-    "dev": "npm run watch"
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "start": "pnpm --filter @trackly/backend start",
+    "test": "turbo run test",
+    "lint": "turbo run lint",
+    "clean": "turbo run clean && rm -rf node_modules",
+    "db:migrate": "pnpm --filter @trackly/backend db:migrate",
+    "db:push": "pnpm --filter @trackly/backend db:push",
+    "db:seed": "pnpm --filter @trackly/backend db:seed",
+    "db:studio": "pnpm --filter @trackly/backend db:studio",
+    "docker:build": "docker build -t trackly .",
+    "docker:run": "docker run -p 3000:3000 --env-file .env trackly"
   },
+  "devDependencies": {
+    "turbo": "^1.11.2",
+    "typescript": "^5.3.3"
+  },
+  "packageManager": "pnpm@8.12.0",
   "keywords": [
     "tracking",
     "habits",
     "tasks",
     "expenses",
     "mood",
-    "typescript"
+    "typescript",
+    "monorepo"
   ],
   "author": "",
-  "license": "MIT",
-  "devDependencies": {
-    "typescript": "^5.3.3",
-    "concurrently": "^8.2.2",
-    "live-server": "^1.2.2"
-  }
+  "license": "MIT"
 }
