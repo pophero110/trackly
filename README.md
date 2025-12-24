@@ -1,206 +1,290 @@
 # Trackly - Personal Tracking App
 
-A modern, component-based web application for tracking habits, tasks, expenses, and moods. Built with TypeScript and vanilla JavaScript following clean architecture principles.
+A modern full-stack web application for tracking habits, tasks, activities, and more. Built with TypeScript, Express, PostgreSQL, and deployed on Railway.
+
+## Live Demo
+
+🚀 **Production URL**: https://trackly-production.up.railway.app
+
+### Test User Credentials
+
+For testing the live application, you can use:
+
+**Email**: `railwaytest@example.com`
+**Password**: `testpass123`
+**Name**: Railway Test User
+
+Or create your own account - registration is open!
 
 ## Features
 
-- **Create Entities**: Define trackable items with type, unit, target, frequency, and categories
-- **Log Entries**: Record measurements and observations for each entity over time
-- **Data Persistence**: All data stored locally in browser's localStorage
-- **Responsive Design**: Card-based, minimalist UI that works on desktop and mobile
-- **Component-Based Architecture**: Modular, maintainable, and scalable code structure
-- **TypeScript**: Full type safety and excellent IDE support
+- **User Authentication**: Secure JWT-based authentication with bcrypt password hashing
+- **Create Entities**: Define trackable items (Habits, Tasks, Moods, etc.) with customizable properties
+- **Log Entries**: Record time-series data with notes, values, and images
+- **Full CRUD Operations**: Create, read, update, and delete entities and entries
+- **PostgreSQL Database**: Production-ready data persistence with Prisma ORM
+- **REST API**: Complete RESTful API with request validation
+- **Responsive Design**: Modern UI that works on desktop and mobile
+- **Multi-User Support**: User isolation with ownership verification
+
+## Architecture
+
+### Monorepo Structure
+
+```
+trackly/
+├── packages/
+│   ├── backend/           # Express REST API
+│   │   ├── src/
+│   │   │   ├── routes/    # API endpoints
+│   │   │   ├── middleware/# Auth & validation
+│   │   │   └── db/        # Prisma client
+│   │   └── prisma/        # Database schema & migrations
+│   ├── frontend/          # TypeScript web app
+│   │   ├── src/
+│   │   │   ├── api/       # API client
+│   │   │   ├── components/# Web components
+│   │   │   ├── state/     # State management
+│   │   │   └── models/    # Domain models
+│   │   └── public/        # Static assets
+│   └── shared/            # Shared TypeScript types
+└── Dockerfile             # Production deployment
+```
+
+### Tech Stack
+
+**Backend:**
+- Node.js 20 (Debian-based for Prisma compatibility)
+- Express.js - Web framework
+- Prisma - Database ORM
+- PostgreSQL - Database
+- JWT - Authentication tokens
+- Zod - Request validation
+- bcrypt - Password hashing
+
+**Frontend:**
+- TypeScript - Type-safe JavaScript
+- Web Components - Reusable UI components
+- Vanilla JS - No framework dependencies
+- CSS3 - Modern responsive design
+
+**Infrastructure:**
+- Railway - Hosting & PostgreSQL database
+- PNPM - Package manager
+- Turborepo - Monorepo build orchestration
+- GitHub Actions - CI/CD (auto-deploy on push to main)
 
 ## Quick Start
 
 ### Prerequisites
 
-- Node.js (v16 or higher)
-- npm or yarn
+- Node.js 20+
+- PNPM 8+
+- PostgreSQL (for local development)
 
 ### Installation
 
 ```bash
 # Install dependencies
-npm install
+pnpm install
 
-# Build the TypeScript code
-npm run build
+# Set up environment variables
+cd packages/backend
+cp .env.example .env
+# Edit .env and add your DATABASE_URL and JWT_SECRET
 
-# Open index.html in your browser
+# Run database migrations
+pnpm exec prisma migrate dev
+
+# Build all packages
+cd ../..
+pnpm build
 ```
 
 ### Development
 
 ```bash
-# Development mode - auto-recompile + live-reload server
-npm run watch
-# or
-npm run dev
+# Start backend dev server (from root)
+pnpm --filter @trackly/backend run dev
 
-# This will:
-# 1. Start TypeScript compiler in watch mode
-# 2. Start live-server on http://localhost:8080
-# 3. Auto-reload browser when files change
+# In another terminal, start frontend compilation
+pnpm --filter @trackly/frontend run dev
+
+# Backend runs on http://localhost:3000
+# Frontend served from packages/frontend/public
 ```
 
-## Architecture
+## API Endpoints
 
-### Component-Based Structure
+### Authentication
+- `POST /api/auth/register` - Create new user
+- `POST /api/auth/login` - Login and get JWT token
 
+### Entities (Requires Authentication)
+- `GET /api/entities` - List all user's entities
+- `GET /api/entities/:id` - Get single entity
+- `POST /api/entities` - Create new entity
+- `PUT /api/entities/:id` - Update entity
+- `DELETE /api/entities/:id` - Delete entity (cascade deletes entries)
+
+### Entries (Requires Authentication)
+- `GET /api/entries` - List all entries (optional: `?entityId=xxx`)
+- `GET /api/entries/:id` - Get single entry
+- `POST /api/entries` - Create new entry
+- `PUT /api/entries/:id` - Update entry
+- `DELETE /api/entries/:id` - Delete entry
+
+### Health Check
+- `GET /api/health` - Server status
+
+## Database Schema
+
+**User Table:**
+- id (CUID)
+- email (unique)
+- password (bcrypt hashed)
+- name (optional)
+- createdAt, updatedAt
+
+**Entity Table:**
+- id (CUID)
+- name, type, categories
+- valueType (optional)
+- options (JSONB) - for select options
+- properties (JSONB) - custom properties
+- userId (foreign key)
+- createdAt, updatedAt
+
+**Entry Table:**
+- id (CUID)
+- entityId (foreign key)
+- entityName (denormalized)
+- timestamp
+- value, valueDisplay
+- notes, images
+- propertyValues (JSONB)
+- userId (foreign key)
+- createdAt, updatedAt
+
+## Security Features
+
+✅ JWT authentication with 30-day token expiry
+✅ bcrypt password hashing (10 rounds)
+✅ Request validation with Zod schemas
+✅ User ownership verification on all mutations
+✅ CORS middleware configured
+✅ Environment-based secrets (JWT_SECRET)
+
+## Deployment
+
+### Railway (Production)
+
+The app auto-deploys to Railway on every push to `main`:
+
+1. **Build**: Multi-stage Docker build with Prisma Client generation
+2. **Migrate**: Runs `prisma migrate deploy` if DATABASE_URL is set
+3. **Start**: Node.js server on Railway-assigned PORT
+
+**Environment Variables Required:**
+- `DATABASE_URL` - PostgreSQL connection string (Railway provides this)
+- `JWT_SECRET` - Secret for JWT signing (set in Railway dashboard)
+- `NODE_ENV` - Set to "production"
+
+### Manual Deployment
+
+```bash
+# Build for production
+pnpm build
+
+# Run migrations
+cd packages/backend
+pnpm exec prisma migrate deploy
+
+# Start production server
+NODE_ENV=production node dist/index.js
 ```
-src/
-├── types/              # TypeScript type definitions
-│   └── index.ts        # Core interfaces and types
-├── components/         # UI Components
-│   ├── Component.ts    # Base component class
-│   ├── Tabs.ts         # Tab navigation
-│   ├── EntityForm.ts   # Entity creation form
-│   ├── EntityList.ts   # Entity display grid
-│   ├── EntryForm.ts    # Entry logging form
-│   └── EntryList.ts    # Entry display list
-├── models/             # Data Models
-│   ├── Entity.ts       # Entity model with validation
-│   └── Entry.ts        # Entry model with validation
-├── state/              # State Management
-│   └── Store.ts        # Central state store with pub/sub
-├── utils/              # Utilities
-│   ├── storage.ts      # localStorage wrapper
-│   └── helpers.ts      # Helper functions
-└── app.ts              # Main application orchestrator
+
+## Development Commands
+
+```bash
+# Install dependencies
+pnpm install
+
+# Build all packages
+pnpm build
+
+# Clean build artifacts
+pnpm clean
+
+# Run backend dev server
+pnpm --filter @trackly/backend run dev
+
+# Run frontend dev build
+pnpm --filter @trackly/frontend run dev
+
+# Database commands
+cd packages/backend
+pnpm exec prisma migrate dev     # Create & apply migration
+pnpm exec prisma studio          # Open Prisma Studio GUI
+pnpm exec prisma generate        # Regenerate Prisma Client
 ```
-
-### Key Design Patterns
-
-1. **Component Pattern**: Reusable UI components with lifecycle methods
-2. **Observer Pattern**: Store notifies components of state changes
-3. **Model Pattern**: Business logic and validation in model classes
-4. **Separation of Concerns**: Clear boundaries between UI, state, and business logic
-5. **Type Safety**: TypeScript provides compile-time type checking
-
-## UI Design
-
-### Card-Based + Minimalist
-
-- **Clean, White Design**: Minimal color palette with subtle shadows
-- **Card Layout**: Everything is organized in clean cards
-- **Generous Whitespace**: Breathing room for better readability
-- **Subtle Interactions**: Smooth transitions and hover states
-- **Accessible**: Proper focus states and semantic HTML
-
-### Color System
-
-- Primary: Blue (#2563eb)
-- Text: Gray scale for hierarchy
-- Type Badges: Soft, muted colors with good contrast
-- Borders: Light gray for subtle separation
 
 ## Entity Types
 
-- **Habit**: Track recurring behaviors (e.g., exercise, reading)
-- **Task**: Track completion of specific tasks
-- **Expense**: Track spending and financial data
-- **Mood**: Track emotional states and wellbeing
+The app supports 18 different entity types:
 
-## How to Use
+- **Habit** - Daily habit tracker
+- **Task** - Task status (To Do, In Progress, Done)
+- **Mood** - Mood scale slider
+- **Node** - General notes
+- **Event** - Event with datetime
+- **Idea** - Ideas and thoughts
+- **Book** - Reading progress
+- **Article** - Article URLs
+- **Paper** - Research papers
+- **Project** - Project hours
+- **Concept** - Learning concepts
+- **Decision** - Decision tracking
+- **Communication** - Communication log
+- **Exercise** - Workout duration
+- **Metric** - Numeric metrics
+- **Activity** - Activity descriptions
+- **Goal** - Goal progress
+- **Plan** - Plan status
 
-1. **Create an Entity**: Go to the "Entities" tab and fill out the form
-2. **Log Entries**: Switch to "Log Entry" tab and record your data
-3. **View Progress**: See your entities and recent entries organized by cards
+Each entity type has default value types and options configured for optimal tracking.
 
-## Technical Stack
+## Testing
 
-- **TypeScript**: Type-safe JavaScript with compile-time checking
-- **HTML5**: Semantic markup
-- **CSS3**: Modern, minimalist card-based design
-- **ES Modules**: Native browser module system
-- **localStorage**: Client-side data persistence
-
-## Type Safety
-
-All core concepts are typed:
-
-```typescript
-interface IEntity {
-    id: string;
-    name: string;
-    type: EntityType;
-    unit: string;
-    target: string;
-    frequency: Frequency;
-    categories: string[];
-    createdAt: string;
-}
-
-type EntityType = 'Habit' | 'Task' | 'Expense' | 'Mood';
-```
-
-## Development
-
-### Build Commands
+### Local API Testing
 
 ```bash
-# Build once
-npm run build
+# Health check
+curl http://localhost:3000/api/health
 
-# Development mode (watch + live-server with auto-reload)
-npm run dev
-# or
-npm run watch
+# Register user
+curl -X POST http://localhost:3000/api/auth/register \
+  -H "Content-Type: application/json" \
+  -d '{"email":"test@example.com","password":"password123","name":"Test User"}'
 
-# Clean build directory
-npm run clean
+# Login
+curl -X POST http://localhost:3000/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"test@example.com","password":"password123"}'
 ```
 
-### Adding New Features
+### Production API Testing
 
-1. **Add a new component**: Extend `Component` class in `src/components/`
-2. **Add new model**: Create class in `src/models/` with proper types
-3. **Extend store**: Add typed methods in `src/state/Store.ts`
-4. **Add utilities**: Create in `src/utils/` with proper type definitions
-5. **Update types**: Add interfaces/types in `src/types/index.ts`
+Replace `localhost:3000` with `https://trackly-production.up.railway.app` in the above commands.
 
-## Project Structure
+## Contributing
 
-```
-trackly/
-├── index.html              # Entry point HTML
-├── styles.css              # Global styles (minimalist design)
-├── package.json            # npm dependencies and scripts
-├── tsconfig.json           # TypeScript configuration
-├── DESIGN.md               # Conceptual design document
-├── ARCHITECTURE.md         # Architecture documentation
-├── README.md               # This file
-├── src/                    # TypeScript source code
-│   ├── types/              # Type definitions
-│   ├── components/         # UI components
-│   ├── models/             # Domain models
-│   ├── state/              # State management
-│   ├── utils/              # Utilities
-│   └── app.ts              # Main entry point
-└── dist/                   # Compiled JavaScript (generated)
-```
-
-## Browser Support
-
-Works in all modern browsers that support:
-- ES2020
-- ES Modules
-- localStorage
-- CSS Grid & Flexbox
-
-## Future Enhancements
-
-- Analytics dashboard with charts and visualizations
-- Export/import data functionality
-- Streak tracking with calendar view
-- Goal progress indicators
-- Search and filter capabilities
-- Data visualization with charts (Chart.js/D3.js)
-- PWA support for offline usage
-- Backend API for multi-device sync
-- Dark mode support
+This is a personal project, but feel free to fork and customize for your own use!
 
 ## License
 
 MIT
+
+---
+
+**Built with ❤️ and Claude Code**
