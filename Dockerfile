@@ -36,13 +36,13 @@ COPY packages/frontend/package.json ./packages/frontend/
 COPY packages/backend/package.json ./packages/backend/
 COPY packages/shared/package.json ./packages/shared/
 
-# Install production dependencies only
+# Install production dependencies (now includes prisma CLI)
 RUN pnpm install --prod --frozen-lockfile
 
-# Copy Prisma schema (needed to generate client)
+# Copy Prisma schema
 COPY packages/backend/prisma ./packages/backend/prisma
 
-# Generate Prisma Client in production
+# Generate Prisma Client (prisma CLI is now available in prod dependencies)
 RUN pnpm --filter @trackly/backend exec prisma generate
 
 # Copy built files from builder
