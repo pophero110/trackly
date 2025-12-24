@@ -26,7 +26,7 @@ app.use('/dist', express.static(frontendDistPath));
 // app.use('/api/entries', entryRoutes);
 
 // Health check
-app.get('/api/health', (req, res) => {
+app.get('/api/health', (_req, res) => {
   res.json({
     status: 'ok',
     timestamp: new Date(),
@@ -35,7 +35,7 @@ app.get('/api/health', (req, res) => {
 });
 
 // SPA fallback - serve index.html for all non-API routes
-app.get('*', (req, res) => {
+app.get('*', (_req, res) => {
   res.sendFile(path.join(frontendPublicPath, 'index.html'));
 });
 
