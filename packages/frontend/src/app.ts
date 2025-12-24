@@ -36,6 +36,9 @@ class TracklyApp {
 
         // Set up view routing
         this.setupViewRouting();
+
+        // Set up sign-out button
+        this.setupSignOut();
     }
 
     private setupViewRouting(): void {
@@ -198,6 +201,17 @@ class TracklyApp {
         customElements.define('entry-form', EntryFormComponent);
         customElements.define('entry-edit-form', EntryEditFormComponent);
         customElements.define('entry-list', EntryListComponent);
+    }
+
+    private setupSignOut(): void {
+        const signOutBtn = document.getElementById('signout-btn');
+        if (signOutBtn) {
+            signOutBtn.addEventListener('click', () => {
+                if (confirm('Are you sure you want to sign out?')) {
+                    APIClient.logout();
+                }
+            });
+        }
     }
 
     getStore(): Store {
