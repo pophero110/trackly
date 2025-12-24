@@ -95,7 +95,7 @@ header h1 {
   gap: 4px;
   padding: 8px;
   background: transparent;
-  border: 1px solid var(--border);
+  border: none;
   border-radius: var(--radius-sm);
   cursor: pointer;
   transition: var(--transition);
@@ -103,7 +103,6 @@ header h1 {
 
 .btn-hamburger:hover {
   background: var(--background);
-  border-color: var(--text-muted);
 }
 
 .btn-hamburger:active {
