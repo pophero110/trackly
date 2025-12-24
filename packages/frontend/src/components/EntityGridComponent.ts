@@ -16,7 +16,12 @@ export class EntityGridComponent extends WebComponent {
                 <div class="section">
                     <div class="section-header">
                         <h2>Your Entities</h2>
-                        <button class="btn btn-primary" id="create-entity-btn">+ Create Entity</button>
+                        <button class="btn-icon btn-primary" id="create-entity-btn" aria-label="Create Entity" title="Create Entity">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <line x1="12" y1="5" x2="12" y2="19"></line>
+                                <line x1="5" y1="12" x2="19" y2="12"></line>
+                            </svg>
+                        </button>
                     </div>
                     <div class="empty-state">No entities yet. Create your first entity to get started!</div>
                 </div>
@@ -34,7 +39,12 @@ export class EntityGridComponent extends WebComponent {
             <div class="section">
                 <div class="section-header">
                     <h2>Your Entities</h2>
-                    <button class="btn btn-primary" id="create-entity-btn">+ Create Entity</button>
+                    <button class="btn-icon btn-primary" id="create-entity-btn" aria-label="Create Entity" title="Create Entity">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="12" y1="5" x2="12" y2="19"></line>
+                            <line x1="5" y1="12" x2="19" y2="12"></line>
+                        </svg>
+                    </button>
                 </div>
                 <div class="entities-grid">
                     ${entitiesHtml}

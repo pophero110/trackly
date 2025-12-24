@@ -477,6 +477,30 @@ form {
   transform: translateY(1px);
 }
 
+.btn-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border-radius: 50%;
+  transition: var(--transition);
+}
+
+.btn-icon svg {
+  display: block;
+}
+
+.btn-icon.btn-primary:hover {
+  transform: scale(1.05);
+  box-shadow: var(--shadow-md);
+}
+
+.btn-icon.btn-primary:active {
+  transform: scale(0.95);
+}
+
 .btn-danger {
   background: #ef4444;
   color: white;
