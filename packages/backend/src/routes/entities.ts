@@ -2,9 +2,9 @@ import { Router } from 'express';
 import { prisma } from '../db/client.js';
 import { requireAuth, AuthRequest } from '../middleware/auth.js';
 import { validate, createEntitySchema, updateEntitySchema } from '../middleware/validation.js';
-import type { IEntity } from '@trackly/shared';
+import type { IEntity, ValueType } from '@trackly/shared';
 
-const router = Router();
+const router: Router = Router();
 
 // All routes require authentication
 router.use(requireAuth);
@@ -13,7 +13,7 @@ router.use(requireAuth);
  * GET /api/entities
  * List all entities for the authenticated user
  */
-router.get('/', async (req: AuthRequest, res, next) => {
+router.get('/', async (req: AuthRequest, res, next): Promise<void> => {
   try {
     const userId = req.user!.id;
 
@@ -28,7 +28,7 @@ router.get('/', async (req: AuthRequest, res, next) => {
       name: entity.name,
       type: entity.type as any,
       categories: entity.categories,
-      valueType: entity.valueType || undefined,
+      valueType: entity.valueType as ValueType | undefined,
       options: entity.options ? (entity.options as any) : undefined,
       properties: entity.properties ? (entity.properties as any) : undefined,
       createdAt: entity.createdAt.toISOString(),
@@ -45,7 +45,7 @@ router.get('/', async (req: AuthRequest, res, next) => {
  * GET /api/entities/:id
  * Get a single entity by ID
  */
-router.get('/:id', async (req: AuthRequest, res, next) => {
+router.get('/:id', async (req: AuthRequest, res, next): Promise<void> => {
   try {
     const { id } = req.params;
     const userId = req.user!.id;
@@ -55,7 +55,8 @@ router.get('/:id', async (req: AuthRequest, res, next) => {
     });
 
     if (!entity) {
-      return res.status(404).json({ error: 'Entity not found' });
+      res.status(404).json({ error: 'Entity not found' });
+      return;
     }
 
     const formattedEntity: IEntity = {
@@ -63,7 +64,7 @@ router.get('/:id', async (req: AuthRequest, res, next) => {
       name: entity.name,
       type: entity.type as any,
       categories: entity.categories,
-      valueType: entity.valueType || undefined,
+      valueType: entity.valueType as ValueType | undefined,
       options: entity.options ? (entity.options as any) : undefined,
       properties: entity.properties ? (entity.properties as any) : undefined,
       createdAt: entity.createdAt.toISOString(),
@@ -80,7 +81,7 @@ router.get('/:id', async (req: AuthRequest, res, next) => {
  * POST /api/entities
  * Create a new entity
  */
-router.post('/', validate(createEntitySchema), async (req: AuthRequest, res, next) => {
+router.post('/', validate(createEntitySchema), async (req: AuthRequest, res, next): Promise<void> => {
   try {
     const userId = req.user!.id;
     const { name, type, categories, valueType, options, properties } = req.body;
@@ -102,7 +103,7 @@ router.post('/', validate(createEntitySchema), async (req: AuthRequest, res, nex
       name: entity.name,
       type: entity.type as any,
       categories: entity.categories,
-      valueType: entity.valueType || undefined,
+      valueType: entity.valueType as ValueType | undefined,
       options: entity.options ? (entity.options as any) : undefined,
       properties: entity.properties ? (entity.properties as any) : undefined,
       createdAt: entity.createdAt.toISOString(),
@@ -119,7 +120,7 @@ router.post('/', validate(createEntitySchema), async (req: AuthRequest, res, nex
  * PUT /api/entities/:id
  * Update an entity
  */
-router.put('/:id', validate(updateEntitySchema), async (req: AuthRequest, res, next) => {
+router.put('/:id', validate(updateEntitySchema), async (req: AuthRequest, res, next): Promise<void> => {
   try {
     const { id } = req.params;
     const userId = req.user!.id;
@@ -130,7 +131,8 @@ router.put('/:id', validate(updateEntitySchema), async (req: AuthRequest, res, n
     });
 
     if (!existingEntity) {
-      return res.status(404).json({ error: 'Entity not found' });
+      res.status(404).json({ error: 'Entity not found' });
+      return;
     }
 
     // Update entity
@@ -144,7 +146,7 @@ router.put('/:id', validate(updateEntitySchema), async (req: AuthRequest, res, n
       name: entity.name,
       type: entity.type as any,
       categories: entity.categories,
-      valueType: entity.valueType || undefined,
+      valueType: entity.valueType as ValueType | undefined,
       options: entity.options ? (entity.options as any) : undefined,
       properties: entity.properties ? (entity.properties as any) : undefined,
       createdAt: entity.createdAt.toISOString(),
@@ -161,7 +163,7 @@ router.put('/:id', validate(updateEntitySchema), async (req: AuthRequest, res, n
  * DELETE /api/entities/:id
  * Delete an entity (cascade deletes all entries)
  */
-router.delete('/:id', async (req: AuthRequest, res, next) => {
+router.delete('/:id', async (req: AuthRequest, res, next): Promise<void> => {
   try {
     const { id } = req.params;
     const userId = req.user!.id;
@@ -172,7 +174,8 @@ router.delete('/:id', async (req: AuthRequest, res, next) => {
     });
 
     if (!entity) {
-      return res.status(404).json({ error: 'Entity not found' });
+      res.status(404).json({ error: 'Entity not found' });
+      return;
     }
 
     // Delete entity (cascade deletes entries)

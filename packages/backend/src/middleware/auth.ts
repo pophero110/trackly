@@ -13,11 +13,12 @@ export interface AuthRequest extends Request {
 /**
  * Authentication middleware - verifies JWT token
  */
-export function requireAuth(req: AuthRequest, res: Response, next: NextFunction) {
+export function requireAuth(req: AuthRequest, res: Response, next: NextFunction): void {
   const authHeader = req.headers.authorization;
 
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    return res.status(401).json({ error: 'Unauthorized - No token provided' });
+    res.status(401).json({ error: 'Unauthorized - No token provided' });
+    return;
   }
 
   const token = authHeader.substring(7); // Remove 'Bearer ' prefix
@@ -27,14 +28,14 @@ export function requireAuth(req: AuthRequest, res: Response, next: NextFunction)
     req.user = { id: decoded.userId, email: decoded.email };
     next();
   } catch (error) {
-    return res.status(401).json({ error: 'Unauthorized - Invalid token' });
+    res.status(401).json({ error: 'Unauthorized - Invalid token' });
   }
 }
 
 /**
  * Optional authentication - adds user to request if token is valid, but doesn't require it
  */
-export function optionalAuth(req: AuthRequest, res: Response, next: NextFunction) {
+export function optionalAuth(req: AuthRequest, _res: Response, next: NextFunction): void {
   const authHeader = req.headers.authorization;
 
   if (!authHeader || !authHeader.startsWith('Bearer ')) {

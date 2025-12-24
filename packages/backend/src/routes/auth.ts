@@ -5,14 +5,14 @@ import { prisma } from '../db/client.js';
 import { validate, registerSchema, loginSchema } from '../middleware/validation.js';
 import type { AuthResponse } from '@trackly/shared';
 
-const router = Router();
+const router: Router = Router();
 const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret-change-in-prod';
 
 /**
  * POST /api/auth/register
  * Register a new user
  */
-router.post('/register', validate(registerSchema), async (req, res, next) => {
+router.post('/register', validate(registerSchema), async (req, res, next): Promise<void> => {
   try {
     const { email, password, name } = req.body;
 
@@ -22,7 +22,8 @@ router.post('/register', validate(registerSchema), async (req, res, next) => {
     });
 
     if (existingUser) {
-      return res.status(400).json({ error: 'User with this email already exists' });
+      res.status(400).json({ error: 'User with this email already exists' });
+      return;
     }
 
     // Hash password
@@ -63,7 +64,7 @@ router.post('/register', validate(registerSchema), async (req, res, next) => {
  * POST /api/auth/login
  * Login with email and password
  */
-router.post('/login', validate(loginSchema), async (req, res, next) => {
+router.post('/login', validate(loginSchema), async (req, res, next): Promise<void> => {
   try {
     const { email, password } = req.body;
 
@@ -73,14 +74,16 @@ router.post('/login', validate(loginSchema), async (req, res, next) => {
     });
 
     if (!user) {
-      return res.status(401).json({ error: 'Invalid email or password' });
+      res.status(401).json({ error: 'Invalid email or password' });
+      return;
     }
 
     // Verify password
     const validPassword = await bcrypt.compare(password, user.password);
 
     if (!validPassword) {
-      return res.status(401).json({ error: 'Invalid email or password' });
+      res.status(401).json({ error: 'Invalid email or password' });
+      return;
     }
 
     // Generate JWT token

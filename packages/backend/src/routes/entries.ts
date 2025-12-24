@@ -4,7 +4,7 @@ import { requireAuth, AuthRequest } from '../middleware/auth.js';
 import { validate, createEntrySchema, updateEntrySchema } from '../middleware/validation.js';
 import type { IEntry } from '@trackly/shared';
 
-const router = Router();
+const router: Router = Router();
 
 // All routes require authentication
 router.use(requireAuth);
@@ -14,7 +14,7 @@ router.use(requireAuth);
  * List all entries for the authenticated user
  * Optional query params: entityId (filter by entity)
  */
-router.get('/', async (req: AuthRequest, res, next) => {
+router.get('/', async (req: AuthRequest, res, next): Promise<void> => {
   try {
     const userId = req.user!.id;
     const { entityId } = req.query;
@@ -55,7 +55,7 @@ router.get('/', async (req: AuthRequest, res, next) => {
  * GET /api/entries/:id
  * Get a single entry by ID
  */
-router.get('/:id', async (req: AuthRequest, res, next) => {
+router.get('/:id', async (req: AuthRequest, res, next): Promise<void> => {
   try {
     const { id } = req.params;
     const userId = req.user!.id;
@@ -65,7 +65,8 @@ router.get('/:id', async (req: AuthRequest, res, next) => {
     });
 
     if (!entry) {
-      return res.status(404).json({ error: 'Entry not found' });
+      res.status(404).json({ error: 'Entry not found' });
+      return;
     }
 
     const formattedEntry: IEntry = {
@@ -93,7 +94,7 @@ router.get('/:id', async (req: AuthRequest, res, next) => {
  * POST /api/entries
  * Create a new entry
  */
-router.post('/', validate(createEntrySchema), async (req: AuthRequest, res, next) => {
+router.post('/', validate(createEntrySchema), async (req: AuthRequest, res, next): Promise<void> => {
   try {
     const userId = req.user!.id;
     const { entityId, timestamp, value, valueDisplay, notes, images, propertyValues, propertyValueDisplays } = req.body;
@@ -104,7 +105,8 @@ router.post('/', validate(createEntrySchema), async (req: AuthRequest, res, next
     });
 
     if (!entity) {
-      return res.status(404).json({ error: 'Entity not found' });
+      res.status(404).json({ error: 'Entity not found' });
+      return;
     }
 
     // Create entry
@@ -148,7 +150,7 @@ router.post('/', validate(createEntrySchema), async (req: AuthRequest, res, next
  * PUT /api/entries/:id
  * Update an entry
  */
-router.put('/:id', validate(updateEntrySchema), async (req: AuthRequest, res, next) => {
+router.put('/:id', validate(updateEntrySchema), async (req: AuthRequest, res, next): Promise<void> => {
   try {
     const { id } = req.params;
     const userId = req.user!.id;
@@ -159,7 +161,8 @@ router.put('/:id', validate(updateEntrySchema), async (req: AuthRequest, res, ne
     });
 
     if (!existingEntry) {
-      return res.status(404).json({ error: 'Entry not found' });
+      res.status(404).json({ error: 'Entry not found' });
+      return;
     }
 
     // Prepare update data
@@ -203,7 +206,7 @@ router.put('/:id', validate(updateEntrySchema), async (req: AuthRequest, res, ne
  * DELETE /api/entries/:id
  * Delete an entry
  */
-router.delete('/:id', async (req: AuthRequest, res, next) => {
+router.delete('/:id', async (req: AuthRequest, res, next): Promise<void> => {
   try {
     const { id } = req.params;
     const userId = req.user!.id;
@@ -214,7 +217,8 @@ router.delete('/:id', async (req: AuthRequest, res, next) => {
     });
 
     if (!entry) {
-      return res.status(404).json({ error: 'Entry not found' });
+      res.status(404).json({ error: 'Entry not found' });
+      return;
     }
 
     // Delete entry

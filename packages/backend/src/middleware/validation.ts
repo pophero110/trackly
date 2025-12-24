@@ -5,19 +5,20 @@ import { Request, Response, NextFunction } from 'express';
  * Validation middleware factory
  */
 export function validate(schema: z.ZodSchema) {
-  return (req: Request, res: Response, next: NextFunction) => {
+  return (req: Request, res: Response, next: NextFunction): void => {
     try {
       schema.parse(req.body);
       next();
     } catch (error) {
       if (error instanceof z.ZodError) {
-        return res.status(400).json({
+        res.status(400).json({
           error: 'Validation failed',
           details: error.errors.map(e => ({
             path: e.path.join('.'),
             message: e.message
           }))
         });
+        return;
       }
       next(error);
     }
