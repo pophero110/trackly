@@ -50,11 +50,10 @@ RUN pnpm --filter @trackly/backend exec prisma generate
 
 # Copy built files from builder
 COPY --from=builder /app/packages/shared/dist ./packages/shared/dist
-COPY --from=builder /app/packages/frontend/dist ./packages/frontend/dist
 COPY --from=builder /app/packages/backend/dist ./packages/backend/dist
 
-# Copy static assets
-COPY packages/frontend/public ./packages/frontend/public
+# Copy static assets (includes bundled frontend in public/dist)
+COPY --from=builder /app/packages/frontend/public ./packages/frontend/public
 
 # Set environment
 ENV NODE_ENV=production

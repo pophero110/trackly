@@ -1,6 +1,7 @@
 import { WebComponent } from './WebComponent.js';
 import { Entity } from '../models/Entity.js';
 import { escapeHtml, formatDate } from '../utils/helpers.js';
+import { parseMarkdown } from '../utils/markdown.js';
 import { URLStateManager } from '../utils/urlState.js';
 import { EntityProperty } from '../types/index.js';
 
@@ -160,40 +161,7 @@ export class EntityGridComponent extends WebComponent {
     }
 
     private formatNotes(notes: string): string {
-        // Step 1: Extract and store markdown link patterns with placeholders
-        const linkPatterns: Array<{placeholder: string, html: string}> = [];
-
-        // Extract markdown links [title](url)
-        let tempNotes = notes.replace(/\[([^\]]+?)\]\((.+?)\)/g, (_match, title, url) => {
-            const placeholder = `___LINK_${linkPatterns.length}___`;
-            // Truncate title for grid display
-            const displayTitle = title.length > 30 ? title.substring(0, 30) + '...' : title;
-            linkPatterns.push({
-                placeholder,
-                html: `<a href="${url}" target="_blank" rel="noopener noreferrer" style="color: var(--primary); text-decoration: underline;">${displayTitle}</a>`
-            });
-            return placeholder;
-        });
-
-        // Step 2: Escape HTML
-        let formattedNotes = escapeHtml(tempNotes);
-
-        // Step 3: Convert newlines to <br> tags
-        formattedNotes = formattedNotes.replace(/\n/g, '<br>');
-
-        // Step 4: Convert hashtags to clickable filter links (but not in URLs)
-        // Match hashtags that are NOT preceded by :/ (to avoid matching URL fragments)
-        const hashtagRegex = /(?<!:\/[^\s]*)(^|\s)#([a-zA-Z0-9_]+)/g;
-        formattedNotes = formattedNotes.replace(hashtagRegex, (_match, whitespace, tag) => {
-            return `${whitespace}<a href="#" class="hashtag" data-tag="${tag}" style="color: var(--primary); text-decoration: none; font-weight: 500;">#${tag}</a>`;
-        });
-
-        // Step 5: Restore link patterns
-        linkPatterns.forEach(({placeholder, html}) => {
-            formattedNotes = formattedNotes.replace(placeholder, html);
-        });
-
-        return formattedNotes;
+        return parseMarkdown(notes);
     }
 
     private formatValue(value: string | number | boolean, displayValue?: string, valueType?: string): string {

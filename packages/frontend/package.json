@@ -4,15 +4,20 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "tsc --watch",
-    "build": "tsc",
-    "clean": "rm -rf dist"
+    "dev": "node build.js",
+    "build": "node build.js",
+    "clean": "rm -rf public/dist"
   },
   "dependencies": {
-    "@trackly/shared": "workspace:*"
+    "@trackly/shared": "workspace:*",
+    "dompurify": "^3.3.1",
+    "marked": "^17.0.1"
   },
   "devDependencies": {
-    "typescript": "^5.3.3",
-    "live-server": "^1.2.2"
+    "@types/dompurify": "^3.2.0",
+    "@types/marked": "^6.0.0",
+    "esbuild": "^0.27.2",
+    "live-server": "^1.2.2",
+    "typescript": "^5.3.3"
   }
 }
