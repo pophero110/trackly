@@ -49,7 +49,6 @@ export class EntryListComponent extends WebComponent {
 
             this.innerHTML = `
                 <div class="section">
-                    ${selectedEntity ? '<button class="btn-back" id="back-to-grid">← Back</button>' : ''}
                     <div class="section-header">
                         <div class="section-header-title">
                             <h2>${headerText}</h2>
@@ -67,7 +66,6 @@ export class EntryListComponent extends WebComponent {
                 </div>
             `;
             this.attachLogEntryButtonHandler();
-            this.attachBackButtonHandler();
             this.attachHashtagClearHandler();
             return;
         }
@@ -80,7 +78,6 @@ export class EntryListComponent extends WebComponent {
 
         this.innerHTML = `
             <div class="section">
-                ${selectedEntity ? '<button class="btn-back" id="back-to-grid">← Back</button>' : ''}
                 <div class="section-header">
                     <div class="section-header-title">
                         <h2>${headerText}</h2>
@@ -102,7 +99,6 @@ export class EntryListComponent extends WebComponent {
 
         // Attach event handlers after rendering
         this.attachLogEntryButtonHandler();
-        this.attachBackButtonHandler();
         this.attachMenuHandlers();
         this.attachCardClickHandlers();
         this.attachHashtagHandlers();
@@ -359,18 +355,6 @@ export class EntryListComponent extends WebComponent {
         }
     }
 
-    private attachBackButtonHandler(): void {
-        const backBtn = this.querySelector('#back-to-grid');
-        if (backBtn) {
-            backBtn.addEventListener('click', () => {
-                this.showEntityGrid();
-            });
-        }
-    }
-
-    private showEntityGrid(): void {
-        URLStateManager.showGrid();
-    }
 
     private openEntryFormPanel(): void {
         const selectedEntityId = this.store.getSelectedEntityId();

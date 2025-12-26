@@ -39,6 +39,9 @@ class TracklyApp {
 
         // Set up sign-out button
         this.setupSignOut();
+
+        // Set up logo home link
+        this.setupLogoLink();
     }
 
     private setupViewRouting(): void {
@@ -234,6 +237,19 @@ class TracklyApp {
                 if (confirm('Are you sure you want to sign out?')) {
                     APIClient.logout();
                 }
+            });
+        }
+    }
+
+    private setupLogoLink(): void {
+        const logoLink = document.getElementById('logo-link');
+        if (logoLink) {
+            logoLink.addEventListener('click', (e) => {
+                e.preventDefault();
+                // Navigate to home (entity grid view)
+                URLStateManager.setView('grid');
+                URLStateManager.setSelectedEntityName(null);
+                URLStateManager.setPanel(null);
             });
         }
     }

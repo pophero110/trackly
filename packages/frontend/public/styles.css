@@ -1475,7 +1475,7 @@ form {
 /* Responsive Design */
 @media (max-width: 768px) {
   body {
-    padding: 12px 12px 0 12px;
+    padding: 0;
   }
 
   .container {

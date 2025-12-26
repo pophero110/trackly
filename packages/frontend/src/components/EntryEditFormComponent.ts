@@ -329,6 +329,34 @@ export class EntryEditFormComponent extends WebComponent {
             zenModeClose.addEventListener('click', () => this.closeZenMode());
         }
 
+        // Tab key handling for note textareas
+        const notesTextarea = this.querySelector('#entry-notes') as HTMLTextAreaElement;
+        const zenTextarea = this.querySelector('#zen-mode-textarea') as HTMLTextAreaElement;
+
+        const handleTabKey = (e: KeyboardEvent) => {
+            if (e.key === 'Tab') {
+                e.preventDefault();
+                const textarea = e.target as HTMLTextAreaElement;
+                const start = textarea.selectionStart;
+                const end = textarea.selectionEnd;
+                const value = textarea.value;
+
+                // Insert tab (2 spaces)
+                textarea.value = value.substring(0, start) + '  ' + value.substring(end);
+
+                // Move cursor after the inserted tab
+                textarea.selectionStart = textarea.selectionEnd = start + 2;
+            }
+        };
+
+        if (notesTextarea) {
+            notesTextarea.addEventListener('keydown', handleTabKey);
+        }
+
+        if (zenTextarea) {
+            zenTextarea.addEventListener('keydown', handleTabKey);
+        }
+
         // Image menu handlers
         if (imageMenuBtn && imageMenu) {
             imageMenuBtn.addEventListener('click', (e) => {
