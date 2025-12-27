@@ -16,6 +16,9 @@ export class Entry implements IEntry {
     images?: string[];
     propertyValues?: Record<string, string | number | boolean>;
     propertyValueDisplays?: Record<string, string>;
+    latitude?: number;
+    longitude?: number;
+    locationName?: string;
     createdAt: string;
 
     constructor(data: Partial<IEntry> & { entityId: string; entityName: string; timestamp: string }) {
@@ -30,6 +33,9 @@ export class Entry implements IEntry {
         this.images = data.images || [];
         this.propertyValues = data.propertyValues || {};
         this.propertyValueDisplays = data.propertyValueDisplays || {};
+        this.latitude = data.latitude;
+        this.longitude = data.longitude;
+        this.locationName = data.locationName;
         this.createdAt = data.createdAt || new Date().toISOString();
     }
 
@@ -40,7 +46,10 @@ export class Entry implements IEntry {
             timestamp: new Date(formData.timestamp).toISOString(),
             value: formData.value,
             valueDisplay: formData.valueDisplay,
-            notes: formData.notes?.trim() || ''
+            notes: formData.notes?.trim() || '',
+            latitude: formData.latitude,
+            longitude: formData.longitude,
+            locationName: formData.locationName
         });
     }
 
@@ -70,6 +79,9 @@ export class Entry implements IEntry {
             images: this.images,
             propertyValues: this.propertyValues,
             propertyValueDisplays: this.propertyValueDisplays,
+            latitude: this.latitude,
+            longitude: this.longitude,
+            locationName: this.locationName,
             createdAt: this.createdAt
         };
     }

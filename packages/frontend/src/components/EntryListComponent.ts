@@ -167,6 +167,16 @@ export class EntryListComponent extends WebComponent {
         const hasAttachments = imagesHtml;
         const hasReferences = referencesHtml;
 
+        // Location display
+        const locationHtml = entry.latitude && entry.longitude
+            ? `<div class="entry-location">
+                <span class="location-icon">📍</span>
+                <a href="https://www.google.com/maps?q=${entry.latitude},${entry.longitude}" target="_blank" rel="noopener noreferrer" class="location-link">
+                    ${entry.locationName || `${entry.latitude.toFixed(6)}, ${entry.longitude.toFixed(6)}`}
+                </a>
+            </div>`
+            : '';
+
         return `
             <div class="entry-card" data-entry-id="${entry.id}">
                 <div class="entry-card-header">
@@ -180,6 +190,7 @@ export class EntryListComponent extends WebComponent {
                     </div>
                 ` : ''}
                 ${propertiesHtml}
+                ${locationHtml}
                 <div class="entry-meta-chips">
                     ${entityChip}
                     ${categoryChips}

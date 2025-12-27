@@ -10,6 +10,7 @@ import { getValueTypeInputConfig } from '../config/valueTypeConfig.js';
  */
 export class EntryFormComponent extends WebComponent {
     private images: string[] = [];
+    private location: { latitude: number; longitude: number; name?: string } | null = null;
 
     render(): void {
         const entities = this.store.getEntities();
@@ -53,6 +54,12 @@ export class EntryFormComponent extends WebComponent {
                 <input type="file" id="image-upload" accept="image/*" style="display: none;" multiple>
                 <div id="image-preview" class="image-preview"></div>
 
+                <div id="location-display" class="location-display" style="display: none;">
+                    <span class="location-icon">📍</span>
+                    <span id="location-text" class="location-text"></span>
+                    <button type="button" id="remove-location-btn" class="btn-remove-location" title="Remove location">×</button>
+                </div>
+
                 <div class="form-actions">
                     <button type="submit" class="btn btn-primary">Log Entry</button>
                     <div class="action-menu-buttons">
@@ -63,6 +70,7 @@ export class EntryFormComponent extends WebComponent {
                                 <div class="context-menu-item" id="capture-image-menu-item">📷 Take Photo</div>
                             </div>
                         </div>
+                        <button type="button" id="location-btn" class="btn-action-menu" title="Add location">📍</button>
                     </div>
                 </div>
             </form>
@@ -227,6 +235,8 @@ export class EntryFormComponent extends WebComponent {
         const fileInput = this.querySelector('#image-upload') as HTMLInputElement;
         const zenModeBtn = this.querySelector('#zen-mode-btn') as HTMLButtonElement;
         const zenModeClose = this.querySelector('#zen-mode-close') as HTMLButtonElement;
+        const locationBtn = this.querySelector('#location-btn') as HTMLButtonElement;
+        const removeLocationBtn = this.querySelector('#remove-location-btn') as HTMLButtonElement;
 
         if (form) {
             form.addEventListener('submit', (e) => this.handleSubmit(e));
@@ -350,6 +360,14 @@ export class EntryFormComponent extends WebComponent {
 
         if (fileInput) {
             fileInput.addEventListener('change', (e) => this.handleImageUpload(e));
+        }
+
+        if (locationBtn) {
+            locationBtn.addEventListener('click', () => this.handleLocationCapture());
+        }
+
+        if (removeLocationBtn) {
+            removeLocationBtn.addEventListener('click', () => this.removeLocation());
         }
 
         // Attach range input listener for initial render
@@ -508,6 +526,134 @@ export class EntryFormComponent extends WebComponent {
                 this.renderImagePreview();
             });
         });
+    }
+
+    private async handleLocationCapture(): Promise<void> {
+        try {
+            if (!navigator.geolocation) {
+                alert('Geolocation is not supported by your browser');
+                return;
+            }
+
+            // Show loading state
+            const locationBtn = this.querySelector('#location-btn') as HTMLButtonElement;
+            if (locationBtn) {
+                locationBtn.disabled = true;
+                locationBtn.textContent = '⏳';
+            }
+
+            const position = await new Promise<GeolocationPosition>((resolve, reject) => {
+                navigator.geolocation.getCurrentPosition(resolve, reject, {
+                    enableHighAccuracy: true,
+                    timeout: 10000,
+                    maximumAge: 0
+                });
+            });
+
+            this.location = {
+                latitude: position.coords.latitude,
+                longitude: position.coords.longitude
+            };
+
+            // Try to get location name using reverse geocoding
+            try {
+                const locationName = await this.reverseGeocode(
+                    position.coords.latitude,
+                    position.coords.longitude
+                );
+                if (locationName) {
+                    this.location.name = locationName;
+                }
+            } catch (error) {
+                console.error('Failed to get location name:', error);
+                // Continue without location name
+            }
+
+            this.renderLocationDisplay();
+
+            // Reset button
+            if (locationBtn) {
+                locationBtn.disabled = false;
+                locationBtn.textContent = '📍';
+            }
+
+        } catch (error) {
+            console.error('Location access error:', error);
+            alert('Unable to access location. Please check permissions.');
+
+            // Reset button
+            const locationBtn = this.querySelector('#location-btn') as HTMLButtonElement;
+            if (locationBtn) {
+                locationBtn.disabled = false;
+                locationBtn.textContent = '📍';
+            }
+        }
+    }
+
+    private async reverseGeocode(latitude: number, longitude: number): Promise<string | null> {
+        try {
+            // Using Nominatim (OpenStreetMap) for reverse geocoding
+            const response = await fetch(
+                `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`,
+                {
+                    headers: {
+                        'User-Agent': 'Trackly App'
+                    }
+                }
+            );
+
+            if (!response.ok) {
+                return null;
+            }
+
+            const data = await response.json();
+
+            // Extract meaningful location name
+            const address = data.address;
+            if (!address) return null;
+
+            // Try to build a concise location string
+            const parts: string[] = [];
+
+            if (address.city || address.town || address.village) {
+                parts.push(address.city || address.town || address.village);
+            }
+
+            if (address.state) {
+                parts.push(address.state);
+            } else if (address.county) {
+                parts.push(address.county);
+            }
+
+            if (address.country) {
+                parts.push(address.country);
+            }
+
+            return parts.length > 0 ? parts.join(', ') : null;
+        } catch (error) {
+            console.error('Reverse geocoding error:', error);
+            return null;
+        }
+    }
+
+    private renderLocationDisplay(): void {
+        const locationDisplay = this.querySelector('#location-display') as HTMLElement;
+        const locationText = this.querySelector('#location-text') as HTMLElement;
+
+        if (!locationDisplay || !locationText) return;
+
+        if (this.location) {
+            locationText.textContent = this.location.name ||
+                `${this.location.latitude.toFixed(6)}, ${this.location.longitude.toFixed(6)}`;
+            locationDisplay.style.display = 'flex';
+        } else {
+            locationDisplay.style.display = 'none';
+        }
+    }
+
+    private removeLocation(): void {
+        this.location = null;
+        this.renderLocationDisplay();
     }
 
     private isUrl(text: string): boolean {
@@ -802,7 +948,10 @@ export class EntryFormComponent extends WebComponent {
                 timestamp: getCurrentTimestamp(),
                 value: value,
                 valueDisplay: valueDisplay,
-                notes: (this.querySelector('#entry-notes') as HTMLTextAreaElement).value
+                notes: (this.querySelector('#entry-notes') as HTMLTextAreaElement).value,
+                latitude: this.location?.latitude,
+                longitude: this.location?.longitude,
+                locationName: this.location?.name
             };
 
             const entry = Entry.fromFormData(formData, entity);

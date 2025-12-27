@@ -54,6 +54,9 @@ model Entry {
   images                String[] // Base64 or URLs
   propertyValues        Json?
   propertyValueDisplays Json?
+  latitude              Float?   // Location latitude
+  longitude             Float?   // Location longitude
+  locationName          String?  // Optional location name (e.g., "San Francisco, CA")
   createdAt             DateTime @default(now())
   updatedAt             DateTime @updatedAt
 

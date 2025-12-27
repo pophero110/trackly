@@ -1372,6 +1372,75 @@ form {
   gap: 8px;
 }
 
+/* Entry Location Display */
+.entry-location {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 12px;
+  padding: 8px 12px;
+  background: rgba(59, 130, 246, 0.05);
+  border: 1px solid rgba(59, 130, 246, 0.15);
+  border-radius: 8px;
+  font-size: 0.875rem;
+}
+
+.location-icon {
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.location-link {
+  color: var(--primary);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.location-link:hover {
+  color: #1d4ed8;
+  text-decoration: underline;
+}
+
+/* Location Display in Form */
+.location-display {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  background: rgba(59, 130, 246, 0.05);
+  border: 1px solid rgba(59, 130, 246, 0.15);
+  border-radius: 8px;
+  margin-bottom: 16px;
+  font-size: 0.875rem;
+}
+
+.location-text {
+  flex: 1;
+  color: var(--text-primary);
+}
+
+.btn-remove-location {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-size: 1.25rem;
+  line-height: 1;
+  padding: 0;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  transition: all 0.2s;
+}
+
+.btn-remove-location:hover {
+  background: rgba(0, 0, 0, 0.05);
+  color: var(--text-primary);
+}
+
 /* Entry Meta Chips - Entity and Categories */
 .entry-meta-chips {
   display: flex;
