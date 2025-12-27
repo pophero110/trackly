@@ -167,9 +167,10 @@ export class EntryListComponent extends WebComponent {
         const hasAttachments = imagesHtml;
         const hasReferences = referencesHtml;
 
-        // Location display (inline in header)
+        // Location display (inline in header with separator)
         const locationHeaderHtml = entry.latitude && entry.longitude
-            ? `<span class="entry-location-header">
+            ? `<span class="metadata-separator">•</span>
+            <span class="entry-location-header">
                 <span class="location-icon-small">📍</span>
                 <a href="https://www.google.com/maps?q=${entry.latitude},${entry.longitude}" target="_blank" rel="noopener noreferrer" class="location-link-header">
                     ${entry.locationName || `${entry.latitude.toFixed(4)}, ${entry.longitude.toFixed(4)}`}
@@ -181,7 +182,7 @@ export class EntryListComponent extends WebComponent {
             <div class="entry-card" data-entry-id="${entry.id}">
                 <div class="entry-card-header">
                     <div class="entry-header-left">
-                        <span class="entry-timestamp-secondary">${formatDate(entry.timestamp)}</span>
+                        <span class="entry-timestamp-secondary">🕒 ${formatDate(entry.timestamp)}</span>
                         ${locationHeaderHtml}
                     </div>
                     <button class="entry-menu-btn" data-entry-id="${entry.id}" data-action="menu">⋮</button>

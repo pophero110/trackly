@@ -1367,6 +1367,13 @@ form {
   line-height: 1.4;
 }
 
+/* Metadata Separator */
+.metadata-separator {
+  color: var(--text-muted);
+  font-size: 0.8125rem;
+  opacity: 0.6;
+}
+
 /* Location in Header */
 .entry-location-header {
   display: inline-flex;
