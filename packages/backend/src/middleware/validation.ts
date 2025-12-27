@@ -65,7 +65,10 @@ export const createEntrySchema = z.object({
   notes: z.string().optional().default(''),
   images: z.array(z.string()).optional().default([]),
   propertyValues: z.record(z.union([z.string(), z.number(), z.boolean()])).optional(),
-  propertyValueDisplays: z.record(z.string()).optional()
+  propertyValueDisplays: z.record(z.string()).optional(),
+  latitude: z.number().optional(),
+  longitude: z.number().optional(),
+  locationName: z.string().optional()
 });
 
 export const updateEntrySchema = z.object({
@@ -77,5 +80,8 @@ export const updateEntrySchema = z.object({
   notes: z.string().optional(),
   images: z.array(z.string()).optional(),
   propertyValues: z.record(z.union([z.string(), z.number(), z.boolean()])).optional(),
-  propertyValueDisplays: z.record(z.string()).optional()
+  propertyValueDisplays: z.record(z.string()).optional(),
+  latitude: z.number().optional(),
+  longitude: z.number().optional(),
+  locationName: z.string().optional()
 });
