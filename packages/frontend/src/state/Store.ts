@@ -146,7 +146,10 @@ export class Store {
             notes: entry.notes,
             images: entry.images,
             propertyValues: entry.propertyValues,
-            propertyValueDisplays: entry.propertyValueDisplays
+            propertyValueDisplays: entry.propertyValueDisplays,
+            latitude: entry.latitude,
+            longitude: entry.longitude,
+            locationName: entry.locationName
         });
 
         this.entries.push(new Entry(created));
