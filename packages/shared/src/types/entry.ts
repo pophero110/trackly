@@ -13,6 +13,9 @@ export interface IEntry {
   images?: string[];  // Array of base64 image data URLs
   propertyValues?: Record<string, string | number | boolean>;  // Custom property values by property ID
   propertyValueDisplays?: Record<string, string>;  // Display text for property values (e.g., URL titles)
+  latitude?: number;  // Location latitude
+  longitude?: number;  // Location longitude
+  locationName?: string;  // Optional location name (e.g., "San Francisco, CA")
   createdAt: string;
   updatedAt?: string;
 }

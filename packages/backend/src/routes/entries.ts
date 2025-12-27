@@ -41,6 +41,9 @@ router.get('/', async (req: AuthRequest, res, next): Promise<void> => {
       images: entry.images,
       propertyValues: entry.propertyValues ? (entry.propertyValues as any) : undefined,
       propertyValueDisplays: entry.propertyValueDisplays ? (entry.propertyValueDisplays as any) : undefined,
+      latitude: entry.latitude ?? undefined,
+      longitude: entry.longitude ?? undefined,
+      locationName: entry.locationName || undefined,
       createdAt: entry.createdAt.toISOString(),
       updatedAt: entry.updatedAt.toISOString()
     }));
@@ -80,6 +83,9 @@ router.get('/:id', async (req: AuthRequest, res, next): Promise<void> => {
       images: entry.images,
       propertyValues: entry.propertyValues ? (entry.propertyValues as any) : undefined,
       propertyValueDisplays: entry.propertyValueDisplays ? (entry.propertyValueDisplays as any) : undefined,
+      latitude: entry.latitude ?? undefined,
+      longitude: entry.longitude ?? undefined,
+      locationName: entry.locationName || undefined,
       createdAt: entry.createdAt.toISOString(),
       updatedAt: entry.updatedAt.toISOString()
     };
@@ -97,7 +103,7 @@ router.get('/:id', async (req: AuthRequest, res, next): Promise<void> => {
 router.post('/', validate(createEntrySchema), async (req: AuthRequest, res, next): Promise<void> => {
   try {
     const userId = req.user!.id;
-    const { entityId, timestamp, value, valueDisplay, notes, images, propertyValues, propertyValueDisplays } = req.body;
+    const { entityId, timestamp, value, valueDisplay, notes, images, propertyValues, propertyValueDisplays, latitude, longitude, locationName } = req.body;
 
     // Verify entity exists and belongs to user
     const entity = await prisma.entity.findFirst({
@@ -121,6 +127,9 @@ router.post('/', validate(createEntrySchema), async (req: AuthRequest, res, next
         images: images || [],
         propertyValues: propertyValues || null,
         propertyValueDisplays: propertyValueDisplays || null,
+        latitude: latitude ?? null,
+        longitude: longitude ?? null,
+        locationName: locationName || null,
         userId
       }
     });
@@ -136,6 +145,9 @@ router.post('/', validate(createEntrySchema), async (req: AuthRequest, res, next
       images: entry.images,
       propertyValues: entry.propertyValues ? (entry.propertyValues as any) : undefined,
       propertyValueDisplays: entry.propertyValueDisplays ? (entry.propertyValueDisplays as any) : undefined,
+      latitude: entry.latitude ?? undefined,
+      longitude: entry.longitude ?? undefined,
+      locationName: entry.locationName || undefined,
       createdAt: entry.createdAt.toISOString(),
       updatedAt: entry.updatedAt.toISOString()
     };
@@ -188,6 +200,9 @@ router.put('/:id', validate(updateEntrySchema), async (req: AuthRequest, res, ne
     if (req.body.images !== undefined) updateData.images = req.body.images;
     if (req.body.propertyValues !== undefined) updateData.propertyValues = req.body.propertyValues;
     if (req.body.propertyValueDisplays !== undefined) updateData.propertyValueDisplays = req.body.propertyValueDisplays;
+    if (req.body.latitude !== undefined) updateData.latitude = req.body.latitude ?? null;
+    if (req.body.longitude !== undefined) updateData.longitude = req.body.longitude ?? null;
+    if (req.body.locationName !== undefined) updateData.locationName = req.body.locationName || null;
 
     // Update entry
     const entry = await prisma.entry.update({
@@ -206,6 +221,9 @@ router.put('/:id', validate(updateEntrySchema), async (req: AuthRequest, res, ne
       images: entry.images,
       propertyValues: entry.propertyValues ? (entry.propertyValues as any) : undefined,
       propertyValueDisplays: entry.propertyValueDisplays ? (entry.propertyValueDisplays as any) : undefined,
+      latitude: entry.latitude ?? undefined,
+      longitude: entry.longitude ?? undefined,
+      locationName: entry.locationName || undefined,
       createdAt: entry.createdAt.toISOString(),
       updatedAt: entry.updatedAt.toISOString()
     };
