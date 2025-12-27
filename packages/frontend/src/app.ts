@@ -51,11 +51,17 @@ class TracklyApp {
 
         const updateView = () => {
             const view = URLStateManager.getView();
-            const selectedEntityName = URLStateManager.getSelectedEntityName();
+            const entitySlug = URLStateManager.getSelectedEntityName();
             const panelType = URLStateManager.getPanel();
 
-            // Look up entity by name
-            const entity = selectedEntityName ? this.store.getEntityByName(selectedEntityName) : null;
+            // Look up entity by slug (case-insensitive match)
+            let entity = null;
+            if (entitySlug) {
+                const entities = this.store.getEntities();
+                entity = entities.find(e =>
+                    e.name.toLowerCase().replace(/\s+/g, '-') === entitySlug.toLowerCase()
+                ) || null;
+            }
 
             // Handle view routing
             if (view === 'entries' && entity) {

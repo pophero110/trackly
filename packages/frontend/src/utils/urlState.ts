@@ -1,5 +1,6 @@
 /**
  * URL State Manager - Uses route as the source of truth for app state
+ * Path-based routing: /entities/life/entries
  */
 
 type StateChangeCallback = () => void;
@@ -10,37 +11,48 @@ export class URLStateManager {
     private static listeners: StateChangeCallback[] = [];
 
     /**
-     * Encode entity name for URL
+     * Encode entity name for URL path (lowercase, replace spaces with hyphens)
      */
     private static encodeEntityName(name: string): string {
-        return encodeURIComponent(name);
+        return name.toLowerCase().replace(/\s+/g, '-');
     }
 
     /**
-     * Decode entity name from URL
+     * Parse the current pathname and return route info
      */
-    private static decodeEntityName(encoded: string): string {
-        return decodeURIComponent(encoded);
+    private static parsePathname(): { view: 'home' | 'entities' | 'entries', entitySlug?: string } {
+        const path = window.location.pathname;
+
+        // Match /entities
+        if (path === '/entities') {
+            return { view: 'entities' };
+        }
+
+        // Match /entities/:entitySlug/entries
+        const entriesMatch = path.match(/^\/entities\/([^/]+)\/entries$/);
+        if (entriesMatch) {
+            return { view: 'entries', entitySlug: entriesMatch[1] };
+        }
+
+        // Default to home
+        return { view: 'home' };
     }
 
     /**
-     * Get selected entity name from URL
+     * Get selected entity name from URL path
+     * Needs to match entity slug to actual entity name
      */
     static getSelectedEntityName(): string | null {
-        const params = new URLSearchParams(window.location.search);
-        const encoded = params.get('entity');
-        return encoded ? URLStateManager.decodeEntityName(encoded) : null;
+        const { entitySlug } = URLStateManager.parsePathname();
+        return entitySlug || null;
     }
 
     /**
-     * Get current view from URL
+     * Get current view from URL path
      */
     static getView(): 'home' | 'entities' | 'entries' {
-        const params = new URLSearchParams(window.location.search);
-        const view = params.get('view');
-        if (view === 'entries') return 'entries';
-        if (view === 'entities') return 'entities';
-        return 'home';
+        const { view } = URLStateManager.parsePathname();
+        return view;
     }
 
     /**
@@ -72,58 +84,48 @@ export class URLStateManager {
     }
 
     /**
-     * Set selected entity name in URL
+     * Set selected entity name in URL (deprecated - use showEntryList instead)
      */
     static setSelectedEntityName(entityName: string | null): void {
-        const params = new URLSearchParams(window.location.search);
-
         if (entityName) {
-            params.set('entity', URLStateManager.encodeEntityName(entityName));
+            const slug = URLStateManager.encodeEntityName(entityName);
+            URLStateManager.updatePath(`/entities/${slug}/entries`);
         } else {
-            params.delete('entity');
+            URLStateManager.updatePath('/');
         }
-
-        URLStateManager.updateURL(params);
     }
 
     /**
-     * Set current view in URL
+     * Set current view in URL (deprecated - use specific navigation methods)
      */
     static setView(view: 'home' | 'entities' | 'entries'): void {
-        const params = new URLSearchParams(window.location.search);
-
-        if (view === 'entries') {
-            params.set('view', 'entries');
-        } else if (view === 'entities') {
-            params.set('view', 'entities');
-        } else {
-            params.delete('view');
+        if (view === 'entities') {
+            URLStateManager.updatePath('/entities');
+        } else if (view === 'home') {
+            URLStateManager.updatePath('/');
         }
-
-        URLStateManager.updateURL(params);
     }
 
     /**
      * Navigate to entity entry list
      */
     static showEntryList(entityName: string): void {
-        const params = new URLSearchParams();
-        params.set('entity', URLStateManager.encodeEntityName(entityName));
-        params.set('view', 'entries');
-        URLStateManager.updateURL(params);
+        const slug = URLStateManager.encodeEntityName(entityName);
+        const params = new URLSearchParams(window.location.search);
+        const queryString = params.toString();
+        const path = `/entities/${slug}/entries${queryString ? '?' + queryString : ''}`;
+        URLStateManager.updatePath(path);
     }
 
     /**
      * Navigate back to entity grid
      */
     static showGrid(): void {
-        const params = new URLSearchParams();
-        params.set('view', 'entities');
-        URLStateManager.updateURL(params);
+        URLStateManager.updatePath('/entities');
     }
 
     static showHome(): void {
-        URLStateManager.updateURL(new URLSearchParams());
+        URLStateManager.updatePath('/');
     }
 
     /**
@@ -222,7 +224,15 @@ export class URLStateManager {
     }
 
     /**
-     * Update URL and notify listeners
+     * Update URL path and notify listeners
+     */
+    private static updatePath(path: string): void {
+        window.history.pushState(null, '', path);
+        URLStateManager.notifyListeners();
+    }
+
+    /**
+     * Update URL query parameters and notify listeners
      */
     private static updateURL(params: URLSearchParams): void {
         const newURL = params.toString()
