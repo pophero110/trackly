@@ -1353,11 +1353,43 @@ form {
   margin-bottom: 8px;
 }
 
+.entry-header-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
 .entry-timestamp-secondary {
   color: var(--text-muted);
   font-size: 0.8125rem;
   font-weight: 400;
   line-height: 1.4;
+}
+
+/* Location in Header */
+.entry-location-header {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--text-muted);
+  font-size: 0.8125rem;
+}
+
+.location-icon-small {
+  font-size: 0.875rem;
+  line-height: 1;
+}
+
+.location-link-header {
+  color: var(--text-muted);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.location-link-header:hover {
+  color: var(--primary);
+  text-decoration: underline;
 }
 
 /* Entry Title - Primary and Prominent */

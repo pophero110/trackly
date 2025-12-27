@@ -167,20 +167,23 @@ export class EntryListComponent extends WebComponent {
         const hasAttachments = imagesHtml;
         const hasReferences = referencesHtml;
 
-        // Location display
-        const locationHtml = entry.latitude && entry.longitude
-            ? `<div class="entry-location">
-                <span class="location-icon">📍</span>
-                <a href="https://www.google.com/maps?q=${entry.latitude},${entry.longitude}" target="_blank" rel="noopener noreferrer" class="location-link">
-                    ${entry.locationName || `${entry.latitude.toFixed(6)}, ${entry.longitude.toFixed(6)}`}
+        // Location display (inline in header)
+        const locationHeaderHtml = entry.latitude && entry.longitude
+            ? `<span class="entry-location-header">
+                <span class="location-icon-small">📍</span>
+                <a href="https://www.google.com/maps?q=${entry.latitude},${entry.longitude}" target="_blank" rel="noopener noreferrer" class="location-link-header">
+                    ${entry.locationName || `${entry.latitude.toFixed(4)}, ${entry.longitude.toFixed(4)}`}
                 </a>
-            </div>`
+            </span>`
             : '';
 
         return `
             <div class="entry-card" data-entry-id="${entry.id}">
                 <div class="entry-card-header">
-                    <span class="entry-timestamp-secondary">${formatDate(entry.timestamp)}</span>
+                    <div class="entry-header-left">
+                        <span class="entry-timestamp-secondary">${formatDate(entry.timestamp)}</span>
+                        ${locationHeaderHtml}
+                    </div>
                     <button class="entry-menu-btn" data-entry-id="${entry.id}" data-action="menu">⋮</button>
                 </div>
                 ${entryTitle}
@@ -190,7 +193,6 @@ export class EntryListComponent extends WebComponent {
                     </div>
                 ` : ''}
                 ${propertiesHtml}
-                ${locationHtml}
                 <div class="entry-meta-chips">
                     ${entityChip}
                     ${categoryChips}
