@@ -1,0 +1,327 @@
+import { WebComponent } from './WebComponent.js';
+import { Entry } from '../models/Entry.js';
+import { escapeHtml, formatDate } from '../utils/helpers.js';
+import { parseMarkdown } from '../utils/markdown.js';
+import { URLStateManager } from '../utils/urlState.js';
+import { EntityProperty } from '../types/index.js';
+
+/**
+ * EntryDetail Web Component for displaying a single entry's full details
+ */
+export class EntryDetailComponent extends WebComponent {
+    private entryId: string | null = null;
+
+    connectedCallback(): void {
+        super.connectedCallback();
+
+        // Get entry ID from URL
+        const path = window.location.pathname;
+        const match = path.match(/^\/entries\/([^/]+)$/);
+        if (match) {
+            this.entryId = match[1];
+        }
+
+        this.render();
+    }
+
+    render(): void {
+        if (!this.entryId) {
+            this.innerHTML = `
+                <div class="section">
+                    <div class="error-state">Entry not found</div>
+                </div>
+            `;
+            return;
+        }
+
+        const entry = this.store.getEntryById(this.entryId);
+        if (!entry) {
+            this.innerHTML = `
+                <div class="section">
+                    <div class="error-state">Entry not found</div>
+                    <button class="btn-secondary" id="back-btn">← Back</button>
+                </div>
+            `;
+            this.attachBackHandler();
+            return;
+        }
+
+        const entity = this.store.getEntityById(entry.entityId);
+
+        this.innerHTML = `
+            <div class="section entry-detail-page">
+                ${this.renderDetailHeader(entry, entity)}
+                ${this.renderDetailContent(entry, entity)}
+            </div>
+        `;
+
+        this.attachEventHandlers();
+    }
+
+    private renderDetailHeader(entry: Entry, entity: any): string {
+        const entityColor = entity ? this.getEntityColor(entity.name) : '';
+        const entityChip = entity
+            ? `<span class="entry-chip entry-chip-entity"
+                     data-entity-name="${escapeHtml(entity.name)}"
+                     style="--entity-color: ${entityColor}">
+                 ${escapeHtml(entity.name)}
+               </span>`
+            : '';
+
+        return `
+            <div class="entry-detail-header">
+                <button class="btn-back" id="back-btn">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M19 12H5M12 19l-7-7 7-7"/>
+                    </svg>
+                    Back
+                </button>
+                <div class="entry-detail-title">
+                    ${entityChip}
+                    <span class="entry-detail-timestamp">🕒 ${formatDate(entry.timestamp)}</span>
+                </div>
+                <div class="entry-detail-actions">
+                    <button class="btn-icon" id="edit-entry-btn" title="Edit">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                        </svg>
+                    </button>
+                    <button class="btn-icon" id="delete-entry-btn" title="Delete">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="3 6 5 6 21 6"></polyline>
+                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        `;
+    }
+
+    private renderDetailContent(entry: Entry, entity: any): string {
+        const locationHtml = entry.latitude && entry.longitude
+            ? `
+            <div class="entry-detail-section">
+                <h3 class="entry-detail-section-title">📍 Location</h3>
+                <div class="entry-location-detail">
+                    <a href="https://www.google.com/maps?q=${entry.latitude},${entry.longitude}"
+                       target="_blank"
+                       rel="noopener noreferrer"
+                       class="location-link">
+                        ${entry.locationName || `${entry.latitude.toFixed(4)}, ${entry.longitude.toFixed(4)}`}
+                    </a>
+                </div>
+            </div>
+            `
+            : '';
+
+        const valueHtml = entry.value !== undefined && entry.value !== null
+            ? `
+            <div class="entry-detail-section">
+                <h3 class="entry-detail-section-title">Value</h3>
+                <div class="entry-value-detail">${escapeHtml(entry.valueDisplay || String(entry.value))}</div>
+            </div>
+            `
+            : '';
+
+        const propertiesHtml = this.renderProperties(entry, entity);
+
+        const notesHtml = entry.notes
+            ? `
+            <div class="entry-detail-section">
+                <h3 class="entry-detail-section-title">Notes</h3>
+                <div class="entry-notes-detail">${this.formatNotes(entry.notes)}</div>
+                ${this.renderReferences(entry.notes)}
+            </div>
+            `
+            : '';
+
+        const imagesHtml = entry.images && entry.images.length > 0
+            ? `
+            <div class="entry-detail-section">
+                <h3 class="entry-detail-section-title">Images</h3>
+                <div class="entry-images-detail">
+                    ${entry.images.map(img => `
+                        <img src="${escapeHtml(img)}" alt="Entry image" class="entry-image-detail" />
+                    `).join('')}
+                </div>
+            </div>
+            `
+            : '';
+
+        return `
+            <div class="entry-detail-content">
+                ${locationHtml}
+                ${valueHtml}
+                ${propertiesHtml}
+                ${notesHtml}
+                ${imagesHtml}
+            </div>
+        `;
+    }
+
+    private renderProperties(entry: Entry, entity: any): string {
+        if (!entity || !entity.properties || entity.properties.length === 0) {
+            return '';
+        }
+
+        const propertyValues = entry.propertyValues || {};
+        const propertyValueDisplays = entry.propertyValueDisplays || {};
+
+        const propertiesWithValues = entity.properties.filter((prop: EntityProperty) =>
+            propertyValues[prop.name] !== undefined && propertyValues[prop.name] !== null
+        );
+
+        if (propertiesWithValues.length === 0) {
+            return '';
+        }
+
+        const propertiesHtml = propertiesWithValues.map((prop: EntityProperty) => {
+            const value = propertyValues[prop.name];
+            const displayValue = propertyValueDisplays[prop.name] || String(value);
+
+            return `
+                <div class="property-row">
+                    <span class="property-name">${escapeHtml(prop.name)}:</span>
+                    <span class="property-value">${escapeHtml(displayValue)}</span>
+                </div>
+            `;
+        }).join('');
+
+        return `
+            <div class="entry-detail-section">
+                <h3 class="entry-detail-section-title">Properties</h3>
+                <div class="entry-properties-detail">
+                    ${propertiesHtml}
+                </div>
+            </div>
+        `;
+    }
+
+    private formatNotes(notes: string): string {
+        const formatted = parseMarkdown(notes);
+        return this.linkifyHashtags(formatted);
+    }
+
+    private linkifyHashtags(text: string): string {
+        const hashtagRegex = /(?<![a-zA-Z0-9_])#([a-zA-Z0-9_]+)(?![a-zA-Z0-9_])/g;
+        return text.replace(hashtagRegex, (match, tag) => {
+            return `<a href="#" class="hashtag-link" data-hashtag="${tag}">${match}</a>`;
+        });
+    }
+
+    private renderReferences(notes: string): string {
+        const urls = this.extractUrls(notes);
+        if (urls.length === 0) return '';
+
+        const urlsHtml = urls.map(url => {
+            const displayUrl = url.length > 50 ? url.substring(0, 47) + '...' : url;
+            return `<a href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer" class="reference-link">${escapeHtml(displayUrl)}</a>`;
+        }).join('');
+
+        return `
+            <div class="entry-references">
+                <div class="references-label">References:</div>
+                <div class="references-links">${urlsHtml}</div>
+            </div>
+        `;
+    }
+
+    private extractUrls(text: string): string[] {
+        const urlRegex = /\[([^\]]+)\]\(([^)]+)\)/g;
+        const urls: string[] = [];
+        let match;
+
+        while ((match = urlRegex.exec(text)) !== null) {
+            urls.push(match[2]);
+        }
+
+        return urls;
+    }
+
+    private getEntityColor(entityName: string): string {
+        const colorMap: Record<string, string> = {
+            'Life': '#10b981',
+            'Work': '#3b82f6',
+            'Travel': '#8b5cf6',
+            'Health': '#ef4444',
+            'Finance': '#f59e0b',
+            'Learning': '#06b6d4',
+            'Fitness': '#ec4899',
+            'Food': '#f97316',
+            'Reading': '#6366f1',
+            'Project': '#14b8a6',
+        };
+
+        if (colorMap[entityName]) {
+            return colorMap[entityName];
+        }
+
+        let hash = 0;
+        for (let i = 0; i < entityName.length; i++) {
+            hash = entityName.charCodeAt(i) + ((hash << 5) - hash);
+        }
+
+        const hue = Math.abs(hash % 360);
+        const saturation = 65 + (Math.abs(hash) % 20);
+        const lightness = 50 + (Math.abs(hash >> 8) % 15);
+
+        return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
+    }
+
+    private attachEventHandlers(): void {
+        this.attachBackHandler();
+        this.attachEditHandler();
+        this.attachDeleteHandler();
+        this.attachHashtagHandlers();
+    }
+
+    private attachBackHandler(): void {
+        const backBtn = this.querySelector('#back-btn');
+        if (backBtn) {
+            backBtn.addEventListener('click', () => {
+                window.history.back();
+            });
+        }
+    }
+
+    private attachEditHandler(): void {
+        const editBtn = this.querySelector('#edit-entry-btn');
+        if (editBtn && this.entryId) {
+            editBtn.addEventListener('click', () => {
+                URLStateManager.openEditEntryPanel(this.entryId!);
+            });
+        }
+    }
+
+    private attachDeleteHandler(): void {
+        const deleteBtn = this.querySelector('#delete-entry-btn');
+        if (deleteBtn && this.entryId) {
+            deleteBtn.addEventListener('click', async () => {
+                if (confirm('Are you sure you want to delete this entry?')) {
+                    try {
+                        await this.store.deleteEntry(this.entryId!);
+                        window.history.back();
+                    } catch (error) {
+                        console.error('Error deleting entry:', error);
+                        alert('Failed to delete entry. Please try again.');
+                    }
+                }
+            });
+        }
+    }
+
+    private attachHashtagHandlers(): void {
+        const hashtagLinks = this.querySelectorAll('.hashtag-link');
+        hashtagLinks.forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                const hashtag = (link as HTMLElement).dataset.hashtag;
+                if (hashtag) {
+                    URLStateManager.setHashtagFilter(hashtag);
+                    window.history.back();
+                }
+            });
+        });
+    }
+}

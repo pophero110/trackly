@@ -10,6 +10,7 @@ import { EntityGridComponent } from './components/EntityGridComponent.js';
 import { EntryFormComponent } from './components/EntryFormComponent.js';
 import { EntryEditFormComponent } from './components/EntryEditFormComponent.js';
 import { EntryListComponent } from './components/EntryListComponent.js';
+import { EntryDetailComponent } from './components/EntryDetailComponent.js';
 import './components/AuthComponent.js'; // Register custom element
 import { APIClient } from './api/client.js';
 
@@ -47,12 +48,28 @@ class TracklyApp {
     private setupViewRouting(): void {
         const entityGrid = document.querySelector('entity-grid') as HTMLElement;
         const entryList = document.querySelector('entry-list') as HTMLElement;
+        const entryDetail = document.querySelector('entry-detail') as HTMLElement;
         const panel = document.querySelector('slide-up-panel') as any;
 
         const updateView = () => {
+            const path = window.location.pathname;
             const view = URLStateManager.getView();
             const entitySlug = URLStateManager.getSelectedEntityName();
             const panelType = URLStateManager.getPanel();
+
+            // Check if we're on an entry detail page
+            const entryDetailMatch = path.match(/^\/entries\/([^/]+)$/);
+            if (entryDetailMatch) {
+                // Show entry detail page
+                if (entityGrid) entityGrid.style.display = 'none';
+                if (entryList) entryList.style.display = 'none';
+                if (entryDetail) entryDetail.style.display = 'block';
+                this.store.setSelectedEntityId(null);
+                return;
+            }
+
+            // Hide entry detail for other views
+            if (entryDetail) entryDetail.style.display = 'none';
 
             // Look up entity by slug (case-insensitive match)
             let entity = null;
@@ -207,6 +224,7 @@ class TracklyApp {
         customElements.define('entry-form', EntryFormComponent);
         customElements.define('entry-edit-form', EntryEditFormComponent);
         customElements.define('entry-list', EntryListComponent);
+        customElements.define('entry-detail', EntryDetailComponent);
     }
 
     private setupSignOut(): void {

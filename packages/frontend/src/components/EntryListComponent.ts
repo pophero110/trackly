@@ -472,6 +472,33 @@ export class EntryListComponent extends WebComponent {
 
     private attachCardClickHandlers(): void {
         this.querySelectorAll('.entry-card').forEach(card => {
+            // Regular click to navigate to detail page
+            card.addEventListener('click', (e) => {
+                const target = e.target as HTMLElement;
+
+                // Don't navigate if clicking on menu button
+                if (target.closest('[data-action="menu"]')) {
+                    return;
+                }
+
+                // Don't navigate if clicking on a link
+                if (target.tagName === 'A' || target.closest('a')) {
+                    return;
+                }
+
+                // Don't navigate if clicking on hashtag
+                if (target.closest('.hashtag-link')) {
+                    return;
+                }
+
+                const entryId = (card as HTMLElement).dataset.entryId;
+                if (entryId) {
+                    window.history.pushState(null, '', `/entries/${entryId}`);
+                    // Trigger URL state change
+                    window.dispatchEvent(new PopStateEvent('popstate'));
+                }
+            });
+
             // Right-click to show context menu
             card.addEventListener('contextmenu', (e) => {
                 e.preventDefault();
