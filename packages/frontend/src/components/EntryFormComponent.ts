@@ -612,24 +612,21 @@ export class EntryFormComponent extends WebComponent {
             const address = data.address;
             if (!address) return null;
 
-            // Try to build a concise location string
-            const parts: string[] = [];
+            // Build short version (City, State/Province)
+            const shortParts: string[] = [];
 
             if (address.city || address.town || address.village) {
-                parts.push(address.city || address.town || address.village);
+                shortParts.push(address.city || address.town || address.village);
             }
 
             if (address.state) {
-                parts.push(address.state);
+                shortParts.push(address.state);
             } else if (address.county) {
-                parts.push(address.county);
+                shortParts.push(address.county);
             }
 
-            if (address.country) {
-                parts.push(address.country);
-            }
-
-            return parts.length > 0 ? parts.join(', ') : null;
+            // Return short version (we'll store full version separately if needed later)
+            return shortParts.length > 0 ? shortParts.join(', ') : null;
         } catch (error) {
             console.error('Reverse geocoding error:', error);
             return null;

@@ -172,7 +172,11 @@ export class EntryListComponent extends WebComponent {
             ? `<span class="metadata-separator">•</span>
             <span class="entry-location-header">
                 <span class="location-icon-small">📍</span>
-                <a href="https://www.google.com/maps?q=${entry.latitude},${entry.longitude}" target="_blank" rel="noopener noreferrer" class="location-link-header">
+                <a href="https://www.google.com/maps?q=${entry.latitude},${entry.longitude}"
+                   target="_blank"
+                   rel="noopener noreferrer"
+                   class="location-link-header"
+                   title="Click to open in Google Maps">
                     ${entry.locationName || `${entry.latitude.toFixed(4)}, ${entry.longitude.toFixed(4)}`}
                 </a>
             </span>`

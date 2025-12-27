@@ -1391,12 +1391,17 @@ form {
 .location-link-header {
   color: var(--text-muted);
   text-decoration: none;
-  transition: color 0.2s;
+  transition: all 0.2s;
+  cursor: pointer;
+  padding: 2px 4px;
+  margin: -2px -4px;
+  border-radius: 4px;
 }
 
 .location-link-header:hover {
   color: var(--primary);
-  text-decoration: underline;
+  background: rgba(59, 130, 246, 0.08);
+  text-decoration: none;
 }
 
 /* Entry Title - Primary and Prominent */
