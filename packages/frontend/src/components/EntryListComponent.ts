@@ -141,8 +141,9 @@ export class EntryListComponent extends WebComponent {
         // Extract URLs for reference section
         const referencesHtml = entry.notes ? this.renderReferences(entry.notes) : '';
 
-        // Entity name and categories as chips
-        const entityChip = entity ? `<span class="entry-chip entry-chip-entity" data-entity-name="${escapeHtml(entity.name)}">${escapeHtml(entity.name)}</span>` : '';
+        // Entity name and categories as chips with color
+        const entityColor = entity ? this.getEntityColor(entity.name) : '';
+        const entityChip = entity ? `<span class="entry-chip entry-chip-entity" data-entity-name="${escapeHtml(entity.name)}" style="--entity-color: ${entityColor}">${escapeHtml(entity.name)}</span>` : '';
         const categoryChips = entity && entity.categories && entity.categories.length > 0
             ? entity.categories.map(cat => `<span class="entry-chip entry-chip-category">${escapeHtml(cat)}</span>`).join('')
             : '';
@@ -218,6 +219,40 @@ export class EntryListComponent extends WebComponent {
                 <div class="context-menu-item danger" data-entry-id="${entry.id}" data-action="delete">Delete</div>
             </div>
         `;
+    }
+
+    private getEntityColor(entityName: string): string {
+        // Predefined colors for common entity names
+        const colorMap: Record<string, string> = {
+            'Life': '#10b981', // green
+            'Work': '#3b82f6', // blue
+            'Travel': '#8b5cf6', // purple
+            'Health': '#ef4444', // red
+            'Finance': '#f59e0b', // amber
+            'Learning': '#06b6d4', // cyan
+            'Fitness': '#ec4899', // pink
+            'Food': '#f97316', // orange
+            'Reading': '#6366f1', // indigo
+            'Project': '#14b8a6', // teal
+        };
+
+        // Return predefined color if exists
+        if (colorMap[entityName]) {
+            return colorMap[entityName];
+        }
+
+        // Generate consistent color based on entity name hash
+        let hash = 0;
+        for (let i = 0; i < entityName.length; i++) {
+            hash = entityName.charCodeAt(i) + ((hash << 5) - hash);
+        }
+
+        // Generate vibrant, distinguishable colors
+        const hue = Math.abs(hash % 360);
+        const saturation = 65 + (Math.abs(hash) % 20); // 65-85%
+        const lightness = 50 + (Math.abs(hash >> 8) % 15); // 50-65%
+
+        return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
     }
 
     private getEntityTypeIcon(type?: string): string {

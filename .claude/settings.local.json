@@ -9,7 +9,14 @@
       "Bash(find:*)",
       "Bash(cat:*)",
       "Bash(git push)",
-      "Bash(git rm:*)"
+      "Bash(git rm:*)",
+      "Bash(curl:*)",
+      "Bash(npm run dev:*)",
+      "Bash(TOKEN=\"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJjbWprNWx1Z3kwMDAwNmY5cXl5bHdra29uIiwiZW1haWwiOiJyYWlsd2F5dGVzdEBleGFtcGxlLmNvbSIsImlhdCI6MTc2NjU4OTIyMCwiZXhwIjoxNzY5MTgxMjIwfQ.v4laKQ5zZP870GwSJgRFqHi5KqczGiVDt2GFwemZqkc\":*)",
+      "Bash(pnpm add:*)",
+      "Bash(pnpm build:*)",
+      "Bash(npx prisma migrate:*)",
+      "Bash(npm --prefix /Users/jiajinou/Projects/trackly/packages/frontend run build)"
     ],
     "deny": [],
     "ask": []
