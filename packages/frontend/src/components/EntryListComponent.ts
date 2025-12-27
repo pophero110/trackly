@@ -34,7 +34,7 @@ export class EntryListComponent extends WebComponent {
         const selectedEntity = selectedEntityId ? this.store.getEntityById(selectedEntityId) : null;
         const headerText = selectedEntity
             ? `${selectedEntity.name}`
-            : 'Recent Entries';
+            : 'All Entries';
         const entityType = selectedEntity ? `<span class="entity-type ${selectedEntity.type.toLowerCase()}">${selectedEntity.type}</span>` : '';
 
         // Hashtag filter badge
@@ -47,20 +47,29 @@ export class EntryListComponent extends WebComponent {
                 ? `No entries yet for ${selectedEntity.name}. Log your first entry!`
                 : 'No entries yet. Log your first entry!';
 
+            const subtitle = selectedEntity
+                ? `Capture ${selectedEntity.name.toLowerCase()} moments`
+                : 'Track your life';
+
             this.innerHTML = `
                 <div class="section">
-                    <div class="section-header">
-                        <div class="section-header-title">
-                            <h2>${headerText}</h2>
-                            ${entityType}
-                            ${hashtagBadge}
+                    <div class="section-header-strong">
+                        <div class="section-header-content">
+                            <div class="section-header-text">
+                                <h2 class="section-title">${headerText} ${entityType}</h2>
+                                <p class="section-subtitle">${subtitle}</p>
+                            </div>
+                            <div class="section-header-actions">
+                                ${hashtagBadge}
+                                <button class="btn-primary btn-add-entry" id="log-entry-btn">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                                        <line x1="12" y1="5" x2="12" y2="19"></line>
+                                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                                    </svg>
+                                    Add Entry
+                                </button>
+                            </div>
                         </div>
-                        <button class="btn-icon btn-primary" id="log-entry-btn" aria-label="Log Entry" title="Log Entry">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <line x1="12" y1="5" x2="12" y2="19"></line>
-                                <line x1="5" y1="12" x2="19" y2="12"></line>
-                            </svg>
-                        </button>
                     </div>
                     <div class="empty-state">${emptyMessage}</div>
                 </div>
@@ -76,20 +85,29 @@ export class EntryListComponent extends WebComponent {
             .map(entry => this.renderEntryCard(entry))
             .join('');
 
+        const subtitle = selectedEntity
+            ? `Capture ${selectedEntity.name.toLowerCase()} moments`
+            : 'Track your life';
+
         this.innerHTML = `
             <div class="section">
-                <div class="section-header">
-                    <div class="section-header-title">
-                        <h2>${headerText}</h2>
-                        ${entityType}
-                        ${hashtagBadge}
+                <div class="section-header-strong">
+                    <div class="section-header-content">
+                        <div class="section-header-text">
+                            <h2 class="section-title">${headerText} ${entityType}</h2>
+                            <p class="section-subtitle">${subtitle}</p>
+                        </div>
+                        <div class="section-header-actions">
+                            ${hashtagBadge}
+                            <button class="btn-primary btn-add-entry" id="log-entry-btn">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                                </svg>
+                                Add Entry
+                            </button>
+                        </div>
                     </div>
-                    <button class="btn-icon btn-primary" id="log-entry-btn" aria-label="Log Entry" title="Log Entry">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <line x1="12" y1="5" x2="12" y2="19"></line>
-                            <line x1="5" y1="12" x2="19" y2="12"></line>
-                        </svg>
-                    </button>
                 </div>
                 <div class="entries-list">
                     ${entriesHtml}
@@ -103,14 +121,18 @@ export class EntryListComponent extends WebComponent {
         this.attachCardClickHandlers();
         this.attachHashtagHandlers();
         this.attachHashtagClearHandler();
+        this.attachEntityChipHandlers();
     }
 
     private renderEntryCard(entry: Entry): string {
         const entity = this.store.getEntityById(entry.entityId);
 
-        // Entry title (value)
+        // Get entity type icon/emoji
+        const typeIcon = this.getEntityTypeIcon(entity?.type);
+
+        // Entry title (value) - now primary and prominent
         const entryTitle = entry.value !== undefined
-            ? `<div class="entry-title">${this.formatValue(entry.value, entry.valueDisplay, entity?.valueType)}</div>`
+            ? `<h3 class="entry-title-primary">${typeIcon} ${this.formatValue(entry.value, entry.valueDisplay, entity?.valueType)}</h3>`
             : '';
 
         // Notes content
@@ -118,6 +140,12 @@ export class EntryListComponent extends WebComponent {
 
         // Extract URLs for reference section
         const referencesHtml = entry.notes ? this.renderReferences(entry.notes) : '';
+
+        // Entity name and categories as chips
+        const entityChip = entity ? `<span class="entry-chip entry-chip-entity" data-entity-name="${escapeHtml(entity.name)}">${escapeHtml(entity.name)}</span>` : '';
+        const categoryChips = entity && entity.categories && entity.categories.length > 0
+            ? entity.categories.map(cat => `<span class="entry-chip entry-chip-category">${escapeHtml(cat)}</span>`).join('')
+            : '';
 
         // Render custom properties
         const propertiesHtml = entity && entity.properties && entity.properties.length > 0 && entry.propertyValues
@@ -141,19 +169,21 @@ export class EntryListComponent extends WebComponent {
 
         return `
             <div class="entry-card" data-entry-id="${entry.id}">
-                <div class="entry-metadata">
-                    <div class="entry-header">
-                        <span class="entry-timestamp">${formatDate(entry.timestamp)}</span>
-                        <button class="entry-menu-btn" data-entry-id="${entry.id}" data-action="menu">⋮</button>
-                    </div>
-                    ${entryTitle}
-                    ${propertiesHtml}
+                <div class="entry-card-header">
+                    <span class="entry-timestamp-secondary">${formatDate(entry.timestamp)}</span>
+                    <button class="entry-menu-btn" data-entry-id="${entry.id}" data-action="menu">⋮</button>
                 </div>
+                ${entryTitle}
                 ${hasContent ? `
                     <div class="entry-content">
                         ${notesHtml}
                     </div>
                 ` : ''}
+                ${propertiesHtml}
+                <div class="entry-meta-chips">
+                    ${entityChip}
+                    ${categoryChips}
+                </div>
                 ${hasReferences ? `
                     <div class="entry-references">
                         ${referencesHtml}
@@ -170,6 +200,30 @@ export class EntryListComponent extends WebComponent {
                 <div class="context-menu-item danger" data-entry-id="${entry.id}" data-action="delete">Delete</div>
             </div>
         `;
+    }
+
+    private getEntityTypeIcon(type?: string): string {
+        if (!type) return '●';
+
+        const icons: Record<string, string> = {
+            'Habit': '🎯',
+            'Task': '✓',
+            'Event': '📅',
+            'Note': '📝',
+            'Expense': '💰',
+            'Mood': '😊',
+            'Exercise': '💪',
+            'Meal': '🍽️',
+            'Sleep': '😴',
+            'Reading': '📚',
+            'Movie': '🎬',
+            'Goal': '🎯',
+            'Journal': '📔',
+            'Idea': '💡',
+            'Link': '🔗'
+        };
+
+        return icons[type] || '●';
     }
 
     private renderReferences(notes: string): string {
@@ -365,25 +419,6 @@ export class EntryListComponent extends WebComponent {
 
     private attachCardClickHandlers(): void {
         this.querySelectorAll('.entry-card').forEach(card => {
-            card.addEventListener('click', (e) => {
-                const target = e.target as HTMLElement;
-
-                // Don't trigger if clicking on menu button
-                if (target.closest('[data-action="menu"]')) {
-                    return;
-                }
-
-                // Don't trigger if clicking on a link
-                if (target.tagName === 'A' || target.closest('a')) {
-                    return;
-                }
-
-                const entryId = (card as HTMLElement).dataset.entryId;
-                if (entryId) {
-                    URLStateManager.openEditEntryPanel(entryId);
-                }
-            });
-
             // Right-click to show context menu
             card.addEventListener('contextmenu', (e) => {
                 e.preventDefault();
@@ -516,5 +551,17 @@ export class EntryListComponent extends WebComponent {
                 URLStateManager.setHashtagFilter(null);
             });
         }
+    }
+
+    private attachEntityChipHandlers(): void {
+        this.querySelectorAll('.entry-chip-entity').forEach(chip => {
+            chip.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const entityName = (chip as HTMLElement).dataset.entityName;
+                if (entityName) {
+                    URLStateManager.showEntryList(entityName);
+                }
+            });
+        });
     }
 }

@@ -221,55 +221,39 @@ export async function replaceUrlsWithTitles(text: string): Promise<{ text: strin
     const placeholders = new Map<string, string>();
     let processedText = text;
 
-    // First pass: Replace all www. URLs with unique placeholders
-    // This is done separately to avoid conflicts with the normalized https:// versions
-    const wwwUrlsInText: Array<{original: string, normalized: string, index: number}> = [];
+    // Split the original text by existing markdown links to identify safe zones for replacement
+    const originalParts = text.split(/(\[[^\]]+\]\([^)]+\))/);
+
+    // Process each URL and create placeholders
     uniqueUrls.forEach((url, index) => {
-        if (url.startsWith('https://www.')) {
-            const wwwVersion = url.substring(8); // Remove 'https://'
-            // Check if the original text contains the www. version (not already in https:// form)
-            // We need to check if www. appears as standalone text, not just inside markdown links
-            const wwwPattern = new RegExp(`(?<!\\]\\()${wwwVersion.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(?!\\))`, 'g');
-            if (wwwPattern.test(text)) {
-                wwwUrlsInText.push({original: wwwVersion, normalized: url, index});
-            }
-        }
-    });
-
-    // Replace www. versions with placeholders
-    wwwUrlsInText.forEach(({original, normalized, index}) => {
-        const placeholder = `___URL_PLACEHOLDER_${index}___`;
-        const title = urlToTitle.get(normalized) || normalized;
-        placeholders.set(placeholder, `[${title}](${normalized})`);
-
-        // Use regex to replace only standalone URLs (not inside markdown links)
-        // Check that the URL is not preceded by ]( which would indicate it's already in a markdown link
-        const escapedOriginal = original.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-        const regex = new RegExp(`(?<!\\]\\()${escapedOriginal}(?!\\))`, 'g');
-        processedText = processedText.replace(regex, placeholder);
-    });
-
-    // Replace http(s):// URLs with placeholders
-    uniqueUrls.forEach((url, index) => {
-        // Skip if already processed as www URL
-        if (wwwUrlsInText.some(item => item.index === index)) {
-            return;
-        }
-
         const placeholder = `___URL_PLACEHOLDER_${index}___`;
         const title = urlToTitle.get(url) || url;
         placeholders.set(placeholder, `[${title}](${url})`);
 
-        // Use regex to replace only standalone URLs (not inside markdown links)
-        // Check that the URL is not preceded by ]( which would indicate it's already in a markdown link
-        const escapedUrl = url.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-        const regex = new RegExp(`(?<!\\]\\()${escapedUrl}(?!\\))`, 'g');
-        processedText = processedText.replace(regex, placeholder);
+        // Check for both www. and https:// versions
+        const patterns = [url];
+        if (url.startsWith('https://www.')) {
+            patterns.push(url.substring(8)); // Add www. version without https://
+        }
+
+        // Replace URL with placeholder in non-markdown parts only
+        patterns.forEach(pattern => {
+            const escapedPattern = pattern.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            const regex = new RegExp(escapedPattern, 'g');
+
+            processedText = processedText.split(/(\[[^\]]+\]\([^)]+\))/).map((part, i) => {
+                // Even indices are non-markdown parts, odd indices are markdown links
+                if (i % 2 === 0) {
+                    return part.replace(regex, placeholder);
+                }
+                return part;
+            }).join('');
+        });
     });
 
     // Replace all placeholders with markdown links
     placeholders.forEach((markdown, placeholder) => {
-        processedText = processedText.replace(placeholder, markdown);
+        processedText = processedText.replace(new RegExp(placeholder, 'g'), markdown);
     });
 
     return { text: processedText, urlMap };

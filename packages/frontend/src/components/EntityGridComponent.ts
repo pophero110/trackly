@@ -15,14 +15,22 @@ export class EntityGridComponent extends WebComponent {
         if (entities.length === 0) {
             this.innerHTML = `
                 <div class="section">
-                    <div class="section-header">
-                        <h2>Your Entities</h2>
-                        <button class="btn-icon btn-primary" id="create-entity-btn" aria-label="Create Entity" title="Create Entity">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <line x1="12" y1="5" x2="12" y2="19"></line>
-                                <line x1="5" y1="12" x2="19" y2="12"></line>
-                            </svg>
-                        </button>
+                    <div class="section-header-strong">
+                        <div class="section-header-content">
+                            <div class="section-header-text">
+                                <h2 class="section-title">Your Entities</h2>
+                                <p class="section-subtitle">Track what matters to you</p>
+                            </div>
+                            <div class="section-header-actions">
+                                <button class="btn-primary btn-add-entry" id="create-entity-btn">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                                        <line x1="12" y1="5" x2="12" y2="19"></line>
+                                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                                    </svg>
+                                    Create Entity
+                                </button>
+                            </div>
+                        </div>
                     </div>
                     <div class="empty-state">No entities yet. Create your first entity to get started!</div>
                 </div>
@@ -38,14 +46,22 @@ export class EntityGridComponent extends WebComponent {
 
         this.innerHTML = `
             <div class="section">
-                <div class="section-header">
-                    <h2>Your Entities</h2>
-                    <button class="btn-icon btn-primary" id="create-entity-btn" aria-label="Create Entity" title="Create Entity">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <line x1="12" y1="5" x2="12" y2="19"></line>
-                            <line x1="5" y1="12" x2="19" y2="12"></line>
-                        </svg>
-                    </button>
+                <div class="section-header-strong">
+                    <div class="section-header-content">
+                        <div class="section-header-text">
+                            <h2 class="section-title">Your Entities</h2>
+                            <p class="section-subtitle">Track what matters to you</p>
+                        </div>
+                        <div class="section-header-actions">
+                            <button class="btn-primary btn-add-entry" id="create-entity-btn">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                                </svg>
+                                Create Entity
+                            </button>
+                        </div>
+                    </div>
                 </div>
                 <div class="entities-grid">
                     ${entitiesHtml}

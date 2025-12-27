@@ -35,9 +35,12 @@ export class URLStateManager {
     /**
      * Get current view from URL
      */
-    static getView(): 'grid' | 'entries' {
+    static getView(): 'home' | 'entities' | 'entries' {
         const params = new URLSearchParams(window.location.search);
-        return params.get('view') === 'entries' ? 'entries' : 'grid';
+        const view = params.get('view');
+        if (view === 'entries') return 'entries';
+        if (view === 'entities') return 'entities';
+        return 'home';
     }
 
     /**
@@ -86,11 +89,13 @@ export class URLStateManager {
     /**
      * Set current view in URL
      */
-    static setView(view: 'grid' | 'entries'): void {
+    static setView(view: 'home' | 'entities' | 'entries'): void {
         const params = new URLSearchParams(window.location.search);
 
         if (view === 'entries') {
             params.set('view', 'entries');
+        } else if (view === 'entities') {
+            params.set('view', 'entities');
         } else {
             params.delete('view');
         }
@@ -112,6 +117,12 @@ export class URLStateManager {
      * Navigate back to entity grid
      */
     static showGrid(): void {
+        const params = new URLSearchParams();
+        params.set('view', 'entities');
+        URLStateManager.updateURL(params);
+    }
+
+    static showHome(): void {
         URLStateManager.updateURL(new URLSearchParams());
     }
 

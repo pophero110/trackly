@@ -209,6 +209,64 @@ header h1 {
   line-height: 1;
 }
 
+/* Stronger Section Header Design */
+.section-header-strong {
+  background: var(--card-background);
+  border-bottom: 1px solid var(--border);
+  padding: 20px 24px;
+  margin: -24px -24px 24px -24px;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.section-header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+}
+
+.section-header-text {
+  flex: 1;
+}
+
+.section-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0 0 4px 0;
+  letter-spacing: -0.025em;
+  line-height: 1.2;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.section-subtitle {
+  font-size: 0.9375rem;
+  color: var(--text-secondary);
+  margin: 0;
+  font-weight: 400;
+}
+
+.section-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.btn-add-entry {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 16px;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
 /* Zen Mode */
 .btn-zen-mode {
   background: none;
@@ -1276,11 +1334,10 @@ form {
   background: var(--card-background);
   border: 1px solid var(--border);
   border-radius: 12px;
-  padding: 0;
+  padding: 16px 18px;
   transition: all 0.2s ease;
   overflow: hidden;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-  cursor: pointer;
 }
 
 .entry-card:hover {
@@ -1288,11 +1345,78 @@ form {
   transform: translateY(-1px);
 }
 
+/* Entry Card Header - Timestamp and Menu */
+.entry-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
 
-/* Entry Metadata - Header Section */
+.entry-timestamp-secondary {
+  color: var(--text-muted);
+  font-size: 0.8125rem;
+  font-weight: 400;
+  line-height: 1.4;
+}
+
+/* Entry Title - Primary and Prominent */
+.entry-title-primary {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 12px 0;
+  line-height: 1.4;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Entry Meta Chips - Entity and Categories */
+.entry-meta-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 12px;
+}
+
+.entry-meta-chips:empty {
+  display: none;
+}
+
+.entry-chip {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+.entry-chip-entity {
+  background: var(--background);
+  color: var(--text-secondary);
+  border: 1px solid var(--border);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.entry-chip-entity:hover {
+  background: var(--border);
+  color: var(--text-primary);
+}
+
+.entry-chip-category {
+  background: rgba(37, 99, 235, 0.1);
+  color: var(--primary);
+  border: 1px solid rgba(37, 99, 235, 0.2);
+}
+
+/* Legacy styles for backward compatibility */
 .entry-metadata {
   padding: 15px 18px;
   border-bottom: 1px solid rgba(0, 0, 0, 0.03);
+  background: #f5f5f5;
 }
 
 .entry-header {
@@ -1345,7 +1469,7 @@ form {
 
 /* Entry Content - Main Section */
 .entry-content {
-  padding: 15px 18px;
+  margin: 0;
 }
 
 .entry-content:empty {
@@ -1354,15 +1478,16 @@ form {
 
 .entry-notes {
   color: var(--text-secondary);
-  font-size: 1rem;
-  line-height: 1.5;
-  margin-top: 0;
+  font-size: 0.9375rem;
+  line-height: 1.6;
+  margin: 0;
   max-width: 75ch;
 }
 
 /* Entry References - URL Links Section */
 .entry-references {
-  padding: 12px 18px;
+  padding: 0;
+  margin-top: 12px;
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
@@ -1415,9 +1540,8 @@ form {
 
 /* Entry Attachments - Media Section */
 .entry-attachments {
-  padding: 16px 18px 15px 18px;
-  background: rgba(0, 0, 0, 0.01);
-  border-top: 1px solid rgba(0, 0, 0, 0.03);
+  padding: 0;
+  margin-top: 12px;
 }
 
 .entry-attachments:empty {
@@ -1511,6 +1635,34 @@ form {
   .entry-timestamp {
     font-size: 0.875rem;
   }
+
+  .section-header-strong {
+    padding: 16px 16px;
+    margin: -16px -16px 16px -16px;
+  }
+
+  .section-header-content {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+
+  .section-title {
+    font-size: 1.25rem;
+  }
+
+  .section-subtitle {
+    font-size: 0.875rem;
+  }
+
+  .section-header-actions {
+    justify-content: space-between;
+  }
+
+  .btn-add-entry {
+    flex: 1;
+    justify-content: center;
+  }
 }
 
 @media (max-width: 480px) {
@@ -1520,6 +1672,14 @@ form {
 
   .section h2 {
     font-size: 1.125rem;
+  }
+
+  .section-title {
+    font-size: 1.125rem;
+  }
+
+  .section-subtitle {
+    font-size: 0.8125rem;
   }
 
   form {

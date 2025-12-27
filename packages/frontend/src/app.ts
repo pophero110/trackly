@@ -57,25 +57,22 @@ class TracklyApp {
             // Look up entity by name
             const entity = selectedEntityName ? this.store.getEntityByName(selectedEntityName) : null;
 
-            // Handle view (grid vs entries)
+            // Handle view routing
             if (view === 'entries' && entity) {
-                // Show entry list
+                // Show entry list for specific entity
                 if (entityGrid) entityGrid.style.display = 'none';
                 if (entryList) entryList.style.display = 'block';
-
-                // Sync store with URL state
                 this.store.setSelectedEntityId(entity.id);
-            } else {
+            } else if (view === 'entities') {
                 // Show entity grid
                 if (entityGrid) entityGrid.style.display = 'block';
                 if (entryList) entryList.style.display = 'none';
-
-                // Clear selection if not in URL or entity not found
-                if (!entity) {
-                    this.store.setSelectedEntityId(null);
-                } else {
-                    this.store.setSelectedEntityId(entity.id);
-                }
+                this.store.setSelectedEntityId(null);
+            } else {
+                // Home view - show all recent entries
+                if (entityGrid) entityGrid.style.display = 'none';
+                if (entryList) entryList.style.display = 'block';
+                this.store.setSelectedEntityId(null);
             }
 
             // Handle panel state
@@ -246,10 +243,8 @@ class TracklyApp {
         if (logoLink) {
             logoLink.addEventListener('click', (e) => {
                 e.preventDefault();
-                // Navigate to home (entity grid view)
-                URLStateManager.setView('grid');
-                URLStateManager.setSelectedEntityName(null);
-                URLStateManager.setPanel(null);
+                // Navigate to home (recent entries view)
+                URLStateManager.showHome();
             });
         }
     }
