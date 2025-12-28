@@ -31,6 +31,16 @@ export class EntryDetailComponent extends WebComponent {
             return;
         }
 
+        // Check if store data is loaded
+        if (!this.store.getIsLoaded()) {
+            this.innerHTML = `
+                <div class="section">
+                    <div class="error-state">Loading...</div>
+                </div>
+            `;
+            return;
+        }
+
         const entry = this.store.getEntryById(this.entryId);
         if (!entry) {
             this.innerHTML = `
