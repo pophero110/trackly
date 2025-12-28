@@ -243,6 +243,10 @@ export class EntryListComponent extends WebComponent {
                 const value = propertyValues[prop.id];
                 const displayValue = propertyValueDisplays?.[prop.id];
                 const formattedValue = this.formatPropertyValue(value, prop.valueType, displayValue);
+                // For URL properties, show just the link without the property name
+                if (prop.valueType === 'url') {
+                    return `<span class="property-tag">${formattedValue}</span>`;
+                }
                 return `<span class="property-tag">${escapeHtml(capitalizeFirstLetter(prop.name))}: ${formattedValue}</span>`;
             })
             .join('');
