@@ -65,6 +65,8 @@ class TracklyApp {
                 if (entryList) entryList.style.display = 'none';
                 if (entryDetail) entryDetail.style.display = 'block';
                 this.store.setSelectedEntityId(null);
+                // Still handle panel state for entry detail page
+                this.updatePanelState(panelType, panel);
                 return;
             }
 
