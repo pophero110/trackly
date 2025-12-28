@@ -77,12 +77,27 @@ export class EntryDetailComponent extends WebComponent {
         const title = this.getEntryTitle(entry);
         const relativeTime = this.getRelativeTime(entry.timestamp);
 
+        // Location display (inline with timestamp, same as entry card)
+        const locationHtml = entry.latitude && entry.longitude
+            ? `<span class="metadata-separator">•</span>
+            <span class="entry-location-header">
+                <span class="location-icon-small">📍</span>
+                <a href="https://www.google.com/maps?q=${entry.latitude},${entry.longitude}"
+                   target="_blank"
+                   rel="noopener noreferrer"
+                   class="location-link-header"
+                   title="Click to open in Google Maps">
+                    ${entry.locationName || `${entry.latitude.toFixed(4)}, ${entry.longitude.toFixed(4)}`}
+                </a>
+            </span>`
+            : '';
+
         return `
             <div class="entry-detail-header">
                 <div class="entry-detail-header-content">
                     <div class="entry-detail-meta">
                         ${entityChip}
-                        <span class="entry-detail-timestamp">${formatDate(entry.timestamp)} · ${relativeTime}</span>
+                        <span class="entry-detail-timestamp">${formatDate(entry.timestamp)} · ${relativeTime}${locationHtml}</span>
                     </div>
                     ${title ? `<h1 class="entry-detail-main-title">${escapeHtml(title)}</h1>` : ''}
                 </div>
@@ -129,30 +144,11 @@ export class EntryDetailComponent extends WebComponent {
     }
 
     private renderDetailContent(entry: Entry, entity: any): string {
-        // Metadata section (location, properties)
-        const metadataItems: string[] = [];
-
-        if (entry.latitude && entry.longitude) {
-            metadataItems.push(`
-                <div class="entry-metadata-item">
-                    <span class="metadata-label">📍 Location</span>
-                    <a href="https://www.google.com/maps?q=${entry.latitude},${entry.longitude}"
-                       target="_blank"
-                       rel="noopener noreferrer"
-                       class="location-link">
-                        ${entry.locationName || `${entry.latitude.toFixed(4)}, ${entry.longitude.toFixed(4)}`}
-                    </a>
-                </div>
-            `);
-        }
-
+        // Metadata section (properties only - location is now in header)
         const propertiesHtml = this.renderPropertiesInline(entry, entity);
-        if (propertiesHtml) {
-            metadataItems.push(propertiesHtml);
-        }
 
-        const metadataHtml = metadataItems.length > 0
-            ? `<div class="entry-metadata">${metadataItems.join('')}</div>`
+        const metadataHtml = propertiesHtml
+            ? `<div class="entry-metadata">${propertiesHtml}</div>`
             : '';
 
         // Primary content (notes) - no label
