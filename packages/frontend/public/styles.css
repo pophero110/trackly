@@ -1358,7 +1358,9 @@ form {
   display: flex;
   align-items: center;
   gap: 8px;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
+  min-width: 0;
+  overflow: hidden;
 }
 
 .entry-timestamp-secondary {
@@ -1366,6 +1368,8 @@ form {
   font-size: 0.8125rem;
   font-weight: 400;
   line-height: 1.4;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 /* Metadata Separator */
@@ -1373,6 +1377,7 @@ form {
   color: var(--text-muted);
   font-size: 0.8125rem;
   opacity: 0.6;
+  flex-shrink: 0;
 }
 
 /* Location in Header */
@@ -1382,6 +1387,8 @@ form {
   gap: 4px;
   color: var(--text-muted);
   font-size: 0.8125rem;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .location-icon-small {
@@ -1505,6 +1512,14 @@ form {
   font-size: 0.75rem;
   font-weight: 500;
   line-height: 1.4;
+}
+
+.entry-header-left .entry-chip {
+  max-width: 150px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex-shrink: 1;
 }
 
 .entry-chip-entity {
