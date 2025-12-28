@@ -187,6 +187,7 @@ export class EntryListComponent extends WebComponent {
             <div class="entry-card" data-entry-id="${entry.id}">
                 <div class="entry-card-header">
                     <div class="entry-header-left">
+                        ${entityChip}
                         <span class="entry-timestamp-secondary">🕒 ${formatDate(entry.timestamp)}</span>
                         ${locationHeaderHtml}
                     </div>
@@ -199,10 +200,9 @@ export class EntryListComponent extends WebComponent {
                     </div>
                 ` : ''}
                 ${propertiesHtml}
-                <div class="entry-meta-chips">
-                    ${entityChip}
+                ${categoryChips ? `<div class="entry-meta-chips">
                     ${categoryChips}
-                </div>
+                </div>` : ''}
                 ${hasReferences ? `
                     <div class="entry-references">
                         ${referencesHtml}
