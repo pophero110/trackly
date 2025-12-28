@@ -205,6 +205,7 @@ export class EntryListComponent extends WebComponent {
             </div>
             <div class="entry-context-menu" id="entry-menu-${entry.id}" style="display: none;">
                 <div class="context-menu-item" data-entry-id="${entry.id}" data-action="edit">Edit</div>
+                <div class="context-menu-item" data-entry-id="${entry.id}" data-action="archive">Archive</div>
                 <div class="context-menu-item danger" data-entry-id="${entry.id}" data-action="delete">Delete</div>
             </div>
         `;
@@ -464,6 +465,8 @@ export class EntryListComponent extends WebComponent {
                 if (entryId && action) {
                     if (action === 'edit') {
                         URLStateManager.openEditEntryPanel(entryId);
+                    } else if (action === 'archive') {
+                        this.handleArchive(entryId);
                     } else if (action === 'delete') {
                         this.handleDelete(entryId);
                     }
@@ -525,6 +528,15 @@ export class EntryListComponent extends WebComponent {
         } catch (error) {
             const message = error instanceof Error ? error.message : 'Unknown error';
             alert(`Error deleting entry: ${message}`);
+        }
+    }
+
+    private handleArchive(entryId: string): void {
+        try {
+            this.store.archiveEntry(entryId, true);
+        } catch (error) {
+            const message = error instanceof Error ? error.message : 'Unknown error';
+            alert(`Error archiving entry: ${message}`);
         }
     }
 

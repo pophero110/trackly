@@ -119,11 +119,13 @@ export class Store {
 
     // Entry operations
     getEntries(): Entry[] {
-        return [...this.entries];
+        // Filter out archived entries by default
+        return this.entries.filter(e => !e.isArchived);
     }
 
     getEntriesByEntityId(entityId: string): Entry[] {
-        return this.entries.filter(e => e.entityId === entityId);
+        // Filter out archived entries by default
+        return this.entries.filter(e => e.entityId === entityId && !e.isArchived);
     }
 
     getEntryById(id: string): Entry | undefined {
@@ -179,6 +181,18 @@ export class Store {
         await APIClient.deleteEntry(id);
 
         this.entries = this.entries.filter(e => e.id !== id);
+        this.notify();
+    }
+
+    async archiveEntry(id: string, isArchived: boolean = true): Promise<void> {
+        const index = this.entries.findIndex(e => e.id === id);
+        if (index === -1) {
+            throw new Error('Entry not found');
+        }
+
+        // Archive via API
+        const updated = await APIClient.archiveEntry(id, isArchived);
+        this.entries[index] = new Entry(updated);
         this.notify();
     }
 

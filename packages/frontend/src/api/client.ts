@@ -148,4 +148,11 @@ export class APIClient {
       method: 'DELETE',
     });
   }
+
+  static async archiveEntry(id: string, isArchived: boolean = true): Promise<IEntry> {
+    return this.request<IEntry>(`/api/entries/${id}/archive`, {
+      method: 'PATCH',
+      body: JSON.stringify({ isArchived }),
+    });
+  }
 }

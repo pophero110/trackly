@@ -100,6 +100,7 @@ export class EntryDetailComponent extends WebComponent {
             </div>
             <div class="entry-context-menu" id="detail-menu" style="display: none;">
                 <div class="context-menu-item" data-action="edit">Edit</div>
+                <div class="context-menu-item" data-action="archive">Archive</div>
                 <div class="context-menu-item danger" data-action="delete">Delete</div>
             </div>
         `;
@@ -303,6 +304,8 @@ export class EntryDetailComponent extends WebComponent {
 
         if (action === 'edit') {
           URLStateManager.openEditEntryPanel(this.entryId!);
+        } else if (action === 'archive') {
+          this.handleArchive();
         } else if (action === 'delete') {
           this.handleDelete();
         }
@@ -362,6 +365,15 @@ export class EntryDetailComponent extends WebComponent {
     }).catch((error) => {
       console.error('Error deleting entry:', error);
       alert('Failed to delete entry. Please try again.');
+    });
+  }
+
+  private handleArchive(): void {
+    this.store.archiveEntry(this.entryId!, true).then(() => {
+      window.history.back();
+    }).catch((error) => {
+      console.error('Error archiving entry:', error);
+      alert('Failed to archive entry. Please try again.');
     });
   }
 

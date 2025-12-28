@@ -12,16 +12,20 @@ router.use(requireAuth);
 /**
  * GET /api/entries
  * List all entries for the authenticated user
- * Optional query params: entityId (filter by entity)
+ * Optional query params: entityId (filter by entity), includeArchived (include archived entries)
  */
 router.get('/', async (req: AuthRequest, res, next): Promise<void> => {
   try {
     const userId = req.user!.id;
-    const { entityId } = req.query;
+    const { entityId, includeArchived } = req.query;
 
     const where: any = { userId };
     if (entityId) {
       where.entityId = entityId as string;
+    }
+    // By default, exclude archived entries unless explicitly requested
+    if (includeArchived !== 'true') {
+      where.isArchived = false;
     }
 
     const entries = await prisma.entry.findMany({
@@ -44,6 +48,7 @@ router.get('/', async (req: AuthRequest, res, next): Promise<void> => {
       latitude: entry.latitude ?? undefined,
       longitude: entry.longitude ?? undefined,
       locationName: entry.locationName || undefined,
+      isArchived: entry.isArchived,
       createdAt: entry.createdAt.toISOString(),
       updatedAt: entry.updatedAt.toISOString()
     }));
@@ -86,6 +91,7 @@ router.get('/:id', async (req: AuthRequest, res, next): Promise<void> => {
       latitude: entry.latitude ?? undefined,
       longitude: entry.longitude ?? undefined,
       locationName: entry.locationName || undefined,
+      isArchived: entry.isArchived,
       createdAt: entry.createdAt.toISOString(),
       updatedAt: entry.updatedAt.toISOString()
     };
@@ -148,6 +154,7 @@ router.post('/', validate(createEntrySchema), async (req: AuthRequest, res, next
       latitude: entry.latitude ?? undefined,
       longitude: entry.longitude ?? undefined,
       locationName: entry.locationName || undefined,
+      isArchived: entry.isArchived,
       createdAt: entry.createdAt.toISOString(),
       updatedAt: entry.updatedAt.toISOString()
     };
@@ -224,6 +231,58 @@ router.put('/:id', validate(updateEntrySchema), async (req: AuthRequest, res, ne
       latitude: entry.latitude ?? undefined,
       longitude: entry.longitude ?? undefined,
       locationName: entry.locationName || undefined,
+      isArchived: entry.isArchived,
+      createdAt: entry.createdAt.toISOString(),
+      updatedAt: entry.updatedAt.toISOString()
+    };
+
+    res.json(formattedEntry);
+  } catch (error) {
+    next(error);
+  }
+});
+
+/**
+ * PATCH /api/entries/:id/archive
+ * Archive or unarchive an entry
+ */
+router.patch('/:id/archive', async (req: AuthRequest, res, next): Promise<void> => {
+  try {
+    const { id } = req.params;
+    const userId = req.user!.id;
+    const { isArchived } = req.body;
+
+    // Verify ownership
+    const existingEntry = await prisma.entry.findFirst({
+      where: { id, userId }
+    });
+
+    if (!existingEntry) {
+      res.status(404).json({ error: 'Entry not found' });
+      return;
+    }
+
+    // Update archive status
+    const entry = await prisma.entry.update({
+      where: { id },
+      data: { isArchived: isArchived ?? true }
+    });
+
+    const formattedEntry: IEntry = {
+      id: entry.id,
+      entityId: entry.entityId,
+      entityName: entry.entityName,
+      timestamp: entry.timestamp.toISOString(),
+      value: entry.value || undefined,
+      valueDisplay: entry.valueDisplay || undefined,
+      notes: entry.notes || '',
+      images: entry.images,
+      propertyValues: entry.propertyValues ? (entry.propertyValues as any) : undefined,
+      propertyValueDisplays: entry.propertyValueDisplays ? (entry.propertyValueDisplays as any) : undefined,
+      latitude: entry.latitude ?? undefined,
+      longitude: entry.longitude ?? undefined,
+      locationName: entry.locationName || undefined,
+      isArchived: entry.isArchived,
       createdAt: entry.createdAt.toISOString(),
       updatedAt: entry.updatedAt.toISOString()
     };
