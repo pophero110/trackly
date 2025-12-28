@@ -4,6 +4,7 @@ import { escapeHtml, formatDate } from '../utils/helpers.js';
 import { parseMarkdown } from '../utils/markdown.js';
 import { URLStateManager } from '../utils/urlState.js';
 import { EntityProperty } from '../types/index.js';
+import { getEntityColor, renderReferences } from '../utils/entryHelpers.js';
 
 /**
  * EntryDetail Web Component for displaying a single entry's full details
@@ -64,7 +65,7 @@ export class EntryDetailComponent extends WebComponent {
   }
 
   private renderDetailHeader(entry: Entry, entity: any): string {
-    const entityColor = entity ? this.getEntityColor(entity.name) : '';
+    const entityColor = entity ? getEntityColor(entity.name) : '';
     const entityChip = entity
       ? `<span class="entry-chip entry-chip-entity"
                      data-entity-name="${escapeHtml(entity.name)}"
@@ -156,7 +157,7 @@ export class EntryDetailComponent extends WebComponent {
       ? `
             <div class="entry-primary-content">
                 <div class="entry-notes-detail">${this.formatNotes(entry.notes)}</div>
-                ${this.renderReferences(entry.notes)}
+                ${renderReferences(entry.notes)}
             </div>
             `
       : '';
@@ -260,87 +261,6 @@ export class EntryDetailComponent extends WebComponent {
     return text.replace(hashtagRegex, (match, tag) => {
       return `<a href="#" class="hashtag-link" data-hashtag="${tag}">${match}</a>`;
     });
-  }
-
-  private renderReferences(notes: string): string {
-    const urls = this.extractUrls(notes);
-    const hashtags = this.extractHashtags(notes);
-
-    if (urls.length === 0 && hashtags.length === 0) return '';
-
-    const urlsHtml = urls.map(url => {
-      const displayUrl = url.length > 50 ? url.substring(0, 47) + '...' : url;
-      return `<a href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer" class="reference-link">${escapeHtml(displayUrl)}</a>`;
-    }).join('');
-
-    const hashtagsHtml = hashtags.map(tag => {
-      return `<a href="#" class="hashtag-link reference-link" data-hashtag="${escapeHtml(tag)}">#${escapeHtml(tag)}</a>`;
-    }).join('');
-
-    const allReferences = [urlsHtml, hashtagsHtml].filter(html => html).join('');
-
-    return `
-            <div class="entry-references">
-                <div class="references-links">${allReferences}</div>
-            </div>
-        `;
-  }
-
-  private extractUrls(text: string): string[] {
-    const urlRegex = /\[([^\]]+)\]\(([^)]+)\)/g;
-    const urls: string[] = [];
-    let match;
-
-    while ((match = urlRegex.exec(text)) !== null) {
-      urls.push(match[2]);
-    }
-
-    return urls;
-  }
-
-  private extractHashtags(text: string): string[] {
-    const hashtagRegex = /(?<![a-zA-Z0-9_])#([a-zA-Z0-9_]+)(?![a-zA-Z0-9_])/g;
-    const hashtags: string[] = [];
-    let match;
-
-    while ((match = hashtagRegex.exec(text)) !== null) {
-      // Avoid duplicates
-      if (!hashtags.includes(match[1])) {
-        hashtags.push(match[1]);
-      }
-    }
-
-    return hashtags;
-  }
-
-  private getEntityColor(entityName: string): string {
-    const colorMap: Record<string, string> = {
-      'Life': '#10b981',
-      'Work': '#3b82f6',
-      'Travel': '#8b5cf6',
-      'Health': '#ef4444',
-      'Finance': '#f59e0b',
-      'Learning': '#06b6d4',
-      'Fitness': '#ec4899',
-      'Food': '#f97316',
-      'Reading': '#6366f1',
-      'Project': '#14b8a6',
-    };
-
-    if (colorMap[entityName]) {
-      return colorMap[entityName];
-    }
-
-    let hash = 0;
-    for (let i = 0; i < entityName.length; i++) {
-      hash = entityName.charCodeAt(i) + ((hash << 5) - hash);
-    }
-
-    const hue = Math.abs(hash % 360);
-    const saturation = 65 + (Math.abs(hash) % 20);
-    const lightness = 50 + (Math.abs(hash >> 8) % 15);
-
-    return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
   }
 
   private attachEventHandlers(): void {
