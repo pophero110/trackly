@@ -2400,20 +2400,44 @@ slide-up-panel:not(.active) .modal-dialog {
 .entry-detail-page {
   max-width: 800px;
   margin: 0 auto;
-  padding: 24px 0;
+  padding: 16px 0 24px;
 }
 
 .entry-detail-header {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
+  gap: 16px;
   margin-bottom: 24px;
-  padding-bottom: 16px;
+  padding-bottom: 20px;
   border-bottom: 1px solid var(--border);
 }
 
 .entry-detail-header .entry-menu-btn {
   opacity: 1;
+  flex-shrink: 0;
+}
+
+.entry-detail-header-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.entry-detail-meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+
+.entry-detail-main-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+  line-height: 1.3;
+  word-wrap: break-word;
 }
 
 .btn-back {
@@ -2441,17 +2465,9 @@ slide-up-panel:not(.active) .modal-dialog {
   flex-shrink: 0;
 }
 
-.entry-detail-title {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  margin: 0 16px;
-}
-
 .entry-detail-timestamp {
-  font-size: 0.9375rem;
-  color: var(--text-secondary);
+  font-size: 0.875rem;
+  color: var(--text-muted);
   font-weight: 400;
 }
 
@@ -2484,7 +2500,42 @@ slide-up-panel:not(.active) .modal-dialog {
 .entry-detail-content {
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 20px;
+}
+
+/* Metadata Section */
+.entry-metadata {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+  background: var(--background);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+}
+
+.entry-metadata-item {
+  display: flex;
+  gap: 12px;
+  align-items: baseline;
+}
+
+.metadata-label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  min-width: 100px;
+  flex-shrink: 0;
+}
+
+.metadata-value {
+  font-size: 0.9375rem;
+  color: var(--text-primary);
+}
+
+/* Primary Content (Notes) */
+.entry-primary-content {
+  padding: 0;
 }
 
 .entry-detail-section {
@@ -2523,17 +2574,68 @@ slide-up-panel:not(.active) .modal-dialog {
 }
 
 .entry-notes-detail {
-  font-size: 0.9375rem;
+  font-size: 1rem;
   color: var(--text-primary);
-  line-height: 1.6;
+  line-height: 1.7;
+  max-width: 70ch;
 }
 
 .entry-notes-detail p {
-  margin-bottom: 12px;
+  margin-bottom: 16px;
 }
 
 .entry-notes-detail p:last-child {
   margin-bottom: 0;
+}
+
+/* Enhanced Markdown Styles */
+.entry-notes-detail code {
+  background: rgba(0, 0, 0, 0.05);
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-size: 0.9em;
+  font-family: 'Monaco', 'Menlo', 'Courier New', monospace;
+}
+
+.entry-notes-detail a {
+  color: var(--primary);
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  transition: border-color 0.2s;
+}
+
+.entry-notes-detail a:hover {
+  border-bottom-color: var(--primary);
+}
+
+.entry-notes-detail ul,
+.entry-notes-detail ol {
+  margin-bottom: 16px;
+  padding-left: 24px;
+}
+
+.entry-notes-detail li {
+  margin-bottom: 8px;
+}
+
+.entry-notes-detail h1,
+.entry-notes-detail h2,
+.entry-notes-detail h3 {
+  margin-top: 24px;
+  margin-bottom: 12px;
+  font-weight: 600;
+}
+
+.entry-notes-detail h1 {
+  font-size: 1.5em;
+}
+
+.entry-notes-detail h2 {
+  font-size: 1.3em;
+}
+
+.entry-notes-detail h3 {
+  font-size: 1.1em;
 }
 
 .entry-properties-detail {
@@ -2583,24 +2685,33 @@ slide-up-panel:not(.active) .modal-dialog {
 /* Responsive adjustments for entry detail */
 @media (max-width: 768px) {
   .entry-detail-page {
-    padding: 16px 0;
+    padding: 12px 0;
   }
 
   .entry-detail-header {
+    padding-bottom: 16px;
+  }
+
+  .entry-detail-main-title {
+    font-size: 1.25rem;
+  }
+
+  .entry-detail-meta {
+    gap: 8px;
+  }
+
+  .metadata-label {
+    min-width: 80px;
+    font-size: 0.8125rem;
+  }
+
+  .entry-notes-detail {
+    font-size: 0.9375rem;
+  }
+
+  .entry-metadata-item {
     flex-direction: column;
-    gap: 12px;
-  }
-
-  .entry-detail-title {
-    margin: 0;
-  }
-
-  .entry-detail-actions {
-    width: 100%;
-    justify-content: flex-end;
-  }
-
-  .property-name {
-    min-width: 100px;
+    gap: 4px;
+    align-items: flex-start;
   }
 }

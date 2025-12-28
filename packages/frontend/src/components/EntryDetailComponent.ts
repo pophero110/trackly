@@ -73,11 +73,18 @@ export class EntryDetailComponent extends WebComponent {
                </span>`
             : '';
 
+        // Extract title from value or first line of notes
+        const title = this.getEntryTitle(entry);
+        const relativeTime = this.getRelativeTime(entry.timestamp);
+
         return `
             <div class="entry-detail-header">
-                <div class="entry-detail-title">
-                    ${entityChip}
-                    <span class="entry-detail-timestamp">🕒 ${formatDate(entry.timestamp)}</span>
+                <div class="entry-detail-header-content">
+                    <div class="entry-detail-meta">
+                        ${entityChip}
+                        <span class="entry-detail-timestamp">${formatDate(entry.timestamp)} · ${relativeTime}</span>
+                    </div>
+                    ${title ? `<h1 class="entry-detail-main-title">${escapeHtml(title)}</h1>` : ''}
                 </div>
                 <button class="entry-menu-btn" id="detail-menu-btn" data-action="menu">⋮</button>
             </div>
@@ -88,12 +95,47 @@ export class EntryDetailComponent extends WebComponent {
         `;
     }
 
+    private getEntryTitle(entry: Entry): string {
+        // Use value as title if available
+        if (entry.value !== undefined && entry.value !== null) {
+            return entry.valueDisplay || String(entry.value);
+        }
+
+        // Extract first line from notes as title
+        if (entry.notes) {
+            const firstLine = entry.notes.split('\n')[0].trim();
+            // Remove markdown formatting for title
+            return firstLine.replace(/^#+\s*/, '').replace(/\*\*/g, '').replace(/\*/g, '').substring(0, 100);
+        }
+
+        return '';
+    }
+
+    private getRelativeTime(timestamp: string): string {
+        const now = new Date();
+        const entryDate = new Date(timestamp);
+        const diffMs = now.getTime() - entryDate.getTime();
+        const diffMins = Math.floor(diffMs / 60000);
+        const diffHours = Math.floor(diffMs / 3600000);
+        const diffDays = Math.floor(diffMs / 86400000);
+
+        if (diffMins < 1) return 'Just now';
+        if (diffMins < 60) return `${diffMins} min ago`;
+        if (diffHours < 24) return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
+        if (diffDays < 7) return `${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
+        if (diffDays < 30) return `${Math.floor(diffDays / 7)} week${Math.floor(diffDays / 7) > 1 ? 's' : ''} ago`;
+        if (diffDays < 365) return `${Math.floor(diffDays / 30)} month${Math.floor(diffDays / 30) > 1 ? 's' : ''} ago`;
+        return `${Math.floor(diffDays / 365)} year${Math.floor(diffDays / 365) > 1 ? 's' : ''} ago`;
+    }
+
     private renderDetailContent(entry: Entry, entity: any): string {
-        const locationHtml = entry.latitude && entry.longitude
-            ? `
-            <div class="entry-detail-section">
-                <h3 class="entry-detail-section-title">📍 Location</h3>
-                <div class="entry-location-detail">
+        // Metadata section (location, properties)
+        const metadataItems: string[] = [];
+
+        if (entry.latitude && entry.longitude) {
+            metadataItems.push(`
+                <div class="entry-metadata-item">
+                    <span class="metadata-label">📍 Location</span>
                     <a href="https://www.google.com/maps?q=${entry.latitude},${entry.longitude}"
                        target="_blank"
                        rel="noopener noreferrer"
@@ -101,35 +143,32 @@ export class EntryDetailComponent extends WebComponent {
                         ${entry.locationName || `${entry.latitude.toFixed(4)}, ${entry.longitude.toFixed(4)}`}
                     </a>
                 </div>
-            </div>
-            `
+            `);
+        }
+
+        const propertiesHtml = this.renderPropertiesInline(entry, entity);
+        if (propertiesHtml) {
+            metadataItems.push(propertiesHtml);
+        }
+
+        const metadataHtml = metadataItems.length > 0
+            ? `<div class="entry-metadata">${metadataItems.join('')}</div>`
             : '';
 
-        const valueHtml = entry.value !== undefined && entry.value !== null
-            ? `
-            <div class="entry-detail-section">
-                <h3 class="entry-detail-section-title">Value</h3>
-                <div class="entry-value-detail">${escapeHtml(entry.valueDisplay || String(entry.value))}</div>
-            </div>
-            `
-            : '';
-
-        const propertiesHtml = this.renderProperties(entry, entity);
-
+        // Primary content (notes) - no label
         const notesHtml = entry.notes
             ? `
-            <div class="entry-detail-section">
-                <h3 class="entry-detail-section-title">Notes</h3>
+            <div class="entry-primary-content">
                 <div class="entry-notes-detail">${this.formatNotes(entry.notes)}</div>
                 ${this.renderReferences(entry.notes)}
             </div>
             `
             : '';
 
+        // Images
         const imagesHtml = entry.images && entry.images.length > 0
             ? `
             <div class="entry-detail-section">
-                <h3 class="entry-detail-section-title">Images</h3>
                 <div class="entry-images-detail">
                     ${entry.images.map(img => `
                         <img src="${escapeHtml(img)}" alt="Entry image" class="entry-image-detail" />
@@ -141,13 +180,40 @@ export class EntryDetailComponent extends WebComponent {
 
         return `
             <div class="entry-detail-content">
-                ${locationHtml}
-                ${valueHtml}
-                ${propertiesHtml}
+                ${metadataHtml}
                 ${notesHtml}
                 ${imagesHtml}
             </div>
         `;
+    }
+
+    private renderPropertiesInline(entry: Entry, entity: any): string {
+        if (!entity || !entity.properties || entity.properties.length === 0) {
+            return '';
+        }
+
+        const propertyValues = entry.propertyValues || {};
+        const propertyValueDisplays = entry.propertyValueDisplays || {};
+
+        const propertiesWithValues = entity.properties.filter((prop: EntityProperty) =>
+            propertyValues[prop.name] !== undefined && propertyValues[prop.name] !== null
+        );
+
+        if (propertiesWithValues.length === 0) {
+            return '';
+        }
+
+        return propertiesWithValues.map((prop: EntityProperty) => {
+            const value = propertyValues[prop.name];
+            const displayValue = propertyValueDisplays[prop.name] || String(value);
+
+            return `
+                <div class="entry-metadata-item">
+                    <span class="metadata-label">${escapeHtml(prop.name)}</span>
+                    <span class="metadata-value">${escapeHtml(displayValue)}</span>
+                </div>
+            `;
+        }).join('');
     }
 
     private renderProperties(entry: Entry, entity: any): string {
