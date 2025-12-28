@@ -78,7 +78,7 @@ export class EntryDetailComponent extends WebComponent {
 
     // Location display (inline with timestamp, same as entry card)
     const locationHtml = entry.latitude && entry.longitude
-      ? `<span class="metadata-separator"> · </span>
+      ? `<span class="metadata-separator">•</span>
             <span class="entry-location-header">
                 <span class="location-icon-small">📍</span>
                 <a href="https://www.google.com/maps?q=${entry.latitude},${entry.longitude}"
@@ -96,7 +96,8 @@ export class EntryDetailComponent extends WebComponent {
                 <div class="entry-detail-header-content">
                     <div class="entry-detail-meta">
                         ${entityChip}
-                        <span class="entry-detail-timestamp">${formatDate(entry.timestamp)}${locationHtml}</span>
+                        <span class="entry-timestamp-secondary">🕒 ${formatDate(entry.timestamp)}</span>
+                        ${locationHtml}
                     </div>
                     ${title ? `<h1 class="entry-detail-main-title">${escapeHtml(title)}</h1>` : ''}
                 </div>
