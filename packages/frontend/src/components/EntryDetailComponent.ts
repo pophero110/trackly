@@ -273,7 +273,6 @@ export class EntryDetailComponent extends WebComponent {
 
     return `
             <div class="entry-references">
-                <div class="references-label">References:</div>
                 <div class="references-links">${urlsHtml}</div>
             </div>
         `;
