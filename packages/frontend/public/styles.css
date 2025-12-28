@@ -817,24 +817,24 @@ form {
 .property-tag {
   display: inline-flex;
   align-items: center;
-  padding: 3px 8px;
-  background: var(--card-background);
-  border: 1px solid var(--primary);
-  border-radius: 4px;
-  font-size: 0.875rem;
-  color: var(--primary);
+  padding: 0;
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  font-size: 0.8125rem;
+  color: var(--text-secondary);
   white-space: nowrap;
-  line-height: 1.3;
-  font-weight: 500;
+  line-height: 1.4;
+  font-weight: 400;
 }
 
 .property-tag a {
-  color: var(--primary);
+  color: var(--text-secondary);
   text-decoration: none;
 }
 
 .property-tag a:hover {
-  text-decoration: underline;
+  color: var(--text-primary);
 }
 
 /* Entry Images Display */
@@ -1357,6 +1357,10 @@ form {
 /* Entry Card Properties Section */
 .entry-card-properties {
   margin-bottom: 12px;
+  padding: 0 4px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
 }
 
 /* Entry Card Content Section */
