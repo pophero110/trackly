@@ -79,20 +79,11 @@ export class EntryDetailComponent extends WebComponent {
                     ${entityChip}
                     <span class="entry-detail-timestamp">🕒 ${formatDate(entry.timestamp)}</span>
                 </div>
-                <div class="entry-detail-actions">
-                    <button class="btn-icon" id="edit-entry-btn" title="Edit">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
-                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
-                        </svg>
-                    </button>
-                    <button class="btn-icon" id="delete-entry-btn" title="Delete">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <polyline points="3 6 5 6 21 6"></polyline>
-                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-                        </svg>
-                    </button>
-                </div>
+                <button class="entry-menu-btn" id="detail-menu-btn" data-action="menu">⋮</button>
+            </div>
+            <div class="entry-context-menu" id="detail-menu" style="display: none;">
+                <div class="context-menu-item" data-action="edit">Edit</div>
+                <div class="context-menu-item danger" data-action="delete">Delete</div>
             </div>
         `;
     }
@@ -269,35 +260,87 @@ export class EntryDetailComponent extends WebComponent {
     }
 
     private attachEventHandlers(): void {
-        this.attachEditHandler();
-        this.attachDeleteHandler();
+        this.attachMenuHandlers();
         this.attachHashtagHandlers();
     }
 
-    private attachEditHandler(): void {
-        const editBtn = this.querySelector('#edit-entry-btn');
-        if (editBtn && this.entryId) {
-            editBtn.addEventListener('click', () => {
-                URLStateManager.openEditEntryPanel(this.entryId!);
+    private attachMenuHandlers(): void {
+        const menuBtn = this.querySelector('#detail-menu-btn');
+        if (menuBtn) {
+            menuBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                this.toggleMenu(e as MouseEvent);
             });
+        }
+
+        // Menu item clicks
+        this.querySelectorAll('#detail-menu .context-menu-item').forEach(item => {
+            item.addEventListener('click', (e) => {
+                const target = e.target as HTMLElement;
+                const action = target.dataset.action;
+
+                if (action === 'edit') {
+                    URLStateManager.openEditEntryPanel(this.entryId!);
+                } else if (action === 'delete') {
+                    this.handleDelete();
+                }
+                this.hideMenu();
+            });
+        });
+
+        // Click outside to close menu
+        document.addEventListener('click', () => this.hideMenu());
+    }
+
+    private toggleMenu(e: MouseEvent): void {
+        const menu = this.querySelector('#detail-menu') as HTMLElement;
+        if (!menu) return;
+
+        const isVisible = menu.style.display === 'block';
+
+        if (isVisible) {
+            this.hideMenu();
+            return;
+        }
+
+        // Show menu
+        menu.style.display = 'block';
+        menu.style.position = 'fixed';
+
+        const target = e.target as HTMLElement;
+        const menuButton = target.closest('#detail-menu-btn') as HTMLElement;
+
+        if (menuButton) {
+            const rect = menuButton.getBoundingClientRect();
+
+            // Temporarily show menu to get its dimensions
+            menu.style.visibility = 'hidden';
+            const menuWidth = menu.offsetWidth;
+            menu.style.visibility = 'visible';
+
+            menu.style.left = `${rect.right - menuWidth}px`;
+            menu.style.top = `${rect.bottom + 4}px`;
         }
     }
 
-    private attachDeleteHandler(): void {
-        const deleteBtn = this.querySelector('#delete-entry-btn');
-        if (deleteBtn && this.entryId) {
-            deleteBtn.addEventListener('click', async () => {
-                if (confirm('Are you sure you want to delete this entry?')) {
-                    try {
-                        await this.store.deleteEntry(this.entryId!);
-                        window.history.back();
-                    } catch (error) {
-                        console.error('Error deleting entry:', error);
-                        alert('Failed to delete entry. Please try again.');
-                    }
-                }
-            });
+    private hideMenu(): void {
+        const menu = this.querySelector('#detail-menu') as HTMLElement;
+        if (menu) {
+            menu.style.display = 'none';
         }
+    }
+
+    private handleDelete(): void {
+        if (!confirm('Are you sure you want to delete this entry?')) {
+            return;
+        }
+
+        this.store.deleteEntry(this.entryId!).then(() => {
+            window.history.back();
+        }).catch((error) => {
+            console.error('Error deleting entry:', error);
+            alert('Failed to delete entry. Please try again.');
+        });
     }
 
     private attachHashtagHandlers(): void {
