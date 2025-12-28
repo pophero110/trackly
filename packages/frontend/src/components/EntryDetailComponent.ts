@@ -188,15 +188,46 @@ export class EntryDetailComponent extends WebComponent {
 
     return propertiesWithValues.map((prop: EntityProperty) => {
       const value = propertyValues[prop.id];
-      const displayValue = propertyValueDisplays[prop.id] || String(value);
+      const displayValue = propertyValueDisplays[prop.id];
+      const formattedValue = this.formatPropertyValue(value, prop.valueType, displayValue);
 
       return `
                 <div class="entry-metadata-item">
                     <span class="metadata-label">${escapeHtml(prop.name)}</span>
-                    <span class="metadata-value">${escapeHtml(displayValue)}</span>
+                    <span class="metadata-value">${formattedValue}</span>
                 </div>
             `;
     }).join('');
+  }
+
+  private formatPropertyValue(value: string | number | boolean, valueType?: string, displayValue?: string): string {
+    const valueStr = String(value);
+
+    // Handle different value types
+    if (valueType === 'checkbox') {
+      return value === true || value === 'true' ? '✓' : '✗';
+    }
+
+    if (valueType === 'url') {
+      // Use displayValue (fetched title) if available, otherwise show URL
+      const linkText = displayValue || valueStr;
+      return `<a href="${escapeHtml(valueStr)}" target="_blank" rel="noopener noreferrer">${escapeHtml(linkText)}</a>`;
+    }
+
+    if (valueType === 'duration') {
+      return `${valueStr}min`;
+    }
+
+    if (valueType === 'rating') {
+      return `${valueStr}/5`;
+    }
+
+    if (valueType === 'date' || valueType === 'time') {
+      return escapeHtml(valueStr);
+    }
+
+    // Use displayValue if available, otherwise escape the raw value
+    return escapeHtml(displayValue || valueStr);
   }
 
   private renderProperties(entry: Entry, entity: any): string {
@@ -217,12 +248,13 @@ export class EntryDetailComponent extends WebComponent {
 
     const propertiesHtml = propertiesWithValues.map((prop: EntityProperty) => {
       const value = propertyValues[prop.id];
-      const displayValue = propertyValueDisplays[prop.id] || String(value);
+      const displayValue = propertyValueDisplays[prop.id];
+      const formattedValue = this.formatPropertyValue(value, prop.valueType, displayValue);
 
       return `
                 <div class="property-row">
                     <span class="property-name">${escapeHtml(prop.name)}:</span>
-                    <span class="property-value">${escapeHtml(displayValue)}</span>
+                    <span class="property-value">${formattedValue}</span>
                 </div>
             `;
     }).join('');

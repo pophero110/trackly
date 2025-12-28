@@ -2536,6 +2536,15 @@ slide-up-panel:not(.active) .modal-dialog {
   font-weight: 400;
 }
 
+.metadata-value a {
+  color: var(--primary);
+  text-decoration: none;
+}
+
+.metadata-value a:hover {
+  text-decoration: underline;
+}
+
 /* Primary Content (Notes) */
 .entry-primary-content {
   padding: 0;
