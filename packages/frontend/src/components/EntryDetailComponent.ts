@@ -46,10 +46,8 @@ export class EntryDetailComponent extends WebComponent {
             this.innerHTML = `
                 <div class="section">
                     <div class="error-state">Entry not found</div>
-                    <button class="btn-secondary" id="back-btn">← Back</button>
                 </div>
             `;
-            this.attachBackHandler();
             return;
         }
 
@@ -77,12 +75,6 @@ export class EntryDetailComponent extends WebComponent {
 
         return `
             <div class="entry-detail-header">
-                <button class="btn-back" id="back-btn">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M19 12H5M12 19l-7-7 7-7"/>
-                    </svg>
-                    Back
-                </button>
                 <div class="entry-detail-title">
                     ${entityChip}
                     <span class="entry-detail-timestamp">🕒 ${formatDate(entry.timestamp)}</span>
@@ -277,19 +269,9 @@ export class EntryDetailComponent extends WebComponent {
     }
 
     private attachEventHandlers(): void {
-        this.attachBackHandler();
         this.attachEditHandler();
         this.attachDeleteHandler();
         this.attachHashtagHandlers();
-    }
-
-    private attachBackHandler(): void {
-        const backBtn = this.querySelector('#back-btn');
-        if (backBtn) {
-            backBtn.addEventListener('click', () => {
-                window.history.back();
-            });
-        }
     }
 
     private attachEditHandler(): void {
