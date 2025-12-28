@@ -829,12 +829,12 @@ form {
 }
 
 .property-tag a {
-  color: var(--text-secondary);
+  color: var(--primary);
   text-decoration: none;
 }
 
 .property-tag a:hover {
-  color: var(--text-primary);
+  text-decoration: underline;
 }
 
 /* Entry Images Display */
