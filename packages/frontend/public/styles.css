@@ -2507,11 +2507,11 @@ slide-up-panel:not(.active) .modal-dialog {
 .entry-metadata {
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  padding: 16px;
-  background: var(--background);
+  gap: 8px;
+  padding: 12px;
+  background: transparent;
   border-radius: var(--radius-sm);
-  border: 1px solid var(--border);
+  border: none;
 }
 
 .entry-metadata-item {
@@ -2521,16 +2521,17 @@ slide-up-panel:not(.active) .modal-dialog {
 }
 
 .metadata-label {
-  font-size: 0.875rem;
-  font-weight: 500;
-  color: var(--text-secondary);
+  font-size: 0.8125rem;
+  font-weight: 400;
+  color: var(--text-muted);
   min-width: 100px;
   flex-shrink: 0;
 }
 
 .metadata-value {
-  font-size: 0.9375rem;
-  color: var(--text-primary);
+  font-size: 0.8125rem;
+  color: var(--text-secondary);
+  font-weight: 400;
 }
 
 /* Primary Content (Notes) */
