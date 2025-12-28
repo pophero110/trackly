@@ -2412,6 +2412,10 @@ slide-up-panel:not(.active) .modal-dialog {
   border-bottom: 1px solid var(--border);
 }
 
+.entry-detail-header .entry-menu-btn {
+  opacity: 1;
+}
+
 .btn-back {
   display: inline-flex;
   align-items: center;
