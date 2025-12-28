@@ -92,6 +92,9 @@ export class EntryDetailComponent extends WebComponent {
             </span>`
       : '';
 
+    // Properties inline
+    const propertiesHtml = this.renderPropertiesInline(entry, entity);
+
     return `
             <div class="entry-detail-header">
                 <div class="entry-detail-header-content">
@@ -99,6 +102,7 @@ export class EntryDetailComponent extends WebComponent {
                         ${entityChip}
                         <span class="entry-detail-timestamp">🕒 ${formatDate(entry.timestamp)}</span>
                         ${locationHtml}
+                        ${propertiesHtml}
                     </div>
                     ${title ? `<h1 class="entry-detail-main-title">${escapeHtml(title)}</h1>` : ''}
                 </div>
@@ -145,13 +149,6 @@ export class EntryDetailComponent extends WebComponent {
   }
 
   private renderDetailContent(entry: Entry, entity: any): string {
-    // Metadata section (properties only - location is now in header)
-    const propertiesHtml = this.renderPropertiesInline(entry, entity);
-
-    const metadataHtml = propertiesHtml
-      ? `<div class="entry-metadata">${propertiesHtml}</div>`
-      : '';
-
     // Primary content (notes) - no label
     const notesHtml = entry.notes
       ? `
@@ -177,7 +174,6 @@ export class EntryDetailComponent extends WebComponent {
 
     return `
             <div class="entry-detail-content">
-                ${metadataHtml}
                 ${notesHtml}
                 ${imagesHtml}
             </div>
@@ -200,17 +196,14 @@ export class EntryDetailComponent extends WebComponent {
       return '';
     }
 
-    return propertiesWithValues.map((prop: EntityProperty) => {
+    const propertyTags = propertiesWithValues.map((prop: EntityProperty) => {
       const value = propertyValues[prop.id];
       const displayValue = propertyValueDisplays[prop.id] || String(value);
 
-      return `
-                <div class="entry-metadata-item">
-                    <span class="metadata-label">${escapeHtml(prop.name)}</span>
-                    <span class="metadata-value">${escapeHtml(displayValue)}</span>
-                </div>
-            `;
+      return `<span class="property-tag">${escapeHtml(prop.name)}: ${escapeHtml(displayValue)}</span>`;
     }).join('');
+
+    return propertyTags;
   }
 
   private renderProperties(entry: Entry, entity: any): string {

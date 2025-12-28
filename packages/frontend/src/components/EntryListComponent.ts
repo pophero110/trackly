@@ -191,6 +191,7 @@ export class EntryListComponent extends WebComponent {
                         ${entityChip}
                         <span class="entry-timestamp-secondary">🕒 ${formatDate(entry.timestamp)}</span>
                         ${locationHeaderHtml}
+                        ${propertiesHtml}
                     </div>
                     <button class="entry-menu-btn" data-entry-id="${entry.id}" data-action="menu">⋮</button>
                 </div>
@@ -200,7 +201,6 @@ export class EntryListComponent extends WebComponent {
                         ${notesHtml}
                     </div>
                 ` : ''}
-                ${propertiesHtml}
                 ${categoryChips ? `<div class="entry-meta-chips">
                     ${categoryChips}
                 </div>` : ''}
