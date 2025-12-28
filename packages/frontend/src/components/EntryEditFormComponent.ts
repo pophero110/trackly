@@ -12,6 +12,7 @@ export class EntryEditFormComponent extends WebComponent {
     private entryId: string | null = null;
     private entry: Entry | null = null;
     private images: string[] = [];
+    private location: { latitude: number; longitude: number; name?: string } | null = null;
     private hasUnsavedChanges: boolean = false;
 
     connectedCallback(): void {
@@ -32,6 +33,16 @@ export class EntryEditFormComponent extends WebComponent {
         if (foundEntry) {
             this.entry = foundEntry;
             this.images = foundEntry.images ? [...foundEntry.images] : [];
+            // Initialize location from entry
+            if (foundEntry.latitude !== undefined && foundEntry.longitude !== undefined) {
+                this.location = {
+                    latitude: foundEntry.latitude,
+                    longitude: foundEntry.longitude,
+                    name: foundEntry.locationName
+                };
+            } else {
+                this.location = null;
+            }
             this.hasUnsavedChanges = false; // Reset when loading new entry
             this.render();
             this.attachEventListeners();
@@ -89,10 +100,16 @@ export class EntryEditFormComponent extends WebComponent {
 
                 <input type="file" id="image-upload" accept="image/*" style="display: none;" multiple>
                 <div id="image-preview" class="image-preview"></div>
+                <div id="location-display" class="location-display" style="display: ${this.location ? 'flex' : 'none'};">
+                    <span class="location-icon">📍</span>
+                    <span id="location-text" class="location-text">${this.location?.name || (this.location ? `${this.location.latitude.toFixed(4)}, ${this.location.longitude.toFixed(4)}` : '')}</span>
+                    <button type="button" id="remove-location-btn" class="btn-remove-location">×</button>
+                </div>
 
                 <div class="form-actions">
                     <button type="submit" class="btn btn-primary">Update Entry</button>
                     <div class="action-menu-buttons">
+                        <button type="button" id="location-btn" class="btn-action-menu" title="Add location">📍</button>
                         <div style="position: relative;">
                             <button type="button" id="image-menu-btn" class="btn-action-menu" title="Add images">📎</button>
                             <div id="image-menu" class="image-dropdown-menu" style="display: none;">
@@ -407,6 +424,35 @@ export class EntryEditFormComponent extends WebComponent {
 
         if (fileInput) {
             fileInput.addEventListener('change', (e) => this.handleImageUpload(e));
+        }
+
+        // Location button handler
+        const locationBtn = this.querySelector('#location-btn') as HTMLButtonElement;
+        if (locationBtn) {
+            locationBtn.addEventListener('click', async () => {
+                try {
+                    locationBtn.disabled = true;
+                    locationBtn.textContent = '⏳';
+                    await this.handleLocationCapture();
+                } catch (error) {
+                    alert('Failed to get location. Please ensure location permissions are enabled.');
+                    console.error('Location error:', error);
+                } finally {
+                    locationBtn.disabled = false;
+                    locationBtn.textContent = '📍';
+                }
+            });
+        }
+
+        // Remove location handler
+        const removeLocationBtn = this.querySelector('#remove-location-btn') as HTMLButtonElement;
+        if (removeLocationBtn) {
+            removeLocationBtn.addEventListener('click', () => {
+                this.location = null;
+                this.hasUnsavedChanges = true;
+                this.render();
+                this.attachEventListeners();
+            });
         }
 
         // Attach range input listener
@@ -755,6 +801,72 @@ export class EntryEditFormComponent extends WebComponent {
         zenOverlay.style.display = 'none';
     }
 
+    private async handleLocationCapture(): Promise<void> {
+        // Request geolocation permission and get current position
+        const position = await new Promise<GeolocationPosition>((resolve, reject) => {
+            navigator.geolocation.getCurrentPosition(resolve, reject, {
+                enableHighAccuracy: true,
+                timeout: 10000,
+                maximumAge: 0
+            });
+        });
+
+        this.location = {
+            latitude: position.coords.latitude,
+            longitude: position.coords.longitude
+        };
+
+        // Reverse geocode to get location name
+        const locationName = await this.reverseGeocode(position.coords.latitude, position.coords.longitude);
+        if (locationName) {
+            this.location.name = locationName;
+        }
+
+        this.hasUnsavedChanges = true;
+
+        // Re-render to show location
+        this.render();
+        this.attachEventListeners();
+    }
+
+    private async reverseGeocode(latitude: number, longitude: number): Promise<string | null> {
+        try {
+            const response = await fetch(
+                `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`,
+                {
+                    headers: {
+                        'User-Agent': 'Trackly App'
+                    }
+                }
+            );
+
+            if (!response.ok) {
+                return null;
+            }
+
+            const data = await response.json();
+            const address = data.address;
+
+            // Build short version (City, State/Province)
+            const shortParts: string[] = [];
+
+            if (address.city || address.town || address.village) {
+                shortParts.push(address.city || address.town || address.village);
+            }
+
+            if (address.state) {
+                shortParts.push(address.state);
+            } else if (address.county) {
+                shortParts.push(address.county);
+            }
+
+            return shortParts.length > 0 ? shortParts.join(', ') : null;
+        } catch (error) {
+            console.error('Reverse geocoding error:', error);
+            return null;
+        }
+    }
+
     private handleEntityChange(newEntityId: string): void {
         const newEntity = this.store.getEntityById(newEntityId);
         if (!newEntity) return;
@@ -881,7 +993,10 @@ export class EntryEditFormComponent extends WebComponent {
                 value: value,
                 notes: notes,
                 images: this.images.length > 0 ? this.images : undefined,
-                propertyValues: propertyValues
+                propertyValues: propertyValues,
+                latitude: this.location?.latitude,
+                longitude: this.location?.longitude,
+                locationName: this.location?.name
             };
 
             // Add entityId and entityName if entity was changed
