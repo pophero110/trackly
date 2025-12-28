@@ -264,16 +264,24 @@ export class EntryDetailComponent extends WebComponent {
 
   private renderReferences(notes: string): string {
     const urls = this.extractUrls(notes);
-    if (urls.length === 0) return '';
+    const hashtags = this.extractHashtags(notes);
+
+    if (urls.length === 0 && hashtags.length === 0) return '';
 
     const urlsHtml = urls.map(url => {
       const displayUrl = url.length > 50 ? url.substring(0, 47) + '...' : url;
       return `<a href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer" class="reference-link">${escapeHtml(displayUrl)}</a>`;
     }).join('');
 
+    const hashtagsHtml = hashtags.map(tag => {
+      return `<a href="#" class="hashtag-link reference-link" data-hashtag="${escapeHtml(tag)}">#${escapeHtml(tag)}</a>`;
+    }).join('');
+
+    const allReferences = [urlsHtml, hashtagsHtml].filter(html => html).join('');
+
     return `
             <div class="entry-references">
-                <div class="references-links">${urlsHtml}</div>
+                <div class="references-links">${allReferences}</div>
             </div>
         `;
   }
@@ -288,6 +296,21 @@ export class EntryDetailComponent extends WebComponent {
     }
 
     return urls;
+  }
+
+  private extractHashtags(text: string): string[] {
+    const hashtagRegex = /(?<![a-zA-Z0-9_])#([a-zA-Z0-9_]+)(?![a-zA-Z0-9_])/g;
+    const hashtags: string[] = [];
+    let match;
+
+    while ((match = hashtagRegex.exec(text)) !== null) {
+      // Avoid duplicates
+      if (!hashtags.includes(match[1])) {
+        hashtags.push(match[1]);
+      }
+    }
+
+    return hashtags;
   }
 
   private getEntityColor(entityName: string): string {
