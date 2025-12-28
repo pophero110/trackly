@@ -191,29 +191,17 @@ export class EntryListComponent extends WebComponent {
                         ${entityChip}
                         <span class="entry-timestamp-secondary">🕒 ${formatDate(entry.timestamp)}</span>
                         ${locationHeaderHtml}
-                        ${propertiesHtml}
                     </div>
                     <button class="entry-menu-btn" data-entry-id="${entry.id}" data-action="menu">⋮</button>
                 </div>
-                ${entryTitle}
-                ${hasContent ? `
-                    <div class="entry-content">
-                        ${notesHtml}
-                    </div>
-                ` : ''}
-                ${categoryChips ? `<div class="entry-meta-chips">
-                    ${categoryChips}
-                </div>` : ''}
-                ${hasReferences ? `
-                    <div class="entry-references">
-                        ${referencesHtml}
-                    </div>
-                ` : ''}
-                ${hasAttachments ? `
-                    <div class="entry-attachments">
-                        ${imagesHtml}
-                    </div>
-                ` : ''}
+                ${propertiesHtml ? `<div class="entry-card-properties">${propertiesHtml}</div>` : ''}
+                <div class="entry-card-content">
+                    ${entryTitle}
+                    ${hasContent ? `<div class="entry-content">${notesHtml}</div>` : ''}
+                    ${categoryChips ? `<div class="entry-meta-chips">${categoryChips}</div>` : ''}
+                    ${hasReferences ? `<div class="entry-references">${referencesHtml}</div>` : ''}
+                    ${hasAttachments ? `<div class="entry-attachments">${imagesHtml}</div>` : ''}
+                </div>
             </div>
             <div class="entry-context-menu" id="entry-menu-${entry.id}" style="display: none;">
                 <div class="context-menu-item" data-entry-id="${entry.id}" data-action="edit">Edit</div>

@@ -1346,21 +1346,31 @@ form {
   transform: translateY(-1px);
 }
 
-/* Entry Card Header - Timestamp and Menu */
+/* Entry Card Header - Entity Name and Metadata */
 .entry-card-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 8px;
+  margin-bottom: 12px;
+}
+
+/* Entry Card Properties Section */
+.entry-card-properties {
+  margin-bottom: 12px;
+}
+
+/* Entry Card Content Section */
+.entry-card-content {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
 .entry-header-left {
   display: flex;
   align-items: center;
   gap: 8px;
-  flex-wrap: nowrap;
-  min-width: 0;
-  overflow: hidden;
+  flex-wrap: wrap;
 }
 
 .entry-timestamp-secondary {
@@ -1368,8 +1378,6 @@ form {
   font-size: 0.8125rem;
   font-weight: 400;
   line-height: 1.4;
-  white-space: nowrap;
-  flex-shrink: 0;
 }
 
 /* Metadata Separator */
@@ -1377,7 +1385,6 @@ form {
   color: var(--text-muted);
   font-size: 0.8125rem;
   opacity: 0.6;
-  flex-shrink: 0;
 }
 
 /* Location in Header */
@@ -1387,8 +1394,6 @@ form {
   gap: 4px;
   color: var(--text-muted);
   font-size: 0.8125rem;
-  white-space: nowrap;
-  flex-shrink: 0;
 }
 
 .location-icon-small {
@@ -1512,14 +1517,6 @@ form {
   font-size: 0.75rem;
   font-weight: 500;
   line-height: 1.4;
-}
-
-.entry-header-left .entry-chip {
-  max-width: 150px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  flex-shrink: 1;
 }
 
 .entry-chip-entity {
@@ -2380,7 +2377,6 @@ slide-up-panel:not(.active) .modal-dialog {
 /* Responsive Markdown Spacing */
 @media (max-width: 768px) {
   .entry-notes .markdown-list {
-    padding-left: 15px;
     margin-left: 16px;
   }
 
