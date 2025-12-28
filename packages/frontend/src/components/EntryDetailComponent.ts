@@ -13,18 +13,15 @@ export class EntryDetailComponent extends WebComponent {
 
     connectedCallback(): void {
         super.connectedCallback();
-
-        // Get entry ID from URL
-        const path = window.location.pathname;
-        const match = path.match(/^\/entries\/([^/]+)$/);
-        if (match) {
-            this.entryId = match[1];
-        }
-
         this.render();
     }
 
     render(): void {
+        // Get entry ID from URL on each render
+        const path = window.location.pathname;
+        const match = path.match(/^\/entries\/([^/]+)$/);
+        this.entryId = match ? match[1] : null;
+
         if (!this.entryId) {
             this.innerHTML = `
                 <div class="section">
