@@ -193,7 +193,7 @@ export class EntryDetailComponent extends WebComponent {
     const propertyValueDisplays = entry.propertyValueDisplays || {};
 
     const propertiesWithValues = entity.properties.filter((prop: EntityProperty) =>
-      propertyValues[prop.name] !== undefined && propertyValues[prop.name] !== null
+      propertyValues[prop.id] !== undefined && propertyValues[prop.id] !== null && propertyValues[prop.id] !== ''
     );
 
     if (propertiesWithValues.length === 0) {
@@ -201,8 +201,8 @@ export class EntryDetailComponent extends WebComponent {
     }
 
     return propertiesWithValues.map((prop: EntityProperty) => {
-      const value = propertyValues[prop.name];
-      const displayValue = propertyValueDisplays[prop.name] || String(value);
+      const value = propertyValues[prop.id];
+      const displayValue = propertyValueDisplays[prop.id] || String(value);
 
       return `
                 <div class="entry-metadata-item">
@@ -222,7 +222,7 @@ export class EntryDetailComponent extends WebComponent {
     const propertyValueDisplays = entry.propertyValueDisplays || {};
 
     const propertiesWithValues = entity.properties.filter((prop: EntityProperty) =>
-      propertyValues[prop.name] !== undefined && propertyValues[prop.name] !== null
+      propertyValues[prop.id] !== undefined && propertyValues[prop.id] !== null && propertyValues[prop.id] !== ''
     );
 
     if (propertiesWithValues.length === 0) {
@@ -230,8 +230,8 @@ export class EntryDetailComponent extends WebComponent {
     }
 
     const propertiesHtml = propertiesWithValues.map((prop: EntityProperty) => {
-      const value = propertyValues[prop.name];
-      const displayValue = propertyValueDisplays[prop.name] || String(value);
+      const value = propertyValues[prop.id];
+      const displayValue = propertyValueDisplays[prop.id] || String(value);
 
       return `
                 <div class="property-row">
