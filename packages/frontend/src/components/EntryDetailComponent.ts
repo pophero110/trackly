@@ -74,9 +74,6 @@ export class EntryDetailComponent extends WebComponent {
                </span>`
       : '';
 
-    // Extract title from value or first line of notes
-    const title = this.getEntryTitle(entry);
-
     // Location display (inline with timestamp, same as entry card)
     const locationHtml = entry.latitude && entry.longitude
       ? `<span class="metadata-separator">•</span>
@@ -92,19 +89,12 @@ export class EntryDetailComponent extends WebComponent {
             </span>`
       : '';
 
-    // Properties inline
-    const propertiesHtml = this.renderPropertiesInline(entry, entity);
-
     return `
             <div class="entry-detail-header">
-                <div class="entry-detail-header-content">
-                    <div class="entry-detail-meta">
-                        ${entityChip}
-                        <span class="entry-detail-timestamp">🕒 ${formatDate(entry.timestamp)}</span>
-                        ${locationHtml}
-                        ${propertiesHtml}
-                    </div>
-                    ${title ? `<h1 class="entry-detail-main-title">${escapeHtml(title)}</h1>` : ''}
+                <div class="entry-detail-meta">
+                    ${entityChip}
+                    <span class="entry-detail-timestamp">🕒 ${formatDate(entry.timestamp)}</span>
+                    ${locationHtml}
                 </div>
                 <button class="entry-menu-btn" id="detail-menu-btn" data-action="menu">⋮</button>
             </div>
@@ -149,32 +139,32 @@ export class EntryDetailComponent extends WebComponent {
   }
 
   private renderDetailContent(entry: Entry, entity: any): string {
-    // Primary content (notes) - no label
-    const notesHtml = entry.notes
-      ? `
-            <div class="entry-primary-content">
-                <div class="entry-notes-detail">${this.formatNotes(entry.notes)}</div>
-                ${renderReferences(entry.notes)}
-            </div>
-            `
+    // Properties section
+    const propertiesHtml = this.renderPropertiesInline(entry, entity);
+    const propertiesSection = propertiesHtml
+      ? `<div class="entry-detail-properties">${propertiesHtml}</div>`
       : '';
+
+    // Notes content
+    const notesHtml = entry.notes ? `<div class="entry-notes-detail">${this.formatNotes(entry.notes)}</div>` : '';
+
+    // References
+    const referencesHtml = entry.notes ? renderReferences(entry.notes) : '';
 
     // Images
     const imagesHtml = entry.images && entry.images.length > 0
-      ? `
-            <div class="entry-detail-section">
-                <div class="entry-images-detail">
-                    ${entry.images.map(img => `
-                        <img src="${escapeHtml(img)}" alt="Entry image" class="entry-image-detail" />
-                    `).join('')}
-                </div>
-            </div>
-            `
+      ? `<div class="entry-images-detail">
+            ${entry.images.map(img => `
+                <img src="${escapeHtml(img)}" alt="Entry image" class="entry-image-detail" />
+            `).join('')}
+         </div>`
       : '';
 
     return `
+            ${propertiesSection}
             <div class="entry-detail-content">
                 ${notesHtml}
+                ${referencesHtml}
                 ${imagesHtml}
             </div>
         `;
@@ -196,14 +186,17 @@ export class EntryDetailComponent extends WebComponent {
       return '';
     }
 
-    const propertyTags = propertiesWithValues.map((prop: EntityProperty) => {
+    return propertiesWithValues.map((prop: EntityProperty) => {
       const value = propertyValues[prop.id];
       const displayValue = propertyValueDisplays[prop.id] || String(value);
 
-      return `<span class="property-tag">${escapeHtml(prop.name)}: ${escapeHtml(displayValue)}</span>`;
+      return `
+                <div class="entry-metadata-item">
+                    <span class="metadata-label">${escapeHtml(prop.name)}</span>
+                    <span class="metadata-value">${escapeHtml(displayValue)}</span>
+                </div>
+            `;
     }).join('');
-
-    return propertyTags;
   }
 
   private renderProperties(entry: Entry, entity: any): string {
