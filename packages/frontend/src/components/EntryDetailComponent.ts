@@ -96,7 +96,8 @@ export class EntryDetailComponent extends WebComponent {
                 <div class="entry-detail-header-content">
                     <div class="entry-detail-meta">
                         ${entityChip}
-                        <span class="entry-detail-timestamp">🕒 ${formatDate(entry.timestamp)}${locationHtml}</span>
+                        <span class="entry-detail-timestamp">🕒 ${formatDate(entry.timestamp)}</span>
+                        ${locationHtml}
                     </div>
                     ${title ? `<h1 class="entry-detail-main-title">${escapeHtml(title)}</h1>` : ''}
                 </div>
