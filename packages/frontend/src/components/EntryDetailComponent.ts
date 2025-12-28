@@ -78,7 +78,7 @@ export class EntryDetailComponent extends WebComponent {
 
     // Location display (inline with timestamp, same as entry card)
     const locationHtml = entry.latitude && entry.longitude
-      ? `<span class="metadata-separator"> · </span>
+      ? `<span class="metadata-separator">•</span>
             <span class="entry-location-header">
                 <span class="location-icon-small">📍</span>
                 <a href="https://www.google.com/maps?q=${entry.latitude},${entry.longitude}"
