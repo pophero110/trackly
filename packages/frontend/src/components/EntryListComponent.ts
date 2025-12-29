@@ -52,6 +52,16 @@ export class EntryListComponent extends WebComponent {
                 ? `Capture ${selectedEntity.name.toLowerCase()} moments`
                 : 'Track your life';
 
+            // Entity menu (only show when viewing a specific entity)
+            const entityMenu = selectedEntity ? `
+                <button class="entry-menu-btn" id="entity-page-menu-btn" data-entity-id="${selectedEntity.id}" data-action="menu">⋮</button>
+                <div class="entity-context-menu" id="entity-page-menu" style="display: none;">
+                    <div class="context-menu-item" data-entity-id="${selectedEntity.id}" data-action="edit">Edit</div>
+                    <div class="context-menu-item" data-entity-id="${selectedEntity.id}" data-action="clone">Clone</div>
+                    <div class="context-menu-item danger" data-entity-id="${selectedEntity.id}" data-action="delete">Delete</div>
+                </div>
+            ` : '';
+
             this.innerHTML = `
                 <div class="section">
                     <div class="section-header-strong">
@@ -69,6 +79,7 @@ export class EntryListComponent extends WebComponent {
                                     </svg>
                                     Add Entry
                                 </button>
+                                ${entityMenu}
                             </div>
                         </div>
                     </div>
@@ -77,6 +88,7 @@ export class EntryListComponent extends WebComponent {
             `;
             this.attachLogEntryButtonHandler();
             this.attachHashtagClearHandler();
+            this.attachEntityPageMenuHandlers();
             return;
         }
 
@@ -89,6 +101,16 @@ export class EntryListComponent extends WebComponent {
         const subtitle = selectedEntity
             ? `Capture ${selectedEntity.name.toLowerCase()} moments`
             : 'Track your life';
+
+        // Entity menu (only show when viewing a specific entity)
+        const entityMenu = selectedEntity ? `
+            <button class="entry-menu-btn" id="entity-page-menu-btn" data-entity-id="${selectedEntity.id}" data-action="menu">⋮</button>
+            <div class="entity-context-menu" id="entity-page-menu" style="display: none;">
+                <div class="context-menu-item" data-entity-id="${selectedEntity.id}" data-action="edit">Edit</div>
+                <div class="context-menu-item" data-entity-id="${selectedEntity.id}" data-action="clone">Clone</div>
+                <div class="context-menu-item danger" data-entity-id="${selectedEntity.id}" data-action="delete">Delete</div>
+            </div>
+        ` : '';
 
         this.innerHTML = `
             <div class="section">
@@ -107,6 +129,7 @@ export class EntryListComponent extends WebComponent {
                                 </svg>
                                 Add Entry
                             </button>
+                            ${entityMenu}
                         </div>
                     </div>
                 </div>
@@ -123,6 +146,7 @@ export class EntryListComponent extends WebComponent {
         this.attachHashtagHandlers();
         this.attachHashtagClearHandler();
         this.attachEntityChipHandlers();
+        this.attachEntityPageMenuHandlers();
     }
 
     private renderEntryCard(entry: Entry): string {
@@ -573,5 +597,111 @@ export class EntryListComponent extends WebComponent {
                 }
             });
         });
+    }
+
+    private attachEntityPageMenuHandlers(): void {
+        const menuBtn = this.querySelector('#entity-page-menu-btn');
+        if (!menuBtn) return;
+
+        // Menu button click
+        menuBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            this.toggleEntityPageMenu(e as MouseEvent);
+        });
+
+        // Menu item clicks
+        this.querySelectorAll('#entity-page-menu .context-menu-item').forEach(item => {
+            item.addEventListener('click', (e) => {
+                const target = e.target as HTMLElement;
+                const entityId = target.dataset.entityId;
+                const action = target.dataset.action;
+
+                if (entityId && action) {
+                    this.handleEntityPageMenuAction(action, entityId);
+                }
+                this.hideEntityPageMenu();
+            });
+        });
+
+        // Click outside to close menu
+        document.addEventListener('click', () => this.hideEntityPageMenu());
+    }
+
+    private toggleEntityPageMenu(e: MouseEvent): void {
+        const menu = this.querySelector('#entity-page-menu') as HTMLElement;
+        if (!menu) return;
+
+        const isVisible = menu.style.display === 'block';
+
+        if (isVisible) {
+            this.hideEntityPageMenu();
+            return;
+        }
+
+        // Show menu
+        menu.style.display = 'block';
+        menu.style.position = 'fixed';
+
+        const target = e.target as HTMLElement;
+        const menuButton = target.closest('#entity-page-menu-btn') as HTMLElement;
+
+        if (menuButton) {
+            const rect = menuButton.getBoundingClientRect();
+
+            // Temporarily show menu to get its dimensions
+            menu.style.visibility = 'hidden';
+            const menuWidth = menu.offsetWidth;
+            menu.style.visibility = 'visible';
+
+            menu.style.left = `${rect.right - menuWidth}px`;
+            menu.style.top = `${rect.bottom + 4}px`;
+        }
+    }
+
+    private hideEntityPageMenu(): void {
+        const menu = this.querySelector('#entity-page-menu') as HTMLElement;
+        if (menu) {
+            menu.style.display = 'none';
+        }
+    }
+
+    private handleEntityPageMenuAction(action: string, entityId: string): void {
+        if (action === 'delete') {
+            this.handleEntityDelete(entityId);
+        } else if (action === 'edit') {
+            this.handleEntityEdit(entityId);
+        } else if (action === 'clone') {
+            this.handleEntityClone(entityId);
+        }
+    }
+
+    private handleEntityDelete(entityId: string): void {
+        const entity = this.store.getEntityById(entityId);
+        if (!entity) return;
+
+        if (!confirm(`Are you sure you want to delete "${entity.name}"? All entries associated with this entity will also be deleted.`)) {
+            return;
+        }
+
+        try {
+            this.store.deleteEntity(entityId);
+            // Navigate back to home after delete
+            URLStateManager.showHome();
+        } catch (error) {
+            const message = error instanceof Error ? error.message : 'Unknown error';
+            alert(`Error deleting entity: ${message}`);
+        }
+    }
+
+    private handleEntityEdit(entityId: string): void {
+        const entity = this.store.getEntityById(entityId);
+        if (!entity) return;
+        URLStateManager.openEditEntityPanel(entity.name);
+    }
+
+    private handleEntityClone(entityId: string): void {
+        const entity = this.store.getEntityById(entityId);
+        if (!entity) return;
+        URLStateManager.openCloneEntityPanel(entity.name);
     }
 }
