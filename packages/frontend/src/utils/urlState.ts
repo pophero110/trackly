@@ -141,6 +141,13 @@ export class URLStateManager {
     }
 
     /**
+     * Navigate to entry detail page
+     */
+    static showEntryDetail(entryId: string): void {
+        URLStateManager.updatePath(`/entries/${entryId}`);
+    }
+
+    /**
      * Open log entry panel
      */
     static openLogEntryPanel(entityName?: string): void {

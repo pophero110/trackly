@@ -64,7 +64,10 @@ class TracklyApp {
                 if (entityGrid) entityGrid.style.display = 'none';
                 if (entryList) entryList.style.display = 'none';
                 if (entryDetail) entryDetail.style.display = 'block';
-                this.store.setSelectedEntityId(null);
+                // Only update if changed to avoid infinite loop
+                if (this.store.getSelectedEntityId() !== null) {
+                    this.store.setSelectedEntityId(null);
+                }
                 // Still handle panel state for entry detail page
                 this.updatePanelState(panelType, panel);
                 return;
@@ -75,7 +78,7 @@ class TracklyApp {
 
             // Look up entity by slug (case-insensitive match)
             let entity = null;
-            if (entitySlug) {
+            if (entitySlug && this.store.getIsLoaded()) {
                 const entities = this.store.getEntities();
                 entity = entities.find(e =>
                     e.name.toLowerCase().replace(/\s+/g, '-') === entitySlug.toLowerCase()
@@ -83,21 +86,32 @@ class TracklyApp {
             }
 
             // Handle view routing
-            if (view === 'entries' && entity) {
+            if (view === 'entries' && entitySlug) {
                 // Show entry list for specific entity
                 if (entityGrid) entityGrid.style.display = 'none';
                 if (entryList) entryList.style.display = 'block';
-                this.store.setSelectedEntityId(entity.id);
+
+                // Set entity ID if found, or null if still loading
+                const targetEntityId = entity ? entity.id : null;
+
+                // Only update if changed to avoid infinite loop
+                if (this.store.getSelectedEntityId() !== targetEntityId) {
+                    this.store.setSelectedEntityId(targetEntityId);
+                }
             } else if (view === 'entities') {
                 // Show entity grid
                 if (entityGrid) entityGrid.style.display = 'block';
                 if (entryList) entryList.style.display = 'none';
-                this.store.setSelectedEntityId(null);
+                if (this.store.getSelectedEntityId() !== null) {
+                    this.store.setSelectedEntityId(null);
+                }
             } else {
                 // Home view - show all recent entries
                 if (entityGrid) entityGrid.style.display = 'none';
                 if (entryList) entryList.style.display = 'block';
-                this.store.setSelectedEntityId(null);
+                if (this.store.getSelectedEntityId() !== null) {
+                    this.store.setSelectedEntityId(null);
+                }
             }
 
             // Handle panel state
@@ -106,6 +120,9 @@ class TracklyApp {
 
         // Subscribe to URL changes
         URLStateManager.subscribe(updateView);
+
+        // Subscribe to store changes (for when data loads)
+        this.store.subscribe(updateView);
 
         // Initial view setup
         updateView();

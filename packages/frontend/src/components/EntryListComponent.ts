@@ -436,9 +436,7 @@ export class EntryListComponent extends WebComponent {
 
                 const entryId = (card as HTMLElement).dataset.entryId;
                 if (entryId) {
-                    window.history.pushState(null, '', `/entries/${entryId}`);
-                    // Trigger URL state change
-                    window.dispatchEvent(new PopStateEvent('popstate'));
+                    URLStateManager.showEntryDetail(entryId);
                 }
             });
 

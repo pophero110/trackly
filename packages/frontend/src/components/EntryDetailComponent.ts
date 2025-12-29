@@ -11,10 +11,24 @@ import { getEntityColor, renderReferences } from '../utils/entryHelpers.js';
  */
 export class EntryDetailComponent extends WebComponent {
   private entryId: string | null = null;
+  private unsubscribeUrl: (() => void) | null = null;
 
   connectedCallback(): void {
     super.connectedCallback();
+
+    // Subscribe to URL changes
+    this.unsubscribeUrl = URLStateManager.subscribe(() => {
+      this.render();
+    });
+
     this.render();
+  }
+
+  disconnectedCallback(): void {
+    super.disconnectedCallback();
+    if (this.unsubscribeUrl) {
+      this.unsubscribeUrl();
+    }
   }
 
   render(): void {
