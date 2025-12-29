@@ -168,9 +168,9 @@ export class EntryDetailComponent extends WebComponent {
             ${propertiesSection}
             <div class="entry-detail-content">
                 ${notesHtml}
-                ${referencesHtml}
-                ${tagsHtml}
                 ${imagesHtml}
+                ${tagsHtml}
+                ${referencesHtml}
             </div>
         `;
   }
