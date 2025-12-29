@@ -199,7 +199,7 @@ export class EntryListComponent extends WebComponent {
                     ${entryTitle}
                     ${hasContent ? `<div class="entry-content">${notesHtml}</div>` : ''}
                     ${categoryChips ? `<div class="entry-meta-chips">${categoryChips}</div>` : ''}
-                    ${hasReferences ? `<div class="entry-references">${referencesHtml}</div>` : ''}
+                    ${hasReferences ? `<div class="entry-tags">${referencesHtml}</div>` : ''}
                     ${hasAttachments ? `<div class="entry-attachments">${imagesHtml}</div>` : ''}
                 </div>
             </div>

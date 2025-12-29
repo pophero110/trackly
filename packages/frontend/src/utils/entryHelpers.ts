@@ -118,23 +118,16 @@ export function renderReferences(notes: string, options: {
 }
 
 /**
- * Render references section for entry list (shows markdown link titles)
+ * Render tags section for entry list (shows only hashtags, not URLs)
  */
 export function renderReferencesForList(notes: string): string {
-  const links = extractMarkdownLinks(notes);
   const hashtags = extractHashtags(notes);
 
-  if (links.length === 0 && hashtags.length === 0) return '';
-
-  const linksHtml = links.map(link => {
-    return `<a href="${escapeHtml(link.url)}" target="_blank" rel="noopener noreferrer" class="reference-link">${escapeHtml(link.title)}</a>`;
-  }).join('');
+  if (hashtags.length === 0) return '';
 
   const hashtagsHtml = hashtags.map(tag => {
     return `<a href="#" class="hashtag-link reference-link" data-hashtag="${escapeHtml(tag)}">#${escapeHtml(tag)}</a>`;
   }).join('');
 
-  const allReferences = [linksHtml, hashtagsHtml].filter(html => html).join('');
-
-  return allReferences;
+  return hashtagsHtml;
 }
