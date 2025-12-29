@@ -2666,6 +2666,32 @@ slide-up-panel:not(.active) .modal-dialog {
   font-size: 1.1em;
 }
 
+/* Entry References Section - URLs */
+.entry-references {
+  padding: 0;
+  margin-top: 0;
+}
+
+.entry-references:empty {
+  display: none;
+}
+
+.references-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+/* Entry Tags Section - Hashtags */
+.entry-tags-detail {
+  padding: 0;
+  margin-top: 0;
+}
+
+.entry-tags-detail:empty {
+  display: none;
+}
+
 .entry-properties-detail {
   display: flex;
   flex-direction: column;

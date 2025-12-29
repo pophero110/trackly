@@ -149,8 +149,11 @@ export class EntryDetailComponent extends WebComponent {
     // Notes content
     const notesHtml = entry.notes ? `<div class="entry-notes-detail">${this.formatNotes(entry.notes)}</div>` : '';
 
-    // References
-    const referencesHtml = entry.notes ? renderReferences(entry.notes) : '';
+    // References (URLs only)
+    const referencesHtml = entry.notes ? renderReferences(entry.notes, { includeHashtags: false }) : '';
+
+    // Tags (Hashtags only)
+    const tagsHtml = entry.notes ? this.renderTags(entry.notes) : '';
 
     // Images
     const imagesHtml = entry.images && entry.images.length > 0
@@ -166,6 +169,7 @@ export class EntryDetailComponent extends WebComponent {
             <div class="entry-detail-content">
                 ${notesHtml}
                 ${referencesHtml}
+                ${tagsHtml}
                 ${imagesHtml}
             </div>
         `;
@@ -280,6 +284,39 @@ export class EntryDetailComponent extends WebComponent {
     return text.replace(hashtagRegex, (match, tag) => {
       return `<a href="#" class="hashtag-link" data-hashtag="${tag}">${match}</a>`;
     });
+  }
+
+  private renderTags(notes: string): string {
+    const hashtags = this.extractHashtags(notes);
+    if (hashtags.length === 0) return '';
+
+    const hashtagsHtml = hashtags.map(tag => {
+      return `<a href="#" class="hashtag-link reference-link" data-hashtag="${escapeHtml(tag)}">#${escapeHtml(tag)}</a>`;
+    }).join('');
+
+    return `
+      <div class="entry-tags-detail">
+        <div class="references-links">${hashtagsHtml}</div>
+      </div>
+    `;
+  }
+
+  private extractHashtags(text: string): string[] {
+    // Remove markdown links first to avoid matching hashtags in URLs
+    const textWithoutLinks = text.replace(/\[([^\]]+?)\]\((.+?)\)/g, '');
+
+    const hashtagRegex = /(?<![a-zA-Z0-9_])#([a-zA-Z0-9_]+)(?![a-zA-Z0-9_])/g;
+    const hashtags: string[] = [];
+    let match;
+
+    while ((match = hashtagRegex.exec(textWithoutLinks)) !== null) {
+      // Avoid duplicates
+      if (!hashtags.includes(match[1])) {
+        hashtags.push(match[1]);
+      }
+    }
+
+    return hashtags;
   }
 
   private attachEventHandlers(): void {
