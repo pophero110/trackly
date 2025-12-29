@@ -148,8 +148,15 @@ class TracklyApp {
             }
         } else if (panelType === 'edit-entity') {
             // Open edit entity panel
-            const editEntityName = URLStateManager.getEditEntityName();
-            const entity = editEntityName ? this.store.getEntityByName(editEntityName) : null;
+            const editEntitySlug = URLStateManager.getEditEntityName();
+            // Find entity by matching slug (lowercase with hyphens)
+            let entity = null;
+            if (editEntitySlug) {
+                const entities = this.store.getEntities();
+                entity = entities.find(e =>
+                    e.name.toLowerCase().replace(/\s+/g, '-') === editEntitySlug.toLowerCase()
+                ) || null;
+            }
 
             if (entity) {
                 const formTemplate = document.querySelector('#entity-form-template');
@@ -168,8 +175,15 @@ class TracklyApp {
             }
         } else if (panelType === 'clone-entity') {
             // Open clone entity panel
-            const cloneEntityName = URLStateManager.getCloneEntityName();
-            const entity = cloneEntityName ? this.store.getEntityByName(cloneEntityName) : null;
+            const cloneEntitySlug = URLStateManager.getCloneEntityName();
+            // Find entity by matching slug (lowercase with hyphens)
+            let entity = null;
+            if (cloneEntitySlug) {
+                const entities = this.store.getEntities();
+                entity = entities.find(e =>
+                    e.name.toLowerCase().replace(/\s+/g, '-') === cloneEntitySlug.toLowerCase()
+                ) || null;
+            }
 
             if (entity) {
                 const formTemplate = document.querySelector('#entity-create-form-template');

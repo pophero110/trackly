@@ -18,6 +18,18 @@ export class URLStateManager {
     }
 
     /**
+     * Decode entity slug to find actual entity name
+     * The encoded value is lowercase with hyphens, we need to find the matching entity
+     * Note: This requires access to the store, so it's handled in app.ts instead
+     * For now, just return the encoded value and let the caller handle the lookup
+     */
+    private static decodeEntityName(encoded: string): string {
+        // The encoded value is already the slug format (lowercase, hyphens)
+        // The caller (app.ts) will use store.getEntityByName or similar lookup
+        return encoded;
+    }
+
+    /**
      * Parse the current pathname and return route info
      */
     private static parsePathname(): { view: 'home' | 'entities' | 'entries', entitySlug?: string } {
