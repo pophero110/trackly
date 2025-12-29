@@ -285,6 +285,7 @@ export class EntryDetailComponent extends WebComponent {
   private attachEventHandlers(): void {
     this.attachMenuHandlers();
     this.attachHashtagHandlers();
+    this.attachEntityChipHandler();
   }
 
   private attachMenuHandlers(): void {
@@ -389,5 +390,19 @@ export class EntryDetailComponent extends WebComponent {
         }
       });
     });
+  }
+
+  private attachEntityChipHandler(): void {
+    const entityChip = this.querySelector('.entry-chip-entity');
+    if (entityChip) {
+      entityChip.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        const entityName = (entityChip as HTMLElement).dataset.entityName;
+        if (entityName) {
+          URLStateManager.showEntryList(entityName);
+        }
+      });
+    }
   }
 }
