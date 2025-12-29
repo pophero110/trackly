@@ -992,7 +992,7 @@ export class EntryEditFormComponent extends WebComponent {
             const updates: any = {
                 value: value,
                 notes: notes,
-                images: this.images.length > 0 ? this.images : undefined,
+                images: this.images, // Send empty array to remove all images
                 propertyValues: propertyValues,
                 latitude: this.location?.latitude,
                 longitude: this.location?.longitude,
