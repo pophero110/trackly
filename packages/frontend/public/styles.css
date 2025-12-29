@@ -1339,6 +1339,9 @@ form {
   overflow: hidden;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
   cursor: pointer;
+  max-height: 400px;
+  display: flex;
+  flex-direction: column;
 }
 
 .entry-card:hover {
@@ -1368,6 +1371,9 @@ form {
   display: flex;
   flex-direction: column;
   gap: 12px;
+  overflow: hidden;
+  flex: 1;
+  min-height: 0;
 }
 
 .entry-header-left {
@@ -1605,6 +1611,9 @@ form {
 /* Entry Content - Main Section */
 .entry-content {
   margin: 0;
+  max-height: 200px;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .entry-content:empty {
@@ -1677,6 +1686,8 @@ form {
 .entry-attachments {
   padding: 0;
   margin-top: 12px;
+  max-height: 120px;
+  overflow: hidden;
 }
 
 .entry-attachments:empty {
