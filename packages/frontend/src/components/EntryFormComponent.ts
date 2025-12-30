@@ -11,6 +11,7 @@ import { getValueTypeInputConfig } from '../config/valueTypeConfig.js';
 export class EntryFormComponent extends WebComponent {
     private images: string[] = [];
     private location: { latitude: number; longitude: number; name?: string } | null = null;
+    private hasUnsavedChanges: boolean = false;
 
     render(): void {
         const entities = this.store.getEntities();
@@ -375,6 +376,25 @@ export class EntryFormComponent extends WebComponent {
 
         // Attach paste handler for notes textarea
         this.attachNotesAreaPasteHandler();
+
+        // Track changes to form inputs
+        this.attachChangeTracking();
+    }
+
+    private attachChangeTracking(): void {
+        const form = this.querySelector('#entry-form') as HTMLFormElement;
+        if (!form) return;
+
+        // Track changes to all input fields
+        const inputs = form.querySelectorAll('input, textarea, select');
+        inputs.forEach(input => {
+            input.addEventListener('input', () => {
+                this.hasUnsavedChanges = true;
+            });
+            input.addEventListener('change', () => {
+                this.hasUnsavedChanges = true;
+            });
+        });
     }
 
     private attachRangeListener(): void {
@@ -978,6 +998,9 @@ export class EntryFormComponent extends WebComponent {
 
             this.store.addEntry(entry);
 
+            // Reset unsaved changes flag after successful submit
+            this.hasUnsavedChanges = false;
+
             // Process URLs asynchronously
             const notesValue = (this.querySelector('#entry-notes') as HTMLTextAreaElement).value;
 
@@ -1006,5 +1029,17 @@ export class EntryFormComponent extends WebComponent {
             const message = error instanceof Error ? error.message : 'Unknown error';
             alert(`Error logging entry: ${message}`);
         }
+    }
+
+    /**
+     * Check if there are unsaved changes before closing
+     * Called by ModalPanel's tryClose method
+     * @returns true to allow close, false to prevent close
+     */
+    public checkUnsavedChanges(): boolean {
+        if (this.hasUnsavedChanges) {
+            return confirm('You have unsaved changes. Are you sure you want to close without saving?');
+        }
+        return true;
     }
 }

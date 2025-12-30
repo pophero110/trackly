@@ -19,6 +19,7 @@ export class Entry implements IEntry {
     latitude?: number;
     longitude?: number;
     locationName?: string;
+    isArchived?: boolean;
     createdAt: string;
 
     constructor(data: Partial<IEntry> & { entityId: string; entityName: string; timestamp: string }) {
@@ -36,6 +37,7 @@ export class Entry implements IEntry {
         this.latitude = data.latitude;
         this.longitude = data.longitude;
         this.locationName = data.locationName;
+        this.isArchived = data.isArchived;
         this.createdAt = data.createdAt || new Date().toISOString();
     }
 
@@ -82,6 +84,7 @@ export class Entry implements IEntry {
             latitude: this.latitude,
             longitude: this.longitude,
             locationName: this.locationName,
+            isArchived: this.isArchived,
             createdAt: this.createdAt
         };
     }

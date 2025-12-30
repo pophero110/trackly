@@ -553,9 +553,9 @@ export class EntryListComponent extends WebComponent {
         }
     }
 
-    private handleArchive(entryId: string): void {
+    private async handleArchive(entryId: string): Promise<void> {
         try {
-            this.store.archiveEntry(entryId, true);
+            await this.store.archiveEntry(entryId, true);
         } catch (error) {
             const message = error instanceof Error ? error.message : 'Unknown error';
             alert(`Error archiving entry: ${message}`);
