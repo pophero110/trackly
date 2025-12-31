@@ -15,7 +15,20 @@ export class EntryFormComponent extends WebComponent {
 
     render(): void {
         const entities = this.store.getEntities();
-        const selectedEntityId = this.store.getSelectedEntityId();
+
+        // Prioritize entity from URL query parameter, fallback to store
+        const entityParamSlug = URLStateManager.getEntityParam();
+        let selectedEntityId = this.store.getSelectedEntityId();
+
+        // If URL has entity parameter, find the entity by slug
+        if (entityParamSlug) {
+            const entityFromUrl = entities.find(e =>
+                e.name.toLowerCase().replace(/\s+/g, '-') === entityParamSlug.toLowerCase()
+            );
+            if (entityFromUrl) {
+                selectedEntityId = entityFromUrl.id;
+            }
+        }
 
         const entitiesOptions = entities
             .sort((a, b) => a.name.localeCompare(b.name))

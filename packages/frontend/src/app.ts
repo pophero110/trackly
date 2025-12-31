@@ -99,7 +99,11 @@ class TracklyApp {
             if (view === 'entries' && entitySlug) {
                 // Show entry list for specific entity
                 if (entityGrid) entityGrid.style.display = 'none';
-                if (entryList) entryList.style.display = 'block';
+                if (entryList) {
+                    entryList.style.display = 'block';
+                    // Force re-render when showing entry list
+                    (entryList as any).render();
+                }
 
                 // Set entity ID if found, or null if still loading
                 const targetEntityId = entity ? entity.id : null;
@@ -110,7 +114,11 @@ class TracklyApp {
                 }
             } else if (view === 'entities') {
                 // Show entity grid
-                if (entityGrid) entityGrid.style.display = 'block';
+                if (entityGrid) {
+                    entityGrid.style.display = 'block';
+                    // Force re-render when showing entity grid
+                    (entityGrid as any).render();
+                }
                 if (entryList) entryList.style.display = 'none';
                 if (this.store.getSelectedEntityId() !== null) {
                     this.store.setSelectedEntityId(null);
@@ -118,14 +126,22 @@ class TracklyApp {
             } else if (view === 'entries') {
                 // All entries view (/entries)
                 if (entityGrid) entityGrid.style.display = 'none';
-                if (entryList) entryList.style.display = 'block';
+                if (entryList) {
+                    entryList.style.display = 'block';
+                    // Force re-render when showing entry list
+                    (entryList as any).render();
+                }
                 if (this.store.getSelectedEntityId() !== null) {
                     this.store.setSelectedEntityId(null);
                 }
             } else {
                 // Fallback - show all recent entries
                 if (entityGrid) entityGrid.style.display = 'none';
-                if (entryList) entryList.style.display = 'block';
+                if (entryList) {
+                    entryList.style.display = 'block';
+                    // Force re-render when showing entry list
+                    (entryList as any).render();
+                }
                 if (this.store.getSelectedEntityId() !== null) {
                     this.store.setSelectedEntityId(null);
                 }

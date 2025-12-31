@@ -216,6 +216,15 @@ export class URLStateManager {
     }
 
     /**
+     * Get entity name from URL query parameter (for log entry panel)
+     */
+    static getEntityParam(): string | null {
+        const params = new URLSearchParams(window.location.search);
+        const encoded = params.get('entity');
+        return encoded ? URLStateManager.decodeEntityName(encoded) : null;
+    }
+
+    /**
      * Get hashtag filter from URL
      */
     static getHashtagFilter(): string | null {
