@@ -35,7 +35,7 @@ export class EntryListComponent extends WebComponent {
         const selectedEntity = selectedEntityId ? this.store.getEntityById(selectedEntityId) : null;
         const headerText = selectedEntity
             ? `${selectedEntity.name}`
-            : 'All Entries';
+            : 'Your Entries';
         const entityType = selectedEntity ? `<span class="entity-type ${selectedEntity.type.toLowerCase()}">${selectedEntity.type}</span>` : '';
 
         // Hashtag filter badge
@@ -50,7 +50,7 @@ export class EntryListComponent extends WebComponent {
 
             const subtitle = selectedEntity
                 ? `Capture ${selectedEntity.name.toLowerCase()} moments`
-                : 'Track your life';
+                : 'Track what matters to you';
 
             // Entity menu (only show when viewing a specific entity)
             const entityMenu = selectedEntity ? `
@@ -100,7 +100,7 @@ export class EntryListComponent extends WebComponent {
 
         const subtitle = selectedEntity
             ? `Capture ${selectedEntity.name.toLowerCase()} moments`
-            : 'Track your life';
+            : 'Track what matters to you';
 
         // Entity menu (only show when viewing a specific entity)
         const entityMenu = selectedEntity ? `
@@ -274,7 +274,7 @@ export class EntryListComponent extends WebComponent {
                 }
                 return `<span class="property-tag">${escapeHtml(capitalizeFirstLetter(prop.name))}: ${formattedValue}</span>`;
             })
-            .join('');
+            .join('<span class="property-separator">•</span>');
 
         if (!propertyItems) return '';
 

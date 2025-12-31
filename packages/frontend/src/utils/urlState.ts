@@ -40,13 +40,18 @@ export class URLStateManager {
             return { view: 'entities' };
         }
 
+        // Match /entries (all entries view)
+        if (path === '/entries') {
+            return { view: 'entries' };
+        }
+
         // Match /entities/:entitySlug/entries
         const entriesMatch = path.match(/^\/entities\/([^/]+)\/entries$/);
         if (entriesMatch) {
             return { view: 'entries', entitySlug: entriesMatch[1] };
         }
 
-        // Default to home
+        // Default to home (redirect to /entries)
         return { view: 'home' };
     }
 
@@ -103,7 +108,7 @@ export class URLStateManager {
             const slug = URLStateManager.encodeEntityName(entityName);
             URLStateManager.updatePath(`/entities/${slug}/entries`);
         } else {
-            URLStateManager.updatePath('/');
+            URLStateManager.updatePath('/entries');
         }
     }
 
@@ -113,8 +118,10 @@ export class URLStateManager {
     static setView(view: 'home' | 'entities' | 'entries'): void {
         if (view === 'entities') {
             URLStateManager.updatePath('/entities');
+        } else if (view === 'entries') {
+            URLStateManager.updatePath('/entries');
         } else if (view === 'home') {
-            URLStateManager.updatePath('/');
+            URLStateManager.updatePath('/entries');
         }
     }
 
@@ -137,7 +144,7 @@ export class URLStateManager {
     }
 
     static showHome(): void {
-        URLStateManager.updatePath('/');
+        URLStateManager.updatePath('/entries');
     }
 
     /**

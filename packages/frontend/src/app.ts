@@ -43,6 +43,10 @@ class TracklyApp {
 
         // Set up logo home link
         this.setupLogoLink();
+
+        // Set up navigation links
+        this.setupEntriesLink();
+        this.setupEntitiesLink();
     }
 
     private setupViewRouting(): void {
@@ -56,6 +60,12 @@ class TracklyApp {
             const view = URLStateManager.getView();
             const entitySlug = URLStateManager.getSelectedEntityName();
             const panelType = URLStateManager.getPanel();
+
+            // Redirect home (/) to /entries
+            if (path === '/') {
+                URLStateManager.showHome();
+                return;
+            }
 
             // Check if we're on an entry detail page
             const entryDetailMatch = path.match(/^\/entries\/([^/]+)$/);
@@ -105,8 +115,15 @@ class TracklyApp {
                 if (this.store.getSelectedEntityId() !== null) {
                     this.store.setSelectedEntityId(null);
                 }
+            } else if (view === 'entries') {
+                // All entries view (/entries)
+                if (entityGrid) entityGrid.style.display = 'none';
+                if (entryList) entryList.style.display = 'block';
+                if (this.store.getSelectedEntityId() !== null) {
+                    this.store.setSelectedEntityId(null);
+                }
             } else {
-                // Home view - show all recent entries
+                // Fallback - show all recent entries
                 if (entityGrid) entityGrid.style.display = 'none';
                 if (entryList) entryList.style.display = 'block';
                 if (this.store.getSelectedEntityId() !== null) {
@@ -302,6 +319,28 @@ class TracklyApp {
                 e.preventDefault();
                 // Navigate to home (recent entries view)
                 URLStateManager.showHome();
+            });
+        }
+    }
+
+    private setupEntriesLink(): void {
+        const entriesLink = document.getElementById('entries-link');
+        if (entriesLink) {
+            entriesLink.addEventListener('click', (e) => {
+                e.preventDefault();
+                // Navigate to entries view (home - all recent entries)
+                URLStateManager.showHome();
+            });
+        }
+    }
+
+    private setupEntitiesLink(): void {
+        const entitiesLink = document.getElementById('entities-link');
+        if (entitiesLink) {
+            entitiesLink.addEventListener('click', (e) => {
+                e.preventDefault();
+                // Navigate to entities grid view
+                URLStateManager.setView('entities');
             });
         }
     }
