@@ -140,11 +140,15 @@ export class URLStateManager {
      * Navigate back to entity grid
      */
     static showGrid(): void {
-        URLStateManager.updatePath('/entities');
+        // Navigate to /entities with no query parameters (fresh state)
+        window.history.pushState(null, '', '/entities');
+        URLStateManager.notifyListeners();
     }
 
     static showHome(): void {
-        URLStateManager.updatePath('/entries');
+        // Navigate to /entries with no query parameters (fresh state)
+        window.history.pushState(null, '', '/entries');
+        URLStateManager.notifyListeners();
     }
 
     /**

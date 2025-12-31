@@ -55,6 +55,10 @@ class TracklyApp {
         const entryDetail = document.querySelector('entry-detail') as HTMLElement;
         const panel = document.querySelector('slide-up-panel') as any;
 
+        // Track last loaded sort to prevent infinite reload loop
+        let lastSortBy: string | undefined = undefined;
+        let lastSortOrder: 'asc' | 'desc' | undefined = undefined;
+
         const updateView = () => {
             const path = window.location.pathname;
             const view = URLStateManager.getView();
@@ -101,8 +105,18 @@ class TracklyApp {
                 if (entityGrid) entityGrid.style.display = 'none';
                 if (entryList) {
                     entryList.style.display = 'block';
-                    // Force re-render when showing entry list
-                    (entryList as any).render();
+
+                    // Reload entries only if sort has changed
+                    const sortBy = URLStateManager.getSortBy() || undefined;
+                    const sortOrder = URLStateManager.getSortOrder() || undefined;
+                    if (sortBy !== lastSortBy || sortOrder !== lastSortOrder) {
+                        lastSortBy = sortBy;
+                        lastSortOrder = sortOrder;
+                        this.store.reloadEntries(sortBy, sortOrder);
+                    } else {
+                        // Just re-render with existing data
+                        (entryList as any).render();
+                    }
                 }
 
                 // Set entity ID if found, or null if still loading
@@ -128,8 +142,18 @@ class TracklyApp {
                 if (entityGrid) entityGrid.style.display = 'none';
                 if (entryList) {
                     entryList.style.display = 'block';
-                    // Force re-render when showing entry list
-                    (entryList as any).render();
+
+                    // Reload entries only if sort has changed
+                    const sortBy = URLStateManager.getSortBy() || undefined;
+                    const sortOrder = URLStateManager.getSortOrder() || undefined;
+                    if (sortBy !== lastSortBy || sortOrder !== lastSortOrder) {
+                        lastSortBy = sortBy;
+                        lastSortOrder = sortOrder;
+                        this.store.reloadEntries(sortBy, sortOrder);
+                    } else {
+                        // Just re-render with existing data
+                        (entryList as any).render();
+                    }
                 }
                 if (this.store.getSelectedEntityId() !== null) {
                     this.store.setSelectedEntityId(null);
@@ -139,8 +163,18 @@ class TracklyApp {
                 if (entityGrid) entityGrid.style.display = 'none';
                 if (entryList) {
                     entryList.style.display = 'block';
-                    // Force re-render when showing entry list
-                    (entryList as any).render();
+
+                    // Reload entries only if sort has changed
+                    const sortBy = URLStateManager.getSortBy() || undefined;
+                    const sortOrder = URLStateManager.getSortOrder() || undefined;
+                    if (sortBy !== lastSortBy || sortOrder !== lastSortOrder) {
+                        lastSortBy = sortBy;
+                        lastSortOrder = sortOrder;
+                        this.store.reloadEntries(sortBy, sortOrder);
+                    } else {
+                        // Just re-render with existing data
+                        (entryList as any).render();
+                    }
                 }
                 if (this.store.getSelectedEntityId() !== null) {
                     this.store.setSelectedEntityId(null);

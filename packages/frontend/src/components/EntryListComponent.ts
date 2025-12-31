@@ -428,17 +428,12 @@ export class EntryListComponent extends WebComponent {
     private attachSortHandler(): void {
         const sortSelect = this.querySelector('#sort-select') as HTMLSelectElement;
         if (sortSelect) {
-            // Set current value from URL
-            const currentSortBy = URLStateManager.getSortBy() || 'timestamp';
-            const currentSortOrder = URLStateManager.getSortOrder() || 'desc';
-            sortSelect.value = `${currentSortBy}-${currentSortOrder}`;
-
             // Handle changes
             sortSelect.addEventListener('change', (e) => {
                 const value = (e.target as HTMLSelectElement).value;
                 const [sortBy, sortOrder] = value.split('-') as [string, 'asc' | 'desc'];
+                // Update URL - this will trigger updateView() which will reload entries
                 URLStateManager.setSort(sortBy, sortOrder);
-                this.store.reloadEntries(sortBy, sortOrder);
             });
         }
     }

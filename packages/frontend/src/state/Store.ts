@@ -144,7 +144,7 @@ export class Store {
         }
 
         // Create entry via API
-        const created = await APIClient.createEntry({
+        await APIClient.createEntry({
             entityId: entry.entityId,
             entityName: entry.entityName,
             timestamp: entry.timestamp,
@@ -159,8 +159,10 @@ export class Store {
             locationName: entry.locationName
         });
 
-        this.entries.push(new Entry(created));
-        this.notify();
+        // Reload entries with current sort to ensure correct order
+        const sortBy = URLStateManager.getSortBy() || undefined;
+        const sortOrder = URLStateManager.getSortOrder() || undefined;
+        await this.reloadEntries(sortBy, sortOrder);
     }
 
     async updateEntry(id: string, updates: Partial<IEntry>): Promise<void> {
@@ -170,23 +172,22 @@ export class Store {
         }
 
         // Update via API
-        const updated = await APIClient.updateEntry(id, updates);
-        this.entries[index] = new Entry(updated);
+        await APIClient.updateEntry(id, updates);
 
-        const errors = this.entries[index].validate();
-        if (errors.length > 0) {
-            throw new Error(errors.join(', '));
-        }
-
-        this.notify();
+        // Reload entries with current sort to ensure correct order
+        const sortBy = URLStateManager.getSortBy() || undefined;
+        const sortOrder = URLStateManager.getSortOrder() || undefined;
+        await this.reloadEntries(sortBy, sortOrder);
     }
 
     async deleteEntry(id: string): Promise<void> {
         // Delete via API
         await APIClient.deleteEntry(id);
 
-        this.entries = this.entries.filter(e => e.id !== id);
-        this.notify();
+        // Reload entries with current sort to ensure correct order
+        const sortBy = URLStateManager.getSortBy() || undefined;
+        const sortOrder = URLStateManager.getSortOrder() || undefined;
+        await this.reloadEntries(sortBy, sortOrder);
     }
 
     async archiveEntry(id: string, isArchived: boolean = true): Promise<void> {
@@ -196,9 +197,12 @@ export class Store {
         }
 
         // Archive via API
-        const updated = await APIClient.archiveEntry(id, isArchived);
-        this.entries[index] = new Entry(updated);
-        this.notify();
+        await APIClient.archiveEntry(id, isArchived);
+
+        // Reload entries with current sort to ensure correct order and filtering
+        const sortBy = URLStateManager.getSortBy() || undefined;
+        const sortOrder = URLStateManager.getSortOrder() || undefined;
+        await this.reloadEntries(sortBy, sortOrder);
     }
 
     // Selected entity operations
