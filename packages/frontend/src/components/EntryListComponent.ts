@@ -415,8 +415,88 @@ export class EntryListComponent extends WebComponent {
 
     private attachCardClickHandlers(): void {
         this.querySelectorAll('.entry-card').forEach(card => {
+            let longPressTimer: number | null = null;
+            let touchStartX = 0;
+            let touchStartY = 0;
+            let longPressTriggered = false;
+
+            // Touch start - begin long press detection
+            card.addEventListener('touchstart', (e) => {
+                const target = e.target as HTMLElement;
+
+                // Don't trigger long press on menu button, links, or hashtags
+                if (target.closest('[data-action="menu"]') ||
+                    target.tagName === 'A' ||
+                    target.closest('a') ||
+                    target.closest('.hashtag-link')) {
+                    return;
+                }
+
+                const touch = (e as TouchEvent).touches[0];
+                touchStartX = touch.clientX;
+                touchStartY = touch.clientY;
+                longPressTriggered = false;
+
+                // Start long press timer (500ms)
+                longPressTimer = window.setTimeout(() => {
+                    const entryId = (card as HTMLElement).dataset.entryId;
+                    if (entryId) {
+                        longPressTriggered = true;
+                        // Trigger haptic feedback if available
+                        if ('vibrate' in navigator) {
+                            navigator.vibrate(50);
+                        }
+                        // Show context menu at touch position
+                        const syntheticEvent = new MouseEvent('contextmenu', {
+                            bubbles: true,
+                            cancelable: true,
+                            clientX: touch.clientX,
+                            clientY: touch.clientY
+                        });
+                        this.toggleMenu(entryId, syntheticEvent as MouseEvent);
+                    }
+                }, 500);
+            });
+
+            // Touch move - cancel if moved too much
+            card.addEventListener('touchmove', (e) => {
+                if (longPressTimer) {
+                    const touch = (e as TouchEvent).touches[0];
+                    const moveX = Math.abs(touch.clientX - touchStartX);
+                    const moveY = Math.abs(touch.clientY - touchStartY);
+
+                    // Cancel if moved more than 10px
+                    if (moveX > 10 || moveY > 10) {
+                        window.clearTimeout(longPressTimer);
+                        longPressTimer = null;
+                    }
+                }
+            });
+
+            // Touch end - cancel timer
+            card.addEventListener('touchend', () => {
+                if (longPressTimer) {
+                    window.clearTimeout(longPressTimer);
+                    longPressTimer = null;
+                }
+            });
+
+            // Touch cancel - cancel timer
+            card.addEventListener('touchcancel', () => {
+                if (longPressTimer) {
+                    window.clearTimeout(longPressTimer);
+                    longPressTimer = null;
+                }
+            });
+
             // Regular click to navigate to detail page
             card.addEventListener('click', (e) => {
+                // Don't navigate if long press was just triggered
+                if (longPressTriggered) {
+                    longPressTriggered = false;
+                    return;
+                }
+
                 const target = e.target as HTMLElement;
 
                 // Don't navigate if clicking on menu button
