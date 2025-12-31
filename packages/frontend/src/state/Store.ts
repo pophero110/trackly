@@ -2,6 +2,7 @@ import { Entity } from '../models/Entity.js';
 import { Entry } from '../models/Entry.js';
 import { IEntity, IEntry, StoreListener, Unsubscribe } from '../types/index.js';
 import { APIClient } from '../api/client.js';
+import { URLStateManager } from '../utils/urlState.js';
 
 /**
  * Central state management store - API-backed
@@ -19,15 +20,19 @@ export class Store {
         this.listeners = [];
         this.selectedEntityId = null;
         this.isLoaded = false;
-        this.loadData();
+
+        // Load data with initial sort from URL if present
+        const sortBy = URLStateManager.getSortBy() || undefined;
+        const sortOrder = URLStateManager.getSortOrder() || undefined;
+        this.loadData(sortBy, sortOrder);
     }
 
     // Load data from API
-    private async loadData(): Promise<void> {
+    private async loadData(sortBy?: string, sortOrder?: 'asc' | 'desc'): Promise<void> {
         try {
             const [entitiesData, entriesData] = await Promise.all([
                 APIClient.getEntities(),
-                APIClient.getEntries()
+                APIClient.getEntries({ sortBy, sortOrder })
             ]);
 
             this.entities = entitiesData.map(data => new Entity(data));
@@ -204,6 +209,17 @@ export class Store {
     setSelectedEntityId(entityId: string | null): void {
         this.selectedEntityId = entityId;
         this.notify();
+    }
+
+    // Reload entries with sort parameters
+    async reloadEntries(sortBy?: string, sortOrder?: 'asc' | 'desc'): Promise<void> {
+        try {
+            const entriesData = await APIClient.getEntries({ sortBy, sortOrder });
+            this.entries = entriesData.map(data => new Entry(data));
+            this.notify();
+        } catch (error) {
+            console.error('Error reloading entries:', error);
+        }
     }
 
     // Check if data is loaded

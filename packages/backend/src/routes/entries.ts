@@ -12,12 +12,16 @@ router.use(requireAuth);
 /**
  * GET /api/entries
  * List all entries for the authenticated user
- * Optional query params: entityId (filter by entity), includeArchived (include archived entries)
+ * Optional query params:
+ *   - entityId (filter by entity)
+ *   - includeArchived (include archived entries)
+ *   - sortBy (field to sort by: timestamp, createdAt, entityName)
+ *   - sortOrder (asc or desc, default: desc)
  */
 router.get('/', async (req: AuthRequest, res, next): Promise<void> => {
   try {
     const userId = req.user!.id;
-    const { entityId, includeArchived } = req.query;
+    const { entityId, includeArchived, sortBy, sortOrder } = req.query;
 
     const where: any = { userId };
     if (entityId) {
@@ -28,9 +32,14 @@ router.get('/', async (req: AuthRequest, res, next): Promise<void> => {
       where.isArchived = false;
     }
 
+    // Determine sort field and order
+    const validSortFields = ['timestamp', 'createdAt', 'entityName', 'updatedAt'];
+    const sortField = validSortFields.includes(sortBy as string) ? (sortBy as string) : 'timestamp';
+    const order = (sortOrder === 'asc' || sortOrder === 'desc') ? sortOrder : 'desc';
+
     const entries = await prisma.entry.findMany({
       where,
-      orderBy: { timestamp: 'desc' }
+      orderBy: { [sortField]: order }
     });
 
     // Convert to IEntry format

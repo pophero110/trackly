@@ -239,6 +239,44 @@ export class URLStateManager {
     }
 
     /**
+     * Get sort field from URL
+     */
+    static getSortBy(): string | null {
+        const params = new URLSearchParams(window.location.search);
+        return params.get('sortBy');
+    }
+
+    /**
+     * Get sort order from URL
+     */
+    static getSortOrder(): 'asc' | 'desc' | null {
+        const params = new URLSearchParams(window.location.search);
+        const order = params.get('sortOrder');
+        return (order === 'asc' || order === 'desc') ? order : null;
+    }
+
+    /**
+     * Set sort parameters in URL
+     */
+    static setSort(sortBy: string | null, sortOrder: 'asc' | 'desc' | null): void {
+        const params = new URLSearchParams(window.location.search);
+
+        if (sortBy) {
+            params.set('sortBy', sortBy);
+        } else {
+            params.delete('sortBy');
+        }
+
+        if (sortOrder) {
+            params.set('sortOrder', sortOrder);
+        } else {
+            params.delete('sortOrder');
+        }
+
+        URLStateManager.updateURL(params);
+    }
+
+    /**
      * Close panel
      */
     static closePanel(): void {

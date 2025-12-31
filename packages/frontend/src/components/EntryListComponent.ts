@@ -93,7 +93,6 @@ export class EntryListComponent extends WebComponent {
         }
 
         const entriesHtml = entries
-            .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
             .slice(0, this.maxEntries)
             .map(entry => this.renderEntryCard(entry))
             .join('');
@@ -112,6 +111,10 @@ export class EntryListComponent extends WebComponent {
             </div>
         ` : '';
 
+        // Get current sort values from URL
+        const currentSortBy = URLStateManager.getSortBy() || 'timestamp';
+        const currentSortOrder = URLStateManager.getSortOrder() || 'desc';
+
         this.innerHTML = `
             <div class="section">
                 <div class="section-header-strong">
@@ -121,6 +124,14 @@ export class EntryListComponent extends WebComponent {
                             <p class="section-subtitle">${subtitle}</p>
                         </div>
                         <div class="section-header-actions">
+                            <select id="sort-select" class="sort-select">
+                                <option value="timestamp-desc" ${currentSortBy === 'timestamp' && currentSortOrder === 'desc' ? 'selected' : ''}>Newest First</option>
+                                <option value="timestamp-asc" ${currentSortBy === 'timestamp' && currentSortOrder === 'asc' ? 'selected' : ''}>Oldest First</option>
+                                <option value="createdAt-desc" ${currentSortBy === 'createdAt' && currentSortOrder === 'desc' ? 'selected' : ''}>Recently Created</option>
+                                <option value="createdAt-asc" ${currentSortBy === 'createdAt' && currentSortOrder === 'asc' ? 'selected' : ''}>Oldest Created</option>
+                                <option value="entityName-asc" ${currentSortBy === 'entityName' && currentSortOrder === 'asc' ? 'selected' : ''}>Entity (A-Z)</option>
+                                <option value="entityName-desc" ${currentSortBy === 'entityName' && currentSortOrder === 'desc' ? 'selected' : ''}>Entity (Z-A)</option>
+                            </select>
                             ${hashtagBadge}
                             <button class="btn-primary btn-add-entry" id="log-entry-btn">
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
@@ -140,6 +151,7 @@ export class EntryListComponent extends WebComponent {
         `;
 
         // Attach event handlers after rendering
+        this.attachSortHandler();
         this.attachLogEntryButtonHandler();
         this.attachMenuHandlers();
         this.attachCardClickHandlers();
@@ -411,6 +423,24 @@ export class EntryListComponent extends WebComponent {
         const entity = selectedEntityId ? this.store.getEntityById(selectedEntityId) : null;
 
         URLStateManager.openLogEntryPanel(entity?.name);
+    }
+
+    private attachSortHandler(): void {
+        const sortSelect = this.querySelector('#sort-select') as HTMLSelectElement;
+        if (sortSelect) {
+            // Set current value from URL
+            const currentSortBy = URLStateManager.getSortBy() || 'timestamp';
+            const currentSortOrder = URLStateManager.getSortOrder() || 'desc';
+            sortSelect.value = `${currentSortBy}-${currentSortOrder}`;
+
+            // Handle changes
+            sortSelect.addEventListener('change', (e) => {
+                const value = (e.target as HTMLSelectElement).value;
+                const [sortBy, sortOrder] = value.split('-') as [string, 'asc' | 'desc'];
+                URLStateManager.setSort(sortBy, sortOrder);
+                this.store.reloadEntries(sortBy, sortOrder);
+            });
+        }
     }
 
     private attachCardClickHandlers(): void {

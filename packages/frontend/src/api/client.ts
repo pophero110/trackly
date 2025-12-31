@@ -120,8 +120,17 @@ export class APIClient {
   }
 
   // Entries
-  static async getEntries(entityId?: string): Promise<IEntry[]> {
-    const query = entityId ? `?entityId=${entityId}` : '';
+  static async getEntries(params?: {
+    entityId?: string;
+    sortBy?: string;
+    sortOrder?: 'asc' | 'desc';
+  }): Promise<IEntry[]> {
+    const queryParams = new URLSearchParams();
+    if (params?.entityId) queryParams.set('entityId', params.entityId);
+    if (params?.sortBy) queryParams.set('sortBy', params.sortBy);
+    if (params?.sortOrder) queryParams.set('sortOrder', params.sortOrder);
+
+    const query = queryParams.toString() ? `?${queryParams.toString()}` : '';
     return this.request<IEntry[]>(`/api/entries${query}`);
   }
 
