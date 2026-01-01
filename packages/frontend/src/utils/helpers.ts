@@ -173,25 +173,40 @@ export async function fetchUrlMetadata(url: string): Promise<{ title: string; ur
  * Extract all URLs from a text string that are NOT already in markdown links
  */
 export function extractUrls(text: string): string[] {
-    // First, remove all markdown links to avoid matching URLs inside them
+    const urls: string[] = [];
+
+    // First, extract URLs from markdown links [title](url)
+    const markdownLinkRegex = /\[([^\]]+?)\]\((.+?)\)/g;
+    let match;
+    while ((match = markdownLinkRegex.exec(text)) !== null) {
+        const url = match[2].trim();
+        // Normalize www. URLs
+        if (url.startsWith('www.')) {
+            urls.push('https://' + url);
+        } else if (url.startsWith('http://') || url.startsWith('https://')) {
+            urls.push(url);
+        }
+    }
+
+    // Remove markdown links from text to avoid duplicate matching
     const textWithoutMarkdownLinks = text.replace(/\[([^\]]+?)\]\((.+?)\)/g, '');
 
-    // Now extract URLs from the remaining text
-    // Match both http(s):// URLs and www. URLs
+    // Extract plain URLs from the remaining text
     const urlRegex = /(https?:\/\/[^\s]+|www\.[^\s]+)/g;
-    const matches = textWithoutMarkdownLinks.match(urlRegex);
+    const plainMatches = textWithoutMarkdownLinks.match(urlRegex);
 
-    // Normalize www. URLs to include https://
-    if (matches) {
-        return matches.map(url => {
+    // Normalize and add plain URLs
+    if (plainMatches) {
+        plainMatches.forEach(url => {
             if (url.startsWith('www.')) {
-                return 'https://' + url;
+                urls.push('https://' + url);
+            } else {
+                urls.push(url);
             }
-            return url;
         });
     }
 
-    return [];
+    return urls;
 }
 
 /**
