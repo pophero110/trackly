@@ -166,12 +166,7 @@ export class Store {
     }
 
     async updateEntry(id: string, updates: Partial<IEntry>): Promise<void> {
-        const index = this.entries.findIndex(e => e.id === id);
-        if (index === -1) {
-            throw new Error('Entry not found');
-        }
-
-        // Update via API
+        // Update via API (entry might not be in local store yet due to async operations)
         await APIClient.updateEntry(id, updates);
 
         // Reload entries with current sort to ensure correct order
