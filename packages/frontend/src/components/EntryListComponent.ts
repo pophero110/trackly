@@ -11,6 +11,7 @@ import { getEntityColor } from '../utils/entryHelpers.js';
  */
 export class EntryListComponent extends WebComponent {
     private maxEntries: number = 20;
+    private resizeObserver: ResizeObserver | null = null;
 
     render(): void {
         const selectedEntityId = this.store.getSelectedEntityId();
@@ -316,6 +317,7 @@ export class EntryListComponent extends WebComponent {
         this.attachEntityChipHandlers();
         this.attachEntityPageMenuHandlers();
         this.detectTruncatedContent();
+        this.setupResizeObserver();
     }
 
     private detectTruncatedContent(): void {
@@ -329,6 +331,32 @@ export class EntryListComponent extends WebComponent {
                 element.classList.remove('is-truncated');
             }
         });
+    }
+
+    private setupResizeObserver(): void {
+        // Clean up existing observer
+        if (this.resizeObserver) {
+            this.resizeObserver.disconnect();
+        }
+
+        // Create new observer to detect when cards resize
+        this.resizeObserver = new ResizeObserver(() => {
+            this.detectTruncatedContent();
+        });
+
+        // Observe all entry cards
+        this.querySelectorAll('.entry-card').forEach(card => {
+            this.resizeObserver!.observe(card as HTMLElement);
+        });
+    }
+
+    disconnectedCallback(): void {
+        super.disconnectedCallback();
+        // Clean up resize observer
+        if (this.resizeObserver) {
+            this.resizeObserver.disconnect();
+            this.resizeObserver = null;
+        }
     }
 
     private renderEntryCard(entry: Entry): string {
