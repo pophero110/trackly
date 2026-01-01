@@ -1508,7 +1508,7 @@ form {
   overflow: hidden;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
   cursor: pointer;
-  height: 280px;
+  max-height: 400px;
   display: flex;
   flex-direction: column;
 }
