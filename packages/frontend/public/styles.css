@@ -2192,17 +2192,9 @@ form {
   }
 
   .btn-add-entry {
-    min-width: auto;
+    min-width: 100px;
     padding: 7px 10px;
     font-size: 0.875rem;
-  }
-
-  .btn-add-entry .btn-text {
-    display: none;
-  }
-
-  .btn-add-entry svg {
-    margin: 0;
   }
 
   .btn-tag-filter {
@@ -3177,6 +3169,10 @@ slide-up-panel:not(.active) .modal-dialog {
 @media (max-width: 768px) {
   .entry-detail-page {
     padding: 12px 0;
+  }
+
+  .entry-detail-header {
+    padding-bottom: 16px;
   }
 
   .entry-detail-main-title {
