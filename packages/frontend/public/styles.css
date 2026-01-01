@@ -3116,7 +3116,8 @@ slide-up-panel:not(.active) .modal-dialog {
 
 /* Entry Links Section */
 .entry-links-section {
-  margin-top: 16px;
+  margin-top: 12px;
+  font-size: 0.875rem;
 }
 
 .entry-section-label {
@@ -3129,51 +3130,28 @@ slide-up-panel:not(.active) .modal-dialog {
 }
 
 .entry-links-list {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
+  list-style: disc;
+  margin: 0;
+  padding-left: 20px;
+  color: var(--text-secondary);
 }
 
 .entry-link-item {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 10px 12px;
-  background: rgba(99, 102, 241, 0.05);
-  border: 1px solid rgba(99, 102, 241, 0.15);
-  border-radius: 8px;
-  text-decoration: none;
-  transition: var(--transition);
-  color: var(--primary);
-}
-
-.entry-link-item:hover {
-  background: rgba(99, 102, 241, 0.1);
-  border-color: rgba(99, 102, 241, 0.3);
-  transform: translateX(2px);
+  margin-bottom: 4px;
+  color: var(--text-secondary);
 }
 
 .entry-link-url {
-  flex: 1;
+  color: var(--text-secondary);
+  text-decoration: underline;
+  text-decoration-color: rgba(0, 0, 0, 0.2);
+  word-break: break-all;
   font-size: 0.875rem;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
-.entry-link-item svg:first-child {
-  flex-shrink: 0;
+.entry-link-url:hover {
   color: var(--primary);
-}
-
-.external-link-icon {
-  flex-shrink: 0;
-  opacity: 0.5;
-  transition: var(--transition);
-}
-
-.entry-link-item:hover .external-link-icon {
-  opacity: 1;
+  text-decoration-color: var(--primary);
 }
 
 .error-state {

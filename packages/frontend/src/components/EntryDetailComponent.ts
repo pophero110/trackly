@@ -169,23 +169,15 @@ export class EntryDetailComponent extends WebComponent {
     // Links (from entry.links field)
     const linksHtml = entry.links && entry.links.length > 0
       ? `<div class="entry-links-section">
-            <div class="entry-section-label">Links</div>
-            <div class="entry-links-list">
+            <ul class="entry-links-list">
                 ${entry.links.map(link => `
-                    <a href="${escapeHtml(link)}" target="_blank" rel="noopener noreferrer" class="entry-link-item">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
-                            <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
-                        </svg>
-                        <span class="entry-link-url">${escapeHtml(link)}</span>
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="external-link-icon">
-                            <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
-                            <polyline points="15 3 21 3 21 9"></polyline>
-                            <line x1="10" y1="14" x2="21" y2="3"></line>
-                        </svg>
-                    </a>
+                    <li class="entry-link-item">
+                        <a href="${escapeHtml(link)}" target="_blank" rel="noopener noreferrer" class="entry-link-url">
+                            ${escapeHtml(link)}
+                        </a>
+                    </li>
                 `).join('')}
-            </div>
+            </ul>
          </div>`
       : '';
 
