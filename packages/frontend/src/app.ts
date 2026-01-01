@@ -59,6 +59,22 @@ class TracklyApp {
         let lastSortBy: string | undefined = undefined;
         let lastSortOrder: 'asc' | 'desc' | undefined = undefined;
 
+        const updatePageTitle = (view: string, entityName?: string, entryTitle?: string) => {
+            let title = 'Trackly';
+
+            if (entryTitle) {
+                title = `${entryTitle} - Trackly`;
+            } else if (view === 'entities') {
+                title = 'Entities - Trackly';
+            } else if (view === 'entries' && entityName) {
+                title = `${entityName} - Trackly`;
+            } else if (view === 'entries') {
+                title = 'Entries - Trackly';
+            }
+
+            document.title = title;
+        };
+
         const updateView = () => {
             const path = window.location.pathname;
             const view = URLStateManager.getView();
@@ -82,6 +98,22 @@ class TracklyApp {
                 if (this.store.getSelectedEntityId() !== null) {
                     this.store.setSelectedEntityId(null);
                 }
+
+                // Update page title with entry info if available
+                const entryId = entryDetailMatch[1];
+                if (this.store.getIsLoaded()) {
+                    const entry = this.store.getEntryById(entryId);
+                    if (entry) {
+                        const entity = this.store.getEntityById(entry.entityId);
+                        const entryTitle = entry.notes ? entry.notes.split('\n')[0].trim().substring(0, 50) : entity?.name || 'Entry';
+                        updatePageTitle('entry-detail', undefined, entryTitle);
+                    } else {
+                        updatePageTitle('entry-detail');
+                    }
+                } else {
+                    updatePageTitle('entry-detail');
+                }
+
                 // Still handle panel state for entry detail page
                 this.updatePanelState(panelType, panel);
                 return;
@@ -126,6 +158,9 @@ class TracklyApp {
                 if (this.store.getSelectedEntityId() !== targetEntityId) {
                     this.store.setSelectedEntityId(targetEntityId);
                 }
+
+                // Update page title with entity name
+                updatePageTitle('entries', entity?.name);
             } else if (view === 'entities') {
                 // Show entity grid
                 if (entityGrid) {
@@ -137,6 +172,9 @@ class TracklyApp {
                 if (this.store.getSelectedEntityId() !== null) {
                     this.store.setSelectedEntityId(null);
                 }
+
+                // Update page title
+                updatePageTitle('entities');
             } else if (view === 'entries') {
                 // All entries view (/entries)
                 if (entityGrid) entityGrid.style.display = 'none';
@@ -158,6 +196,9 @@ class TracklyApp {
                 if (this.store.getSelectedEntityId() !== null) {
                     this.store.setSelectedEntityId(null);
                 }
+
+                // Update page title
+                updatePageTitle('entries');
             } else {
                 // Fallback - show all recent entries
                 if (entityGrid) entityGrid.style.display = 'none';
