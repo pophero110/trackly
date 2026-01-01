@@ -96,17 +96,22 @@ export class EntryListComponent extends WebComponent {
             <span class="tag-chip-inline">#${escapeHtml(tag)}</span>
         `).join('') : '';
 
-        const tagButtonLabel = tagFilters.length > 0 ? selectedTagChips : `
+        // Always show icon on mobile, show chips on desktop
+        const tagIcon = `
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path>
                 <line x1="7" y1="7" x2="7.01" y2="7"></line>
             </svg>
         `;
+        const tagButtonLabel = tagFilters.length > 0 ? `${tagIcon}${selectedTagChips}` : tagIcon;
 
         // Tag filter dropdown
         const tagFilterDropdown = availableTags.length > 0 ? `
             <div class="tag-filter-container">
-                <button class="btn-tag-filter ${tagFilters.length > 0 ? 'has-filters' : ''}" id="tag-filter-btn" title="Filter by tags">
+                <button class="btn-tag-filter ${tagFilters.length > 0 ? 'has-filters' : ''}"
+                        id="tag-filter-btn"
+                        title="Filter by tags"
+                        ${tagFilters.length > 0 ? `data-filter-count="${tagFilters.length}"` : ''}>
                     ${tagButtonLabel}
                 </button>
                 <div class="tag-filter-menu" id="tag-filter-menu" style="display: none;">
@@ -129,7 +134,8 @@ export class EntryListComponent extends WebComponent {
             <span class="tag-chip-inline">${escapeHtml(entity)}</span>
         `).join('') : '';
 
-        const entityButtonLabel = entityFilters.length > 0 ? selectedEntityChips : `
+        // Always show icon on mobile, show chips on desktop
+        const entityIcon = `
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <rect x="3" y="3" width="7" height="7"></rect>
                 <rect x="14" y="3" width="7" height="7"></rect>
@@ -137,11 +143,15 @@ export class EntryListComponent extends WebComponent {
                 <rect x="3" y="14" width="7" height="7"></rect>
             </svg>
         `;
+        const entityButtonLabel = entityFilters.length > 0 ? `${entityIcon}${selectedEntityChips}` : entityIcon;
 
         // Entity filter dropdown (only show on "all entries" view, not on entity-specific view)
         const entityFilterDropdown = !selectedEntityId && availableEntities.length > 0 ? `
             <div class="tag-filter-container">
-                <button class="btn-tag-filter ${entityFilters.length > 0 ? 'has-filters' : ''}" id="entity-filter-btn" title="Filter by entities">
+                <button class="btn-tag-filter ${entityFilters.length > 0 ? 'has-filters' : ''}"
+                        id="entity-filter-btn"
+                        title="Filter by entities"
+                        ${entityFilters.length > 0 ? `data-filter-count="${entityFilters.length}"` : ''}>
                     ${entityButtonLabel}
                 </button>
                 <div class="tag-filter-menu" id="entity-filter-menu" style="display: none;">
