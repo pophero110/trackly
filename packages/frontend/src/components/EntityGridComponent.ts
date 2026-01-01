@@ -107,12 +107,9 @@ export class EntityGridComponent extends WebComponent {
                         <h3>${escapeHtml(entity.name)}</h3>
                         <button class="entity-menu-btn" data-entity-id="${entity.id}" data-action="menu">⋮</button>
                     </div>
-                    <span class="entity-type ${entity.type.toLowerCase()}">${entity.type}</span>
-                    ${entity.categories.length > 0 ? `
-                        <div class="entity-categories">
-                            ${entity.categories.map(cat => `<span class="category-tag">${escapeHtml(cat)}</span>`).join('')}
-                        </div>
-                    ` : ''}
+                    <span class="entity-type ${entity.type.toLowerCase()}">
+                        ${entity.type}${entity.categories.length > 0 ? `[${entity.categories.map(cat => escapeHtml(cat)).join(', ')}]` : ''}
+                    </span>
                 </div>
                 ${mostRecentEntry ? `
                     <div class="entity-recent-entry">

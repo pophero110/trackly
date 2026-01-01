@@ -2,7 +2,8 @@
  * Type definitions for Trackly
  */
 
-export type EntityType = 'Habit' | 'Task' | 'Mood' | 'Node' | 'Event' | 'Idea' | 'Book' | 'Article' | 'Paper' | 'Project' | 'Concept' | 'Decision' | 'Communication' | 'Exercise' | 'Metric' | 'Activity' | 'Goal' | 'Plan';
+// Core entity types (7 types based on tracking behavior)
+export type EntityType = 'Habit' | 'Metric' | 'Task' | 'Note' | 'Event' | 'Resource' | 'Decision';
 
 export type ValueType =
   // Text-based inputs

@@ -70,7 +70,7 @@ export class EntryListComponent extends WebComponent {
         const headerText = selectedEntity
             ? `${selectedEntity.name}`
             : `${entryIcon}Entries`;
-        const entityType = selectedEntity ? `<span class="entity-type ${selectedEntity.type.toLowerCase()}">${selectedEntity.type}</span>` : '';
+        const entityType = selectedEntity ? `<span class="entity-type ${selectedEntity.type.toLowerCase()}">${selectedEntity.type}${selectedEntity.categories.length > 0 ? `[${selectedEntity.categories.map(cat => escapeHtml(cat)).join(', ')}]` : ''}</span>` : '';
 
         // Hashtag filter badge
         const hashtagBadge = hashtagFilter
@@ -327,12 +327,9 @@ export class EntryListComponent extends WebComponent {
             ? hashtags.map(tag => `<span class="entry-chip entry-chip-tag" data-tag="${escapeHtml(tag)}">#${escapeHtml(tag)}</span>`).join('')
             : '';
 
-        // Entity name and categories as chips with color
+        // Entity name as chip with color
         const entityColor = entity ? getEntityColor(entity.name) : '';
         const entityChip = entity ? `<span class="entry-chip entry-chip-entity" data-entity-name="${escapeHtml(entity.name)}" style="--entity-color: ${entityColor}">${escapeHtml(entity.name)}</span>` : '';
-        const categoryChips = entity && entity.categories && entity.categories.length > 0
-            ? entity.categories.map(cat => `<span class="entry-chip entry-chip-category">${escapeHtml(cat)}</span>`).join('')
-            : '';
 
         // Render custom properties
         const propertiesHtml = entity && entity.properties && entity.properties.length > 0 && entry.propertyValues
@@ -382,7 +379,6 @@ export class EntryListComponent extends WebComponent {
                 <div class="entry-card-content">
                     ${entryTitle}
                     ${hasContent ? `<div class="entry-content">${notesHtml}</div>` : ''}
-                    ${categoryChips ? `<div class="entry-meta-chips">${categoryChips}</div>` : ''}
                     ${hashtagChips ? `<div class="entry-tags">${hashtagChips}</div>` : ''}
                     ${hasAttachments ? `<div class="entry-attachments">${imagesHtml}</div>` : ''}
                 </div>

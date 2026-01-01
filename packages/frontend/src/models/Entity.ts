@@ -6,24 +6,13 @@ import { IEntity, EntityType, EntityFormData, ValueType, SelectOption, EntityPro
  */
 export function getDefaultValueType(entityType: EntityType): ValueType {
   const mapping: Record<EntityType, ValueType> = {
-    'Habit': 'checkbox',     // Daily habit tracker
-    'Task': 'select',        // Task status (select from options)
-    'Mood': 'range',         // Mood scale slider
-    'Node': 'text',          // General notes
-    'Event': 'datetime-local', // When did it happen?
-    'Idea': 'text',          // Description
-    'Book': 'number',        // Pages read
-    'Article': 'hyperlink',  // Article URL
-    'Paper': 'number',       // Pages read
-    'Project': 'number',     // Hours worked
-    'Concept': 'text',       // Description
-    'Decision': 'select',    // Decision outcome (select from options)
-    'Communication': 'text', // Communication notes
-    'Exercise': 'duration',  // Workout duration in minutes
-    'Metric': 'number',      // Numeric metrics
-    'Activity': 'text',      // Activity description
-    'Goal': 'select',        // Goal status (select from options)
-    'Plan': 'select'         // Plan status (select from options)
+    'Habit': 'checkbox',         // Binary yes/no tracking
+    'Metric': 'number',          // Numeric measurements
+    'Task': 'select',            // Status-based workflow
+    'Note': 'text',              // Freeform text logging
+    'Event': 'datetime-local',   // Time-based occurrences
+    'Resource': 'hyperlink',     // External references (URLs)
+    'Decision': 'select'         // Choice tracking
   };
   return mapping[entityType];
 }
@@ -42,17 +31,6 @@ export function getDefaultSelectOptions(entityType: EntityType): SelectOption[] 
       { value: 'yes', label: 'Yes' },
       { value: 'no', label: 'No' },
       { value: 'pending', label: 'Pending' }
-    ],
-    'Goal': [
-      { value: 'not-started', label: 'Not Started' },
-      { value: 'in-progress', label: 'In Progress' },
-      { value: 'completed', label: 'Completed' }
-    ],
-    'Plan': [
-      { value: 'draft', label: 'Draft' },
-      { value: 'active', label: 'Active' },
-      { value: 'completed', label: 'Completed' },
-      { value: 'on-hold', label: 'On Hold' }
     ]
   };
   return optionsMapping[entityType];
@@ -100,7 +78,7 @@ export class Entity implements IEntity {
       errors.push('Name is required');
     }
 
-    const validTypes: EntityType[] = ['Habit', 'Task', 'Mood', 'Node', 'Event', 'Idea', 'Book', 'Article', 'Paper', 'Project', 'Concept', 'Decision', 'Communication', 'Exercise', 'Metric', 'Activity', 'Goal', 'Plan'];
+    const validTypes: EntityType[] = ['Habit', 'Metric', 'Task', 'Note', 'Event', 'Resource', 'Decision'];
     if (!this.type || !validTypes.includes(this.type)) {
       errors.push('Valid type is required');
     }

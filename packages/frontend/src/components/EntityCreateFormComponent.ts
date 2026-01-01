@@ -60,25 +60,15 @@ export class EntityCreateFormComponent extends WebComponent {
                     <label for="entity-type">Type *</label>
                     <select id="entity-type" required>
                         <option value="">Select type...</option>
-                        <option value="Habit">Habit</option>
-                        <option value="Task">Task</option>
-                        <option value="Mood">Mood</option>
-                        <option value="Node">Node</option>
-                        <option value="Event">Event</option>
-                        <option value="Idea">Idea</option>
-                        <option value="Book">Book</option>
-                        <option value="Article">Article</option>
-                        <option value="Paper">Paper</option>
-                        <option value="Project">Project</option>
-                        <option value="Concept">Concept</option>
-                        <option value="Decision">Decision</option>
-                        <option value="Communication">Communication</option>
-                        <option value="Exercise">Exercise</option>
-                        <option value="Metric">Metric</option>
-                        <option value="Activity">Activity</option>
-                        <option value="Goal">Goal</option>
-                        <option value="Plan">Plan</option>
+                        <option value="Habit">Habit - Binary yes/no tracking</option>
+                        <option value="Metric">Metric - Numeric measurements</option>
+                        <option value="Task">Task - Status-based workflow</option>
+                        <option value="Note">Note - Freeform text logging</option>
+                        <option value="Event">Event - Time-based occurrences</option>
+                        <option value="Resource">Resource - External references (URLs)</option>
+                        <option value="Decision">Decision - Choice tracking</option>
                     </select>
+                    <small style="color: var(--text-muted); font-size: 0.75rem; margin-top: 4px; display: block;">Choose based on how you want to track this entity</small>
                 </div>
 
                 <div class="form-group">

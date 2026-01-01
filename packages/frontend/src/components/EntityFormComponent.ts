@@ -53,25 +53,15 @@ export class EntityFormComponent extends WebComponent {
                     <label for="entity-type">Type *</label>
                     <select id="entity-type" required>
                         <option value="">Select type...</option>
-                        <option value="Habit" ${typeValue === 'Habit' ? 'selected' : ''}>Habit</option>
-                        <option value="Task" ${typeValue === 'Task' ? 'selected' : ''}>Task</option>
-                        <option value="Mood" ${typeValue === 'Mood' ? 'selected' : ''}>Mood</option>
-                        <option value="Node" ${typeValue === 'Node' ? 'selected' : ''}>Node</option>
-                        <option value="Event" ${typeValue === 'Event' ? 'selected' : ''}>Event</option>
-                        <option value="Idea" ${typeValue === 'Idea' ? 'selected' : ''}>Idea</option>
-                        <option value="Book" ${typeValue === 'Book' ? 'selected' : ''}>Book</option>
-                        <option value="Article" ${typeValue === 'Article' ? 'selected' : ''}>Article</option>
-                        <option value="Paper" ${typeValue === 'Paper' ? 'selected' : ''}>Paper</option>
-                        <option value="Project" ${typeValue === 'Project' ? 'selected' : ''}>Project</option>
-                        <option value="Concept" ${typeValue === 'Concept' ? 'selected' : ''}>Concept</option>
-                        <option value="Decision" ${typeValue === 'Decision' ? 'selected' : ''}>Decision</option>
-                        <option value="Communication" ${typeValue === 'Communication' ? 'selected' : ''}>Communication</option>
-                        <option value="Exercise" ${typeValue === 'Exercise' ? 'selected' : ''}>Exercise</option>
-                        <option value="Metric" ${typeValue === 'Metric' ? 'selected' : ''}>Metric</option>
-                        <option value="Activity" ${typeValue === 'Activity' ? 'selected' : ''}>Activity</option>
-                        <option value="Goal" ${typeValue === 'Goal' ? 'selected' : ''}>Goal</option>
-                        <option value="Plan" ${typeValue === 'Plan' ? 'selected' : ''}>Plan</option>
+                        <option value="Habit" ${typeValue === 'Habit' ? 'selected' : ''}>Habit - Binary yes/no tracking</option>
+                        <option value="Metric" ${typeValue === 'Metric' ? 'selected' : ''}>Metric - Numeric measurements</option>
+                        <option value="Task" ${typeValue === 'Task' ? 'selected' : ''}>Task - Status-based workflow</option>
+                        <option value="Note" ${typeValue === 'Note' ? 'selected' : ''}>Note - Freeform text logging</option>
+                        <option value="Event" ${typeValue === 'Event' ? 'selected' : ''}>Event - Time-based occurrences</option>
+                        <option value="Resource" ${typeValue === 'Resource' ? 'selected' : ''}>Resource - External references (URLs)</option>
+                        <option value="Decision" ${typeValue === 'Decision' ? 'selected' : ''}>Decision - Choice tracking</option>
                     </select>
+                    <small style="color: var(--text-muted); font-size: 0.75rem; margin-top: 4px; display: block;">Choose based on how you want to track this entity</small>
                 </div>
 
                 <div class="form-group">
