@@ -53,6 +53,7 @@ router.get('/', async (req: AuthRequest, res, next): Promise<void> => {
       notes: entry.notes || '',
       images: entry.images,
       links: entry.links,
+      linkTitles: entry.linkTitles ? (entry.linkTitles as any) : undefined,
       propertyValues: entry.propertyValues ? (entry.propertyValues as any) : undefined,
       propertyValueDisplays: entry.propertyValueDisplays ? (entry.propertyValueDisplays as any) : undefined,
       latitude: entry.latitude ?? undefined,
@@ -97,6 +98,7 @@ router.get('/:id', async (req: AuthRequest, res, next): Promise<void> => {
       notes: entry.notes || '',
       images: entry.images,
       links: entry.links,
+      linkTitles: entry.linkTitles ? (entry.linkTitles as any) : undefined,
       propertyValues: entry.propertyValues ? (entry.propertyValues as any) : undefined,
       propertyValueDisplays: entry.propertyValueDisplays ? (entry.propertyValueDisplays as any) : undefined,
       latitude: entry.latitude ?? undefined,
@@ -120,7 +122,7 @@ router.get('/:id', async (req: AuthRequest, res, next): Promise<void> => {
 router.post('/', validate(createEntrySchema), async (req: AuthRequest, res, next): Promise<void> => {
   try {
     const userId = req.user!.id;
-    const { entityId, timestamp, value, valueDisplay, notes, images, links, propertyValues, propertyValueDisplays, latitude, longitude, locationName } = req.body;
+    const { entityId, timestamp, value, valueDisplay, notes, images, links, linkTitles, propertyValues, propertyValueDisplays, latitude, longitude, locationName } = req.body;
 
     // Verify entity exists and belongs to user
     const entity = await prisma.entity.findFirst({
@@ -143,6 +145,7 @@ router.post('/', validate(createEntrySchema), async (req: AuthRequest, res, next
         notes: notes || '',
         images: images || [],
         links: links || [],
+        linkTitles: linkTitles || null,
         propertyValues: propertyValues || null,
         propertyValueDisplays: propertyValueDisplays || null,
         latitude: latitude ?? null,
@@ -162,6 +165,7 @@ router.post('/', validate(createEntrySchema), async (req: AuthRequest, res, next
       notes: entry.notes || '',
       images: entry.images,
       links: entry.links,
+      linkTitles: entry.linkTitles ? (entry.linkTitles as any) : undefined,
       propertyValues: entry.propertyValues ? (entry.propertyValues as any) : undefined,
       propertyValueDisplays: entry.propertyValueDisplays ? (entry.propertyValueDisplays as any) : undefined,
       latitude: entry.latitude ?? undefined,
@@ -219,6 +223,7 @@ router.put('/:id', validate(updateEntrySchema), async (req: AuthRequest, res, ne
     if (req.body.notes !== undefined) updateData.notes = req.body.notes;
     if (req.body.images !== undefined) updateData.images = req.body.images;
     if (req.body.links !== undefined) updateData.links = req.body.links;
+    if (req.body.linkTitles !== undefined) updateData.linkTitles = req.body.linkTitles;
     if (req.body.propertyValues !== undefined) updateData.propertyValues = req.body.propertyValues;
     if (req.body.propertyValueDisplays !== undefined) updateData.propertyValueDisplays = req.body.propertyValueDisplays;
     if (req.body.latitude !== undefined) updateData.latitude = req.body.latitude ?? null;
@@ -241,6 +246,7 @@ router.put('/:id', validate(updateEntrySchema), async (req: AuthRequest, res, ne
       notes: entry.notes || '',
       images: entry.images,
       links: entry.links,
+      linkTitles: entry.linkTitles ? (entry.linkTitles as any) : undefined,
       propertyValues: entry.propertyValues ? (entry.propertyValues as any) : undefined,
       propertyValueDisplays: entry.propertyValueDisplays ? (entry.propertyValueDisplays as any) : undefined,
       latitude: entry.latitude ?? undefined,
@@ -293,6 +299,7 @@ router.patch('/:id/archive', async (req: AuthRequest, res, next): Promise<void> 
       notes: entry.notes || '',
       images: entry.images,
       links: entry.links,
+      linkTitles: entry.linkTitles ? (entry.linkTitles as any) : undefined,
       propertyValues: entry.propertyValues ? (entry.propertyValues as any) : undefined,
       propertyValueDisplays: entry.propertyValueDisplays ? (entry.propertyValueDisplays as any) : undefined,
       latitude: entry.latitude ?? undefined,

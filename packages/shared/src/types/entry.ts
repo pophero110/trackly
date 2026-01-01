@@ -12,6 +12,7 @@ export interface IEntry {
   notes: string;
   images?: string[];  // Array of base64 image data URLs
   links?: string[];  // Array of URLs for context/reference
+  linkTitles?: Record<string, string>;  // URL to page title mappings
   propertyValues?: Record<string, string | number | boolean>;  // Custom property values by property ID
   propertyValueDisplays?: Record<string, string>;  // Display text for property values (e.g., URL titles)
   latitude?: number;  // Location latitude

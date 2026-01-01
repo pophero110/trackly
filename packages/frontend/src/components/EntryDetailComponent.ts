@@ -167,13 +167,16 @@ export class EntryDetailComponent extends WebComponent {
     const linksHtml = entry.links && entry.links.length > 0
       ? `<div class="entry-links-section">
             <ul class="entry-links-list">
-                ${entry.links.map(link => `
+                ${entry.links.map(link => {
+                    // Use title if available, otherwise fall back to URL
+                    const displayText = entry.linkTitles?.[link] || link;
+                    return `
                     <li class="entry-link-item">
-                        <a href="${escapeHtml(link)}" target="_blank" rel="noopener noreferrer" class="entry-link-url">
-                            ${escapeHtml(link)}
+                        <a href="${escapeHtml(link)}" target="_blank" rel="noopener noreferrer" class="entry-link-url" title="${escapeHtml(link)}">
+                            ${escapeHtml(displayText)}
                         </a>
                     </li>
-                `).join('')}
+                `}).join('')}
             </ul>
          </div>`
       : '';

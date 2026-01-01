@@ -58,6 +58,7 @@ model Entry {
   longitude             Float?   // Location longitude
   locationName          String?  // Optional location name (e.g., "San Francisco, CA")
   links                 String[] // Array of URLs for context/reference
+  linkTitles            Json?    // URL to page title mappings
   isArchived            Boolean  @default(false)
   createdAt             DateTime @default(now())
   updatedAt             DateTime @updatedAt

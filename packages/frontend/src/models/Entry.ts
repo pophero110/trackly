@@ -20,6 +20,7 @@ export class Entry implements IEntry {
     longitude?: number;
     locationName?: string;
     links?: string[];
+    linkTitles?: Record<string, string>;
     isArchived?: boolean;
     createdAt: string;
 
@@ -39,6 +40,7 @@ export class Entry implements IEntry {
         this.longitude = data.longitude;
         this.locationName = data.locationName;
         this.links = data.links || [];
+        this.linkTitles = data.linkTitles || {};
         this.isArchived = data.isArchived;
         this.createdAt = data.createdAt || new Date().toISOString();
     }
@@ -87,6 +89,7 @@ export class Entry implements IEntry {
             longitude: this.longitude,
             locationName: this.locationName,
             links: this.links,
+            linkTitles: this.linkTitles,
             isArchived: this.isArchived,
             createdAt: this.createdAt
         };

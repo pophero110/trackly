@@ -792,6 +792,32 @@ export class EntryEditFormComponent extends WebComponent {
         }
     }
 
+    private async fetchLinkTitles(entryId: string, links: string[]): Promise<void> {
+        try {
+            const linkTitles: Record<string, string> = {};
+            const fetchPromises: Promise<void>[] = [];
+
+            links.forEach(url => {
+                const promise = fetchUrlMetadata(url).then(metadata => {
+                    if (metadata.title && metadata.title !== url) {
+                        linkTitles[url] = metadata.title;
+                    }
+                }).catch(error => {
+                    console.error(`Failed to fetch title for link ${url}:`, error);
+                });
+                fetchPromises.push(promise);
+            });
+
+            await Promise.all(fetchPromises);
+
+            if (Object.keys(linkTitles).length > 0) {
+                this.store.updateEntry(entryId, { linkTitles });
+            }
+        } catch (error) {
+            console.error('Failed to fetch link titles:', error);
+        }
+    }
+
     private updateZenLineNumbers(): void {
         const zenTextarea = this.querySelector('#zen-mode-textarea') as HTMLTextAreaElement;
         const lineNumbers = this.querySelector('#zen-line-numbers') as HTMLElement;
@@ -1139,6 +1165,11 @@ export class EntryEditFormComponent extends WebComponent {
             // Fetch titles for URL-type properties
             if (entity.properties && entity.properties.length > 0 && propertyValues) {
                 this.fetchPropertyUrlTitles(this.entryId, entity.properties, propertyValues);
+            }
+
+            // Fetch titles for links
+            if (uniqueLinks.length > 0) {
+                this.fetchLinkTitles(this.entryId, uniqueLinks);
             }
 
             // Reset unsaved changes flag
