@@ -39,7 +39,11 @@ router.get('/', async (req: AuthRequest, res, next): Promise<void> => {
 
     const entries = await prisma.entry.findMany({
       where,
-      orderBy: { [sortField]: order }
+      // Use createdAt as tiebreaker for consistent ordering when primary field matches
+      orderBy: [
+        { [sortField]: order },
+        { createdAt: order }
+      ]
     });
 
     // Convert to IEntry format
