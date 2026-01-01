@@ -44,7 +44,8 @@ export function formatDate(isoString: string): string {
 export function getCurrentTimestamp(): string {
     const now = new Date();
     now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
-    return now.toISOString().slice(0, 19);
+    // Use format without seconds for iOS compatibility (YYYY-MM-DDTHH:mm)
+    return now.toISOString().slice(0, 16);
 }
 
 // Cache for URL titles to reduce repeated fetches

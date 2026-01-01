@@ -294,12 +294,13 @@ export class EntryEditFormComponent extends WebComponent {
 
     private formatTimestampForInput(timestamp: string): string {
         // Convert ISO 8601 timestamp (e.g., "2025-12-31T19:59:09.000Z")
-        // to datetime-local format in local timezone (e.g., "2025-12-31T19:59:09")
+        // to datetime-local format in local timezone (e.g., "2025-12-31T19:59")
+        // Use format without seconds for iOS Safari compatibility
         const date = new Date(timestamp);
         // Adjust for timezone offset to get local time
         const offset = date.getTimezoneOffset() * 60000;
         const localDate = new Date(date.getTime() - offset);
-        return localDate.toISOString().slice(0, 19);
+        return localDate.toISOString().slice(0, 16);
     }
 
     private renderPropertyInputs(properties: EntityProperty[], propertyValues: Record<string, string | number | boolean>): string {

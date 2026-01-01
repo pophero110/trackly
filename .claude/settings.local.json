@@ -1,4 +1,10 @@
 {
+  "env": {
+    "DISABLE_BUG_COMMAND": "1",
+    "DISABLE_ERROR_REPORTING": "1",
+    "DISABLE_TELEMETRY": "1"
+  },
+  "includeCoAuthoredBy": false,
   "permissions": {
     "allow": [
       "Bash(npm install)",
@@ -21,5 +27,6 @@
     ],
     "deny": [],
     "ask": []
-  }
+  },
+  "spinnerTipsEnabled": true
 }
