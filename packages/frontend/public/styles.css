@@ -3114,10 +3114,12 @@ slide-up-panel:not(.active) .modal-dialog {
   box-shadow: var(--shadow-sm);
 }
 
-/* Entry Links Section */
+/* Entry Links Section - Citation Style */
 .entry-links-section {
-  margin-top: 12px;
-  font-size: 0.875rem;
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+  font-size: 0.8125rem;
 }
 
 .entry-section-label {
@@ -3130,28 +3132,30 @@ slide-up-panel:not(.active) .modal-dialog {
 }
 
 .entry-links-list {
-  list-style: disc;
+  list-style: decimal;
   margin: 0;
-  padding-left: 20px;
-  color: var(--text-secondary);
+  padding-left: 24px;
+  color: var(--text-muted);
+  line-height: 1.6;
 }
 
 .entry-link-item {
-  margin-bottom: 4px;
-  color: var(--text-secondary);
+  margin-bottom: 6px;
+  color: var(--text-muted);
+  font-size: 0.8125rem;
 }
 
 .entry-link-url {
-  color: var(--text-secondary);
-  text-decoration: underline;
-  text-decoration-color: rgba(0, 0, 0, 0.2);
+  color: var(--text-muted);
+  text-decoration: none;
   word-break: break-all;
-  font-size: 0.875rem;
+  font-size: 0.8125rem;
+  font-family: inherit;
 }
 
 .entry-link-url:hover {
   color: var(--primary);
-  text-decoration-color: var(--primary);
+  text-decoration: underline;
 }
 
 .error-state {
