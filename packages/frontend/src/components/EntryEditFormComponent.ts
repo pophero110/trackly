@@ -13,6 +13,7 @@ export class EntryEditFormComponent extends WebComponent {
     private entry: Entry | null = null;
     private images: string[] = [];
     private links: string[] = [];
+    private linkTitles: Record<string, string> = {};
     private location: { latitude: number; longitude: number; name?: string } | null = null;
     private hasUnsavedChanges: boolean = false;
 
@@ -55,6 +56,7 @@ export class EntryEditFormComponent extends WebComponent {
         if (foundEntry) {
             this.entry = foundEntry;
             this.images = foundEntry.images ? [...foundEntry.images] : [];
+            this.linkTitles = foundEntry.linkTitles ? { ...foundEntry.linkTitles } : {};
             // Initialize location from entry
             if (foundEntry.latitude !== undefined && foundEntry.longitude !== undefined) {
                 this.location = {
@@ -794,10 +796,18 @@ export class EntryEditFormComponent extends WebComponent {
 
     private async fetchLinkTitles(entryId: string, links: string[]): Promise<void> {
         try {
-            const linkTitles: Record<string, string> = {};
+            // Get existing linkTitles from the entry
+            const entry = this.store.getEntryById(entryId);
+            const existingTitles = entry?.linkTitles || {};
+            const linkTitles: Record<string, string> = { ...existingTitles };
             const fetchPromises: Promise<void>[] = [];
 
             links.forEach(url => {
+                // Skip if we already have a title for this URL
+                if (existingTitles[url]) {
+                    return;
+                }
+
                 const promise = fetchUrlMetadata(url).then(metadata => {
                     if (metadata.title && metadata.title !== url) {
                         linkTitles[url] = metadata.title;
@@ -1140,6 +1150,7 @@ export class EntryEditFormComponent extends WebComponent {
                 notes: notes,
                 images: this.images, // Send empty array to remove all images
                 links: uniqueLinks, // Include all unique links
+                linkTitles: Object.keys(this.linkTitles).length > 0 ? { ...this.linkTitles } : undefined,
                 propertyValues: propertyValues,
                 latitude: this.location?.latitude,
                 longitude: this.location?.longitude,
@@ -1204,7 +1215,7 @@ export class EntryEditFormComponent extends WebComponent {
         }
     }
 
-    private addLink(url: string): void {
+    private async addLink(url: string): Promise<void> {
         const linkInput = this.querySelector('#link-input') as HTMLInputElement;
 
         const trimmedUrl = url?.trim() || '';
@@ -1230,12 +1241,26 @@ export class EntryEditFormComponent extends WebComponent {
         // Mark as having unsaved changes
         this.hasUnsavedChanges = true;
 
-        // Re-render to show the new link
+        // Re-render to show the new link (initially shows URL)
         this.render();
         this.attachEventListeners();
 
         // Hide the link input
         this.hideLinkInput();
+
+        // Fetch title asynchronously
+        try {
+            const metadata = await fetchUrlMetadata(trimmedUrl);
+            if (metadata.title && metadata.title !== trimmedUrl) {
+                this.linkTitles[trimmedUrl] = metadata.title;
+                // Re-render to show the title
+                this.render();
+                this.attachEventListeners();
+            }
+        } catch (error) {
+            console.error(`Failed to fetch title for link ${trimmedUrl}:`, error);
+            // Keep showing the URL if title fetch fails
+        }
     }
 
     private removeLink(index: number): void {
@@ -1252,12 +1277,15 @@ export class EntryEditFormComponent extends WebComponent {
             return '';
         }
 
-        const linksHtml = this.entry.links.map((link, index) => `
+        const linksHtml = this.entry.links.map((link, index) => {
+            // Use title if available, otherwise show URL
+            const displayText = this.linkTitles[link] || link;
+            return `
             <div class="link-item">
-                <a href="${link}" target="_blank" rel="noopener noreferrer" class="link-url">${link}</a>
+                <a href="${escapeHtml(link)}" target="_blank" rel="noopener noreferrer" class="link-url" title="${escapeHtml(link)}">${escapeHtml(displayText)}</a>
                 <button type="button" class="btn-remove-link" data-index="${index}">×</button>
             </div>
-        `).join('');
+        `}).join('');
 
         return `<div class="links-display"><div class="links-container">${linksHtml}</div></div>`;
     }

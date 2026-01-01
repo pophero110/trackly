@@ -11,6 +11,7 @@ import { getValueTypeInputConfig } from '../config/valueTypeConfig.js';
 export class EntryFormComponent extends WebComponent {
     private images: string[] = [];
     private links: string[] = [];
+    private linkTitles: Record<string, string> = {};
     private location: { latitude: number; longitude: number; name?: string } | null = null;
     private hasUnsavedChanges: boolean = false;
 
@@ -776,7 +777,7 @@ export class EntryFormComponent extends WebComponent {
         }
     }
 
-    private addLink(url: string): void {
+    private async addLink(url: string): Promise<void> {
         const linkInput = this.querySelector('#link-input') as HTMLInputElement;
 
         const trimmedUrl = url?.trim() || '';
@@ -799,11 +800,24 @@ export class EntryFormComponent extends WebComponent {
         // Mark as having unsaved changes
         this.hasUnsavedChanges = true;
 
-        // Render the links display
+        // Render the links display (initially shows URL)
         this.renderLinksDisplay();
 
         // Hide the link input
         this.hideLinkInput();
+
+        // Fetch title asynchronously
+        try {
+            const metadata = await fetchUrlMetadata(trimmedUrl);
+            if (metadata.title && metadata.title !== trimmedUrl) {
+                this.linkTitles[trimmedUrl] = metadata.title;
+                // Re-render to show the title
+                this.renderLinksDisplay();
+            }
+        } catch (error) {
+            console.error(`Failed to fetch title for link ${trimmedUrl}:`, error);
+            // Keep showing the URL if title fetch fails
+        }
     }
 
     private removeLink(index: number): void {
@@ -821,12 +835,15 @@ export class EntryFormComponent extends WebComponent {
             return;
         }
 
-        const linksHtml = this.links.map((link, index) => `
+        const linksHtml = this.links.map((link, index) => {
+            // Use title if available, otherwise show URL
+            const displayText = this.linkTitles[link] || link;
+            return `
             <div class="link-item">
-                <a href="${link}" target="_blank" rel="noopener noreferrer" class="link-url">${link}</a>
+                <a href="${escapeHtml(link)}" target="_blank" rel="noopener noreferrer" class="link-url" title="${escapeHtml(link)}">${escapeHtml(displayText)}</a>
                 <button type="button" class="btn-remove-link" data-index="${index}">×</button>
             </div>
-        `).join('');
+        `}).join('');
 
         linksDisplay.innerHTML = `<div class="links-container">${linksHtml}</div>`;
 
@@ -927,10 +944,18 @@ export class EntryFormComponent extends WebComponent {
 
     private async fetchLinkTitles(entryId: string, links: string[]): Promise<void> {
         try {
-            const linkTitles: Record<string, string> = {};
+            // Get existing linkTitles from the entry
+            const entry = this.store.getEntryById(entryId);
+            const existingTitles = entry?.linkTitles || {};
+            const linkTitles: Record<string, string> = { ...existingTitles };
             const fetchPromises: Promise<void>[] = [];
 
             links.forEach(url => {
+                // Skip if we already have a title for this URL
+                if (existingTitles[url]) {
+                    return;
+                }
+
                 const promise = fetchUrlMetadata(url).then(metadata => {
                     if (metadata.title && metadata.title !== url) {
                         linkTitles[url] = metadata.title;
@@ -944,7 +969,7 @@ export class EntryFormComponent extends WebComponent {
             // Wait for all fetches to complete
             await Promise.all(fetchPromises);
 
-            // Update entry if we fetched any titles
+            // Update entry if we have any titles (including existing ones)
             if (Object.keys(linkTitles).length > 0) {
                 this.store.updateEntry(entryId, { linkTitles });
             }
@@ -1185,6 +1210,11 @@ export class EntryFormComponent extends WebComponent {
                 entry.links = uniqueLinks;
             }
 
+            // Add linkTitles we already fetched for manually added links
+            if (Object.keys(this.linkTitles).length > 0) {
+                entry.linkTitles = { ...this.linkTitles };
+            }
+
             // Collect property values
             if (entity.properties && entity.properties.length > 0) {
                 const propertyValues: Record<string, string | number | boolean> = {};
@@ -1246,6 +1276,7 @@ export class EntryFormComponent extends WebComponent {
     private resetFormState(): void {
         this.images = [];
         this.links = [];
+        this.linkTitles = {};
         this.location = null;
         this.hasUnsavedChanges = false;
         this.renderImagePreview();
