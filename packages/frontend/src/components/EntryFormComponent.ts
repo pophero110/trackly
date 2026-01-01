@@ -58,6 +58,11 @@ export class EntryFormComponent extends WebComponent {
                 </div>
 
                 <div class="form-group">
+                    <label for="entry-timestamp">Time</label>
+                    <input type="datetime-local" id="entry-timestamp" value="${getCurrentTimestamp()}">
+                </div>
+
+                <div class="form-group">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
                         <label for="entry-notes" style="margin-bottom: 0;">Notes</label>
                         <button type="button" id="zen-mode-btn" class="btn-zen-mode" title="Zen mode (focus on writing)">🧘</button>
@@ -974,8 +979,12 @@ export class EntryFormComponent extends WebComponent {
                 }
             }
 
+            // Get timestamp and convert to ISO format
+            const timestampInput = (this.querySelector('#entry-timestamp') as HTMLInputElement).value;
+            const timestamp = timestampInput ? new Date(timestampInput).toISOString() : getCurrentTimestamp();
+
             const formData: EntryFormData = {
-                timestamp: getCurrentTimestamp(),
+                timestamp: timestamp,
                 value: value,
                 valueDisplay: valueDisplay,
                 notes: (this.querySelector('#entry-notes') as HTMLTextAreaElement).value,

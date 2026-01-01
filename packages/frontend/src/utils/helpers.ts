@@ -22,6 +22,11 @@ export function formatDate(isoString: string): string {
         return 'Today, ' + date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
     } else if (days === 1) {
         return 'Yesterday, ' + date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    } else if (days === -1) {
+        return 'Tomorrow, ' + date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    } else if (days < 0) {
+        // Future date
+        return 'In ' + Math.abs(days) + ' days, ' + date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
     } else if (days < 7) {
         return `${days} days ago`;
     } else {
@@ -257,4 +262,25 @@ export async function replaceUrlsWithTitles(text: string): Promise<{ text: strin
     });
 
     return { text: processedText, urlMap };
+}
+
+/**
+ * Extract all hashtags from a text string
+ * Returns array of unique hashtags (without the # symbol)
+ */
+export function extractHashtags(text: string): string[] {
+    if (!text) return [];
+
+    // Match hashtags that are not part of URLs
+    // Hashtag must be preceded by start of string, whitespace, or >
+    const hashtagRegex = /(?:^|\s|>)#([a-zA-Z0-9_]+)/g;
+    const matches = [];
+    let match;
+
+    while ((match = hashtagRegex.exec(text)) !== null) {
+        matches.push(match[1]);
+    }
+
+    // Return unique hashtags
+    return [...new Set(matches)];
 }

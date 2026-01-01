@@ -17,9 +17,30 @@ export class EntryEditFormComponent extends WebComponent {
 
     connectedCallback(): void {
         this.unsubscribe = this.store.subscribe(() => {
-            // Only re-render if entry is already set
+            // If entry is already set, re-render
             if (this.entry) {
                 this.render();
+            } else if (this.entryId) {
+                // If we have an entryId but no entry, try to load it again
+                // (this handles the case where the component was initialized before data loaded)
+                const entries = this.store.getEntries();
+                const foundEntry = entries.find(e => e.id === this.entryId);
+                if (foundEntry) {
+                    this.entry = foundEntry;
+                    this.images = foundEntry.images ? [...foundEntry.images] : [];
+                    if (foundEntry.latitude !== undefined && foundEntry.longitude !== undefined) {
+                        this.location = {
+                            latitude: foundEntry.latitude,
+                            longitude: foundEntry.longitude,
+                            name: foundEntry.locationName
+                        };
+                    } else {
+                        this.location = null;
+                    }
+                    this.hasUnsavedChanges = false;
+                    this.render();
+                    this.attachEventListeners();
+                }
             }
         });
         // Don't auto-render, wait for setEntry()
@@ -88,6 +109,11 @@ export class EntryEditFormComponent extends WebComponent {
 
                 <div id="properties-input-container">
                     ${entity.properties && entity.properties.length > 0 ? this.renderPropertyInputs(entity.properties, this.entry.propertyValues || {}) : ''}
+                </div>
+
+                <div class="form-group">
+                    <label for="entry-timestamp">Time</label>
+                    <input type="datetime-local" id="entry-timestamp" value="${this.formatTimestampForInput(this.entry.timestamp)}">
                 </div>
 
                 <div class="form-group">
@@ -227,6 +253,16 @@ export class EntryEditFormComponent extends WebComponent {
                 <input ${attrs.join(' ')}>
             </div>
         `;
+    }
+
+    private formatTimestampForInput(timestamp: string): string {
+        // Convert ISO 8601 timestamp (e.g., "2025-12-31T19:59:09.000Z")
+        // to datetime-local format in local timezone (e.g., "2025-12-31T19:59:09")
+        const date = new Date(timestamp);
+        // Adjust for timezone offset to get local time
+        const offset = date.getTimezoneOffset() * 60000;
+        const localDate = new Date(date.getTime() - offset);
+        return localDate.toISOString().slice(0, 19);
     }
 
     private renderPropertyInputs(properties: EntityProperty[], propertyValues: Record<string, string | number | boolean>): string {
@@ -969,6 +1005,9 @@ export class EntryEditFormComponent extends WebComponent {
             }
 
             const notes = (this.querySelector('#entry-notes') as HTMLTextAreaElement).value;
+            // Get timestamp and convert to ISO format
+            const timestampInput = (this.querySelector('#entry-timestamp') as HTMLInputElement).value;
+            const timestamp = timestampInput ? new Date(timestampInput).toISOString() : this.entry.timestamp;
 
             // Collect property values
             let propertyValues: Record<string, string | number | boolean> | undefined;
@@ -990,6 +1029,7 @@ export class EntryEditFormComponent extends WebComponent {
 
             // Update the entry (include entityId and entityName if changed)
             const updates: any = {
+                timestamp: timestamp,
                 value: value,
                 notes: notes,
                 images: this.images, // Send empty array to remove all images

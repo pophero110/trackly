@@ -18,11 +18,19 @@ export class EntityGridComponent extends WebComponent {
                     <div class="section-header-strong">
                         <div class="section-header-content">
                             <div class="section-header-text">
-                                <h2 class="section-title">Your Entities</h2>
+                                <h2 class="section-title">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle;">
+                                        <rect x="3" y="3" width="7" height="7"></rect>
+                                        <rect x="14" y="3" width="7" height="7"></rect>
+                                        <rect x="14" y="14" width="7" height="7"></rect>
+                                        <rect x="3" y="14" width="7" height="7"></rect>
+                                    </svg>
+                                    Entities
+                                </h2>
                                 <p class="section-subtitle">Track what matters to you</p>
                             </div>
                             <div class="section-header-actions">
-                                <button class="btn-primary btn-add-entry" id="create-entity-btn">
+                                <button class="btn btn-primary btn-add-entry" id="create-entity-btn">
                                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                                         <line x1="12" y1="5" x2="12" y2="19"></line>
                                         <line x1="5" y1="12" x2="19" y2="12"></line>
@@ -49,7 +57,15 @@ export class EntityGridComponent extends WebComponent {
                 <div class="section-header-strong">
                     <div class="section-header-content">
                         <div class="section-header-text">
-                            <h2 class="section-title">Your Entities</h2>
+                            <h2 class="section-title">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle;">
+                                    <rect x="3" y="3" width="7" height="7"></rect>
+                                    <rect x="14" y="3" width="7" height="7"></rect>
+                                    <rect x="14" y="14" width="7" height="7"></rect>
+                                    <rect x="3" y="14" width="7" height="7"></rect>
+                                </svg>
+                                Entities
+                            </h2>
                             <p class="section-subtitle">Track what matters to you</p>
                         </div>
                         <div class="section-header-actions">

@@ -1,10 +1,10 @@
 import { WebComponent } from './WebComponent.js';
 import { Entry } from '../models/Entry.js';
-import { escapeHtml, formatDate } from '../utils/helpers.js';
+import { escapeHtml, formatDate, extractHashtags } from '../utils/helpers.js';
 import { parseMarkdown } from '../utils/markdown.js';
 import { URLStateManager } from '../utils/urlState.js';
 import { EntityProperty } from '../types/index.js';
-import { getEntityColor, renderReferencesForList } from '../utils/entryHelpers.js';
+import { getEntityColor } from '../utils/entryHelpers.js';
 
 /**
  * EntryList Web Component for displaying recent entries
@@ -21,9 +21,35 @@ export class EntryListComponent extends WebComponent {
             entries = entries.filter(e => e.entityId === selectedEntityId);
         }
 
-        // Filter entries by hashtag if one is selected
+        // Filter entries by entities if any are selected (multi-entity filter)
+        const entityFilters = URLStateManager.getEntityFilters();
+        if (entityFilters.length > 0 && !selectedEntityId) {
+            entries = entries.filter(e => {
+                const entity = this.store.getEntityById(e.entityId);
+                if (!entity) return false;
+                // Entry must match one of the selected entities (OR logic)
+                return entityFilters.some(filterName =>
+                    entity.name.toLowerCase() === filterName.toLowerCase()
+                );
+            });
+        }
+
+        // Filter entries by tags if any are selected (multi-tag filter)
+        const tagFilters = URLStateManager.getTagFilters();
+        if (tagFilters.length > 0) {
+            entries = entries.filter(e => {
+                if (!e.notes) return false;
+                const entryTags = extractHashtags(e.notes);
+                // Entry must have ALL selected tags (AND logic)
+                return tagFilters.every(tag =>
+                    entryTags.some(entryTag => entryTag.toLowerCase() === tag.toLowerCase())
+                );
+            });
+        }
+
+        // Legacy: Filter entries by single hashtag (backwards compatibility)
         const hashtagFilter = URLStateManager.getHashtagFilter();
-        if (hashtagFilter) {
+        if (hashtagFilter && tagFilters.length === 0) {
             entries = entries.filter(e => {
                 if (!e.notes) return false;
                 const hashtagRegex = new RegExp(`#${hashtagFilter}\\b`, 'i');
@@ -33,15 +59,136 @@ export class EntryListComponent extends WebComponent {
 
         // Get selected entity name for header
         const selectedEntity = selectedEntityId ? this.store.getEntityById(selectedEntityId) : null;
+
+        // Entry icon for "Your Entries" header
+        const entryIcon = !selectedEntity ? `
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle;">
+                <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path>
+            </svg>
+        ` : '';
+
         const headerText = selectedEntity
             ? `${selectedEntity.name}`
-            : 'Your Entries';
+            : `${entryIcon}Entries`;
         const entityType = selectedEntity ? `<span class="entity-type ${selectedEntity.type.toLowerCase()}">${selectedEntity.type}</span>` : '';
 
         // Hashtag filter badge
         const hashtagBadge = hashtagFilter
             ? `<span class="hashtag-filter-badge">#${hashtagFilter} <button class="clear-hashtag" data-action="clear-hashtag">×</button></span>`
             : '';
+
+        // Get current sort values from URL
+        const currentSortBy = URLStateManager.getSortBy() || 'timestamp';
+        const currentSortOrder = URLStateManager.getSortOrder() || 'desc';
+
+        // Get all available tags from all entries
+        const allEntries = this.store.getEntries();
+        const allTags = new Set<string>();
+        allEntries.forEach(entry => {
+            if (entry.notes) {
+                extractHashtags(entry.notes).forEach(tag => allTags.add(tag));
+            }
+        });
+        const availableTags = Array.from(allTags).sort();
+
+        // Tag filter button with chips
+        const selectedTagChips = tagFilters.length > 0 ? tagFilters.map(tag => `
+            <span class="tag-chip-inline">#${escapeHtml(tag)}</span>
+        `).join('') : '';
+
+        const tagButtonLabel = tagFilters.length > 0 ? selectedTagChips : `
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path>
+                <line x1="7" y1="7" x2="7.01" y2="7"></line>
+            </svg>
+        `;
+
+        // Tag filter dropdown
+        const tagFilterDropdown = availableTags.length > 0 ? `
+            <div class="tag-filter-container">
+                <button class="btn-tag-filter ${tagFilters.length > 0 ? 'has-filters' : ''}" id="tag-filter-btn" title="Filter by tags">
+                    ${tagButtonLabel}
+                </button>
+                <div class="tag-filter-menu" id="tag-filter-menu" style="display: none;">
+                    ${availableTags.map(tag => `
+                        <label class="tag-filter-option">
+                            <input type="checkbox" value="${escapeHtml(tag)}" ${tagFilters.includes(tag) ? 'checked' : ''}>
+                            <span>#${escapeHtml(tag)}</span>
+                        </label>
+                    `).join('')}
+                </div>
+            </div>
+        ` : '';
+
+        // Get all available entities
+        const allEntities = this.store.getEntities();
+        const availableEntities = allEntities.sort((a, b) => a.name.localeCompare(b.name));
+
+        // Entity filter button with chips
+        const selectedEntityChips = entityFilters.length > 0 ? entityFilters.map(entity => `
+            <span class="tag-chip-inline">${escapeHtml(entity)}</span>
+        `).join('') : '';
+
+        const entityButtonLabel = entityFilters.length > 0 ? selectedEntityChips : `
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="3" width="7" height="7"></rect>
+                <rect x="14" y="3" width="7" height="7"></rect>
+                <rect x="14" y="14" width="7" height="7"></rect>
+                <rect x="3" y="14" width="7" height="7"></rect>
+            </svg>
+        `;
+
+        // Entity filter dropdown (only show on "all entries" view, not on entity-specific view)
+        const entityFilterDropdown = !selectedEntityId && availableEntities.length > 0 ? `
+            <div class="tag-filter-container">
+                <button class="btn-tag-filter ${entityFilters.length > 0 ? 'has-filters' : ''}" id="entity-filter-btn" title="Filter by entities">
+                    ${entityButtonLabel}
+                </button>
+                <div class="tag-filter-menu" id="entity-filter-menu" style="display: none;">
+                    ${availableEntities.map(entity => `
+                        <label class="tag-filter-option">
+                            <input type="checkbox" value="${escapeHtml(entity.name)}" ${entityFilters.includes(entity.name) ? 'checked' : ''}>
+                            <span>${escapeHtml(entity.name)}</span>
+                        </label>
+                    `).join('')}
+                </div>
+            </div>
+        ` : '';
+
+        // Sort options
+        const sortOptions = [
+            { value: 'timestamp-desc', label: 'Newest First' },
+            { value: 'timestamp-asc', label: 'Oldest First' },
+            { value: 'createdAt-desc', label: 'Recently Created' },
+            { value: 'createdAt-asc', label: 'Oldest Created' },
+            { value: 'entityName-asc', label: 'Entity (A-Z)' },
+            { value: 'entityName-desc', label: 'Entity (Z-A)' }
+        ];
+
+        const currentSortValue = `${currentSortBy}-${currentSortOrder}`;
+        const currentSortLabel = sortOptions.find(opt => opt.value === currentSortValue)?.label || 'Newest First';
+
+        // Sort select dropdown
+        const sortSelect = `
+            <div class="tag-filter-container">
+                <button class="btn-tag-filter" id="sort-filter-btn" title="Sort by">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="4" y1="6" x2="11" y2="6"></line>
+                        <line x1="4" y1="12" x2="16" y2="12"></line>
+                        <line x1="4" y1="18" x2="20" y2="18"></line>
+                    </svg>
+                    <span>${currentSortLabel}</span>
+                </button>
+                <div class="tag-filter-menu" id="sort-filter-menu" style="display: none;">
+                    ${sortOptions.map(opt => `
+                        <label class="tag-filter-option">
+                            <input type="radio" name="sort-option" value="${opt.value}" ${opt.value === currentSortValue ? 'checked' : ''}>
+                            <span>${escapeHtml(opt.label)}</span>
+                        </label>
+                    `).join('')}
+                </div>
+            </div>
+        `;
 
         if (entries.length === 0) {
             const emptyMessage = selectedEntity
@@ -50,7 +197,7 @@ export class EntryListComponent extends WebComponent {
 
             const subtitle = selectedEntity
                 ? `Capture ${selectedEntity.name.toLowerCase()} moments`
-                : 'Track what matters to you';
+                : 'Your activity log';
 
             // Entity menu (only show when viewing a specific entity)
             const entityMenu = selectedEntity ? `
@@ -71,8 +218,11 @@ export class EntryListComponent extends WebComponent {
                                 <p class="section-subtitle">${subtitle}</p>
                             </div>
                             <div class="section-header-actions">
+                                ${sortSelect}
+                                ${entityFilterDropdown}
+                                ${tagFilterDropdown}
                                 ${hashtagBadge}
-                                <button class="btn-primary btn-add-entry" id="log-entry-btn">
+                                <button class="btn btn-primary btn-add-entry" id="log-entry-btn">
                                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                                         <line x1="12" y1="5" x2="12" y2="19"></line>
                                         <line x1="5" y1="12" x2="19" y2="12"></line>
@@ -89,6 +239,9 @@ export class EntryListComponent extends WebComponent {
             this.attachLogEntryButtonHandler();
             this.attachHashtagClearHandler();
             this.attachEntityPageMenuHandlers();
+            this.attachSortHandler();
+            this.attachEntityFilterHandlers();
+            this.attachTagFilterHandlers();
             return;
         }
 
@@ -99,7 +252,7 @@ export class EntryListComponent extends WebComponent {
 
         const subtitle = selectedEntity
             ? `Capture ${selectedEntity.name.toLowerCase()} moments`
-            : 'Track what matters to you';
+            : 'Your activity log';
 
         // Entity menu (only show when viewing a specific entity)
         const entityMenu = selectedEntity ? `
@@ -111,10 +264,6 @@ export class EntryListComponent extends WebComponent {
             </div>
         ` : '';
 
-        // Get current sort values from URL
-        const currentSortBy = URLStateManager.getSortBy() || 'timestamp';
-        const currentSortOrder = URLStateManager.getSortOrder() || 'desc';
-
         this.innerHTML = `
             <div class="section">
                 <div class="section-header-strong">
@@ -124,14 +273,9 @@ export class EntryListComponent extends WebComponent {
                             <p class="section-subtitle">${subtitle}</p>
                         </div>
                         <div class="section-header-actions">
-                            <select id="sort-select" class="sort-select">
-                                <option value="timestamp-desc" ${currentSortBy === 'timestamp' && currentSortOrder === 'desc' ? 'selected' : ''}>Newest First</option>
-                                <option value="timestamp-asc" ${currentSortBy === 'timestamp' && currentSortOrder === 'asc' ? 'selected' : ''}>Oldest First</option>
-                                <option value="createdAt-desc" ${currentSortBy === 'createdAt' && currentSortOrder === 'desc' ? 'selected' : ''}>Recently Created</option>
-                                <option value="createdAt-asc" ${currentSortBy === 'createdAt' && currentSortOrder === 'asc' ? 'selected' : ''}>Oldest Created</option>
-                                <option value="entityName-asc" ${currentSortBy === 'entityName' && currentSortOrder === 'asc' ? 'selected' : ''}>Entity (A-Z)</option>
-                                <option value="entityName-desc" ${currentSortBy === 'entityName' && currentSortOrder === 'desc' ? 'selected' : ''}>Entity (Z-A)</option>
-                            </select>
+                            ${sortSelect}
+                            ${entityFilterDropdown}
+                            ${tagFilterDropdown}
                             ${hashtagBadge}
                             <button class="btn-primary btn-add-entry" id="log-entry-btn">
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
@@ -152,6 +296,8 @@ export class EntryListComponent extends WebComponent {
 
         // Attach event handlers after rendering
         this.attachSortHandler();
+        this.attachEntityFilterHandlers();
+        this.attachTagFilterHandlers();
         this.attachLogEntryButtonHandler();
         this.attachMenuHandlers();
         this.attachCardClickHandlers();
@@ -175,8 +321,11 @@ export class EntryListComponent extends WebComponent {
         // Notes content
         const notesHtml = entry.notes ? `<div class="entry-notes">${this.formatNotes(entry.notes)}</div>` : '';
 
-        // Extract URLs for reference section
-        const referencesHtml = entry.notes ? renderReferencesForList(entry.notes) : '';
+        // Extract hashtags from notes
+        const hashtags = entry.notes ? extractHashtags(entry.notes) : [];
+        const hashtagChips = hashtags.length > 0
+            ? hashtags.map(tag => `<span class="entry-chip entry-chip-tag" data-tag="${escapeHtml(tag)}">#${escapeHtml(tag)}</span>`).join('')
+            : '';
 
         // Entity name and categories as chips with color
         const entityColor = entity ? getEntityColor(entity.name) : '';
@@ -203,7 +352,6 @@ export class EntryListComponent extends WebComponent {
 
         const hasContent = notesHtml;
         const hasAttachments = imagesHtml;
-        const hasReferences = referencesHtml;
 
         // Location display (inline in header with separator)
         const locationHeaderHtml = entry.latitude && entry.longitude
@@ -235,7 +383,7 @@ export class EntryListComponent extends WebComponent {
                     ${entryTitle}
                     ${hasContent ? `<div class="entry-content">${notesHtml}</div>` : ''}
                     ${categoryChips ? `<div class="entry-meta-chips">${categoryChips}</div>` : ''}
-                    ${hasReferences ? `<div class="entry-tags">${referencesHtml}</div>` : ''}
+                    ${hashtagChips ? `<div class="entry-tags">${hashtagChips}</div>` : ''}
                     ${hasAttachments ? `<div class="entry-attachments">${imagesHtml}</div>` : ''}
                 </div>
             </div>
@@ -426,14 +574,35 @@ export class EntryListComponent extends WebComponent {
     }
 
     private attachSortHandler(): void {
-        const sortSelect = this.querySelector('#sort-select') as HTMLSelectElement;
-        if (sortSelect) {
-            // Handle changes
-            sortSelect.addEventListener('change', (e) => {
-                const value = (e.target as HTMLSelectElement).value;
-                const [sortBy, sortOrder] = value.split('-') as [string, 'asc' | 'desc'];
-                // Update URL - this will trigger updateView() which will reload entries
-                URLStateManager.setSort(sortBy, sortOrder);
+        // Toggle sort filter menu
+        const filterBtn = this.querySelector('#sort-filter-btn');
+        const filterMenu = this.querySelector('#sort-filter-menu') as HTMLElement;
+
+        if (filterBtn && filterMenu) {
+            // Toggle menu on button click
+            filterBtn.addEventListener('click', () => {
+                const isVisible = filterMenu.style.display === 'block';
+                filterMenu.style.display = isVisible ? 'none' : 'block';
+            });
+
+            // Handle sort option selection
+            const radioButtons = filterMenu.querySelectorAll('input[type="radio"]');
+            radioButtons.forEach(radio => {
+                radio.addEventListener('change', (e) => {
+                    const value = (e.target as HTMLInputElement).value;
+                    const [sortBy, sortOrder] = value.split('-') as [string, 'asc' | 'desc'];
+                    // Update URL - this will trigger updateView() which will reload entries
+                    URLStateManager.setSort(sortBy, sortOrder);
+                    // Close the menu after selection
+                    filterMenu.style.display = 'none';
+                });
+            });
+
+            // Close menu when clicking outside
+            document.addEventListener('click', (e) => {
+                if (!filterMenu.contains(e.target as Node) && !filterBtn.contains(e.target as Node)) {
+                    filterMenu.style.display = 'none';
+                }
             });
         }
     }
@@ -668,6 +837,7 @@ export class EntryListComponent extends WebComponent {
     }
 
     private attachHashtagHandlers(): void {
+        // Handle hashtags in notes (clickable hashtags within formatted text)
         this.querySelectorAll('.hashtag').forEach(hashtag => {
             hashtag.addEventListener('click', (e) => {
                 e.preventDefault();
@@ -675,7 +845,20 @@ export class EntryListComponent extends WebComponent {
                 const target = e.target as HTMLElement;
                 const tag = target.dataset.tag;
                 if (tag) {
-                    URLStateManager.setHashtagFilter(tag);
+                    URLStateManager.addTagFilter(tag);
+                }
+            });
+        });
+
+        // Handle hashtag chips in entry-tags section
+        this.querySelectorAll('.entry-chip-tag').forEach(chip => {
+            chip.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                const target = e.target as HTMLElement;
+                const tag = target.dataset.tag;
+                if (tag) {
+                    URLStateManager.addTagFilter(tag);
                 }
             });
         });
@@ -686,6 +869,76 @@ export class EntryListComponent extends WebComponent {
         if (clearBtn) {
             clearBtn.addEventListener('click', () => {
                 URLStateManager.setHashtagFilter(null);
+            });
+        }
+    }
+
+    private attachEntityFilterHandlers(): void {
+        // Toggle entity filter menu
+        const filterBtn = this.querySelector('#entity-filter-btn');
+        const filterMenu = this.querySelector('#entity-filter-menu') as HTMLElement;
+
+        if (filterBtn && filterMenu) {
+            filterBtn.addEventListener('click', () => {
+                const isVisible = filterMenu.style.display === 'block';
+                filterMenu.style.display = isVisible ? 'none' : 'block';
+            });
+
+            // Close menu when clicking outside
+            document.addEventListener('click', (e) => {
+                if (!filterMenu.contains(e.target as Node) && !filterBtn.contains(e.target as Node)) {
+                    filterMenu.style.display = 'none';
+                }
+            });
+
+            // Handle checkbox changes
+            const checkboxes = filterMenu.querySelectorAll('input[type="checkbox"]');
+            checkboxes.forEach(checkbox => {
+                checkbox.addEventListener('change', (e) => {
+                    const target = e.target as HTMLInputElement;
+                    const entityName = target.value;
+
+                    if (target.checked) {
+                        URLStateManager.addEntityFilter(entityName);
+                    } else {
+                        URLStateManager.removeEntityFilter(entityName);
+                    }
+                });
+            });
+        }
+    }
+
+    private attachTagFilterHandlers(): void {
+        // Toggle tag filter menu
+        const filterBtn = this.querySelector('#tag-filter-btn');
+        const filterMenu = this.querySelector('#tag-filter-menu') as HTMLElement;
+
+        if (filterBtn && filterMenu) {
+            filterBtn.addEventListener('click', () => {
+                const isVisible = filterMenu.style.display === 'block';
+                filterMenu.style.display = isVisible ? 'none' : 'block';
+            });
+
+            // Close menu when clicking outside
+            document.addEventListener('click', (e) => {
+                if (!filterMenu.contains(e.target as Node) && !filterBtn.contains(e.target as Node)) {
+                    filterMenu.style.display = 'none';
+                }
+            });
+
+            // Handle checkbox changes
+            const checkboxes = filterMenu.querySelectorAll('input[type="checkbox"]');
+            checkboxes.forEach(checkbox => {
+                checkbox.addEventListener('change', (e) => {
+                    const target = e.target as HTMLInputElement;
+                    const tag = target.value;
+
+                    if (target.checked) {
+                        URLStateManager.addTagFilter(tag);
+                    } else {
+                        URLStateManager.removeTagFilter(tag);
+                    }
+                });
             });
         }
     }

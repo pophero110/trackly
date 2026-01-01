@@ -229,7 +229,7 @@ export class URLStateManager {
     }
 
     /**
-     * Get hashtag filter from URL
+     * Get hashtag filter from URL (legacy single tag support)
      */
     static getHashtagFilter(): string | null {
         const params = new URLSearchParams(window.location.search);
@@ -237,7 +237,7 @@ export class URLStateManager {
     }
 
     /**
-     * Set hashtag filter in URL
+     * Set hashtag filter in URL (legacy single tag support)
      */
     static setHashtagFilter(hashtag: string | null): void {
         const params = new URLSearchParams(window.location.search);
@@ -249,6 +249,116 @@ export class URLStateManager {
         }
 
         URLStateManager.updateURL(params);
+    }
+
+    /**
+     * Get multiple tag filters from URL
+     * Returns array of tag names (without # symbol)
+     */
+    static getTagFilters(): string[] {
+        const params = new URLSearchParams(window.location.search);
+        const tags = params.get('tags');
+        if (tags) {
+            return tags.split(',').map(t => t.trim()).filter(t => t.length > 0);
+        }
+        return [];
+    }
+
+    /**
+     * Set multiple tag filters in URL
+     * Pass array of tag names (without # symbol)
+     */
+    static setTagFilters(tags: string[]): void {
+        const params = new URLSearchParams(window.location.search);
+
+        if (tags && tags.length > 0) {
+            params.set('tags', tags.join(','));
+        } else {
+            params.delete('tags');
+        }
+
+        URLStateManager.updateURL(params);
+    }
+
+    /**
+     * Add a tag to the current filters
+     */
+    static addTagFilter(tag: string): void {
+        const current = URLStateManager.getTagFilters();
+        if (!current.includes(tag)) {
+            URLStateManager.setTagFilters([...current, tag]);
+        }
+    }
+
+    /**
+     * Remove a tag from the current filters
+     */
+    static removeTagFilter(tag: string): void {
+        const current = URLStateManager.getTagFilters();
+        const filtered = current.filter(t => t !== tag);
+        URLStateManager.setTagFilters(filtered);
+    }
+
+    /**
+     * Clear all tag filters
+     */
+    static clearTagFilters(): void {
+        URLStateManager.setTagFilters([]);
+    }
+
+    /**
+     * Get multiple entity filters from URL
+     * Returns array of entity names
+     */
+    static getEntityFilters(): string[] {
+        const params = new URLSearchParams(window.location.search);
+        const entities = params.get('entities');
+        if (entities) {
+            return entities.split(',').map(e => e.trim()).filter(e => e.length > 0);
+        }
+        return [];
+    }
+
+    /**
+     * Set multiple entity filters in URL
+     * Pass array of entity names
+     */
+    static setEntityFilters(entities: string[]): void {
+        const params = new URLSearchParams(window.location.search);
+
+        if (entities && entities.length > 0) {
+            params.set('entities', entities.join(','));
+        } else {
+            params.delete('entities');
+        }
+
+        URLStateManager.updateURL(params);
+    }
+
+    /**
+     * Add an entity to the current filters
+     */
+    static addEntityFilter(entity: string): void {
+        const current = URLStateManager.getEntityFilters();
+        if (!current.includes(entity)) {
+            URLStateManager.setEntityFilters([...current, entity]);
+        }
+    }
+
+    /**
+     * Remove an entity from the current filters
+     */
+    static removeEntityFilter(entity: string): void {
+        const current = URLStateManager.getEntityFilters();
+        const filtered = current.filter(e => e !== entity);
+        URLStateManager.setEntityFilters(filtered);
+    }
+
+    /**
+     * Clear all entity filters
+     */
+    static clearEntityFilters(): void {
+        URLStateManager.setEntityFilters([]);
     }
 
     /**
