@@ -4,7 +4,7 @@ import { escapeHtml, formatDate } from '../utils/helpers.js';
 import { parseMarkdown } from '../utils/markdown.js';
 import { URLStateManager } from '../utils/urlState.js';
 import { EntityProperty } from '../types/index.js';
-import { getEntityColor, renderReferences } from '../utils/entryHelpers.js';
+import { getEntityColor } from '../utils/entryHelpers.js';
 
 /**
  * EntryDetail Web Component for displaying a single entry's full details
@@ -163,9 +163,6 @@ export class EntryDetailComponent extends WebComponent {
     // Notes content
     const notesHtml = entry.notes ? `<div class="entry-notes-detail">${this.formatNotes(entry.notes)}</div>` : '';
 
-    // References (URLs only)
-    const referencesHtml = entry.notes ? renderReferences(entry.notes, { includeHashtags: false }) : '';
-
     // Links (from entry.links field)
     const linksHtml = entry.links && entry.links.length > 0
       ? `<div class="entry-links-section">
@@ -199,7 +196,6 @@ export class EntryDetailComponent extends WebComponent {
                 ${notesHtml}
                 ${imagesHtml}
                 ${tagsHtml}
-                ${referencesHtml}
                 ${linksHtml}
             </div>
         `;
