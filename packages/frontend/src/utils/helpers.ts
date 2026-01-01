@@ -155,6 +155,14 @@ function saveTitleCache(): void {
  */
 export async function fetchUrlMetadata(url: string): Promise<{ title: string; url: string }> {
     try {
+        // Skip localhost and local network URLs
+        if (url.includes('localhost') || url.includes('127.0.0.1') || url.match(/192\.168\.\d+\.\d+/)) {
+            return {
+                title: url,
+                url: url
+            };
+        }
+
         const title = await fetchPageTitle(url);
         return {
             title: title,
