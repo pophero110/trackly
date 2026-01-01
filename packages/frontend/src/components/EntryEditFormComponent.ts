@@ -126,6 +126,13 @@ export class EntryEditFormComponent extends WebComponent {
 
                 <input type="file" id="image-upload" accept="image/*" style="display: none;" multiple>
                 <div id="image-preview" class="image-preview"></div>
+
+                <div id="link-input-container" class="link-input-container" style="display: none;">
+                    <input type="url" id="link-input" class="link-input" placeholder="https://example.com" pattern="https?://.+" />
+                    <button type="button" id="add-link-btn-action" class="btn-insert-link">Add</button>
+                    <button type="button" id="cancel-link-btn" class="btn-cancel-link">×</button>
+                </div>
+
                 <div id="location-display" class="location-display" style="display: ${this.location ? 'flex' : 'none'};">
                     <span class="location-icon">📍</span>
                     <span id="location-text" class="location-text">${this.location?.name || (this.location ? `${this.location.latitude.toFixed(4)}, ${this.location.longitude.toFixed(4)}` : '')}</span>
@@ -136,11 +143,36 @@ export class EntryEditFormComponent extends WebComponent {
                     <button type="submit" class="btn btn-primary">Update Entry</button>
                     <div class="action-menu-buttons">
                         <button type="button" id="location-btn" class="btn-action-menu" title="Add location">📍</button>
+                        <button type="button" id="add-link-btn" class="btn-action-menu" title="Add link to notes">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
+                                <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
+                            </svg>
+                        </button>
                         <div style="position: relative;">
-                            <button type="button" id="image-menu-btn" class="btn-action-menu" title="Add images">📎</button>
+                            <button type="button" id="image-menu-btn" class="btn-action-menu" title="Add images">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                                    <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                                    <polyline points="21 15 16 10 5 21"></polyline>
+                                </svg>
+                            </button>
                             <div id="image-menu" class="image-dropdown-menu" style="display: none;">
-                                <div class="context-menu-item" id="upload-image-menu-item">📁 Upload Image</div>
-                                <div class="context-menu-item" id="capture-image-menu-item">📷 Take Photo</div>
+                                <div class="context-menu-item" id="upload-image-menu-item">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                        <polyline points="17 8 12 3 7 8"></polyline>
+                                        <line x1="12" y1="3" x2="12" y2="15"></line>
+                                    </svg>
+                                    <span>Upload Image</span>
+                                </div>
+                                <div class="context-menu-item" id="capture-image-menu-item">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+                                        <circle cx="12" cy="13" r="4"></circle>
+                                    </svg>
+                                    <span>Take Photo</span>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -346,6 +378,11 @@ export class EntryEditFormComponent extends WebComponent {
         const fileInput = this.querySelector('#image-upload') as HTMLInputElement;
         const zenModeBtn = this.querySelector('#zen-mode-btn') as HTMLButtonElement;
         const zenModeClose = this.querySelector('#zen-mode-close') as HTMLButtonElement;
+        const addLinkBtn = this.querySelector('#add-link-btn') as HTMLButtonElement;
+        const linkInputContainer = this.querySelector('#link-input-container') as HTMLElement;
+        const linkInput = this.querySelector('#link-input') as HTMLInputElement;
+        const addLinkBtnAction = this.querySelector('#add-link-btn-action') as HTMLButtonElement;
+        const cancelLinkBtn = this.querySelector('#cancel-link-btn') as HTMLButtonElement;
 
         // Handle entity change - update value and property inputs
         if (entitySelect) {
@@ -380,6 +417,31 @@ export class EntryEditFormComponent extends WebComponent {
 
         if (zenModeClose) {
             zenModeClose.addEventListener('click', () => this.closeZenMode());
+        }
+
+        if (addLinkBtn && linkInputContainer) {
+            addLinkBtn.addEventListener('click', () => this.showLinkInput());
+        }
+
+        if (addLinkBtnAction && linkInput) {
+            addLinkBtnAction.addEventListener('click', () => this.addLink(linkInput.value));
+        }
+
+        if (cancelLinkBtn && linkInputContainer) {
+            cancelLinkBtn.addEventListener('click', () => this.hideLinkInput());
+        }
+
+        if (linkInput) {
+            // Handle Enter key to add link
+            linkInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    this.addLink(linkInput.value);
+                }
+                if (e.key === 'Escape') {
+                    this.hideLinkInput();
+                }
+            });
         }
 
         // Tab key handling for note textareas

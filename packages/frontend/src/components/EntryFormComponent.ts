@@ -10,6 +10,7 @@ import { getValueTypeInputConfig } from '../config/valueTypeConfig.js';
  */
 export class EntryFormComponent extends WebComponent {
     private images: string[] = [];
+    private links: string[] = [];
     private location: { latitude: number; longitude: number; name?: string } | null = null;
     private hasUnsavedChanges: boolean = false;
 
@@ -73,6 +74,14 @@ export class EntryFormComponent extends WebComponent {
                 <input type="file" id="image-upload" accept="image/*" style="display: none;" multiple>
                 <div id="image-preview" class="image-preview"></div>
 
+                <div id="link-input-container" class="link-input-container" style="display: none;">
+                    <input type="url" id="link-input" class="link-input" placeholder="https://example.com" pattern="https?://.+" />
+                    <button type="button" id="add-link-btn-action" class="btn-insert-link">Add</button>
+                    <button type="button" id="cancel-link-btn" class="btn-cancel-link">×</button>
+                </div>
+
+                <div id="links-display" class="links-display"></div>
+
                 <div id="location-display" class="location-display" style="display: none;">
                     <span class="location-icon">📍</span>
                     <span id="location-text" class="location-text"></span>
@@ -83,12 +92,37 @@ export class EntryFormComponent extends WebComponent {
                     <button type="submit" class="btn btn-primary">Log Entry</button>
                     <div class="action-menu-buttons">
                         <div style="position: relative;">
-                            <button type="button" id="image-menu-btn" class="btn-action-menu" title="Add images">📎</button>
+                            <button type="button" id="image-menu-btn" class="btn-action-menu" title="Add images">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                                    <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                                    <polyline points="21 15 16 10 5 21"></polyline>
+                                </svg>
+                            </button>
                             <div id="image-menu" class="image-dropdown-menu" style="display: none;">
-                                <div class="context-menu-item" id="upload-image-menu-item">📁 Upload Image</div>
-                                <div class="context-menu-item" id="capture-image-menu-item">📷 Take Photo</div>
+                                <div class="context-menu-item" id="upload-image-menu-item">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                        <polyline points="17 8 12 3 7 8"></polyline>
+                                        <line x1="12" y1="3" x2="12" y2="15"></line>
+                                    </svg>
+                                    <span>Upload Image</span>
+                                </div>
+                                <div class="context-menu-item" id="capture-image-menu-item">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+                                        <circle cx="12" cy="13" r="4"></circle>
+                                    </svg>
+                                    <span>Take Photo</span>
+                                </div>
                             </div>
                         </div>
+                        <button type="button" id="add-link-btn" class="btn-action-menu" title="Add link to notes">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
+                                <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
+                            </svg>
+                        </button>
                         <button type="button" id="location-btn" class="btn-action-menu" title="Add location">📍</button>
                     </div>
                 </div>
@@ -254,6 +288,11 @@ export class EntryFormComponent extends WebComponent {
         const fileInput = this.querySelector('#image-upload') as HTMLInputElement;
         const zenModeBtn = this.querySelector('#zen-mode-btn') as HTMLButtonElement;
         const zenModeClose = this.querySelector('#zen-mode-close') as HTMLButtonElement;
+        const addLinkBtn = this.querySelector('#add-link-btn') as HTMLButtonElement;
+        const linkInputContainer = this.querySelector('#link-input-container') as HTMLElement;
+        const linkInput = this.querySelector('#link-input') as HTMLInputElement;
+        const addLinkBtnAction = this.querySelector('#add-link-btn-action') as HTMLButtonElement;
+        const cancelLinkBtn = this.querySelector('#cancel-link-btn') as HTMLButtonElement;
         const locationBtn = this.querySelector('#location-btn') as HTMLButtonElement;
         const removeLocationBtn = this.querySelector('#remove-location-btn') as HTMLButtonElement;
 
@@ -379,6 +418,31 @@ export class EntryFormComponent extends WebComponent {
 
         if (fileInput) {
             fileInput.addEventListener('change', (e) => this.handleImageUpload(e));
+        }
+
+        if (addLinkBtn && linkInputContainer) {
+            addLinkBtn.addEventListener('click', () => this.showLinkInput());
+        }
+
+        if (addLinkBtnAction && linkInput) {
+            addLinkBtnAction.addEventListener('click', () => this.addLink(linkInput.value));
+        }
+
+        if (cancelLinkBtn && linkInputContainer) {
+            cancelLinkBtn.addEventListener('click', () => this.hideLinkInput());
+        }
+
+        if (linkInput) {
+            // Handle Enter key to add link
+            linkInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    this.addLink(linkInput.value);
+                }
+                if (e.key === 'Escape') {
+                    this.hideLinkInput();
+                }
+            });
         }
 
         if (locationBtn) {
@@ -691,6 +755,90 @@ export class EntryFormComponent extends WebComponent {
         this.renderLocationDisplay();
     }
 
+    private showLinkInput(): void {
+        const linkInputContainer = this.querySelector('#link-input-container') as HTMLElement;
+        const linkInput = this.querySelector('#link-input') as HTMLInputElement;
+
+        if (linkInputContainer && linkInput) {
+            linkInputContainer.style.display = 'flex';
+            linkInput.value = '';
+            linkInput.focus();
+        }
+    }
+
+    private hideLinkInput(): void {
+        const linkInputContainer = this.querySelector('#link-input-container') as HTMLElement;
+        const linkInput = this.querySelector('#link-input') as HTMLInputElement;
+
+        if (linkInputContainer && linkInput) {
+            linkInputContainer.style.display = 'none';
+            linkInput.value = '';
+        }
+    }
+
+    private addLink(url: string): void {
+        const linkInput = this.querySelector('#link-input') as HTMLInputElement;
+
+        const trimmedUrl = url?.trim() || '';
+
+        // Check if empty
+        if (!trimmedUrl) {
+            alert('Please enter a URL');
+            return;
+        }
+
+        // Check HTML5 validity
+        if (linkInput && !linkInput.checkValidity()) {
+            linkInput.reportValidity();
+            return;
+        }
+
+        // Add the URL to links array
+        this.links.push(trimmedUrl);
+
+        // Mark as having unsaved changes
+        this.hasUnsavedChanges = true;
+
+        // Render the links display
+        this.renderLinksDisplay();
+
+        // Hide the link input
+        this.hideLinkInput();
+    }
+
+    private removeLink(index: number): void {
+        this.links.splice(index, 1);
+        this.hasUnsavedChanges = true;
+        this.renderLinksDisplay();
+    }
+
+    private renderLinksDisplay(): void {
+        const linksDisplay = this.querySelector('#links-display');
+        if (!linksDisplay) return;
+
+        if (this.links.length === 0) {
+            linksDisplay.innerHTML = '';
+            return;
+        }
+
+        const linksHtml = this.links.map((link, index) => `
+            <div class="link-item">
+                <a href="${link}" target="_blank" rel="noopener noreferrer" class="link-url">${link}</a>
+                <button type="button" class="btn-remove-link" data-index="${index}">×</button>
+            </div>
+        `).join('');
+
+        linksDisplay.innerHTML = `<div class="links-container">${linksHtml}</div>`;
+
+        // Attach remove handlers
+        linksDisplay.querySelectorAll('.btn-remove-link').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const index = parseInt((e.target as HTMLElement).dataset.index || '0');
+                this.removeLink(index);
+            });
+        });
+    }
+
     private isUrl(text: string): boolean {
         // Check if it starts with www.
         if (text.startsWith('www.')) {
@@ -1000,6 +1148,11 @@ export class EntryFormComponent extends WebComponent {
                 entry.images = [...this.images];
             }
 
+            // Add links if any
+            if (this.links.length > 0) {
+                entry.links = [...this.links];
+            }
+
             // Collect property values
             if (entity.properties && entity.properties.length > 0) {
                 const propertyValues: Record<string, string | number | boolean> = {};
@@ -1020,8 +1173,8 @@ export class EntryFormComponent extends WebComponent {
 
             this.store.addEntry(entry);
 
-            // Reset unsaved changes flag after successful submit
-            this.hasUnsavedChanges = false;
+            // Reset form state after successful submit
+            this.resetFormState();
 
             // Process URLs asynchronously
             const notesValue = (this.querySelector('#entry-notes') as HTMLTextAreaElement).value;
@@ -1051,6 +1204,16 @@ export class EntryFormComponent extends WebComponent {
             const message = error instanceof Error ? error.message : 'Unknown error';
             alert(`Error logging entry: ${message}`);
         }
+    }
+
+    private resetFormState(): void {
+        this.images = [];
+        this.links = [];
+        this.location = null;
+        this.hasUnsavedChanges = false;
+        this.renderImagePreview();
+        this.renderLinksDisplay();
+        this.renderLocationDisplay();
     }
 
     /**
