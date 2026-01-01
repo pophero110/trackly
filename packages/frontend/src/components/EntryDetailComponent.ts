@@ -75,6 +75,31 @@ export class EntryDetailComponent extends WebComponent {
             </div>
         `;
 
+    // Remove old modal if exists
+    const oldModal = document.getElementById('image-preview-modal');
+    if (oldModal) {
+      oldModal.remove();
+    }
+
+    // Add modal to document body
+    if (entry.images && entry.images.length > 0) {
+      const modalHtml = `
+            <div class="image-preview-modal" id="image-preview-modal" style="display: none;">
+                <div class="image-preview-overlay"></div>
+                <button class="image-preview-close" id="image-preview-close">×</button>
+                ${entry.images.length > 1 ? `
+                    <button class="image-preview-nav image-preview-prev" id="image-preview-prev">‹</button>
+                    <button class="image-preview-nav image-preview-next" id="image-preview-next">›</button>
+                ` : ''}
+                <div class="image-preview-container">
+                    <img class="image-preview-img" id="image-preview-img" src="" alt="Preview" />
+                    ${entry.images.length > 1 ? '<div class="image-preview-counter" id="image-preview-counter"></div>' : ''}
+                </div>
+            </div>
+        `;
+      document.body.insertAdjacentHTML('beforeend', modalHtml);
+    }
+
     this.attachEventHandlers();
   }
 
@@ -187,8 +212,8 @@ export class EntryDetailComponent extends WebComponent {
     // Images
     const imagesHtml = entry.images && entry.images.length > 0
       ? `<div class="entry-images-detail">
-            ${entry.images.map(img => `
-                <img src="${escapeHtml(img)}" alt="Entry image" class="entry-image-detail" />
+            ${entry.images.map((img, index) => `
+                <img src="${escapeHtml(img)}" alt="Entry image" class="entry-image-detail" data-image-index="${index}" style="cursor: pointer;" />
             `).join('')}
          </div>`
       : '';
@@ -352,6 +377,7 @@ export class EntryDetailComponent extends WebComponent {
     this.attachMenuHandlers();
     this.attachHashtagHandlers();
     this.attachEntityChipHandler();
+    this.attachImagePreviewHandlers();
   }
 
   private attachMenuHandlers(): void {
@@ -470,5 +496,101 @@ export class EntryDetailComponent extends WebComponent {
         }
       });
     }
+  }
+
+  private attachImagePreviewHandlers(): void {
+    const images = this.querySelectorAll('.entry-image-detail');
+    const modal = document.getElementById('image-preview-modal') as HTMLElement;
+    const modalImg = document.getElementById('image-preview-img') as HTMLImageElement;
+    const closeBtn = document.getElementById('image-preview-close');
+    const prevBtn = document.getElementById('image-preview-prev');
+    const nextBtn = document.getElementById('image-preview-next');
+    const counter = document.getElementById('image-preview-counter') as HTMLElement;
+    const overlay = document.querySelector('.image-preview-overlay') as HTMLElement;
+
+    // Get current entry
+    if (!this.entryId) return;
+    const entry = this.store.getEntryById(this.entryId);
+    if (!entry || !entry.images || entry.images.length === 0) return;
+
+    let currentIndex = 0;
+    const totalImages = entry.images.length;
+
+    const showImage = (index: number) => {
+      currentIndex = index;
+      if (modalImg && entry && entry.images) {
+        modalImg.src = entry.images[index];
+      }
+      if (counter && totalImages > 1) {
+        counter.textContent = `${index + 1} / ${totalImages}`;
+      }
+    };
+
+    const openModal = (index: number) => {
+      if (modal) {
+        modal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+        showImage(index);
+      }
+    };
+
+    const closeModal = () => {
+      if (modal) {
+        modal.style.display = 'none';
+        document.body.style.overflow = '';
+      }
+    };
+
+    // Attach click handlers to images
+    images.forEach((img) => {
+      img.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        const index = parseInt((img as HTMLElement).dataset.imageIndex || '0');
+        openModal(index);
+      });
+    });
+
+    // Close button
+    if (closeBtn) {
+      closeBtn.addEventListener('click', closeModal);
+    }
+
+    // Overlay click to close
+    if (overlay) {
+      overlay.addEventListener('click', closeModal);
+    }
+
+    // Navigation buttons
+    if (prevBtn) {
+      prevBtn.addEventListener('click', () => {
+        const newIndex = currentIndex > 0 ? currentIndex - 1 : totalImages - 1;
+        showImage(newIndex);
+      });
+    }
+
+    if (nextBtn) {
+      nextBtn.addEventListener('click', () => {
+        const newIndex = currentIndex < totalImages - 1 ? currentIndex + 1 : 0;
+        showImage(newIndex);
+      });
+    }
+
+    // Keyboard navigation
+    const handleKeyPress = (e: KeyboardEvent) => {
+      if (modal && modal.style.display === 'flex') {
+        if (e.key === 'Escape') {
+          closeModal();
+        } else if (e.key === 'ArrowLeft') {
+          const newIndex = currentIndex > 0 ? currentIndex - 1 : totalImages - 1;
+          showImage(newIndex);
+        } else if (e.key === 'ArrowRight') {
+          const newIndex = currentIndex < totalImages - 1 ? currentIndex + 1 : 0;
+          showImage(newIndex);
+        }
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyPress);
   }
 }
