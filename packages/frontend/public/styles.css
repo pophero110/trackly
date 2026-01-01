@@ -1928,8 +1928,8 @@ form {
   position: relative;
 }
 
-/* Fade-out gradient for truncated content */
-.entry-content::after {
+/* Fade-out gradient only when content is truncated */
+.entry-content.is-truncated::after {
   content: '';
   position: absolute;
   bottom: 0;

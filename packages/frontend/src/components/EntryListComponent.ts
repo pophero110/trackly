@@ -315,6 +315,20 @@ export class EntryListComponent extends WebComponent {
         this.attachHashtagClearHandler();
         this.attachEntityChipHandlers();
         this.attachEntityPageMenuHandlers();
+        this.detectTruncatedContent();
+    }
+
+    private detectTruncatedContent(): void {
+        // Check each entry-content div to see if it's truncated
+        this.querySelectorAll('.entry-content').forEach(contentEl => {
+            const element = contentEl as HTMLElement;
+            // Check if content height exceeds max-height
+            if (element.scrollHeight > element.clientHeight) {
+                element.classList.add('is-truncated');
+            } else {
+                element.classList.remove('is-truncated');
+            }
+        });
     }
 
     private renderEntryCard(entry: Entry): string {
