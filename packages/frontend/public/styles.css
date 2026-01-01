@@ -2065,6 +2065,13 @@ form {
   border-radius: var(--radius);
 }
 
+/* Datetime input specific styles for better mobile UX */
+input[type="datetime-local"] {
+  min-height: 44px;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
   body {
@@ -2077,6 +2084,13 @@ form {
 
   header {
     padding: 20px 16px 12px;
+  }
+
+  /* Better touch targets for datetime inputs on mobile */
+  input[type="datetime-local"] {
+    min-height: 48px;
+    padding: 12px;
+    font-size: 16px;
   }
 
   header h1 {
@@ -2179,6 +2193,13 @@ form {
 
   form {
     padding: 16px;
+  }
+
+  /* Optimize datetime input for small mobile screens */
+  input[type="datetime-local"] {
+    min-height: 52px;
+    padding: 14px 12px;
+    font-size: 16px;
   }
 
   .sort-select {
