@@ -1148,9 +1148,13 @@ export class EntryFormComponent extends WebComponent {
                 entry.images = [...this.images];
             }
 
-            // Add links if any
-            if (this.links.length > 0) {
-                entry.links = [...this.links];
+            // Extract URLs from notes and combine with manually added links
+            const notesUrls = extractUrls(formData.notes || '');
+            const allLinks = [...this.links, ...notesUrls];
+            // Remove duplicates
+            const uniqueLinks = Array.from(new Set(allLinks));
+            if (uniqueLinks.length > 0) {
+                entry.links = uniqueLinks;
             }
 
             // Collect property values

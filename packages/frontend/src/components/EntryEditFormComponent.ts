@@ -1100,13 +1100,20 @@ export class EntryEditFormComponent extends WebComponent {
                 });
             }
 
+            // Extract URLs from notes and combine with manually added links
+            const notesUrls = extractUrls(notes || '');
+            const manualLinks = this.entry.links || [];
+            const allLinks = [...manualLinks, ...notesUrls];
+            // Remove duplicates
+            const uniqueLinks = Array.from(new Set(allLinks));
+
             // Update the entry (include entityId and entityName if changed)
             const updates: any = {
                 timestamp: timestamp,
                 value: value,
                 notes: notes,
                 images: this.images, // Send empty array to remove all images
-                links: this.entry.links || [], // Include links from entry
+                links: uniqueLinks, // Include all unique links
                 propertyValues: propertyValues,
                 latitude: this.location?.latitude,
                 longitude: this.location?.longitude,
