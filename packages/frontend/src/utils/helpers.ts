@@ -19,14 +19,14 @@ export function formatDate(isoString: string): string {
     const days = Math.floor(diff / (1000 * 60 * 60 * 24));
 
     if (days === 0) {
-        return 'Today, ' + date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+        return 'Today, ' + date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
     } else if (days === 1) {
-        return 'Yesterday, ' + date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+        return 'Yesterday, ' + date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
     } else if (days === -1) {
-        return 'Tomorrow, ' + date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+        return 'Tomorrow, ' + date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
     } else if (days < 0) {
         // Future date
-        return 'In ' + Math.abs(days) + ' days, ' + date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+        return 'In ' + Math.abs(days) + ' days, ' + date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
     } else if (days < 7) {
         return `${days} days ago`;
     } else {
@@ -35,8 +35,7 @@ export function formatDate(isoString: string): string {
             month: 'short',
             day: 'numeric',
             hour: '2-digit',
-            minute: '2-digit',
-            second: '2-digit'
+            minute: '2-digit'
         });
     }
 }
