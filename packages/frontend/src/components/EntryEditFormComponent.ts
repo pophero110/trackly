@@ -12,6 +12,7 @@ export class EntryEditFormComponent extends WebComponent {
     private entryId: string | null = null;
     private entry: Entry | null = null;
     private images: string[] = [];
+    private links: string[] = [];
     private location: { latitude: number; longitude: number; name?: string } | null = null;
     private hasUnsavedChanges: boolean = false;
 
@@ -132,6 +133,8 @@ export class EntryEditFormComponent extends WebComponent {
                     <button type="button" id="add-link-btn-action" class="btn-insert-link">Add</button>
                     <button type="button" id="cancel-link-btn" class="btn-cancel-link">×</button>
                 </div>
+
+                ${this.renderLinksDisplay()}
 
                 <div id="location-display" class="location-display" style="display: ${this.location ? 'flex' : 'none'};">
                     <span class="location-icon">📍</span>
@@ -443,6 +446,14 @@ export class EntryEditFormComponent extends WebComponent {
                 }
             });
         }
+
+        // Attach remove link handlers
+        this.querySelectorAll('.btn-remove-link').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const index = parseInt((e.target as HTMLElement).dataset.index || '0');
+                this.removeLink(index);
+            });
+        });
 
         // Tab key handling for note textareas
         const notesTextarea = this.querySelector('#entry-notes') as HTMLTextAreaElement;
@@ -1095,6 +1106,7 @@ export class EntryEditFormComponent extends WebComponent {
                 value: value,
                 notes: notes,
                 images: this.images, // Send empty array to remove all images
+                links: this.entry.links || [], // Include links from entry
                 propertyValues: propertyValues,
                 latitude: this.location?.latitude,
                 longitude: this.location?.longitude,
@@ -1131,5 +1143,84 @@ export class EntryEditFormComponent extends WebComponent {
             const message = error instanceof Error ? error.message : 'Unknown error';
             alert(`Error updating entry: ${message}`);
         }
+    }
+
+    private showLinkInput(): void {
+        const linkInputContainer = this.querySelector('#link-input-container') as HTMLElement;
+        const linkInput = this.querySelector('#link-input') as HTMLInputElement;
+
+        if (linkInputContainer && linkInput) {
+            linkInputContainer.style.display = 'flex';
+            linkInput.value = '';
+            linkInput.focus();
+        }
+    }
+
+    private hideLinkInput(): void {
+        const linkInputContainer = this.querySelector('#link-input-container') as HTMLElement;
+        const linkInput = this.querySelector('#link-input') as HTMLInputElement;
+
+        if (linkInputContainer && linkInput) {
+            linkInputContainer.style.display = 'none';
+            linkInput.value = '';
+        }
+    }
+
+    private addLink(url: string): void {
+        const linkInput = this.querySelector('#link-input') as HTMLInputElement;
+
+        const trimmedUrl = url?.trim() || '';
+
+        // Check if empty
+        if (!trimmedUrl) {
+            alert('Please enter a URL');
+            return;
+        }
+
+        // Check HTML5 validity
+        if (linkInput && !linkInput.checkValidity()) {
+            linkInput.reportValidity();
+            return;
+        }
+
+        // Add the URL to entry's links array
+        if (!this.entry.links) {
+            this.entry.links = [];
+        }
+        this.entry.links.push(trimmedUrl);
+
+        // Mark as having unsaved changes
+        this.hasUnsavedChanges = true;
+
+        // Re-render to show the new link
+        this.render();
+        this.attachEventListeners();
+
+        // Hide the link input
+        this.hideLinkInput();
+    }
+
+    private removeLink(index: number): void {
+        if (this.entry.links) {
+            this.entry.links.splice(index, 1);
+            this.hasUnsavedChanges = true;
+            this.render();
+            this.attachEventListeners();
+        }
+    }
+
+    private renderLinksDisplay(): string {
+        if (!this.entry.links || this.entry.links.length === 0) {
+            return '';
+        }
+
+        const linksHtml = this.entry.links.map((link, index) => `
+            <div class="link-item">
+                <a href="${link}" target="_blank" rel="noopener noreferrer" class="link-url">${link}</a>
+                <button type="button" class="btn-remove-link" data-index="${index}">×</button>
+            </div>
+        `).join('');
+
+        return `<div class="links-display"><div class="links-container">${linksHtml}</div></div>`;
     }
 }
