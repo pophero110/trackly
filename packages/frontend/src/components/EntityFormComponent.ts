@@ -31,22 +31,14 @@ export class EntityFormComponent extends WebComponent {
     }
 
     render(): void {
-        // For edit mode, combine name with hashtags
-        let nameValue = '';
-        if (this.entity) {
-            nameValue = this.entity.categories.length > 0
-                ? `${this.entity.name} ${this.entity.categories.map(c => `#${c}`).join(' ')}`
-                : this.entity.name;
-        }
-
+        const nameValue = this.entity ? this.entity.name : '';
         const typeValue = this.entity ? this.entity.type : '';
 
         this.innerHTML = `
             <form id="entity-edit-form">
                 <div class="form-group">
                     <label for="entity-name">Name *</label>
-                    <input type="text" id="entity-name" value="${nameValue}" placeholder="e.g., Morning Run #health #fitness" required>
-                    <small style="color: var(--text-muted); font-size: 0.75rem; margin-top: 4px; display: block;">Use #hashtags to add categories</small>
+                    <input type="text" id="entity-name" value="${nameValue}" placeholder="e.g., Morning Run" required>
                 </div>
 
                 <div class="form-group">
@@ -65,6 +57,18 @@ export class EntityFormComponent extends WebComponent {
                 </div>
 
                 <div class="form-group">
+                    <label for="category-input">Categories</label>
+                    <div id="categories-container" style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 8px;">
+                        ${this.renderCategoryChips()}
+                    </div>
+                    <div style="display: flex; gap: 8px;">
+                        <input type="text" id="category-input" placeholder="Add category..." style="flex: 1;">
+                        <button type="button" class="btn btn-secondary" id="add-category-btn">Add</button>
+                    </div>
+                    <small style="color: var(--text-muted); font-size: 0.75rem; margin-top: 4px; display: block;">Optional tags to organize entities</small>
+                </div>
+
+                <div class="form-group">
                     <label>Custom Properties</label>
                     <div id="properties-list">
                         ${this.renderPropertiesList()}
@@ -75,6 +79,19 @@ export class EntityFormComponent extends WebComponent {
                 <button type="submit" class="btn btn-primary">Update Entity</button>
             </form>
         `;
+    }
+
+    private renderCategoryChips(): string {
+        if (!this.entity || this.entity.categories.length === 0) {
+            return '<span style="color: var(--text-muted); font-size: 0.875rem;">No categories added yet.</span>';
+        }
+
+        return this.entity.categories.map(cat => `
+            <span class="category-chip" data-category="${cat}">
+                ${cat}
+                <button type="button" class="remove-category-btn" data-category="${cat}">×</button>
+            </span>
+        `).join('');
     }
 
     private renderPropertiesList(): string {
@@ -102,6 +119,8 @@ export class EntityFormComponent extends WebComponent {
     protected attachEventListeners(): void {
         const form = this.querySelector('#entity-edit-form') as HTMLFormElement;
         const addPropertyBtn = this.querySelector('#add-property-btn') as HTMLButtonElement;
+        const addCategoryBtn = this.querySelector('#add-category-btn') as HTMLButtonElement;
+        const categoryInput = this.querySelector('#category-input') as HTMLInputElement;
 
         if (form) {
             form.addEventListener('submit', (e) => this.handleSubmit(e));
@@ -119,6 +138,27 @@ export class EntityFormComponent extends WebComponent {
             addPropertyBtn.addEventListener('click', () => this.handleAddProperty());
         }
 
+        // Category management
+        if (addCategoryBtn && categoryInput) {
+            addCategoryBtn.addEventListener('click', () => this.handleAddCategory());
+            categoryInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    this.handleAddCategory();
+                }
+            });
+        }
+
+        // Attach remove category handlers
+        this.querySelectorAll('.remove-category-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const category = (e.target as HTMLElement).dataset.category;
+                if (category) {
+                    this.handleRemoveCategory(category);
+                }
+            });
+        });
+
         // Attach edit handlers
         this.querySelectorAll('.btn-edit-property').forEach(btn => {
             btn.addEventListener('click', (e) => {
@@ -134,6 +174,49 @@ export class EntityFormComponent extends WebComponent {
                 this.handleRemoveProperty(index);
             });
         });
+    }
+
+    private handleAddCategory(): void {
+        const categoryInput = this.querySelector('#category-input') as HTMLInputElement;
+        const category = categoryInput.value.trim();
+
+        if (category && this.entity) {
+            // Don't add duplicate categories
+            if (!this.entity.categories.includes(category)) {
+                this.entity.categories.push(category);
+                this.hasUnsavedChanges = true;
+                categoryInput.value = '';
+                this.updateCategoriesDisplay();
+            }
+        }
+    }
+
+    private handleRemoveCategory(category: string): void {
+        if (this.entity) {
+            const index = this.entity.categories.indexOf(category);
+            if (index > -1) {
+                this.entity.categories.splice(index, 1);
+                this.hasUnsavedChanges = true;
+                this.updateCategoriesDisplay();
+            }
+        }
+    }
+
+    private updateCategoriesDisplay(): void {
+        const container = this.querySelector('#categories-container');
+        if (container) {
+            container.innerHTML = this.renderCategoryChips();
+
+            // Re-attach remove handlers
+            container.querySelectorAll('.remove-category-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const category = (e.target as HTMLElement).dataset.category;
+                    if (category) {
+                        this.handleRemoveCategory(category);
+                    }
+                });
+            });
+        }
     }
 
     private handleAddProperty(): void {
@@ -484,33 +567,16 @@ export class EntityFormComponent extends WebComponent {
         e.preventDefault();
 
         try {
-            const nameInput = this.querySelector('#entity-name') as HTMLInputElement;
-            let name = nameInput.value;
-
-            // Extract hashtags (words starting with #)
-            const hashtagRegex = /#(\w+)/g;
-            const hashtags: string[] = [];
-            let match;
-
-            while ((match = hashtagRegex.exec(name)) !== null) {
-                hashtags.push(match[1]); // Extract without the # symbol
-            }
-
-            // Remove hashtags from name
-            name = name.replace(/#\w+/g, '').trim();
-
-            const formData: EntityFormData = {
-                name: name,
-                type: (this.querySelector('#entity-type') as HTMLSelectElement).value as EntityType,
-                categories: hashtags.join(', ')
-            };
+            const name = (this.querySelector('#entity-name') as HTMLInputElement).value.trim();
+            const type = (this.querySelector('#entity-type') as HTMLSelectElement).value as EntityType;
+            const categories = this.entity ? this.entity.categories : [];
 
             if (this.entityId) {
                 // Update existing entity
                 this.store.updateEntity(this.entityId, {
-                    name: formData.name,
-                    type: formData.type,
-                    categories: hashtags,
+                    name,
+                    type,
+                    categories,
                     properties: this.properties
                 });
             }
