@@ -1504,12 +1504,6 @@ form {
   color: #dc2626;
 }
 
-/* Entry List */
-.entries-list {
-  display: grid;
-  gap: 12px;
-}
-
 /* Entry List Container - Constrain width for readability */
 .entries-list {
   display: flex;
