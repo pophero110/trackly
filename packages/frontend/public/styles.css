@@ -248,12 +248,7 @@ header h1 {
   border-bottom: 1px solid var(--border);
   padding: 20px 24px;
   margin: -24px -24px 24px -24px;
-  position: sticky;
-  top: -1px;
-  z-index: 100;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-  backdrop-filter: blur(8px);
-  background: rgba(var(--card-background-rgb, 255, 255, 255), 0.95);
 }
 
 .section-header-content {
@@ -1104,6 +1099,9 @@ form {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
   gap: 16px;
+  max-height: calc(100vh - 300px);
+  overflow-y: auto;
+  padding-right: 8px; /* Space for scrollbar */
 }
 
 /* Entity Card - Simplified */
@@ -1519,6 +1517,9 @@ form {
   gap: 12px;
   max-width: 800px;
   margin: 0 auto;
+  max-height: calc(100vh - 300px);
+  overflow-y: auto;
+  padding-right: 8px; /* Space for scrollbar */
 }
 
 /* Entry Card - Modern & Clean */
