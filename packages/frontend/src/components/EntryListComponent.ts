@@ -283,7 +283,7 @@ export class EntryListComponent extends WebComponent {
                 <div class="section-header-strong">
                     <div class="section-header-content">
                         <div class="section-header-text">
-                            <h2 class="section-title">${headerText} ${entityType}</h2>
+                            <h2 class="section-title">${headerText} ${entityTypeAndCategories}</h2>
                             <p class="section-subtitle">${subtitle}</p>
                         </div>
                         <div class="section-header-actions">
