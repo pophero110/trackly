@@ -100,6 +100,10 @@ export class EntityGridComponent extends WebComponent {
         const sortedEntries = entries.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
         const mostRecentEntry = sortedEntries.length > 0 ? sortedEntries[0] : null;
 
+        const categoryChips = entity.categories.length > 0
+            ? entity.categories.map(cat => `<span class="entity-category-chip">${escapeHtml(cat)}</span>`).join('')
+            : '';
+
         return `
             <div class="entity-card ${isSelected ? 'selected' : ''}" data-entity-id="${entity.id}">
                 <div class="entity-metadata">
@@ -107,9 +111,10 @@ export class EntityGridComponent extends WebComponent {
                         <h3>${escapeHtml(entity.name)}</h3>
                         <button class="entity-menu-btn" data-entity-id="${entity.id}" data-action="menu">⋮</button>
                     </div>
-                    <span class="entity-type ${entity.type.toLowerCase()}">
-                        ${entity.type}${entity.categories.length > 0 ? `[${entity.categories.map(cat => escapeHtml(cat)).join(', ')}]` : ''}
-                    </span>
+                    <div class="entity-type-row">
+                        <span class="entity-type ${entity.type.toLowerCase()}">${entity.type}</span>
+                        ${categoryChips}
+                    </div>
                 </div>
                 ${mostRecentEntry ? `
                     <div class="entity-recent-entry">

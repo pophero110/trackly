@@ -1215,6 +1215,27 @@ form {
   margin: 0;
 }
 
+/* Entity type row with category chips */
+.entity-type-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+/* Entity category chip on entity cards */
+.entity-category-chip {
+  display: inline-block;
+  padding: 2px 8px;
+  background: rgba(var(--primary-rgb, 59, 130, 246), 0.1);
+  color: var(--primary);
+  border: 1px solid rgba(var(--primary-rgb, 59, 130, 246), 0.2);
+  border-radius: 10px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
 /* Hashtag Filter Badge */
 .hashtag-filter-badge {
   display: inline-flex;
