@@ -43,7 +43,7 @@ p,
   background: var(--background);
   border-radius: var(--radius);
   box-shadow: var(--shadow-lg);
-  overflow: hidden;
+  overflow: clip; /* Use clip instead of hidden to preserve border-radius while allowing sticky */
 }
 
 /* Header - Minimalist */
@@ -249,9 +249,11 @@ header h1 {
   padding: 20px 24px;
   margin: -24px -24px 24px -24px;
   position: sticky;
-  top: 0;
-  z-index: 10;
+  top: -1px;
+  z-index: 100;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  backdrop-filter: blur(8px);
+  background: rgba(var(--card-background-rgb, 255, 255, 255), 0.95);
 }
 
 .section-header-content {
