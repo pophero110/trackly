@@ -1148,7 +1148,6 @@ form {
   transition: var(--transition);
   cursor: pointer;
   overflow: hidden;
-  height: 200px;
 }
 
 .entity-card:hover {
@@ -1428,10 +1427,6 @@ form {
   position: relative;
 }
 
-.entity-properties-compact {
-  margin-top: 8px;
-}
-
 .property-value-item-compact {
   display: flex;
   gap: 6px;
@@ -1456,7 +1451,6 @@ form {
 .recent-entry-timestamp {
   font-size: 0.875rem;
   color: var(--text-muted);
-  margin-bottom: 4px;
 }
 
 .recent-entry-value {
@@ -1571,7 +1565,6 @@ form {
   overflow: hidden;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
   cursor: pointer;
-  height: 114px;
   display: flex;
   flex-direction: column;
 }
