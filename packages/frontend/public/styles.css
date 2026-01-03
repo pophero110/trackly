@@ -2104,7 +2104,7 @@ form {
   padding: 40px 20px;
   color: var(--text-muted);
   font-size: 0.875rem;
-  background: var(--background);
+  background: transparent;
 }
 
 .loading-state {

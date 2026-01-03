@@ -51,10 +51,32 @@ export class EntryEditFormComponent extends WebComponent {
     setEntry(entryId: string): void {
         this.entryId = entryId;
 
-        // Show loading state if data hasn't loaded yet
-        if (!this.store.getIsLoaded()) {
-            this.innerHTML = this.renderLoadingState('Loading entry...');
-            // The connectedCallback subscription will handle rendering when data loads
+        // Show loading state and wait for data if not loaded yet
+        if (this.showLoadingUntilDataLoaded('Loading entry...', () => {
+            const entries = this.store.getEntries();
+            const foundEntry = entries.find(e => e.id === entryId);
+
+            if (foundEntry) {
+                this.entry = foundEntry;
+                this.images = foundEntry.images ? [...foundEntry.images] : [];
+                this.linkTitles = foundEntry.linkTitles ? { ...foundEntry.linkTitles } : {};
+                // Initialize location from entry
+                if (foundEntry.latitude !== undefined && foundEntry.longitude !== undefined) {
+                    this.location = {
+                        latitude: foundEntry.latitude,
+                        longitude: foundEntry.longitude,
+                        name: foundEntry.locationName
+                    };
+                } else {
+                    this.location = null;
+                }
+                this.hasUnsavedChanges = false;
+                this.render();
+                this.attachEventListeners();
+            } else {
+                this.innerHTML = '<p>Entry not found</p>';
+            }
+        })) {
             return;
         }
 

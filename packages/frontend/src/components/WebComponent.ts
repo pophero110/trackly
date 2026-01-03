@@ -48,4 +48,24 @@ export abstract class WebComponent extends HTMLElement {
             </div>
         `;
     }
+
+    /**
+     * Show loading state and wait for data to load, then execute callback
+     * @param message - Loading message to display
+     * @param onDataLoaded - Callback to execute once data is loaded
+     * @returns true if showing loading state (caller should return early)
+     */
+    protected showLoadingUntilDataLoaded(message: string, onDataLoaded: () => void): boolean {
+        if (!this.store.getIsLoaded()) {
+            this.innerHTML = this.renderLoadingState(message);
+            // Subscribe to store to execute callback when data loads
+            this.unsubscribe = this.store.subscribe(() => {
+                if (this.store.getIsLoaded()) {
+                    onDataLoaded();
+                }
+            });
+            return true;
+        }
+        return false;
+    }
 }
