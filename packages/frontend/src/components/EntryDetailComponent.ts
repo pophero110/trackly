@@ -141,6 +141,7 @@ export class EntryDetailComponent extends WebComponent {
             </div>
             <div class="entry-context-menu" id="detail-menu" style="display: none;">
                 <div class="context-menu-item" data-action="edit">Edit</div>
+                ${entry.notes ? `<div class="context-menu-item" data-action="copy-notes">Copy Notes</div>` : ''}
                 <div class="context-menu-item" data-action="archive">Archive</div>
                 <div class="context-menu-item danger" data-action="delete">Delete</div>
             </div>
@@ -399,6 +400,8 @@ export class EntryDetailComponent extends WebComponent {
 
         if (action === 'edit') {
           URLStateManager.openEditEntryPanel(this.entryId!);
+        } else if (action === 'copy-notes') {
+          this.handleCopyNotes();
         } else if (action === 'archive') {
           this.handleArchive();
         } else if (action === 'delete') {
@@ -469,6 +472,26 @@ export class EntryDetailComponent extends WebComponent {
     }).catch((error) => {
       console.error('Error archiving entry:', error);
       alert('Failed to archive entry. Please try again.');
+    });
+  }
+
+  private handleCopyNotes(): void {
+    const entry = this.store.getEntryById(this.entryId!);
+    if (!entry || !entry.notes) return;
+
+    navigator.clipboard.writeText(entry.notes).then(() => {
+      // Show temporary success feedback
+      const button = this.querySelector('[data-action="copy-notes"]') as HTMLElement;
+      if (button) {
+        const originalText = button.textContent;
+        button.textContent = '✓ Copied!';
+        setTimeout(() => {
+          button.textContent = originalText;
+        }, 1500);
+      }
+    }).catch((error) => {
+      console.error('Failed to copy notes:', error);
+      alert('Failed to copy notes to clipboard');
     });
   }
 
