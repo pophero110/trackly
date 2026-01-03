@@ -1126,8 +1126,8 @@ form {
   flex: 1;
   min-height: 0; /* Allow flex item to shrink */
   overflow-y: auto;
+  overflow-x: hidden;
   padding-right: 8px; /* Space for scrollbar */
-  align-content: start; /* Align grid items to top */
 }
 
 /* Entity Card - Simplified */
@@ -1539,8 +1539,8 @@ form {
   flex: 1;
   min-height: 0; /* Allow flex item to shrink */
   overflow-y: auto;
+  overflow-x: hidden;
   padding-right: 8px; /* Space for scrollbar */
-  align-content: start; /* Align grid items to top */
 }
 
 /* Entry Card - Modern & Clean */
