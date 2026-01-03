@@ -284,7 +284,7 @@ class TracklyApp {
             }
 
             if (entity) {
-                const formTemplate = document.querySelector('#entity-form-template');
+                const formTemplate = document.querySelector('#entity-edit-form-template');
                 if (formTemplate && !panel.getIsOpen()) {
                     const formClone = formTemplate.cloneNode(true) as HTMLElement;
                     formClone.removeAttribute('id');
@@ -359,7 +359,7 @@ class TracklyApp {
         customElements.define('app-tabs', AppTabs);
         customElements.define('modal-panel', ModalPanel);
         customElements.define('entity-create-form', EntityCreateFormComponent);
-        customElements.define('entity-form', EntityEditFormComponent);
+        customElements.define('entity-edit-form', EntityEditFormComponent);
         customElements.define('entity-list', EntityListComponent);
         customElements.define('entity-grid', EntityGridComponent);
         customElements.define('entry-form', EntryFormComponent);
