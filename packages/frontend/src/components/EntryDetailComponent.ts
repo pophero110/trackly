@@ -69,9 +69,11 @@ export class EntryDetailComponent extends WebComponent {
     const entity = this.store.getEntityById(entry.entityId);
 
     this.innerHTML = `
-            <div class="section entry-detail-page page-grid">
-                ${this.renderDetailHeader(entry, entity)}
-                ${this.renderDetailContent(entry, entity)}
+            <div class="section">
+                <div class="entry-detail-page page-grid">
+                    ${this.renderDetailHeader(entry, entity)}
+                    ${this.renderDetailContent(entry, entity)}
+                </div>
             </div>
         `;
 
@@ -193,9 +195,9 @@ export class EntryDetailComponent extends WebComponent {
       ? `<div class="entry-links-section">
             <ul class="entry-links-list">
                 ${entry.links.map(link => {
-                    // Use title if available, otherwise fall back to URL
-                    const displayText = entry.linkTitles?.[link] || link;
-                    return `
+        // Use title if available, otherwise fall back to URL
+        const displayText = entry.linkTitles?.[link] || link;
+        return `
                     <li class="entry-link-item">
                         <a href="${escapeHtml(link)}" target="_blank" rel="noopener noreferrer" class="entry-link-url" title="${escapeHtml(link)}">
                             ${escapeHtml(displayText)}

@@ -218,9 +218,9 @@ entry-detail {
 .page-grid {
   display: grid;
   grid-template-columns: minmax(0, 800px);
-  justify-content: center;
   gap: 16px;
   padding: 24px;
+  justify-content: center;
 }
 
 .scrollable-grid {
