@@ -1511,7 +1511,6 @@ form {
   gap: 12px;
   max-width: 800px;
   margin: 0 auto;
-  min-height: 200px; /* Ensure minimum height even with few entries */
   max-height: calc(100vh - 300px);
   overflow-y: auto;
   padding-right: 8px; /* Space for scrollbar */
@@ -1527,7 +1526,6 @@ form {
   overflow: hidden;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
   cursor: pointer;
-  min-height: 80px; /* Ensure card has minimum height */
   max-height: 400px;
   display: flex;
   flex-direction: column;
