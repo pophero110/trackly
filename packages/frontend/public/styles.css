@@ -1504,13 +1504,12 @@ form {
   color: #dc2626;
 }
 
-/* Entry List Container - Constrain width for readability */
+/* Entry List Container - Single column grid layout */
 .entries-list {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: minmax(0, 800px); /* Single column, max 800px for readability */
+  justify-content: center; /* Center the column */
   gap: 12px;
-  max-width: 800px;
-  margin: 0 auto;
   max-height: calc(100vh - 300px);
   overflow-y: auto;
   padding-right: 8px; /* Space for scrollbar */
