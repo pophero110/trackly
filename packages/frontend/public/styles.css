@@ -2942,7 +2942,6 @@ modal-panel:not(.active) .modal-dialog {
   color: var(--text-secondary);
   cursor: pointer;
   padding: 8px;
-  border-radius: var(--radius);
   transition: var(--transition);
   display: flex;
   align-items: center;
@@ -2950,7 +2949,6 @@ modal-panel:not(.active) .modal-dialog {
 }
 
 .btn-icon:hover {
-  background: var(--hover);
   color: var(--text-primary);
 }
 
