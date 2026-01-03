@@ -10,8 +10,17 @@ export function corsMiddleware(req: Request, res: Response, next: NextFunction) 
   ];
 
   const origin = req.headers.origin;
+  const isDevelopment = process.env.NODE_ENV !== 'production';
 
-  if (origin && allowedOrigins.includes(origin)) {
+  // Allow local network origins in development (e.g., accessing from phone on same network)
+  const isLocalNetworkOrigin = origin && (
+    origin.startsWith('http://192.168.') ||
+    origin.startsWith('http://10.') ||
+    origin.startsWith('http://172.') ||
+    allowedOrigins.includes(origin)
+  );
+
+  if (origin && (isDevelopment && isLocalNetworkOrigin || allowedOrigins.includes(origin))) {
     res.setHeader('Access-Control-Allow-Origin', origin);
   }
 
