@@ -1133,11 +1133,11 @@ form {
   gap: 16px;
   flex: 1 1 0; /* Grow, shrink, base 0 */
   min-height: 0; /* Allow flex item to shrink */
-  max-height: 100%; /* Constrain to parent height */
   overflow-y: auto;
   overflow-x: hidden;
   padding-right: 8px; /* Space for scrollbar */
   -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+  align-content: start; /* Align cards to top, allow natural height */
 }
 
 /* Entity Card - Simplified */
@@ -1548,11 +1548,11 @@ form {
   gap: 12px;
   flex: 1 1 0; /* Grow, shrink, base 0 */
   min-height: 0; /* Allow flex item to shrink */
-  max-height: 100%; /* Constrain to parent height */
   overflow-y: auto;
   overflow-x: hidden;
   padding-right: 8px; /* Space for scrollbar */
   -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+  align-content: start; /* Align cards to top, allow natural height */
 }
 
 /* Entry Card - Modern & Clean */
