@@ -4,7 +4,7 @@ import { URLStateManager } from './utils/urlState.js';
 import { AppTabs } from './components/AppTabs.js';
 import { ModalPanel } from './components/ModalPanel.js';
 import { EntityCreateFormComponent } from './components/EntityCreateFormComponent.js';
-import { EntityFormComponent } from './components/EntityFormComponent.js';
+import { EntityEditFormComponent } from './components/EntityEditFormComponent.js';
 import { EntityListComponent } from './components/EntityListComponent.js';
 import { EntityGridComponent } from './components/EntityGridComponent.js';
 import { EntryFormComponent } from './components/EntryFormComponent.js';
@@ -359,7 +359,7 @@ class TracklyApp {
         customElements.define('app-tabs', AppTabs);
         customElements.define('modal-panel', ModalPanel);
         customElements.define('entity-create-form', EntityCreateFormComponent);
-        customElements.define('entity-form', EntityFormComponent);
+        customElements.define('entity-form', EntityEditFormComponent);
         customElements.define('entity-list', EntityListComponent);
         customElements.define('entity-grid', EntityGridComponent);
         customElements.define('entry-form', EntryFormComponent);

@@ -5,9 +5,9 @@ import { URLStateManager } from '../utils/urlState.js';
 import { generateId } from '../utils/helpers.js';
 
 /**
- * EntityForm Web Component for editing existing entities
+ * EntityEditForm Web Component for editing existing entities
  */
-export class EntityFormComponent extends WebComponent {
+export class EntityEditFormComponent extends WebComponent {
     private entityId: string | null = null;
     private entity: Entity | null = null;
     private properties: EntityProperty[] = [];
@@ -28,6 +28,11 @@ export class EntityFormComponent extends WebComponent {
             this.unsubscribe = this.store.subscribe(() => {
                 if (this.store.getIsLoaded()) {
                     this.initializeEntity(entityId);
+                    // Unsubscribe after initialization to prevent repeated calls
+                    if (this.unsubscribe) {
+                        this.unsubscribe();
+                        this.unsubscribe = null;
+                    }
                 }
             });
             return;
