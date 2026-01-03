@@ -14,6 +14,33 @@ export class EntryListComponent extends WebComponent {
     private resizeObserver: ResizeObserver | null = null;
 
     render(): void {
+        // Show loading state while data is being fetched
+        if (!this.store.getIsLoaded()) {
+            const entryIcon = `
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle;">
+                    <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path>
+                </svg>
+            `;
+
+            this.innerHTML = `
+                <div class="section">
+                    <div class="section-header-strong">
+                        <div class="section-header-content">
+                            <div class="section-header-text">
+                                <h2 class="section-title">${entryIcon}Entries</h2>
+                                <p class="section-subtitle">Your activity log</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="loading-state">
+                        <div class="spinner"></div>
+                        <p>Loading entries...</p>
+                    </div>
+                </div>
+            `;
+            return;
+        }
+
         const selectedEntityId = this.store.getSelectedEntityId();
         let entries = this.store.getEntries();
 
