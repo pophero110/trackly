@@ -28,7 +28,8 @@ body {
   color: var(--text-primary);
   line-height: 1.5;
   height: 100vh;
-  overflow: hidden; /* Prevent body scroll */
+  overflow: hidden;
+  /* Prevent body scroll */
   padding: 16px;
   margin: 0;
 }
@@ -280,7 +281,8 @@ entry-detail {
   padding: 20px 24px;
   margin: -24px -24px 24px -24px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-  flex-shrink: 0; /* Don't shrink header */
+  flex-shrink: 0;
+  /* Don't shrink header */
 }
 
 .section-header-content {
@@ -1131,13 +1133,18 @@ form {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
   gap: 16px;
-  flex: 1 1 0; /* Grow, shrink, base 0 */
-  min-height: 0; /* Allow flex item to shrink */
+  flex: 1 1 0;
+  /* Grow, shrink, base 0 */
+  min-height: 0;
+  /* Allow flex item to shrink */
   overflow-y: auto;
   overflow-x: hidden;
-  padding-right: 8px; /* Space for scrollbar */
-  -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
-  align-content: start; /* Align cards to top, allow natural height */
+  padding-right: 8px;
+  /* Space for scrollbar */
+  -webkit-overflow-scrolling: touch;
+  /* Smooth scrolling on iOS */
+  align-content: start;
+  /* Align cards to top, allow natural height */
 }
 
 /* Entity Card - Simplified */
@@ -1544,16 +1551,23 @@ form {
 /* Entry List Container - Single column grid layout */
 .entries-list {
   display: grid;
-  grid-template-columns: minmax(0, 800px); /* Single column, max 800px for readability */
-  justify-content: center; /* Center the column */
+  grid-template-columns: minmax(0, 800px);
+  /* Single column, max 800px for readability */
+  justify-content: center;
+  /* Center the column */
   gap: 12px;
-  flex: 1 1 0; /* Grow, shrink, base 0 */
-  min-height: 0; /* Allow flex item to shrink */
+  flex: 1 1 0;
+  /* Grow, shrink, base 0 */
+  min-height: 0;
+  /* Allow flex item to shrink */
   overflow-y: auto;
   overflow-x: hidden;
-  padding-right: 8px; /* Space for scrollbar */
-  -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
-  align-content: start; /* Align cards to top, allow natural height */
+  padding-right: 8px;
+  /* Space for scrollbar */
+  -webkit-overflow-scrolling: touch;
+  /* Smooth scrolling on iOS */
+  align-content: start;
+  /* Align cards to top, allow natural height */
 }
 
 /* Entry Card - Modern & Clean */
@@ -1566,7 +1580,7 @@ form {
   overflow: hidden;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
   cursor: pointer;
-  height: 200px;
+  height: 114px;
   display: flex;
   flex-direction: column;
 }
