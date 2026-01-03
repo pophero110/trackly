@@ -50,7 +50,10 @@ export class EntryDetailComponent extends WebComponent {
     if (!this.store.getIsLoaded()) {
       this.innerHTML = `
                 <div class="section">
-                    <div class="error-state">Loading...</div>
+                    <div class="loading-state">
+                        <div class="spinner"></div>
+                        <p>Loading entry...</p>
+                    </div>
                 </div>
             `;
       return;
