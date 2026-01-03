@@ -27,8 +27,11 @@ body {
   background: var(--background);
   color: var(--text-primary);
   line-height: 1.5;
-  min-height: 100vh;
+  height: 100vh;
+  overflow: hidden; /* Prevent body scroll */
   padding: 16px;
+  display: flex;
+  flex-direction: column;
 }
 
 /* Text readability: limit line length for better reading comprehension */
@@ -43,8 +46,11 @@ p,
   background: var(--background);
   border-radius: var(--radius);
   box-shadow: var(--shadow-lg);
-  overflow: clip;
-  /* Use clip instead of hidden to preserve border-radius while allowing sticky */
+  overflow: hidden;
+  flex: 1; /* Take remaining height */
+  display: flex;
+  flex-direction: column;
+  min-height: 0; /* Allow flex item to shrink below content size */
 }
 
 /* Header - Minimalist */
@@ -52,6 +58,7 @@ header {
   background: var(--card-background);
   padding: 24px 24px 16px;
   border-bottom: 1px solid var(--border);
+  flex-shrink: 0; /* Don't shrink header */
 }
 
 .header-content {
@@ -202,11 +209,18 @@ header h1 {
 
 /* App Layout */
 .app-layout {
-  min-height: calc(100vh - 200px);
+  flex: 1; /* Take remaining height after header */
+  min-height: 0; /* Allow flex item to shrink */
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
 .main-content {
   width: 100%;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
 }
 
 /* Content View */
@@ -214,12 +228,16 @@ header h1 {
   padding: 24px;
   background: var(--background);
   height: 100%;
-  overflow: hidden; /* Prevent content from going off screen */
+  min-height: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }
 
 /* Section */
 .section {
-  height: 100%;
+  flex: 1;
+  min-height: 0;
   display: flex;
   flex-direction: column;
 }
@@ -254,6 +272,7 @@ header h1 {
   padding: 20px 24px;
   margin: -24px -24px 24px -24px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  flex-shrink: 0; /* Don't shrink header */
 }
 
 .section-header-content {
@@ -1104,7 +1123,8 @@ form {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
   gap: 16px;
-  flex: 1; /* Take remaining height */
+  flex: 1;
+  min-height: 0; /* Allow flex item to shrink */
   overflow-y: auto;
   padding-right: 8px; /* Space for scrollbar */
   align-content: start; /* Align grid items to top */
@@ -1516,7 +1536,8 @@ form {
   grid-template-columns: minmax(0, 800px); /* Single column, max 800px for readability */
   justify-content: center; /* Center the column */
   gap: 12px;
-  flex: 1; /* Take remaining height */
+  flex: 1;
+  min-height: 0; /* Allow flex item to shrink */
   overflow-y: auto;
   padding-right: 8px; /* Space for scrollbar */
   align-content: start; /* Align grid items to top */
