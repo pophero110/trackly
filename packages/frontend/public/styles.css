@@ -2930,6 +2930,34 @@ modal-panel:not(.active) .modal-dialog {
   align-items: center;
 }
 
+.entry-detail-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-icon {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 8px;
+  border-radius: var(--radius);
+  transition: var(--transition);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-icon:hover {
+  background: var(--hover);
+  color: var(--text-primary);
+}
+
+.btn-icon:active {
+  transform: scale(0.95);
+}
+
 .entry-detail-header .entry-menu-btn {
   opacity: 1;
   flex-shrink: 0;

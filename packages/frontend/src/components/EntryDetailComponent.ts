@@ -137,11 +137,18 @@ export class EntryDetailComponent extends WebComponent {
                     <span class="entry-detail-timestamp">🕒 ${formatDate(entry.timestamp)}</span>
                     ${locationHtml}
                 </div>
-                <button class="entry-menu-btn" id="detail-menu-btn" data-action="menu">⋮</button>
+                <div class="entry-detail-actions">
+                    ${entry.notes ? `<button class="btn-icon" id="copy-notes-btn" title="Copy notes">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                        </svg>
+                    </button>` : ''}
+                    <button class="entry-menu-btn" id="detail-menu-btn" data-action="menu">⋮</button>
+                </div>
             </div>
             <div class="entry-context-menu" id="detail-menu" style="display: none;">
                 <div class="context-menu-item" data-action="edit">Edit</div>
-                ${entry.notes ? `<div class="context-menu-item" data-action="copy-notes">Copy Notes</div>` : ''}
                 <div class="context-menu-item" data-action="archive">Archive</div>
                 <div class="context-menu-item danger" data-action="delete">Delete</div>
             </div>
@@ -392,6 +399,15 @@ export class EntryDetailComponent extends WebComponent {
       });
     }
 
+    // Copy notes button
+    const copyBtn = this.querySelector('#copy-notes-btn');
+    if (copyBtn) {
+      copyBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        this.handleCopyNotes();
+      });
+    }
+
     // Menu item clicks
     this.querySelectorAll('#detail-menu .context-menu-item').forEach(item => {
       item.addEventListener('click', (e) => {
@@ -400,8 +416,6 @@ export class EntryDetailComponent extends WebComponent {
 
         if (action === 'edit') {
           URLStateManager.openEditEntryPanel(this.entryId!);
-        } else if (action === 'copy-notes') {
-          this.handleCopyNotes();
         } else if (action === 'archive') {
           this.handleArchive();
         } else if (action === 'delete') {
@@ -481,12 +495,16 @@ export class EntryDetailComponent extends WebComponent {
 
     navigator.clipboard.writeText(entry.notes).then(() => {
       // Show temporary success feedback
-      const button = this.querySelector('[data-action="copy-notes"]') as HTMLElement;
+      const button = this.querySelector('#copy-notes-btn') as HTMLElement;
       if (button) {
-        const originalText = button.textContent;
-        button.textContent = '✓ Copied!';
+        const originalHTML = button.innerHTML;
+        button.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="20 6 9 17 4 12"></polyline>
+        </svg>`;
+        button.style.color = 'var(--success, #22c55e)';
         setTimeout(() => {
-          button.textContent = originalText;
+          button.innerHTML = originalHTML;
+          button.style.color = '';
         }, 1500);
       }
     }).catch((error) => {

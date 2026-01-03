@@ -440,7 +440,6 @@ export class EntryListComponent extends WebComponent {
             </div>
             <div class="entry-context-menu" id="entry-menu-${entry.id}" style="display: none;">
                 <div class="context-menu-item" data-entry-id="${entry.id}" data-action="edit">Edit</div>
-                ${entry.notes ? `<div class="context-menu-item" data-entry-id="${entry.id}" data-action="copy-notes">Copy Notes</div>` : ''}
                 <div class="context-menu-item" data-entry-id="${entry.id}" data-action="archive">Archive</div>
                 <div class="context-menu-item danger" data-entry-id="${entry.id}" data-action="delete">Delete</div>
             </div>
@@ -813,8 +812,6 @@ export class EntryListComponent extends WebComponent {
                 if (entryId && action) {
                     if (action === 'edit') {
                         URLStateManager.openEditEntryPanel(entryId);
-                    } else if (action === 'copy-notes') {
-                        this.handleCopyNotes(entryId);
                     } else if (action === 'archive') {
                         this.handleArchive(entryId);
                     } else if (action === 'delete') {
@@ -888,26 +885,6 @@ export class EntryListComponent extends WebComponent {
             const message = error instanceof Error ? error.message : 'Unknown error';
             alert(`Error archiving entry: ${message}`);
         }
-    }
-
-    private handleCopyNotes(entryId: string): void {
-        const entry = this.store.getEntryById(entryId);
-        if (!entry || !entry.notes) return;
-
-        navigator.clipboard.writeText(entry.notes).then(() => {
-            // Show temporary success feedback
-            const button = this.querySelector(`[data-entry-id="${entryId}"][data-action="copy-notes"]`) as HTMLElement;
-            if (button) {
-                const originalText = button.textContent;
-                button.textContent = '✓ Copied!';
-                setTimeout(() => {
-                    button.textContent = originalText;
-                }, 1500);
-            }
-        }).catch((error) => {
-            console.error('Failed to copy notes:', error);
-            alert('Failed to copy notes to clipboard');
-        });
     }
 
     private attachHashtagHandlers(): void {
