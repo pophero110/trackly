@@ -2362,11 +2362,11 @@ textarea:focus-visible {
 }
 
 /* Modal Panel */
-slide-up-panel {
+modal-panel {
   display: none;
 }
 
-slide-up-panel.active {
+modal-panel.active {
   display: flex;
 }
 
@@ -2469,11 +2469,11 @@ slide-up-panel.active {
 }
 
 /* Close animation */
-slide-up-panel:not(.active) .modal-backdrop {
+modal-panel:not(.active) .modal-backdrop {
   animation: fadeOut 0.2s ease-out forwards;
 }
 
-slide-up-panel:not(.active) .modal-dialog {
+modal-panel:not(.active) .modal-dialog {
   animation: modalSlideOut 0.2s ease-out forwards;
 }
 

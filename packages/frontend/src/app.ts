@@ -53,7 +53,7 @@ class TracklyApp {
         const entityGrid = document.querySelector('entity-grid') as HTMLElement;
         const entryList = document.querySelector('entry-list') as HTMLElement;
         const entryDetail = document.querySelector('entry-detail') as HTMLElement;
-        const panel = document.querySelector('slide-up-panel') as any;
+        const panel = document.querySelector('modal-panel') as any;
 
         // Track last loaded sort to prevent infinite reload loop
         let lastSortBy: string | undefined = undefined;
@@ -357,7 +357,7 @@ class TracklyApp {
     private registerComponents(): void {
         // Register custom elements
         customElements.define('app-tabs', AppTabs);
-        customElements.define('slide-up-panel', ModalPanel);
+        customElements.define('modal-panel', ModalPanel);
         customElements.define('entity-create-form', EntityCreateFormComponent);
         customElements.define('entity-form', EntityFormComponent);
         customElements.define('entity-list', EntityListComponent);
