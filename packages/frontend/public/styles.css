@@ -2224,12 +2224,10 @@ input[type="datetime-local"] {
     grid-template-columns: minmax(0, 800px);
     gap: 12px;
     padding: 16px;
-    padding-bottom: 80px;
   }
 
   .entries-list {
     padding: 16px;
-    padding-bottom: 80px;
   }
 
   .entry-header {
