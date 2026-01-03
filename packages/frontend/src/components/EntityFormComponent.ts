@@ -20,6 +20,26 @@ export class EntityFormComponent extends WebComponent {
     // For edit mode - provide entityId
     setEditMode(entityId: string): void {
         this.entityId = entityId;
+
+        // Show loading state if data hasn't loaded yet
+        if (!this.store.getIsLoaded()) {
+            this.innerHTML = this.renderLoadingState('Loading entity...');
+            // Subscribe to store to render when data loads
+            this.unsubscribe = this.store.subscribe(() => {
+                if (this.store.getIsLoaded()) {
+                    const foundEntity = this.store.getEntityById(entityId);
+                    if (foundEntity) {
+                        this.entity = foundEntity;
+                        this.properties = foundEntity.properties ? [...foundEntity.properties] : [];
+                        this.hasUnsavedChanges = false;
+                        this.render();
+                        this.attachEventListeners();
+                    }
+                }
+            });
+            return;
+        }
+
         const foundEntity = this.store.getEntityById(entityId);
         if (foundEntity) {
             this.entity = foundEntity;

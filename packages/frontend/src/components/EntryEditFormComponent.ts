@@ -50,6 +50,14 @@ export class EntryEditFormComponent extends WebComponent {
 
     setEntry(entryId: string): void {
         this.entryId = entryId;
+
+        // Show loading state if data hasn't loaded yet
+        if (!this.store.getIsLoaded()) {
+            this.innerHTML = this.renderLoadingState('Loading entry...');
+            // The connectedCallback subscription will handle rendering when data loads
+            return;
+        }
+
         const entries = this.store.getEntries();
         const foundEntry = entries.find(e => e.id === entryId);
 
@@ -77,7 +85,7 @@ export class EntryEditFormComponent extends WebComponent {
 
     render(): void {
         if (!this.entry) {
-            this.innerHTML = '<p>Entry not found</p>';
+            this.innerHTML = '<p>Loading...</p>';
             return;
         }
 
