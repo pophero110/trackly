@@ -1150,6 +1150,7 @@ form {
   transition: var(--transition);
   cursor: pointer;
   overflow: hidden;
+  height: 200px;
 }
 
 .entity-card:hover {
@@ -1565,7 +1566,7 @@ form {
   overflow: hidden;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
   cursor: pointer;
-  max-height: 400px;
+  height: 200px;
   display: flex;
   flex-direction: column;
 }
