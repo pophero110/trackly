@@ -221,7 +221,6 @@ header h1 {
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  padding: 24px;
   background: var(--background);
 }
 
@@ -270,7 +269,6 @@ entry-detail {
   background: var(--card-background);
   border-bottom: 1px solid var(--border);
   padding: 20px 24px;
-  margin: -24px -24px 24px -24px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
   flex-shrink: 0;
   /* Don't shrink header */
@@ -1130,7 +1128,7 @@ form {
   /* Allow flex item to shrink */
   overflow-y: auto;
   overflow-x: hidden;
-  padding-right: 8px;
+  padding: 24px;
   /* Space for scrollbar */
   -webkit-overflow-scrolling: touch;
   /* Smooth scrolling on iOS */
@@ -1537,6 +1535,7 @@ form {
 /* Entry List Container - Single column grid layout */
 .entries-list {
   display: grid;
+  padding: 24px;
   grid-template-columns: minmax(0, 800px);
   /* Single column, max 800px for readability */
   grid-auto-rows: auto;
@@ -1550,7 +1549,6 @@ form {
   /* Allow flex item to shrink */
   overflow-y: auto;
   overflow-x: hidden;
-  padding-right: 8px;
   /* Space for scrollbar */
   -webkit-overflow-scrolling: touch;
   /* Smooth scrolling on iOS */
@@ -2186,6 +2184,8 @@ input[type="datetime-local"] {
 
   .container {
     border-radius: var(--radius-sm);
+    height: 100vh;
+    width: 100%;
   }
 
   header {
@@ -2216,7 +2216,7 @@ input[type="datetime-local"] {
     padding: 6px 12px;
   }
 
-  .content-view {
+  .main-content {
     padding: 16px;
   }
 
