@@ -18,33 +18,6 @@ export class EntryEditFormComponent extends WebComponent {
     private hasUnsavedChanges: boolean = false;
 
     connectedCallback(): void {
-        this.unsubscribe = this.store.subscribe(() => {
-            // If entry is already set, re-render
-            if (this.entry) {
-                this.render();
-            } else if (this.entryId) {
-                // If we have an entryId but no entry, try to load it again
-                // (this handles the case where the component was initialized before data loaded)
-                const entries = this.store.getEntries();
-                const foundEntry = entries.find(e => e.id === this.entryId);
-                if (foundEntry) {
-                    this.entry = foundEntry;
-                    this.images = foundEntry.images ? [...foundEntry.images] : [];
-                    if (foundEntry.latitude !== undefined && foundEntry.longitude !== undefined) {
-                        this.location = {
-                            latitude: foundEntry.latitude,
-                            longitude: foundEntry.longitude,
-                            name: foundEntry.locationName
-                        };
-                    } else {
-                        this.location = null;
-                    }
-                    this.hasUnsavedChanges = false;
-                    this.render();
-                    this.attachEventListeners();
-                }
-            }
-        });
         // Don't auto-render, wait for setEntry()
     }
 
@@ -54,7 +27,17 @@ export class EntryEditFormComponent extends WebComponent {
         // Show loading state if data hasn't loaded yet
         if (!this.store.getIsLoaded()) {
             this.innerHTML = this.renderLoadingState('Loading entry...');
-            // The connectedCallback subscription will handle rendering when data loads
+            // Subscribe to store to render when data loads
+            this.unsubscribe = this.store.subscribe(() => {
+                if (this.store.getIsLoaded()) {
+                    this.initializeEntry(entryId);
+                    // Unsubscribe after initialization to prevent repeated calls
+                    if (this.unsubscribe) {
+                        this.unsubscribe();
+                        this.unsubscribe = null;
+                    }
+                }
+            });
             return;
         }
 
