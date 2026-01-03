@@ -10,6 +10,35 @@ import { EntityProperty } from '../types/index.js';
  */
 export class EntityGridComponent extends WebComponent {
     render(): void {
+        // Show loading state while data is being fetched
+        if (!this.store.getIsLoaded()) {
+            this.innerHTML = `
+                <div class="section">
+                    <div class="section-header-strong">
+                        <div class="section-header-content">
+                            <div class="section-header-text">
+                                <h2 class="section-title">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle;">
+                                        <rect x="3" y="3" width="7" height="7"></rect>
+                                        <rect x="14" y="3" width="7" height="7"></rect>
+                                        <rect x="14" y="14" width="7" height="7"></rect>
+                                        <rect x="3" y="14" width="7" height="7"></rect>
+                                    </svg>
+                                    Entities
+                                </h2>
+                                <p class="section-subtitle">Track what matters to you</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="loading-state">
+                        <div class="spinner"></div>
+                        <p>Loading entities...</p>
+                    </div>
+                </div>
+            `;
+            return;
+        }
+
         const entities = this.store.getEntities();
 
         if (entities.length === 0) {
