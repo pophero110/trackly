@@ -1,66 +1,62 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Trackly - Personal Tracking App</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Trackly - Personal Tracking App</title>
 
-    <!-- Favicons -->
-    <link rel="icon" href="/favicon/favicon.ico">
-    <link rel="icon" type="image/png" sizes="32x32" href="/favicon/favicon-32x32.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="/favicon/favicon-16x16.png">
-    <link rel="apple-touch-icon" sizes="180x180" href="/favicon/apple-touch-icon.png">
-    <link rel="manifest" href="/favicon/site.webmanifest">
+  <!-- Favicons -->
+  <link rel="icon" href="/favicon/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/favicon/apple-touch-icon.png">
+  <link rel="manifest" href="/favicon/site.webmanifest">
 
-    <link rel="stylesheet" href="/styles.css">
+  <link rel="stylesheet" href="/styles.css">
 </head>
+
 <body>
-    <div class="container">
-        <header>
-            <div class="header-content">
-                <div class="header-left">
-                    <div class="header-text">
-                        <h1><a href="#" id="logo-link" style="text-decoration: none; color: inherit;">Trackly</a></h1>
-                    </div>
-                    <nav class="header-nav">
-                        <a href="#" id="entities-link" class="nav-link">Entities</a>
-                        <a href="#" id="entries-link" class="nav-link">Entries</a>
-                    </nav>
-                </div>
-                <div class="header-menu">
-                    <button class="btn-hamburger" id="hamburger-btn" aria-label="Menu">
-                        <span class="hamburger-line"></span>
-                        <span class="hamburger-line"></span>
-                        <span class="hamburger-line"></span>
-                    </button>
-                    <div class="dropdown-menu" id="dropdown-menu">
-                        <button class="dropdown-item" id="signout-btn">Sign Out</button>
-                    </div>
-                </div>
-            </div>
-        </header>
-
-        <div class="app-layout">
-            <!-- Main Content -->
-            <main class="main-content">
-                <entity-grid></entity-grid>
-                <entry-list style="display: none;"></entry-list>
-                <entry-detail style="display: none;"></entry-detail>
-            </main>
+  <div class="container">
+    <header>
+      <div class="header-content">
+        <div class="header-left">
+          <div class="header-text">
+            <h1><a href="#" id="logo-link" style="text-decoration: none; color: inherit;">Trackly</a></h1>
+          </div>
+          <nav class="header-nav">
+            <a href="#" id="entities-link" class="nav-link">Entities</a>
+            <a href="#" id="entries-link" class="nav-link">Entries</a>
+          </nav>
         </div>
-
-        <!-- Slide-up Panel -->
-        <slide-up-panel></slide-up-panel>
-
-        <!-- Hidden form templates -->
-        <div style="display: none;">
-            <entity-create-form id="entity-create-form-template"></entity-create-form>
-            <entity-form id="entity-form-template"></entity-form>
-            <entry-form id="entry-form-template"></entry-form>
-            <entry-edit-form id="entry-edit-form-template"></entry-edit-form>
+        <div class="header-menu">
+          <button class="btn-hamburger" id="hamburger-btn" aria-label="Menu">
+            <span class="hamburger-line"></span>
+            <span class="hamburger-line"></span>
+            <span class="hamburger-line"></span>
+          </button>
+          <div class="dropdown-menu" id="dropdown-menu">
+            <button class="dropdown-item" id="signout-btn">Sign Out</button>
+          </div>
         </div>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <entity-grid></entity-grid>
+    <entry-list style="display: none;"></entry-list>
+    <entry-detail style="display: none;"></entry-detail>
+
+    <!-- Hidden form templates -->
+    <div style="display: none;">
+      <entity-create-form id="entity-create-form-template"></entity-create-form>
+      <entity-form id="entity-form-template"></entity-form>
+      <entry-form id="entry-form-template"></entry-form>
+      <entry-edit-form id="entry-edit-form-template"></entry-edit-form>
     </div>
+  </div>
 
-    <script type="module" src="/dist/app.js"></script>
+  <script type="module" src="/dist/app.js"></script>
 </body>
+
 </html>
