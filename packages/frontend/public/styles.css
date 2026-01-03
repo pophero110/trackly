@@ -1123,6 +1123,8 @@ form {
 .entities-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  grid-auto-rows: auto;
+  /* Rows size to content */
   gap: 16px;
   flex: 1 1 0;
   /* Grow, shrink, base 0 */
@@ -1538,6 +1540,8 @@ form {
   display: grid;
   grid-template-columns: minmax(0, 800px);
   /* Single column, max 800px for readability */
+  grid-auto-rows: auto;
+  /* Rows size to content */
   justify-content: center;
   /* Center the column */
   gap: 12px;
