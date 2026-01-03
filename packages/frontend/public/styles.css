@@ -2937,16 +2937,17 @@ modal-panel:not(.active) .modal-dialog {
 
 /* Entry Detail Page */
 .entry-detail-page {
-  max-width: 800px;
-  margin: 0 auto;
+  display: grid;
+  grid-template-columns: minmax(0, 800px);
+  gap: 16px;
   padding: 24px;
+  justify-content: center;
 }
 
 .entry-detail-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 16px;
 }
 
 .entry-detail-header .entry-menu-btn {
@@ -3296,11 +3297,7 @@ modal-panel:not(.active) .modal-dialog {
 /* Responsive adjustments for entry detail */
 @media (max-width: 768px) {
   .entry-detail-page {
-    padding: 12px 0;
-  }
-
-  .entry-detail-header {
-    padding-bottom: 16px;
+    padding: 12px;
   }
 
   .entry-detail-main-title {
