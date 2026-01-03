@@ -1099,7 +1099,7 @@ form {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
   gap: 16px;
-  max-height: calc(100vh - 400px);
+  max-height: calc(100vh - 300px);
   overflow-y: auto;
   padding-right: 8px; /* Space for scrollbar */
 }
@@ -1510,7 +1510,7 @@ form {
   grid-template-columns: minmax(0, 800px); /* Single column, max 800px for readability */
   justify-content: center; /* Center the column */
   gap: 12px;
-  max-height: calc(100vh - 400px);
+  max-height: calc(100vh - 300px);
   overflow-y: auto;
   padding-right: 8px; /* Space for scrollbar */
 }
