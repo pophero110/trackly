@@ -302,7 +302,7 @@ export class EntryListComponent extends WebComponent {
                         </div>
                     </div>
                 </div>
-                <div class="entries-list">
+                <div class="entries-list page-grid scrollable-grid">
                     ${entriesHtml}
                 </div>
             </div>

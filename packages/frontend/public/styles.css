@@ -212,8 +212,24 @@ entry-list,
 entry-detail {
   flex: 1;
   min-height: 0;
-  height: 100%;
-  display: block;
+}
+
+/* Shared Layout Utilities */
+.page-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 800px);
+  justify-content: center;
+  gap: 16px;
+  padding: 24px;
+}
+
+.scrollable-grid {
+  flex: 1 1 0;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  align-content: start;
 }
 
 /* Section */
@@ -1101,22 +1117,7 @@ form {
 
 /* Entity Grid */
 .entities-grid {
-  display: grid;
   grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-  /* Rows size to content */
-  gap: 16px;
-  /* Grow, shrink, base 0 */
-  min-height: 0;
-  /* Allow flex item to shrink */
-  overflow-y: auto;
-  overflow-x: hidden;
-  flex: 1 1 0;
-  padding: 24px;
-  /* Space for scrollbar */
-  -webkit-overflow-scrolling: touch;
-  /* Smooth scrolling on iOS */
-  align-content: start;
-  /* Align cards to top, allow natural height */
 }
 
 /* Entity Card - Simplified */
@@ -1515,26 +1516,9 @@ form {
   color: #dc2626;
 }
 
-/* Entry List Container - Single column grid layout */
+/* Entry List Container - Uses shared page-grid and scrollable-grid */
 .entries-list {
-  display: grid;
-  padding: 24px;
-  grid-template-columns: minmax(0, 800px);
-  /* Single column, max 800px for readability */
-  justify-content: center;
-  /* Center the column */
-  gap: 16px;
-  flex: 1 1 0;
-  /* Grow, shrink, base 0 */
-  min-height: 0;
-  /* Allow flex item to shrink */
-  overflow-y: auto;
-  overflow-x: hidden;
-  /* Space for scrollbar */
-  -webkit-overflow-scrolling: touch;
-  /* Smooth scrolling on iOS */
-  align-content: start;
-  /* Align cards to top, allow natural height */
+  /* All layout handled by shared classes */
 }
 
 /* Entry Card - Modern & Clean */
@@ -2935,13 +2919,9 @@ modal-panel:not(.active) .modal-dialog {
   }
 }
 
-/* Entry Detail Page */
+/* Entry Detail Page - Uses shared page-grid */
 .entry-detail-page {
-  display: grid;
-  grid-template-columns: minmax(0, 800px);
-  gap: 16px;
-  padding: 24px;
-  justify-content: center;
+  /* All layout handled by shared page-grid class */
 }
 
 .entry-detail-header {
@@ -3297,7 +3277,7 @@ modal-panel:not(.active) .modal-dialog {
 /* Responsive adjustments for entry detail */
 @media (max-width: 768px) {
   .entry-detail-page {
-    padding: 12px;
+    padding: 16px;
   }
 
   .entry-detail-main-title {

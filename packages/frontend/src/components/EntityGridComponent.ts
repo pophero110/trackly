@@ -79,7 +79,7 @@ export class EntityGridComponent extends WebComponent {
                         </div>
                     </div>
                 </div>
-                <div class="entities-grid">
+                <div class="entities-grid page-grid scrollable-grid">
                     ${entitiesHtml}
                 </div>
             </div>

@@ -69,7 +69,7 @@ export class EntryDetailComponent extends WebComponent {
     const entity = this.store.getEntityById(entry.entityId);
 
     this.innerHTML = `
-            <div class="section entry-detail-page">
+            <div class="section entry-detail-page page-grid">
                 ${this.renderDetailHeader(entry, entity)}
                 ${this.renderDetailContent(entry, entity)}
             </div>
