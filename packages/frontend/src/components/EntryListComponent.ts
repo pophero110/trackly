@@ -32,10 +32,7 @@ export class EntryListComponent extends WebComponent {
                             </div>
                         </div>
                     </div>
-                    <div class="loading-state">
-                        <div class="spinner"></div>
-                        <p>Loading entries...</p>
-                    </div>
+                    ${this.renderLoadingState('Loading entries...')}
                 </div>
             `;
             return;

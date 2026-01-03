@@ -34,4 +34,18 @@ export abstract class WebComponent extends HTMLElement {
     protected attachEventListeners(): void {
         // Override in subclasses if needed
     }
+
+    /**
+     * Generate loading state HTML
+     * @param message - Loading message to display (e.g., "Loading entities...")
+     * @returns HTML string for loading state
+     */
+    protected renderLoadingState(message: string): string {
+        return `
+            <div class="loading-state">
+                <div class="spinner"></div>
+                <p>${message}</p>
+            </div>
+        `;
+    }
 }

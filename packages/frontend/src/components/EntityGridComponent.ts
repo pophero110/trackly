@@ -30,10 +30,7 @@ export class EntityGridComponent extends WebComponent {
                             </div>
                         </div>
                     </div>
-                    <div class="loading-state">
-                        <div class="spinner"></div>
-                        <p>Loading entities...</p>
-                    </div>
+                    ${this.renderLoadingState('Loading entities...')}
                 </div>
             `;
             return;

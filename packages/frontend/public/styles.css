@@ -2104,9 +2104,7 @@ form {
   padding: 40px 20px;
   color: var(--text-muted);
   font-size: 0.875rem;
-  background: var(--card-background);
-  border: 1px dashed var(--border);
-  border-radius: var(--radius);
+  background: var(--background);
 }
 
 .loading-state {
