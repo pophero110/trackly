@@ -6,9 +6,9 @@ import { URLStateManager } from '../utils/urlState.js';
 import { getValueTypeInputConfig } from '../config/valueTypeConfig.js';
 
 /**
- * EntryForm Web Component for logging new entries
+ * EntryCreateForm Web Component for logging new entries
  */
-export class EntryFormComponent extends WebComponent {
+export class EntryCreateFormComponent extends WebComponent {
     private images: string[] = [];
     private links: string[] = [];
     private linkTitles: Record<string, string> = {};

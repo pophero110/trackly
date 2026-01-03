@@ -7,7 +7,7 @@ import { EntityCreateFormComponent } from './components/EntityCreateFormComponen
 import { EntityEditFormComponent } from './components/EntityEditFormComponent.js';
 import { EntityListComponent } from './components/EntityListComponent.js';
 import { EntityGridComponent } from './components/EntityGridComponent.js';
-import { EntryFormComponent } from './components/EntryFormComponent.js';
+import { EntryCreateFormComponent } from './components/EntryCreateFormComponent.js';
 import { EntryEditFormComponent } from './components/EntryEditFormComponent.js';
 import { EntryListComponent } from './components/EntryListComponent.js';
 import { EntryDetailComponent } from './components/EntryDetailComponent.js';
@@ -249,7 +249,7 @@ class TracklyApp {
             }
 
             // Open log entry panel
-            const formTemplate = document.querySelector('#entry-form-template');
+            const formTemplate = document.querySelector('#entry-create-form-template');
             if (formTemplate && !panel.getIsOpen()) {
                 const formClone = formTemplate.cloneNode(true) as HTMLElement;
                 formClone.removeAttribute('id');
@@ -362,7 +362,7 @@ class TracklyApp {
         customElements.define('entity-edit-form', EntityEditFormComponent);
         customElements.define('entity-list', EntityListComponent);
         customElements.define('entity-grid', EntityGridComponent);
-        customElements.define('entry-form', EntryFormComponent);
+        customElements.define('entry-create-form', EntryCreateFormComponent);
         customElements.define('entry-edit-form', EntryEditFormComponent);
         customElements.define('entry-list', EntryListComponent);
         customElements.define('entry-detail', EntryDetailComponent);
