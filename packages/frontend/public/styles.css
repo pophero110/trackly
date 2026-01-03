@@ -1124,6 +1124,8 @@ form {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
   gap: 16px;
+  grid-auto-rows: minmax(150px, auto);
+  /* Min 150px height, expands with content */
   flex: 1 1 0;
   /* Grow, shrink, base 0 */
   min-height: 0;
@@ -1541,6 +1543,8 @@ form {
   justify-content: center;
   /* Center the column */
   gap: 12px;
+  grid-auto-rows: minmax(100px, auto);
+  /* Min 100px height, expands with content */
   flex: 1 1 0;
   /* Grow, shrink, base 0 */
   min-height: 0;
