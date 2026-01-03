@@ -221,17 +221,8 @@ header h1 {
   overflow: hidden;
   display: flex;
   flex-direction: column;
-}
-
-/* Content View */
-.content-view {
   padding: 24px;
   background: var(--background);
-  height: 100%;
-  min-height: 0;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
 }
 
 /* Web Components - ensure they take full height */
