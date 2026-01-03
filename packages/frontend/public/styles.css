@@ -1147,7 +1147,6 @@ form {
   padding: 0;
   transition: var(--transition);
   cursor: pointer;
-  overflow: hidden;
 }
 
 .entity-card:hover {
@@ -1158,6 +1157,7 @@ form {
   background: var(--background);
   padding: 16px;
   border-bottom: 1px solid var(--border);
+  border-radius: var(--radius) var(--radius) 0 0;
 }
 
 .entity-card-header {
@@ -1425,6 +1425,7 @@ form {
   padding: 16px;
   background: var(--card-background);
   position: relative;
+  border-radius: 0 0 var(--radius) var(--radius);
 }
 
 .property-value-item-compact {
