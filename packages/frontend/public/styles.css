@@ -2149,13 +2149,6 @@ input[type="datetime-local"] {
     padding: 20px 16px 12px;
   }
 
-  /* Better touch targets for datetime inputs on mobile */
-  input[type="datetime-local"] {
-    min-height: 48px;
-    padding: 12px;
-    font-size: 16px;
-  }
-
   header h1 {
     font-size: 1.5rem;
   }
@@ -2254,13 +2247,6 @@ input[type="datetime-local"] {
 
   form {
     padding: 16px;
-  }
-
-  /* Optimize datetime input for small mobile screens */
-  input[type="datetime-local"] {
-    min-height: 52px;
-    padding: 14px 12px;
-    font-size: 16px;
   }
 
   .sort-select {

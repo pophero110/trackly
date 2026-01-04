@@ -23,7 +23,8 @@
       "Bash(pnpm build:*)",
       "Bash(npx prisma migrate:*)",
       "Bash(npm --prefix /Users/jiajinou/Projects/trackly/packages/frontend run build)",
-      "Bash(pnpm --filter @trackly/shared run build)"
+      "Bash(pnpm --filter @trackly/shared run build)",
+      "Bash(git mv:*)"
     ],
     "deny": [],
     "ask": []
