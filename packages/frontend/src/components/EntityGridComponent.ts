@@ -139,13 +139,13 @@ export class EntityGridComponent extends WebComponent {
                 <div class="entity-metadata">
                     <div class="entity-card-header">
                         <div class="entity-header-top">
-                            <h3>${escapeHtml(entity.name)}</h3>
+                            <div class="entity-name-type">
+                                <h3>${escapeHtml(entity.name)}</h3>
+                                <span class="entity-type ${entity.type.toLowerCase()}">${entity.type}</span>
+                            </div>
                             <button class="entity-menu-btn" data-entity-id="${entity.id}" data-action="menu">⋮</button>
                         </div>
-                        <div class="entity-type-row">
-                            <span class="entity-type ${entity.type.toLowerCase()}">${entity.type}</span>
-                            ${categoryChips}
-                        </div>
+                        ${categoryChips ? `<div class="entity-categories">${categoryChips}</div>` : ''}
                     </div>
                     ${statsHtml}
                 </div>

@@ -1126,6 +1126,15 @@ form {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 12px;
+}
+
+.entity-name-type {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
 }
 
 .entity-card h3 {
@@ -1134,7 +1143,9 @@ form {
   color: var(--text-primary);
   margin: 0;
   letter-spacing: -0.025em;
-  flex-grow: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .entity-menu-btn {
@@ -1198,24 +1209,17 @@ form {
   display: inline-block;
   padding: 2px 6px;
   border-radius: 4px;
-  font-size: 0.875rem;
-  font-weight: 500;
+  font-size: 0.6875rem;
+  font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.05em;
   line-height: 1.4;
   vertical-align: middle;
+  flex-shrink: 0;
 }
 
 .section-header-title .entity-type {
   margin: 0;
-}
-
-/* Entity type row with category chips */
-.entity-type-row {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  flex-wrap: wrap;
 }
 
 /* Entity category chip on entity cards */
@@ -1333,8 +1337,7 @@ form {
 .entity-categories {
   display: flex;
   flex-wrap: wrap;
-  gap: 4px;
-  margin: 8px 0;
+  gap: 6px;
 }
 
 .category-tag {
