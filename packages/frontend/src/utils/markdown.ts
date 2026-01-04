@@ -8,23 +8,31 @@ marked.setOptions({
 });
 
 /**
- * Parse markdown text to sanitized HTML
- * Supports GitHub Flavored Markdown with hashtag links
- * Automatically formats first line as h1 if it doesn't have a heading
+ * Ensure first line has h1 heading marker
+ * Returns notes with "# " prepended to first line if it doesn't have a heading
  */
-export function parseMarkdown(text: string): string {
-    if (!text || text.trim() === '') return '';
+export function ensureH1Heading(notes: string): string {
+    if (!notes || notes.trim() === '') return notes;
 
-    // Auto-format first line as h1 if it doesn't have a heading
-    const lines = text.split('\n');
+    const lines = notes.split('\n');
     if (lines.length > 0 && lines[0].trim() !== '') {
         const firstLine = lines[0].trim();
         // Check if first line doesn't already start with a heading marker
         if (!firstLine.match(/^#{1,6}\s/)) {
             lines[0] = '# ' + firstLine;
-            text = lines.join('\n');
+            return lines.join('\n');
         }
     }
+
+    return notes;
+}
+
+/**
+ * Parse markdown text to sanitized HTML
+ * Supports GitHub Flavored Markdown with hashtag links
+ */
+export function parseMarkdown(text: string): string {
+    if (!text || text.trim() === '') return '';
 
     // Step 1: Parse markdown
     let html = marked.parse(text, { async: false }) as string;

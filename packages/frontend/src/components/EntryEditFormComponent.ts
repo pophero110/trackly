@@ -4,6 +4,7 @@ import { ValueType, EntityProperty } from '../types/index.js';
 import { escapeHtml, extractUrls, replaceUrlsWithTitles, fetchUrlMetadata } from '../utils/helpers.js';
 import { URLStateManager } from '../utils/urlState.js';
 import { getValueTypeInputConfig } from '../config/valueTypeConfig.js';
+import { ensureH1Heading } from '../utils/markdown.js';
 
 /**
  * EntryEditForm Web Component for editing existing entries
@@ -1109,7 +1110,10 @@ export class EntryEditFormComponent extends WebComponent {
                 }
             }
 
-            const notes = (this.querySelector('#entry-notes') as HTMLTextAreaElement).value;
+            // Get notes and ensure first line has h1 heading
+            const rawNotes = (this.querySelector('#entry-notes') as HTMLTextAreaElement).value;
+            const notes = ensureH1Heading(rawNotes);
+
             // Get timestamp and convert to ISO format
             const timestampInput = (this.querySelector('#entry-timestamp') as HTMLInputElement).value;
             const timestamp = timestampInput ? new Date(timestampInput).toISOString() : this.entry.timestamp;

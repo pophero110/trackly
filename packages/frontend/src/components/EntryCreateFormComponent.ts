@@ -4,6 +4,7 @@ import { EntryFormData, ValueType, EntityProperty } from '../types/index.js';
 import { getCurrentTimestamp, escapeHtml, fetchUrlMetadata, extractUrls, replaceUrlsWithTitles } from '../utils/helpers.js';
 import { URLStateManager } from '../utils/urlState.js';
 import { getValueTypeInputConfig } from '../config/valueTypeConfig.js';
+import { ensureH1Heading } from '../utils/markdown.js';
 
 /**
  * EntryCreateForm Web Component for logging new entries
@@ -1184,11 +1185,15 @@ export class EntryCreateFormComponent extends WebComponent {
             const timestampInput = (this.querySelector('#entry-timestamp') as HTMLInputElement).value;
             const timestamp = timestampInput ? new Date(timestampInput).toISOString() : getCurrentTimestamp();
 
+            // Get notes and ensure first line has h1 heading
+            const rawNotes = (this.querySelector('#entry-notes') as HTMLTextAreaElement).value;
+            const notesWithH1 = ensureH1Heading(rawNotes);
+
             const formData: EntryFormData = {
                 timestamp: timestamp,
                 value: value,
                 valueDisplay: valueDisplay,
-                notes: (this.querySelector('#entry-notes') as HTMLTextAreaElement).value,
+                notes: notesWithH1,
                 latitude: this.location?.latitude,
                 longitude: this.location?.longitude,
                 locationName: this.location?.name
