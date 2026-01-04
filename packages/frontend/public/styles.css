@@ -3156,6 +3156,19 @@ modal-panel:not(.active) .modal-dialog {
   font-size: 1.1em;
 }
 
+.entry-notes-detail blockquote {
+  margin: 16px 0;
+  padding: 12px 20px;
+  border-left: 4px solid var(--primary);
+  background: var(--surface);
+  color: var(--text-secondary);
+  font-style: italic;
+}
+
+.entry-notes-detail blockquote p {
+  margin: 0;
+}
+
 /* Entry References Section - URLs */
 .entry-references {
   padding: 0;
