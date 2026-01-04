@@ -9,7 +9,9 @@ marked.setOptions({
 
 /**
  * Ensure first line has h1 heading marker
- * Returns notes with "# " prepended to first line if it doesn't have a heading
+ * Returns notes with first line converted to h1 heading
+ * - If no heading: add "# "
+ * - If h2-h6 heading: convert to h1 by replacing with "# "
  */
 export function ensureH1Heading(notes: string): string {
     if (!notes || notes.trim() === '') return notes;
@@ -17,8 +19,21 @@ export function ensureH1Heading(notes: string): string {
     const lines = notes.split('\n');
     if (lines.length > 0 && lines[0].trim() !== '') {
         const firstLine = lines[0].trim();
-        // Check if first line doesn't already start with a heading marker
-        if (!firstLine.match(/^#{1,6}\s/)) {
+
+        // Check if first line has any heading marker (# - ######)
+        const headingMatch = firstLine.match(/^(#{1,6})\s+(.*)$/);
+
+        if (headingMatch) {
+            // Has a heading - check if it's not h1
+            if (headingMatch[1] !== '#') {
+                // Convert to h1
+                lines[0] = '# ' + headingMatch[2];
+                return lines.join('\n');
+            }
+            // Already h1, no change needed
+            return notes;
+        } else {
+            // No heading - add h1
             lines[0] = '# ' + firstLine;
             return lines.join('\n');
         }
