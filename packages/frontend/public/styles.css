@@ -207,7 +207,7 @@ header h1 {
 }
 
 /* Web Components - ensure they take full height */
-entity-grid,
+entity-list,
 entry-list,
 entry-detail {
   flex: 1;
@@ -1089,11 +1089,6 @@ form {
   transform: scale(1.02);
 }
 
-/* Entity Grid */
-.entities-grid {
-  /* grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); */
-}
-
 /* Entity Card - Simplified */
 .entity-card {
   position: relative;
@@ -1168,40 +1163,6 @@ form {
 .entity-menu-btn:hover {
   color: var(--text-primary);
   background: var(--background);
-}
-
-.entity-stats {
-  margin-top: 12px;
-  padding-top: 12px;
-  border-top: 1px solid var(--border);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 8px;
-}
-
-.entry-count {
-  font-size: 0.875rem;
-  color: var(--text-muted);
-  font-weight: 400;
-}
-
-.btn-view-entries {
-  background: none;
-  border: none;
-  font-size: 1rem;
-  cursor: pointer;
-  padding: 4px 6px;
-  border-radius: 4px;
-  transition: var(--transition);
-  color: var(--text-muted);
-  line-height: 1;
-}
-
-.btn-view-entries:hover {
-  background: var(--background);
-  color: var(--primary);
-  transform: scale(1.1);
 }
 
 /* Entity Type Badge - Simplified */
@@ -1527,11 +1488,6 @@ form {
 .btn-icon-delete:hover {
   background: #fee2e2;
   color: #dc2626;
-}
-
-/* Entry List Container - Uses shared page-grid and scrollable-grid */
-.entries-list {
-  /* All layout handled by shared classes */
 }
 
 /* Entry Card - Modern & Clean */
@@ -2216,10 +2172,7 @@ input[type="datetime-local"] {
     padding: 16px;
   }
 
-  .entities-grid {
-    /* grid-template-columns: 1fr; */
-    grid-template-columns: minmax(0, 800px);
-    gap: 12px;
+  .entities-list {
     padding: 16px;
   }
 
@@ -2952,11 +2905,6 @@ modal-panel:not(.active) .modal-dialog {
   .entry-notes td {
     padding: 6px 8px;
   }
-}
-
-/* Entry Detail Page - Uses shared page-grid */
-.entry-detail-page {
-  /* All layout handled by shared page-grid class */
 }
 
 .entry-detail-header {
