@@ -130,6 +130,10 @@ export class EntityGridComponent extends WebComponent {
             ? entity.categories.map(cat => `<span class="entity-category-chip">${escapeHtml(cat)}</span>`).join('')
             : '';
 
+        // Calculate stats
+        const entryCount = entries.length;
+        const statsHtml = this.renderEntityStats(entryCount, mostRecentEntry);
+
         return `
             <div class="entity-card ${isSelected ? 'selected' : ''}" data-entity-id="${entity.id}">
                 <div class="entity-metadata">
@@ -141,6 +145,7 @@ export class EntityGridComponent extends WebComponent {
                         <span class="entity-type ${entity.type.toLowerCase()}">${entity.type}</span>
                         ${categoryChips}
                     </div>
+                    ${statsHtml}
                 </div>
                 ${mostRecentEntry ? `
                     <div class="entity-recent-entry">
@@ -160,6 +165,44 @@ export class EntityGridComponent extends WebComponent {
                 <div class="context-menu-item" data-entity-id="${entity.id}" data-action="edit">Edit</div>
                 <div class="context-menu-item" data-entity-id="${entity.id}" data-action="clone">Clone</div>
                 <div class="context-menu-item danger" data-entity-id="${entity.id}" data-action="delete">Delete</div>
+            </div>
+        `;
+    }
+
+    private renderEntityStats(entryCount: number, mostRecentEntry: Entry | null): string {
+        if (entryCount === 0) {
+            return '';
+        }
+
+        const getRelativeTime = (timestamp: string): string => {
+            const now = new Date();
+            const entryDate = new Date(timestamp);
+            const diffMs = now.getTime() - entryDate.getTime();
+            const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+            if (diffDays === 0) return 'Today';
+            if (diffDays === 1) return 'Yesterday';
+            if (diffDays < 7) return `${diffDays}d ago`;
+            if (diffDays < 30) return `${Math.floor(diffDays / 7)}w ago`;
+            if (diffDays < 365) return `${Math.floor(diffDays / 30)}mo ago`;
+            return `${Math.floor(diffDays / 365)}y ago`;
+        };
+
+        const lastActivity = mostRecentEntry ? getRelativeTime(mostRecentEntry.timestamp) : '';
+
+        return `
+            <div class="entity-stats">
+                <div class="entity-stat-item">
+                    <span class="stat-icon">📊</span>
+                    <span class="stat-value">${entryCount}</span>
+                    <span class="stat-label">${entryCount === 1 ? 'entry' : 'entries'}</span>
+                </div>
+                ${lastActivity ? `
+                    <div class="entity-stat-item">
+                        <span class="stat-icon">🕐</span>
+                        <span class="stat-value">${lastActivity}</span>
+                    </div>
+                ` : ''}
             </div>
         `;
     }

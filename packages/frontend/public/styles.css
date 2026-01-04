@@ -1091,7 +1091,7 @@ form {
 
 /* Entity Grid */
 .entities-grid {
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  /* grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); */
 }
 
 /* Entity Card - Simplified */
@@ -1224,6 +1224,37 @@ form {
   font-size: 0.75rem;
   font-weight: 500;
   line-height: 1.4;
+}
+
+/* Entity Stats */
+.entity-stats {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+}
+
+.entity-stat-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.8125rem;
+  color: var(--text-secondary);
+}
+
+.entity-stat-item .stat-icon {
+  font-size: 0.875rem;
+}
+
+.entity-stat-item .stat-value {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.entity-stat-item .stat-label {
+  color: var(--text-muted);
 }
 
 /* Hashtag Filter Badge */
