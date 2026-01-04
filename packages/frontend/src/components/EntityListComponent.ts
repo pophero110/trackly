@@ -118,7 +118,7 @@ export class EntityListComponent extends WebComponent {
   }
 
   private renderEntityCard(entity: Entity): string {
-    const entries = this.store.getEntriesByEntityId(entity.id);
+    const entries = this.store.getEntriesByEntityId(entity.id, true);
     const selectedId = this.store.getSelectedEntityId();
     const isSelected = selectedId === entity.id;
 

@@ -124,11 +124,13 @@ export class APIClient {
     entityId?: string;
     sortBy?: string;
     sortOrder?: 'asc' | 'desc';
+    includeArchived?: boolean;
   }): Promise<IEntry[]> {
     const queryParams = new URLSearchParams();
     if (params?.entityId) queryParams.set('entityId', params.entityId);
     if (params?.sortBy) queryParams.set('sortBy', params.sortBy);
     if (params?.sortOrder) queryParams.set('sortOrder', params.sortOrder);
+    if (params?.includeArchived) queryParams.set('includeArchived', 'true');
 
     const query = queryParams.toString() ? `?${queryParams.toString()}` : '';
     return this.request<IEntry[]>(`/api/entries${query}`);

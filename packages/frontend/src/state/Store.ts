@@ -32,7 +32,7 @@ export class Store {
         try {
             const [entitiesData, entriesData] = await Promise.all([
                 APIClient.getEntities(),
-                APIClient.getEntries({ sortBy, sortOrder })
+                APIClient.getEntries({ sortBy, sortOrder, includeArchived: true })
             ]);
 
             this.entities = entitiesData.map(data => new Entity(data));
@@ -128,7 +128,10 @@ export class Store {
         return this.entries.filter(e => !e.isArchived);
     }
 
-    getEntriesByEntityId(entityId: string): Entry[] {
+    getEntriesByEntityId(entityId: string, includeArchived: boolean = false): Entry[] {
+        if (includeArchived) {
+            return this.entries.filter(e => e.entityId === entityId);
+        }
         // Filter out archived entries by default
         return this.entries.filter(e => e.entityId === entityId && !e.isArchived);
     }
@@ -213,7 +216,7 @@ export class Store {
     // Reload entries with sort parameters
     async reloadEntries(sortBy?: string, sortOrder?: 'asc' | 'desc'): Promise<void> {
         try {
-            const entriesData = await APIClient.getEntries({ sortBy, sortOrder });
+            const entriesData = await APIClient.getEntries({ sortBy, sortOrder, includeArchived: true });
             this.entries = entriesData.map(data => new Entry(data));
             this.notify();
         } catch (error) {
