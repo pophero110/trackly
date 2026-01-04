@@ -2474,7 +2474,6 @@ modal-panel:not(.active) .modal-dialog {
   .modal-dialog {
     max-width: calc(100% - 32px);
     max-height: 95vh;
-    padding: 16px;
   }
 
   .modal-header {}
