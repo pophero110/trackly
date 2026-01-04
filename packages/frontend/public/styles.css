@@ -1432,6 +1432,14 @@ form {
   -webkit-box-orient: vertical;
 }
 
+.recent-entry-notes h1,
+.recent-entry-notes h2,
+.recent-entry-notes h3,
+.recent-entry-notes h4,
+.recent-entry-notes h5 {
+  font-size: 1em;
+}
+
 .entity-no-entries {
   font-size: 0.875rem;
   color: var(--text-muted);
