@@ -136,17 +136,31 @@ export class EntityListComponent extends WebComponent {
     const entryCount = activeEntries.length;
     const archivedCount = archivedEntries.length;
 
+    const totalEntries = entryCount + archivedCount;
+    const activePercent = totalEntries > 0 ? (entryCount / totalEntries) * 100 : 0;
+    const archivedPercent = totalEntries > 0 ? (archivedCount / totalEntries) * 100 : 0;
+
     return `
             <div class="entity-card ${isSelected ? 'selected' : ''}" data-entity-id="${entity.id}">
                 <div class="entity-card-header">
                     <div class="entity-name-type">
                         <h3>${escapeHtml(entity.name)}</h3>
                         <span class="entity-type ${entity.type.toLowerCase()}">${entity.type}</span>
-                        <span class="entity-count"><span class="count-icon">📊</span>${entryCount}</span>
-                        ${archivedCount > 0 ? `<span class="entity-archived-count"><span class="count-icon">📦</span>${archivedCount}</span>` : ''}
                     </div>
                     <button class="entity-menu-btn" data-entity-id="${entity.id}" data-action="menu">⋮</button>
                     ${categoryChips ? `<div class="entity-categories">${categoryChips}</div>` : ''}
+                    ${totalEntries > 0 ? `
+                        <div class="entity-stats-bar">
+                            <div class="stats-bar-container">
+                                <div class="stats-bar-fill stats-bar-active" style="width: ${activePercent}%"></div>
+                                <div class="stats-bar-fill stats-bar-archived" style="width: ${archivedPercent}%"></div>
+                            </div>
+                            <div class="stats-bar-labels">
+                                <span class="stats-label-active">${entryCount} active</span>
+                                ${archivedCount > 0 ? `<span class="stats-label-archived">${archivedCount} archived</span>` : ''}
+                            </div>
+                        </div>
+                    ` : ''}
                 </div>
                 ${mostRecentEntry ? `
                     <div class="entity-recent-entry">

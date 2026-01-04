@@ -1170,44 +1170,49 @@ form {
   flex-shrink: 0;
 }
 
-.entity-count {
-  display: inline-flex;
-  align-items: center;
-  gap: 3px;
-  padding: 2px 6px;
-  border-radius: 4px;
-  font-size: 0.6875rem;
-  font-weight: 600;
-  background: var(--background);
+/* Entity Stats Progress Bar */
+.entity-stats-bar {
+  width: 100%;
+  margin-top: 8px;
+}
+
+.stats-bar-container {
+  display: flex;
+  height: 6px;
+  background: var(--border);
+  border-radius: 3px;
+  overflow: hidden;
+  margin-bottom: 6px;
+}
+
+.stats-bar-fill {
+  height: 100%;
+  transition: width 0.3s ease;
+}
+
+.stats-bar-active {
+  background: var(--primary);
+}
+
+.stats-bar-archived {
+  background: #9ca3af;
+}
+
+.stats-bar-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.75rem;
   color: var(--text-secondary);
-  line-height: 1.4;
-  vertical-align: middle;
-  flex-shrink: 0;
 }
 
-.entity-count .count-icon {
-  font-size: 0.75rem;
-  line-height: 1;
+.stats-label-active {
+  font-weight: 500;
+  color: var(--primary);
 }
 
-.entity-archived-count {
-  display: inline-flex;
-  align-items: center;
-  gap: 3px;
-  padding: 2px 6px;
-  border-radius: 4px;
-  font-size: 0.6875rem;
-  font-weight: 600;
-  background: rgba(156, 163, 175, 0.1);
+.stats-label-archived {
+  font-weight: 500;
   color: #6b7280;
-  line-height: 1.4;
-  vertical-align: middle;
-  flex-shrink: 0;
-}
-
-.entity-archived-count .count-icon {
-  font-size: 0.75rem;
-  line-height: 1;
 }
 
 .section-header-title .entity-type {
@@ -2785,6 +2790,7 @@ modal-panel:not(.active) .modal-dialog {
   font-weight: 600;
   color: var(--text-primary);
   line-height: 1.3;
+  font-size: 1em;
 }
 
 .entry-notes h1 {}
@@ -2862,17 +2868,11 @@ modal-panel:not(.active) .modal-dialog {
     margin-left: 16px;
   }
 
-  .entry-notes h1 {
-    font-size: 1.5em;
-  }
+  .entry-notes h1 {}
 
-  .entry-notes h2 {
-    font-size: 1.3em;
-  }
+  .entry-notes h2 {}
 
-  .entry-notes h3 {
-    font-size: 1.1em;
-  }
+  .entry-notes h3 {}
 
   .entry-notes pre {
     padding: 8px;
