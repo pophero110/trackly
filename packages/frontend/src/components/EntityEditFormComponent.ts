@@ -8,7 +8,7 @@ import { generateId } from '../utils/helpers.js';
  * EntityEditForm Web Component for editing existing entities
  */
 export class EntityEditFormComponent extends WebComponent {
-    private entityId: string | null = null;
+    private entitySlug: string | null = null;
     private entity: Entity | null = null;
     private properties: EntityProperty[] = [];
     private hasUnsavedChanges: boolean = false;
@@ -17,9 +17,9 @@ export class EntityEditFormComponent extends WebComponent {
         // Don't auto-render, wait for setEditMode()
     }
 
-    // For edit mode - provide entityId
-    setEditMode(entityId: string): void {
-        this.entityId = entityId;
+    // For edit mode - provide entity slug
+    setEditMode(entitySlug: string): void {
+        this.entitySlug = entitySlug;
 
         // Show loading state if data hasn't loaded yet
         if (!this.store.getIsLoaded()) {
@@ -27,7 +27,7 @@ export class EntityEditFormComponent extends WebComponent {
             // Subscribe to store to render when data loads
             this.unsubscribe = this.store.subscribe(() => {
                 if (this.store.getIsLoaded()) {
-                    this.initializeEntity(entityId);
+                    this.initializeEntity(entitySlug);
                     // Unsubscribe after initialization to prevent repeated calls
                     if (this.unsubscribe) {
                         this.unsubscribe();
@@ -38,17 +38,24 @@ export class EntityEditFormComponent extends WebComponent {
             return;
         }
 
-        this.initializeEntity(entityId);
+        this.initializeEntity(entitySlug);
     }
 
-    private initializeEntity(entityId: string): void {
-        const foundEntity = this.store.getEntityById(entityId);
+    private initializeEntity(entitySlug: string): void {
+        // Find entity by matching slug (lowercase with hyphens)
+        const entities = this.store.getEntities();
+        const foundEntity = entities.find(e =>
+            e.name.toLowerCase().replace(/\s+/g, '-') === entitySlug.toLowerCase()
+        );
+
         if (foundEntity) {
             this.entity = foundEntity;
             this.properties = foundEntity.properties ? [...foundEntity.properties] : [];
             this.hasUnsavedChanges = false;
             this.render();
             this.attachEventListeners();
+        } else {
+            this.innerHTML = '<p>Entity not found</p>';
         }
     }
 
@@ -593,9 +600,9 @@ export class EntityEditFormComponent extends WebComponent {
             const type = (this.querySelector('#entity-type') as HTMLSelectElement).value as EntityType;
             const categories = this.entity ? this.entity.categories : [];
 
-            if (this.entityId) {
+            if (this.entity) {
                 // Update existing entity
-                this.store.updateEntity(this.entityId, {
+                this.store.updateEntity(this.entity.id, {
                     name,
                     type,
                     categories,

@@ -274,28 +274,22 @@ class TracklyApp {
         } else if (panelType === 'edit-entity') {
             // Open edit entity panel
             const editEntitySlug = URLStateManager.getEditEntityName();
-            // Find entity by matching slug (lowercase with hyphens)
-            let entity = null;
             if (editEntitySlug) {
-                const entities = this.store.getEntities();
-                entity = entities.find(e =>
-                    e.name.toLowerCase().replace(/\s+/g, '-') === editEntitySlug.toLowerCase()
-                ) || null;
-            }
-
-            if (entity) {
                 const formTemplate = document.querySelector('#entity-edit-form-template');
                 if (formTemplate && !panel.getIsOpen()) {
                     const formClone = formTemplate.cloneNode(true) as HTMLElement;
                     formClone.removeAttribute('id');
                     formClone.style.display = 'block';
 
-                    const editForm = formClone as any;
-                    if (editForm && typeof editForm.setEditMode === 'function') {
-                        editForm.setEditMode(entity.id);
-                    }
-
                     panel.open('Edit Entity', formClone);
+
+                    // Wait for element to be connected before calling setEditMode
+                    setTimeout(() => {
+                        const editForm = formClone as any;
+                        if (editForm && typeof editForm.setEditMode === 'function') {
+                            editForm.setEditMode(editEntitySlug);
+                        }
+                    }, 0);
                 }
             }
         } else if (panelType === 'clone-entity') {
