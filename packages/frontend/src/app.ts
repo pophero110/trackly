@@ -6,7 +6,6 @@ import { ModalPanel } from './components/ModalPanel.js';
 import { EntityCreateFormComponent } from './components/EntityCreateFormComponent.js';
 import { EntityEditFormComponent } from './components/EntityEditFormComponent.js';
 import { EntityListComponent } from './components/EntityListComponent.js';
-import { EntityGridComponent } from './components/EntityGridComponent.js';
 import { EntryCreateFormComponent } from './components/EntryCreateFormComponent.js';
 import { EntryEditFormComponent } from './components/EntryEditFormComponent.js';
 import { EntryListComponent } from './components/EntryListComponent.js';
@@ -50,7 +49,7 @@ class TracklyApp {
     }
 
     private setupViewRouting(): void {
-        const entityGrid = document.querySelector('entity-grid') as HTMLElement;
+        const entityGrid = document.querySelector('entity-list') as HTMLElement;
         const entryList = document.querySelector('entry-list') as HTMLElement;
         const entryDetail = document.querySelector('entry-detail') as HTMLElement;
         const panel = document.querySelector('modal-panel') as any;
@@ -355,7 +354,6 @@ class TracklyApp {
         customElements.define('entity-create-form', EntityCreateFormComponent);
         customElements.define('entity-edit-form', EntityEditFormComponent);
         customElements.define('entity-list', EntityListComponent);
-        customElements.define('entity-grid', EntityGridComponent);
         customElements.define('entry-create-form', EntryCreateFormComponent);
         customElements.define('entry-edit-form', EntryEditFormComponent);
         customElements.define('entry-list', EntryListComponent);
