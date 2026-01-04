@@ -36,8 +36,10 @@ export class EntityListComponent extends WebComponent {
       return;
     }
 
-    const sortBy = URLStateManager.getEntitySortBy() || 'created-desc';
-    const entities = this.sortEntities(this.store.getEntities(), sortBy);
+    // Get current sort values from URL
+    const currentSortBy = URLStateManager.getEntitySortBy() || 'created';
+    const currentSortOrder = URLStateManager.getEntitySortOrder() || 'desc';
+    const entities = this.sortEntities(this.store.getEntities(), currentSortBy, currentSortOrder);
 
     // Sort options
     const sortOptions = [
@@ -47,10 +49,11 @@ export class EntityListComponent extends WebComponent {
       { value: 'name-desc', label: 'Name (Z-A)' },
       { value: 'entries-desc', label: 'Most Entries' },
       { value: 'entries-asc', label: 'Least Entries' },
-      { value: 'type', label: 'Type' }
+      { value: 'type-asc', label: 'Type' }
     ];
 
-    const currentSortLabel = sortOptions.find(opt => opt.value === sortBy)?.label || 'Newest First';
+    const currentSortValue = `${currentSortBy}-${currentSortOrder}`;
+    const currentSortLabel = sortOptions.find(opt => opt.value === currentSortValue)?.label || 'Newest First';
 
     // Sort select dropdown
     const sortSelect = `
@@ -66,7 +69,7 @@ export class EntityListComponent extends WebComponent {
         <div class="tag-filter-menu" id="sort-filter-menu" style="display: none;">
           ${sortOptions.map(opt => `
             <label class="tag-filter-option">
-              <input type="radio" name="entity-sort-option" value="${opt.value}" ${opt.value === sortBy ? 'checked' : ''}>
+              <input type="radio" name="entity-sort-option" value="${opt.value}" ${opt.value === currentSortValue ? 'checked' : ''}>
               <span>${escapeHtml(opt.label)}</span>
             </label>
           `).join('')}
@@ -530,44 +533,38 @@ export class EntityListComponent extends WebComponent {
     URLStateManager.openLogEntryPanel(entity.name);
   }
 
-  private sortEntities(entities: Entity[], sortBy: string): Entity[] {
+  private sortEntities(entities: Entity[], sortBy: string, sortOrder: 'asc' | 'desc'): Entity[] {
     const sorted = [...entities];
 
     switch (sortBy) {
-      case 'created-asc':
-        return sorted.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+      case 'created':
+        sorted.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+        return sortOrder === 'desc' ? sorted.reverse() : sorted;
 
-      case 'created-desc':
-      default:
-        return sorted.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+      case 'name':
+        sorted.sort((a, b) => a.name.localeCompare(b.name));
+        return sortOrder === 'desc' ? sorted.reverse() : sorted;
 
-      case 'name-asc':
-        return sorted.sort((a, b) => a.name.localeCompare(b.name));
-
-      case 'name-desc':
-        return sorted.sort((a, b) => b.name.localeCompare(a.name));
-
-      case 'entries-desc':
-        return sorted.sort((a, b) => {
-          const aEntries = this.store.getEntriesByEntityId(a.id, false).length;
-          const bEntries = this.store.getEntriesByEntityId(b.id, false).length;
-          return bEntries - aEntries;
-        });
-
-      case 'entries-asc':
-        return sorted.sort((a, b) => {
+      case 'entries':
+        sorted.sort((a, b) => {
           const aEntries = this.store.getEntriesByEntityId(a.id, false).length;
           const bEntries = this.store.getEntriesByEntityId(b.id, false).length;
           return aEntries - bEntries;
         });
+        return sortOrder === 'desc' ? sorted.reverse() : sorted;
 
       case 'type':
-        return sorted.sort((a, b) => {
+        sorted.sort((a, b) => {
           if (a.type === b.type) {
             return a.name.localeCompare(b.name);
           }
           return a.type.localeCompare(b.type);
         });
+        return sortOrder === 'desc' ? sorted.reverse() : sorted;
+
+      default:
+        sorted.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+        return sorted;
     }
   }
 
@@ -588,8 +585,9 @@ export class EntityListComponent extends WebComponent {
       radioButtons.forEach(radio => {
         radio.addEventListener('change', (e) => {
           const value = (e.target as HTMLInputElement).value;
+          const [sortBy, sortOrder] = value.split('-') as [string, 'asc' | 'desc'];
           // Update URL - this will trigger re-render
-          URLStateManager.setEntitySort(value);
+          URLStateManager.setEntitySort(sortBy, sortOrder);
           // Close the menu after selection
           filterMenu.style.display = 'none';
         });

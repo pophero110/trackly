@@ -408,15 +408,30 @@ export class URLStateManager {
     }
 
     /**
-     * Set entity sort parameter in URL
+     * Get entity sort order from URL
      */
-    static setEntitySort(sortBy: string | null): void {
+    static getEntitySortOrder(): 'asc' | 'desc' | null {
+        const params = new URLSearchParams(window.location.search);
+        const order = params.get('entitySortOrder');
+        return (order === 'asc' || order === 'desc') ? order : null;
+    }
+
+    /**
+     * Set entity sort parameters in URL
+     */
+    static setEntitySort(sortBy: string | null, sortOrder: 'asc' | 'desc' | null): void {
         const params = new URLSearchParams(window.location.search);
 
         if (sortBy) {
             params.set('entitySortBy', sortBy);
         } else {
             params.delete('entitySortBy');
+        }
+
+        if (sortOrder) {
+            params.set('entitySortOrder', sortOrder);
+        } else {
+            params.delete('entitySortOrder');
         }
 
         URLStateManager.updateURL(params);
