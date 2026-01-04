@@ -130,9 +130,8 @@ export class EntityListComponent extends WebComponent {
       ? entity.categories.map(cat => `<span class="entity-category-chip">${escapeHtml(cat)}</span>`).join('')
       : '';
 
-    // Calculate stats
+    // Calculate entry count
     const entryCount = entries.length;
-    const lastActivityHtml = this.renderLastActivity(mostRecentEntry);
 
     return `
             <div class="entity-card ${isSelected ? 'selected' : ''}" data-entity-id="${entity.id}">
@@ -148,7 +147,6 @@ export class EntityListComponent extends WebComponent {
                         </div>
                         ${categoryChips ? `<div class="entity-categories">${categoryChips}</div>` : ''}
                     </div>
-                    ${lastActivityHtml}
                 </div>
                 ${mostRecentEntry ? `
                     <div class="entity-recent-entry">
@@ -168,35 +166,6 @@ export class EntityListComponent extends WebComponent {
                 <div class="context-menu-item" data-entity-id="${entity.id}" data-action="edit">Edit</div>
                 <div class="context-menu-item" data-entity-id="${entity.id}" data-action="clone">Clone</div>
                 <div class="context-menu-item danger" data-entity-id="${entity.id}" data-action="delete">Delete</div>
-            </div>
-        `;
-  }
-
-  private renderLastActivity(mostRecentEntry: Entry | null): string {
-    if (!mostRecentEntry) {
-      return '';
-    }
-
-    const getRelativeTime = (timestamp: string): string => {
-      const now = new Date();
-      const entryDate = new Date(timestamp);
-      const diffMs = now.getTime() - entryDate.getTime();
-      const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-
-      if (diffDays === 0) return 'Today';
-      if (diffDays === 1) return 'Yesterday';
-      if (diffDays < 7) return `${diffDays}d ago`;
-      if (diffDays < 30) return `${Math.floor(diffDays / 7)}w ago`;
-      if (diffDays < 365) return `${Math.floor(diffDays / 30)}mo ago`;
-      return `${Math.floor(diffDays / 365)}y ago`;
-    };
-
-    const lastActivity = getRelativeTime(mostRecentEntry.timestamp);
-
-    return `
-            <div class="entity-last-activity">
-                <span class="activity-icon">🕐</span>
-                <span class="activity-time">${lastActivity}</span>
             </div>
         `;
   }

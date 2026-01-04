@@ -1209,27 +1209,6 @@ form {
   line-height: 1.4;
 }
 
-/* Entity Last Activity */
-.entity-last-activity {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  margin-top: 12px;
-  padding-top: 12px;
-  border-top: 1px solid var(--border);
-  font-size: 0.8125rem;
-  color: var(--text-secondary);
-}
-
-.entity-last-activity .activity-icon {
-  font-size: 0.875rem;
-}
-
-.entity-last-activity .activity-time {
-  font-weight: 500;
-  color: var(--text-primary);
-}
-
 /* Hashtag Filter Badge */
 .hashtag-filter-badge {
   display: inline-flex;
