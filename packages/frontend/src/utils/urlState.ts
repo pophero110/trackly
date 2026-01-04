@@ -401,37 +401,40 @@ export class URLStateManager {
 
     /**
      * Get entity sort field from URL
+     * Note: Uses same parameter name as entries (sortBy) since they're on different routes
      */
     static getEntitySortBy(): string | null {
         const params = new URLSearchParams(window.location.search);
-        return params.get('entitySortBy');
+        return params.get('sortBy');
     }
 
     /**
      * Get entity sort order from URL
+     * Note: Uses same parameter name as entries (sortOrder) since they're on different routes
      */
     static getEntitySortOrder(): 'asc' | 'desc' | null {
         const params = new URLSearchParams(window.location.search);
-        const order = params.get('entitySortOrder');
+        const order = params.get('sortOrder');
         return (order === 'asc' || order === 'desc') ? order : null;
     }
 
     /**
      * Set entity sort parameters in URL
+     * Note: Uses same parameter names as entries (sortBy/sortOrder) since they're on different routes
      */
     static setEntitySort(sortBy: string | null, sortOrder: 'asc' | 'desc' | null): void {
         const params = new URLSearchParams(window.location.search);
 
         if (sortBy) {
-            params.set('entitySortBy', sortBy);
+            params.set('sortBy', sortBy);
         } else {
-            params.delete('entitySortBy');
+            params.delete('sortBy');
         }
 
         if (sortOrder) {
-            params.set('entitySortOrder', sortOrder);
+            params.set('sortOrder', sortOrder);
         } else {
-            params.delete('entitySortOrder');
+            params.delete('sortOrder');
         }
 
         URLStateManager.updateURL(params);
