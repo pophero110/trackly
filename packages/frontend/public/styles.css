@@ -1104,14 +1104,11 @@ form {
   border-color: var(--text-muted);
 }
 
-.entity-metadata {
+.entity-card-header {
   background: var(--background);
   padding: 16px;
   border-bottom: 1px solid var(--border);
   border-radius: var(--radius) var(--radius) 0 0;
-}
-
-.entity-card-header {
   display: flex;
   flex-direction: column;
   gap: 8px;
