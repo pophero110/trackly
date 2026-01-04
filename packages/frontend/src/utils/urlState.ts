@@ -362,7 +362,7 @@ export class URLStateManager {
     }
 
     /**
-     * Get sort field from URL
+     * Get sort field from URL (for entries)
      */
     static getSortBy(): string | null {
         const params = new URLSearchParams(window.location.search);
@@ -370,7 +370,7 @@ export class URLStateManager {
     }
 
     /**
-     * Get sort order from URL
+     * Get sort order from URL (for entries)
      */
     static getSortOrder(): 'asc' | 'desc' | null {
         const params = new URLSearchParams(window.location.search);
@@ -379,7 +379,7 @@ export class URLStateManager {
     }
 
     /**
-     * Set sort parameters in URL
+     * Set sort parameters in URL (for entries)
      */
     static setSort(sortBy: string | null, sortOrder: 'asc' | 'desc' | null): void {
         const params = new URLSearchParams(window.location.search);
@@ -394,6 +394,29 @@ export class URLStateManager {
             params.set('sortOrder', sortOrder);
         } else {
             params.delete('sortOrder');
+        }
+
+        URLStateManager.updateURL(params);
+    }
+
+    /**
+     * Get entity sort field from URL
+     */
+    static getEntitySortBy(): string | null {
+        const params = new URLSearchParams(window.location.search);
+        return params.get('entitySortBy');
+    }
+
+    /**
+     * Set entity sort parameter in URL
+     */
+    static setEntitySort(sortBy: string | null): void {
+        const params = new URLSearchParams(window.location.search);
+
+        if (sortBy) {
+            params.set('entitySortBy', sortBy);
+        } else {
+            params.delete('entitySortBy');
         }
 
         URLStateManager.updateURL(params);

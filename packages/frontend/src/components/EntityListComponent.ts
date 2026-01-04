@@ -36,7 +36,8 @@ export class EntityListComponent extends WebComponent {
       return;
     }
 
-    const entities = this.store.getEntities();
+    const sortBy = URLStateManager.getEntitySortBy() || 'created-desc';
+    const entities = this.sortEntities(this.store.getEntities(), sortBy);
 
     if (entities.length === 0) {
       this.innerHTML = `
@@ -74,7 +75,6 @@ export class EntityListComponent extends WebComponent {
     }
 
     const entitiesHtml = entities
-      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
       .map(entity => this.renderEntityCard(entity))
       .join('');
 
@@ -95,6 +95,15 @@ export class EntityListComponent extends WebComponent {
                             <p class="section-subtitle">Track what matters to you</p>
                         </div>
                         <div class="section-header-actions">
+                            <select id="entity-sort-select" class="sort-select">
+                                <option value="created-desc" ${sortBy === 'created-desc' ? 'selected' : ''}>Newest First</option>
+                                <option value="created-asc" ${sortBy === 'created-asc' ? 'selected' : ''}>Oldest First</option>
+                                <option value="name-asc" ${sortBy === 'name-asc' ? 'selected' : ''}>Name (A-Z)</option>
+                                <option value="name-desc" ${sortBy === 'name-desc' ? 'selected' : ''}>Name (Z-A)</option>
+                                <option value="entries-desc" ${sortBy === 'entries-desc' ? 'selected' : ''}>Most Entries</option>
+                                <option value="entries-asc" ${sortBy === 'entries-asc' ? 'selected' : ''}>Least Entries</option>
+                                <option value="type" ${sortBy === 'type' ? 'selected' : ''}>Type</option>
+                            </select>
                             <button class="btn-primary btn-add-entry" id="create-entity-btn">
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                                     <line x1="12" y1="5" x2="12" y2="19"></line>
@@ -113,6 +122,7 @@ export class EntityListComponent extends WebComponent {
 
     // Attach event handlers after rendering
     this.attachCreateButtonHandler();
+    this.attachSortHandler();
     this.attachCardClickHandlers();
     this.attachContextMenuHandlers();
   }
@@ -491,5 +501,56 @@ export class EntityListComponent extends WebComponent {
     if (!entity) return;
 
     URLStateManager.openLogEntryPanel(entity.name);
+  }
+
+  private sortEntities(entities: Entity[], sortBy: string): Entity[] {
+    const sorted = [...entities];
+
+    switch (sortBy) {
+      case 'created-asc':
+        return sorted.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+
+      case 'created-desc':
+      default:
+        return sorted.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+
+      case 'name-asc':
+        return sorted.sort((a, b) => a.name.localeCompare(b.name));
+
+      case 'name-desc':
+        return sorted.sort((a, b) => b.name.localeCompare(a.name));
+
+      case 'entries-desc':
+        return sorted.sort((a, b) => {
+          const aEntries = this.store.getEntriesByEntityId(a.id, false).length;
+          const bEntries = this.store.getEntriesByEntityId(b.id, false).length;
+          return bEntries - aEntries;
+        });
+
+      case 'entries-asc':
+        return sorted.sort((a, b) => {
+          const aEntries = this.store.getEntriesByEntityId(a.id, false).length;
+          const bEntries = this.store.getEntriesByEntityId(b.id, false).length;
+          return aEntries - bEntries;
+        });
+
+      case 'type':
+        return sorted.sort((a, b) => {
+          if (a.type === b.type) {
+            return a.name.localeCompare(b.name);
+          }
+          return a.type.localeCompare(b.type);
+        });
+    }
+  }
+
+  private attachSortHandler(): void {
+    const sortSelect = this.querySelector('#entity-sort-select') as HTMLSelectElement;
+    if (sortSelect) {
+      sortSelect.addEventListener('change', () => {
+        const sortBy = sortSelect.value;
+        URLStateManager.setEntitySort(sortBy);
+      });
+    }
   }
 }
