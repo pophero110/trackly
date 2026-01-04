@@ -141,7 +141,7 @@ export class EntityListComponent extends WebComponent {
                             <div class="entity-name-type">
                                 <h3>${escapeHtml(entity.name)}</h3>
                                 <span class="entity-type ${entity.type.toLowerCase()}">${entity.type}</span>
-                                <span class="entity-count">${entryCount}</span>
+                                <span class="entity-count"><span class="count-icon">📊</span>${entryCount}</span>
                             </div>
                             <button class="entity-menu-btn" data-entity-id="${entity.id}" data-action="menu">⋮</button>
                         </div>
