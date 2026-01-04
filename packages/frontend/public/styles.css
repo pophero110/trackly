@@ -2478,9 +2478,7 @@ modal-panel:not(.active) .modal-dialog {
 
   .modal-header {}
 
-  .modal-title {
-    font-size: 1.125rem;
-  }
+  .modal-title {}
 
   .modal-body {}
 }
