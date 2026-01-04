@@ -39,6 +39,41 @@ export class EntityListComponent extends WebComponent {
     const sortBy = URLStateManager.getEntitySortBy() || 'created-desc';
     const entities = this.sortEntities(this.store.getEntities(), sortBy);
 
+    // Sort options
+    const sortOptions = [
+      { value: 'created-desc', label: 'Newest First' },
+      { value: 'created-asc', label: 'Oldest First' },
+      { value: 'name-asc', label: 'Name (A-Z)' },
+      { value: 'name-desc', label: 'Name (Z-A)' },
+      { value: 'entries-desc', label: 'Most Entries' },
+      { value: 'entries-asc', label: 'Least Entries' },
+      { value: 'type', label: 'Type' }
+    ];
+
+    const currentSortLabel = sortOptions.find(opt => opt.value === sortBy)?.label || 'Newest First';
+
+    // Sort select dropdown
+    const sortSelect = `
+      <div class="tag-filter-container">
+        <button class="btn-tag-filter" id="sort-filter-btn" title="Sort by">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="4" y1="6" x2="11" y2="6"></line>
+            <line x1="4" y1="12" x2="16" y2="12"></line>
+            <line x1="4" y1="18" x2="20" y2="18"></line>
+          </svg>
+          <span>${currentSortLabel}</span>
+        </button>
+        <div class="tag-filter-menu" id="sort-filter-menu" style="display: none;">
+          ${sortOptions.map(opt => `
+            <label class="tag-filter-option">
+              <input type="radio" name="entity-sort-option" value="${opt.value}" ${opt.value === sortBy ? 'checked' : ''}>
+              <span>${escapeHtml(opt.label)}</span>
+            </label>
+          `).join('')}
+        </div>
+      </div>
+    `;
+
     if (entities.length === 0) {
       this.innerHTML = `
                 <div class="section">
@@ -95,15 +130,7 @@ export class EntityListComponent extends WebComponent {
                             <p class="section-subtitle">Track what matters to you</p>
                         </div>
                         <div class="section-header-actions">
-                            <select id="entity-sort-select" class="sort-select">
-                                <option value="created-desc" ${sortBy === 'created-desc' ? 'selected' : ''}>Newest First</option>
-                                <option value="created-asc" ${sortBy === 'created-asc' ? 'selected' : ''}>Oldest First</option>
-                                <option value="name-asc" ${sortBy === 'name-asc' ? 'selected' : ''}>Name (A-Z)</option>
-                                <option value="name-desc" ${sortBy === 'name-desc' ? 'selected' : ''}>Name (Z-A)</option>
-                                <option value="entries-desc" ${sortBy === 'entries-desc' ? 'selected' : ''}>Most Entries</option>
-                                <option value="entries-asc" ${sortBy === 'entries-asc' ? 'selected' : ''}>Least Entries</option>
-                                <option value="type" ${sortBy === 'type' ? 'selected' : ''}>Type</option>
-                            </select>
+                            ${sortSelect}
                             <button class="btn-primary btn-add-entry" id="create-entity-btn">
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                                     <line x1="12" y1="5" x2="12" y2="19"></line>
@@ -545,11 +572,34 @@ export class EntityListComponent extends WebComponent {
   }
 
   private attachSortHandler(): void {
-    const sortSelect = this.querySelector('#entity-sort-select') as HTMLSelectElement;
-    if (sortSelect) {
-      sortSelect.addEventListener('change', () => {
-        const sortBy = sortSelect.value;
-        URLStateManager.setEntitySort(sortBy);
+    // Toggle sort filter menu
+    const filterBtn = this.querySelector('#sort-filter-btn');
+    const filterMenu = this.querySelector('#sort-filter-menu') as HTMLElement;
+
+    if (filterBtn && filterMenu) {
+      // Toggle menu on button click
+      filterBtn.addEventListener('click', () => {
+        const isVisible = filterMenu.style.display === 'block';
+        filterMenu.style.display = isVisible ? 'none' : 'block';
+      });
+
+      // Handle sort option selection
+      const radioButtons = filterMenu.querySelectorAll('input[type="radio"]');
+      radioButtons.forEach(radio => {
+        radio.addEventListener('change', (e) => {
+          const value = (e.target as HTMLInputElement).value;
+          // Update URL - this will trigger re-render
+          URLStateManager.setEntitySort(value);
+          // Close the menu after selection
+          filterMenu.style.display = 'none';
+        });
+      });
+
+      // Close menu when clicking outside
+      document.addEventListener('click', (e) => {
+        if (!filterBtn.contains(e.target as Node) && !filterMenu.contains(e.target as Node)) {
+          filterMenu.style.display = 'none';
+        }
       });
     }
   }
