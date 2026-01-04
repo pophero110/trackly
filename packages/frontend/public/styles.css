@@ -1502,6 +1502,7 @@ form {
   cursor: pointer;
   display: flex;
   flex-direction: column;
+  gap: 12px;
 }
 
 .entry-card:hover {
@@ -1514,12 +1515,10 @@ form {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 12px;
 }
 
 /* Entry Card Properties Section */
 .entry-card-properties {
-  margin-bottom: 12px;
   display: flex;
   flex-wrap: wrap;
   gap: 12px;
@@ -2764,7 +2763,6 @@ modal-panel:not(.active) .modal-dialog {
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   padding: 12px;
-  margin: 8px 0;
   overflow-x: auto;
   font-family: 'Courier New', Courier, monospace;
   font-size: 0.9em;
@@ -2784,38 +2782,22 @@ modal-panel:not(.active) .modal-dialog {
 .entry-notes h4,
 .entry-notes h5,
 .entry-notes h6 {
-  margin: 16px 0 8px 0;
   font-weight: 600;
   color: var(--text-primary);
   line-height: 1.3;
 }
 
-.entry-notes h1 {
-  font-size: 1.8em;
-  border-bottom: 2px solid var(--border);
-  padding-bottom: 8px;
-}
+.entry-notes h1 {}
 
-.entry-notes h2 {
-  font-size: 1.5em;
-  border-bottom: 1px solid var(--border);
-  padding-bottom: 6px;
-}
+.entry-notes h2 {}
 
-.entry-notes h3 {
-  font-size: 1.3em;
-}
+.entry-notes h3 {}
 
-.entry-notes h4 {
-  font-size: 1.1em;
-}
+.entry-notes h4 {}
 
-.entry-notes h5 {
-  font-size: 1em;
-}
+.entry-notes h5 {}
 
 .entry-notes h6 {
-  font-size: 0.9em;
   color: var(--text-secondary);
 }
 
@@ -2871,7 +2853,6 @@ modal-panel:not(.active) .modal-dialog {
 
 /* Markdown Paragraphs */
 .entry-notes p {
-  margin: 8px 0;
   line-height: 1.6;
 }
 
@@ -2957,9 +2938,7 @@ modal-panel:not(.active) .modal-dialog {
   flex-wrap: wrap;
 }
 
-.entry-detail-properties {
-  margin-bottom: 16px;
-}
+.entry-detail-properties {}
 
 .btn-back {
   display: inline-flex;
@@ -3127,20 +3106,15 @@ modal-panel:not(.active) .modal-dialog {
 .entry-notes-detail h1,
 .entry-notes-detail h2,
 .entry-notes-detail h3 {
-  margin-top: 24px;
   margin-bottom: 12px;
   font-weight: 600;
 }
 
 .entry-notes-detail h1 {
-  font-size: 1.5em;
-}
-
-.entry-notes-detail h2 {
   font-size: 1.3em;
 }
 
-.entry-notes-detail h3 {
+.entry-notes-detail h2 {
   font-size: 1.1em;
 }
 
