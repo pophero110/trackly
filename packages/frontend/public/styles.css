@@ -1118,9 +1118,14 @@ form {
 
 .entity-card-header {
   display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.entity-header-top {
+  display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 6px;
 }
 
 .entity-card h3 {

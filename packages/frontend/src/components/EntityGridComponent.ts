@@ -138,12 +138,14 @@ export class EntityGridComponent extends WebComponent {
             <div class="entity-card ${isSelected ? 'selected' : ''}" data-entity-id="${entity.id}">
                 <div class="entity-metadata">
                     <div class="entity-card-header">
-                        <h3>${escapeHtml(entity.name)}</h3>
-                        <button class="entity-menu-btn" data-entity-id="${entity.id}" data-action="menu">⋮</button>
-                    </div>
-                    <div class="entity-type-row">
-                        <span class="entity-type ${entity.type.toLowerCase()}">${entity.type}</span>
-                        ${categoryChips}
+                        <div class="entity-header-top">
+                            <h3>${escapeHtml(entity.name)}</h3>
+                            <button class="entity-menu-btn" data-entity-id="${entity.id}" data-action="menu">⋮</button>
+                        </div>
+                        <div class="entity-type-row">
+                            <span class="entity-type ${entity.type.toLowerCase()}">${entity.type}</span>
+                            ${categoryChips}
+                        </div>
                     </div>
                     ${statsHtml}
                 </div>
