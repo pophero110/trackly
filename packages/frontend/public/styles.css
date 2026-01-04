@@ -2357,14 +2357,31 @@ modal-panel.active {
   flex-direction: column;
   box-shadow: var(--shadow-lg);
   animation: modalSlideIn 0.2s ease-out;
+  gap: 16px;
+  padding: 24px;
+}
+
+.glass-card {
+  /* 1. The semi-transparent background */
+  background: rgba(255, 255, 255, 0.15);
+  /* 2. The frosted glass effect */
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  /* 3. The subtle "inner glow" border */
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  /* 4. Rounded corners for a modern look */
+  border-radius: 16px;
+  /* 5. A soft shadow for depth */
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.15);
+  /* Layout styling */
+  padding: 20px;
+  color: white;
 }
 
 .modal-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 20px 24px;
-  border-bottom: 1px solid var(--border);
   flex-shrink: 0;
 }
 
@@ -2398,7 +2415,6 @@ modal-panel.active {
 }
 
 .modal-body {
-  padding: 24px;
   overflow-y: auto;
   flex: 1;
 }
@@ -2458,19 +2474,16 @@ modal-panel:not(.active) .modal-dialog {
   .modal-dialog {
     max-width: calc(100% - 32px);
     max-height: 95vh;
+    padding: 16px;
   }
 
-  .modal-header {
-    padding: 16px 20px;
-  }
+  .modal-header {}
 
   .modal-title {
     font-size: 1.125rem;
   }
 
-  .modal-body {
-    padding: 20px;
-  }
+  .modal-body {}
 }
 
 @media (max-width: 480px) {
