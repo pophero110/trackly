@@ -1190,6 +1190,26 @@ form {
   line-height: 1;
 }
 
+.entity-archived-count {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  background: rgba(156, 163, 175, 0.1);
+  color: #6b7280;
+  line-height: 1.4;
+  vertical-align: middle;
+  flex-shrink: 0;
+}
+
+.entity-archived-count .count-icon {
+  font-size: 0.75rem;
+  line-height: 1;
+}
+
 .section-header-title .entity-type {
   margin: 0;
 }

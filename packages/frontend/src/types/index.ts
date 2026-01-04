@@ -74,6 +74,7 @@ export interface IEntry {
   longitude?: number;  // Location longitude
   locationName?: string;  // Optional location name (e.g., "San Francisco, CA")
   links?: string[];  // Array of URLs for context/reference
+  isArchived?: boolean;  // Whether the entry is archived
   createdAt: string;
 }
 

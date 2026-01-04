@@ -130,8 +130,11 @@ export class EntityListComponent extends WebComponent {
       ? entity.categories.map(cat => `<span class="entity-category-chip">${escapeHtml(cat)}</span>`).join('')
       : '';
 
-    // Calculate entry count
-    const entryCount = entries.length;
+    // Calculate entry counts
+    const activeEntries = entries.filter(e => !e.isArchived);
+    const archivedEntries = entries.filter(e => e.isArchived);
+    const entryCount = activeEntries.length;
+    const archivedCount = archivedEntries.length;
 
     return `
             <div class="entity-card ${isSelected ? 'selected' : ''}" data-entity-id="${entity.id}">
@@ -140,6 +143,7 @@ export class EntityListComponent extends WebComponent {
                         <h3>${escapeHtml(entity.name)}</h3>
                         <span class="entity-type ${entity.type.toLowerCase()}">${entity.type}</span>
                         <span class="entity-count"><span class="count-icon">📊</span>${entryCount}</span>
+                        ${archivedCount > 0 ? `<span class="entity-archived-count"><span class="count-icon">📦</span>${archivedCount}</span>` : ''}
                     </div>
                     <button class="entity-menu-btn" data-entity-id="${entity.id}" data-action="menu">⋮</button>
                     ${categoryChips ? `<div class="entity-categories">${categoryChips}</div>` : ''}
