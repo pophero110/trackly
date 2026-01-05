@@ -94,7 +94,6 @@ export class EntityEditFormComponent extends WebComponent {
                         <input type="text" id="category-input" placeholder="Add category..." style="flex: 1;">
                         <button type="button" class="btn btn-secondary" id="add-category-btn">Add</button>
                     </div>
-                    <small style="color: var(--text-muted); font-size: 0.75rem; margin-top: 4px; display: block;">Optional tags to organize entities</small>
                 </div>
 
                 <div class="form-group">
@@ -112,7 +111,7 @@ export class EntityEditFormComponent extends WebComponent {
 
     private renderCategoryChips(): string {
         if (!this.entity || this.entity.categories.length === 0) {
-            return '<span style="color: var(--text-muted); font-size: 0.875rem;">No categories added yet.</span>';
+            return '';
         }
 
         return this.entity.categories.map(cat => `
@@ -125,7 +124,7 @@ export class EntityEditFormComponent extends WebComponent {
 
     private renderPropertiesList(): string {
         if (this.properties.length === 0) {
-            return '<p style="color: var(--text-muted); font-size: 0.875rem;">No custom properties added yet.</p>';
+            return '';
         }
 
         const capitalizeFirstLetter = (str: string) => str.charAt(0).toUpperCase() + str.slice(1);
