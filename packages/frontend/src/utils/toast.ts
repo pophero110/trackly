@@ -9,6 +9,7 @@ export interface ToastOptions {
     message: string;
     type?: ToastType;
     duration?: number; // milliseconds, 0 for permanent
+    customIcon?: string; // Optional custom SVG icon HTML
 }
 
 class ToastManager {
@@ -32,15 +33,16 @@ class ToastManager {
         const {
             message,
             type = 'info',
-            duration = 3000
+            duration = 3000,
+            customIcon
         } = options;
 
         // Create toast element
         const toast = document.createElement('div');
         toast.className = `toast toast-${type}`;
 
-        // Icon based on type
-        const icon = this.getIcon(type);
+        // Use custom icon if provided, otherwise use default
+        const icon = customIcon || this.getIcon(type);
 
         toast.innerHTML = `
             <div class="toast-content">
