@@ -928,12 +928,18 @@ export class EntryListComponent extends WebComponent {
         const viewportWidth = window.innerWidth;
         const viewportHeight = window.innerHeight;
 
-        let left = x;
+        // Align right edge of menu with touch position
+        let left = x - menuWidth;
         let top = y;
 
+        // Adjust if menu would go off left edge
+        if (left < 8) {
+            left = 8;
+        }
+
         // Adjust if menu would go off right edge
-        if (left + menuWidth > viewportWidth) {
-            left = Math.max(8, viewportWidth - menuWidth - 8);
+        if (left + menuWidth > viewportWidth - 8) {
+            left = viewportWidth - menuWidth - 8;
         }
 
         // Adjust if menu would go off bottom edge
