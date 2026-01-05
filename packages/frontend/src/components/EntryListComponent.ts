@@ -719,8 +719,8 @@ export class EntryListComponent extends WebComponent {
                         const syntheticEvent = new MouseEvent('contextmenu', {
                             bubbles: true,
                             cancelable: true,
-                            clientX: touch.clientX,
-                            clientY: touch.clientY
+                            clientX: touchStartX,
+                            clientY: touchStartY
                         });
                         this.toggleMenu(entryId, syntheticEvent as MouseEvent);
                     }
