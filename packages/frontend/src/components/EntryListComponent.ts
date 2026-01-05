@@ -242,9 +242,29 @@ export class EntryListComponent extends WebComponent {
             const entityMenu = selectedEntity ? `
                 <button class="entry-menu-btn" id="entity-page-menu-btn" data-entity-id="${selectedEntity.id}" data-action="menu">⋮</button>
                 <div class="entity-context-menu" id="entity-page-menu" style="display: none;">
-                    <div class="context-menu-item" data-entity-id="${selectedEntity.id}" data-action="edit">Edit</div>
-                    <div class="context-menu-item" data-entity-id="${selectedEntity.id}" data-action="clone">Clone</div>
-                    <div class="context-menu-item danger" data-entity-id="${selectedEntity.id}" data-action="delete">Delete</div>
+                    <div class="context-menu-item" data-entity-id="${selectedEntity.id}" data-action="edit">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                        </svg>
+                        <span>Edit</span>
+                    </div>
+                    <div class="context-menu-item" data-entity-id="${selectedEntity.id}" data-action="clone">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                        </svg>
+                        <span>Clone</span>
+                    </div>
+                    <div class="context-menu-item danger" data-entity-id="${selectedEntity.id}" data-action="delete">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="3 6 5 6 21 6"></polyline>
+                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                            <line x1="10" y1="11" x2="10" y2="17"></line>
+                            <line x1="14" y1="11" x2="14" y2="17"></line>
+                        </svg>
+                        <span>Delete</span>
+                    </div>
                 </div>
             ` : '';
 
@@ -1155,8 +1175,12 @@ export class EntryListComponent extends WebComponent {
         this.querySelectorAll('#entity-page-menu .context-menu-item').forEach(item => {
             item.addEventListener('click', (e) => {
                 const target = e.target as HTMLElement;
-                const entityId = target.dataset.entityId;
-                const action = target.dataset.action;
+                // Find the menu item (in case user clicked on icon or span)
+                const menuItem = target.closest('.context-menu-item') as HTMLElement;
+                if (!menuItem) return;
+
+                const entityId = menuItem.dataset.entityId;
+                const action = menuItem.dataset.action;
 
                 if (entityId && action) {
                     this.handleEntityPageMenuAction(action, entityId);
