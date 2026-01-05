@@ -966,6 +966,12 @@ form {
   z-index: 10000;
 }
 
+#property-form {
+  padding: 0;
+  box-shadow: none;
+  border: none;
+}
+
 .modal-container {
   background: var(--card-background);
   padding: var(--base-size-24);
