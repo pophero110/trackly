@@ -5,6 +5,7 @@ import { getCurrentTimestamp, escapeHtml, fetchUrlMetadata, extractUrls, replace
 import { URLStateManager } from '../utils/urlState.js';
 import { getValueTypeInputConfig } from '../config/valueTypeConfig.js';
 import { ensureH1Heading } from '../utils/markdown.js';
+import { toast } from '../utils/toast.js';
 
 /**
  * EntryCreateForm Web Component for logging new entries
@@ -1239,6 +1240,9 @@ export class EntryCreateFormComponent extends WebComponent {
             }
 
             this.store.addEntry(entry);
+
+            // Show success toast
+            toast.success('Entry logged successfully!');
 
             // Reset form state after successful submit
             this.resetFormState();

@@ -3463,3 +3463,139 @@ modal-panel:not(.active) .modal-dialog {
     max-height: 75vh;
   }
 }
+
+/* ================================
+   Toast Notifications
+   ================================ */
+
+.toast-container {
+  position: fixed;
+  z-index: 10000;
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: var(--base-size-16);
+}
+
+.toast {
+  pointer-events: auto;
+  min-width: 300px;
+  max-width: 500px;
+  padding: var(--base-size-16);
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transform: translateY(100%);
+  opacity: 0;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.toast-bottom {
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%) translateY(100%);
+}
+
+.toast-top {
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%) translateY(-100%);
+}
+
+.toast-show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0) !important;
+}
+
+.toast-hide {
+  opacity: 0;
+  transform: translateX(-50%) translateY(100%) !important;
+}
+
+.toast-top.toast-hide {
+  transform: translateX(-50%) translateY(-100%) !important;
+}
+
+.toast-content {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.toast-icon {
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  font-weight: bold;
+  font-size: 0.875rem;
+}
+
+.toast-message {
+  flex: 1;
+  color: var(--text-primary);
+  font-size: 0.9375rem;
+  line-height: 1.5;
+}
+
+/* Toast type styles */
+.toast-success {
+  border-left: 4px solid #10b981;
+}
+
+.toast-success .toast-icon {
+  background: #10b981;
+  color: white;
+}
+
+.toast-error {
+  border-left: 4px solid #ef4444;
+}
+
+.toast-error .toast-icon {
+  background: #ef4444;
+  color: white;
+}
+
+.toast-warning {
+  border-left: 4px solid #f59e0b;
+}
+
+.toast-warning .toast-icon {
+  background: #f59e0b;
+  color: white;
+}
+
+.toast-info {
+  border-left: 4px solid #3b82f6;
+}
+
+.toast-info .toast-icon {
+  background: #3b82f6;
+  color: white;
+}
+
+/* Dark mode */
+@media (prefers-color-scheme: dark) {
+  .toast {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  }
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+  .toast {
+    min-width: unset;
+    max-width: calc(100vw - 32px);
+  }
+
+  .toast-container {
+    padding: var(--base-size-16);
+    width: 100%;
+  }
+}
