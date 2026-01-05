@@ -60,7 +60,7 @@ header {
 .header-left {
   display: flex;
   align-items: center;
-  gap: 20px;
+  gap: var(--base-size-16);
   flex: 1;
 }
 
@@ -669,7 +669,6 @@ entry-detail {
 /* Forms - Card Style */
 form {
   background: var(--card-background);
-  padding: 20px;
   border-radius: var(--radius);
   box-shadow: var(--shadow);
   border: 1px solid var(--border);
@@ -678,10 +677,6 @@ form {
 
 .form-group {
   margin-bottom: var(--base-size-16);
-}
-
-.form-group:last-of-type {
-  margin-bottom: 20px;
 }
 
 .form-group label {
