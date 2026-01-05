@@ -3502,19 +3502,19 @@ modal-panel:not(.active) .modal-dialog {
   border: 1px solid rgba(255, 255, 255, 0.3);
   border-radius: 16px;
   box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.1);
-  transform: translateY(-100px);
+  transform: scale(0.8);
   opacity: 0;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .toast-show {
   opacity: 1;
-  transform: translateY(0) !important;
+  transform: scale(1) !important;
 }
 
 .toast-hide {
   opacity: 0;
-  transform: translateY(100px) !important;
+  transform: scale(0.8) !important;
 }
 
 .toast-content {
