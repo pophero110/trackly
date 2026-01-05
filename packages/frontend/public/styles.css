@@ -3487,8 +3487,10 @@ modal-panel:not(.active) .modal-dialog {
   min-width: 300px;
   max-width: 500px;
   padding: var(--base-size-16);
-  background: var(--bg-primary);
-  border: 1px solid var(--border-color);
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
   border-radius: 8px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   transform: translateY(100px);
@@ -3571,6 +3573,8 @@ modal-panel:not(.active) .modal-dialog {
 /* Dark mode */
 @media (prefers-color-scheme: dark) {
   .toast {
+    background: rgba(30, 30, 30, 0.85);
+    border: 1px solid rgba(255, 255, 255, 0.1);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
   }
 }
