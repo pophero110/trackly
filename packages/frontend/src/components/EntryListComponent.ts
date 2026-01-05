@@ -716,13 +716,12 @@ export class EntryListComponent extends WebComponent {
                             navigator.vibrate(50);
                         }
                         // Show context menu at touch position
+                        // Create a minimal MouseEvent and pass coordinates separately
                         const syntheticEvent = new MouseEvent('contextmenu', {
                             bubbles: true,
-                            cancelable: true,
-                            clientX: touchStartX,
-                            clientY: touchStartY
+                            cancelable: true
                         });
-                        this.toggleMenu(entryId, syntheticEvent as MouseEvent);
+                        this.toggleMenu(entryId, syntheticEvent as MouseEvent, touchStartX, touchStartY);
                     }
                 }, 500);
             });
@@ -860,7 +859,7 @@ export class EntryListComponent extends WebComponent {
         document.addEventListener('touchstart', closeMenusHandler);
     }
 
-    private toggleMenu(entryId: string, e: MouseEvent): void {
+    private toggleMenu(entryId: string, e: MouseEvent, customX?: number, customY?: number): void {
         const menu = this.querySelector(`#entry-menu-${entryId}`) as HTMLElement;
         if (!menu) return;
 
@@ -888,8 +887,9 @@ export class EntryListComponent extends WebComponent {
             menu.style.top = `${rect.bottom + 4}px`;
         } else {
             // Right-click or long-press - show at cursor/touch position
-            const x = e.clientX || 0;
-            const y = e.clientY || 0;
+            // Use custom coordinates if provided (from long-press), otherwise use event coordinates
+            const x = customX !== undefined ? customX : (e.clientX || 0);
+            const y = customY !== undefined ? customY : (e.clientY || 0);
 
             // Get menu dimensions (it's already display:block from above)
             const menuWidth = menu.offsetWidth;
