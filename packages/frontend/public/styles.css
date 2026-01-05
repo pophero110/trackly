@@ -1984,6 +1984,7 @@ form {
   line-height: 1.6;
   margin: 0;
   max-width: 75ch;
+  user-select: none;
 }
 
 /* Entry Tags - Hashtags Section */
