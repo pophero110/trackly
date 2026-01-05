@@ -9,7 +9,6 @@ export interface ToastOptions {
     message: string;
     type?: ToastType;
     duration?: number; // milliseconds, 0 for permanent
-    position?: 'top' | 'bottom';
 }
 
 class ToastManager {
@@ -33,13 +32,12 @@ class ToastManager {
         const {
             message,
             type = 'info',
-            duration = 3000,
-            position = 'bottom'
+            duration = 3000
         } = options;
 
         // Create toast element
         const toast = document.createElement('div');
-        toast.className = `toast toast-${type} toast-${position}`;
+        toast.className = `toast toast-${type}`;
 
         // Icon based on type
         const icon = this.getIcon(type);
