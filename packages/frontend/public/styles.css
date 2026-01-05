@@ -1984,6 +1984,8 @@ form {
   line-height: 1.6;
   margin: 0;
   max-width: 75ch;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
   user-select: none;
 }
 
