@@ -716,12 +716,8 @@ export class EntryListComponent extends WebComponent {
                             navigator.vibrate(50);
                         }
                         // Show context menu at touch position
-                        // Create a minimal MouseEvent and pass coordinates separately
-                        const syntheticEvent = new MouseEvent('contextmenu', {
-                            bubbles: true,
-                            cancelable: true
-                        });
-                        this.toggleMenu(entryId, syntheticEvent as MouseEvent, touchStartX, touchStartY);
+                        // Pass coordinates directly to menu positioning
+                        this.showMenuAtPosition(entryId, touchStartX, touchStartY);
                     }
                 }, 500);
             });
@@ -913,6 +909,40 @@ export class EntryListComponent extends WebComponent {
             menu.style.left = `${left}px`;
             menu.style.top = `${top}px`;
         }
+    }
+
+    private showMenuAtPosition(entryId: string, x: number, y: number): void {
+        const menu = this.querySelector(`#entry-menu-${entryId}`) as HTMLElement;
+        if (!menu) return;
+
+        // Hide all other menus first
+        this.hideAllMenus();
+
+        // Position and show this menu
+        menu.style.display = 'block';
+        menu.style.position = 'fixed';
+
+        // Get menu dimensions
+        const menuWidth = menu.offsetWidth;
+        const menuHeight = menu.offsetHeight;
+        const viewportWidth = window.innerWidth;
+        const viewportHeight = window.innerHeight;
+
+        let left = x;
+        let top = y;
+
+        // Adjust if menu would go off right edge
+        if (left + menuWidth > viewportWidth) {
+            left = Math.max(8, viewportWidth - menuWidth - 8);
+        }
+
+        // Adjust if menu would go off bottom edge
+        if (top + menuHeight > viewportHeight) {
+            top = Math.max(8, viewportHeight - menuHeight - 8);
+        }
+
+        menu.style.left = `${left}px`;
+        menu.style.top = `${top}px`;
     }
 
     private hideAllMenus(): void {
