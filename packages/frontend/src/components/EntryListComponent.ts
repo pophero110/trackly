@@ -847,8 +847,12 @@ export class EntryListComponent extends WebComponent {
         this.querySelectorAll('.entry-context-menu .context-menu-item').forEach(item => {
             item.addEventListener('click', (e) => {
                 const target = e.target as HTMLElement;
-                const entryId = target.dataset.entryId;
-                const action = target.dataset.action;
+                // Find the menu item (in case user clicked on icon or span)
+                const menuItem = target.closest('.context-menu-item') as HTMLElement;
+                if (!menuItem) return;
+
+                const entryId = menuItem.dataset.entryId;
+                const action = menuItem.dataset.action;
 
                 if (entryId && action) {
                     if (action === 'edit') {
