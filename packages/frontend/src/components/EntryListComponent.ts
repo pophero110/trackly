@@ -5,6 +5,7 @@ import { parseMarkdown } from '../utils/markdown.js';
 import { URLStateManager } from '../utils/urlState.js';
 import { EntityProperty } from '../types/index.js';
 import { getEntityColor } from '../utils/entryHelpers.js';
+import { toast } from '../utils/toast.js';
 
 /**
  * EntryList Web Component for displaying recent entries
@@ -964,18 +965,20 @@ export class EntryListComponent extends WebComponent {
 
         try {
             this.store.deleteEntry(entryId);
+            toast.success('Entry deleted successfully');
         } catch (error) {
             const message = error instanceof Error ? error.message : 'Unknown error';
-            alert(`Error deleting entry: ${message}`);
+            toast.error(`Error deleting entry: ${message}`);
         }
     }
 
     private async handleArchive(entryId: string): Promise<void> {
         try {
             await this.store.archiveEntry(entryId, true);
+            toast.success('Entry archived successfully');
         } catch (error) {
             const message = error instanceof Error ? error.message : 'Unknown error';
-            alert(`Error archiving entry: ${message}`);
+            toast.error(`Error archiving entry: ${message}`);
         }
     }
 
