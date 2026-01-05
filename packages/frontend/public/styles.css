@@ -3496,12 +3496,10 @@ modal-panel:not(.active) .modal-dialog {
   min-width: 300px;
   max-width: 500px;
   padding: var(--base-size-16);
-  background: rgba(255, 255, 255, 0.2);
-  backdrop-filter: blur(15px);
-  -webkit-backdrop-filter: blur(15px);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  border-radius: 16px;
-  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.1);
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   transform: scale(0.8);
   opacity: 0;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -3582,9 +3580,9 @@ modal-panel:not(.active) .modal-dialog {
 /* Dark mode */
 @media (prefers-color-scheme: dark) {
   .toast {
-    background: rgba(30, 30, 30, 0.2);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4);
+    background: var(--card-background);
+    border: 1px solid var(--border);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
   }
 }
 
