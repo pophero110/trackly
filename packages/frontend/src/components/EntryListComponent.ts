@@ -846,8 +846,18 @@ export class EntryListComponent extends WebComponent {
             });
         });
 
-        // Click outside to close menus
-        document.addEventListener('click', () => this.hideAllMenus());
+        // Click/touch outside to close menus
+        const closeMenusHandler = (e: Event) => {
+            const target = e.target as HTMLElement;
+            // Don't close if clicking inside a menu or on a menu button
+            if (target.closest('.entry-context-menu') || target.closest('[data-action="menu"]')) {
+                return;
+            }
+            this.hideAllMenus();
+        };
+
+        document.addEventListener('click', closeMenusHandler);
+        document.addEventListener('touchstart', closeMenusHandler);
     }
 
     private toggleMenu(entryId: string, e: MouseEvent): void {
@@ -877,9 +887,31 @@ export class EntryListComponent extends WebComponent {
             menu.style.left = `${rect.right - menuWidth}px`;
             menu.style.top = `${rect.bottom + 4}px`;
         } else {
-            // Right-click - show at cursor position
-            menu.style.left = `${e.clientX}px`;
-            menu.style.top = `${e.clientY}px`;
+            // Right-click or long-press - show at cursor/touch position
+            const x = e.clientX || 0;
+            const y = e.clientY || 0;
+
+            // Get menu dimensions (it's already display:block from above)
+            const menuWidth = menu.offsetWidth;
+            const menuHeight = menu.offsetHeight;
+            const viewportWidth = window.innerWidth;
+            const viewportHeight = window.innerHeight;
+
+            let left = x;
+            let top = y;
+
+            // Adjust if menu would go off right edge
+            if (left + menuWidth > viewportWidth) {
+                left = Math.max(8, viewportWidth - menuWidth - 8);
+            }
+
+            // Adjust if menu would go off bottom edge
+            if (top + menuHeight > viewportHeight) {
+                top = Math.max(8, viewportHeight - menuHeight - 8);
+            }
+
+            menu.style.left = `${left}px`;
+            menu.style.top = `${top}px`;
         }
     }
 
