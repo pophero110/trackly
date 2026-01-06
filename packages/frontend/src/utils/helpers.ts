@@ -188,11 +188,14 @@ export function extractUrls(text: string): string[] {
     let match;
     while ((match = markdownLinkRegex.exec(text)) !== null) {
         const url = match[2].trim();
-        // Normalize www. URLs
+        // Normalize URLs without protocol
         if (url.startsWith('www.')) {
             urls.push('https://' + url);
         } else if (url.startsWith('http://') || url.startsWith('https://')) {
             urls.push(url);
+        } else if (/^[a-zA-Z0-9][a-zA-Z0-9-]*\.[a-zA-Z]{2,}/.test(url)) {
+            // Plain domain like "google.com" or "example.org"
+            urls.push('https://' + url);
         }
     }
 
@@ -200,7 +203,8 @@ export function extractUrls(text: string): string[] {
     const textWithoutMarkdownLinks = text.replace(/\[([^\]]+?)\]\((.+?)\)/g, '');
 
     // Extract plain URLs from the remaining text
-    const urlRegex = /(https?:\/\/[^\s]+|www\.[^\s]+)/g;
+    // Match: https://..., http://..., www...., or domain.com
+    const urlRegex = /(https?:\/\/[^\s]+|www\.[^\s]+|(?<![/@])[a-zA-Z0-9][a-zA-Z0-9-]*\.[a-zA-Z]{2,}[^\s]*)/g;
     const plainMatches = textWithoutMarkdownLinks.match(urlRegex);
 
     // Normalize and add plain URLs
@@ -208,8 +212,11 @@ export function extractUrls(text: string): string[] {
         plainMatches.forEach(url => {
             if (url.startsWith('www.')) {
                 urls.push('https://' + url);
-            } else {
+            } else if (url.startsWith('http://') || url.startsWith('https://')) {
                 urls.push(url);
+            } else if (/^[a-zA-Z0-9][a-zA-Z0-9-]*\.[a-zA-Z]{2,}/.test(url)) {
+                // Plain domain like "google.com" or "example.org"
+                urls.push('https://' + url);
             }
         });
     }
