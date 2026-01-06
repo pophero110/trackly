@@ -752,8 +752,9 @@ export class EntryEditFormComponent extends WebComponent {
             const url = new URL(text);
             return url.protocol === 'http:' || url.protocol === 'https:';
         } catch {
-            // Check for plain domain format (e.g., example.com, github.io)
-            return /^[a-zA-Z0-9][a-zA-Z0-9-]*\.[a-zA-Z]{2,}/.test(text);
+            // Check for plain domain format with valid TLD (e.g., example.com, github.io)
+            const validTLDs = /\.(com|org|net|edu|gov|io|co|uk|us|de|fr|jp|cn|au|in|br|ca|ru|nl|se|no|fi|dk|pl|it|es|be|ch|at|nz|sg|hk|kr|tw|my|th|id|ph|vn|za|ae|sa|eg|ng|ke)$/i;
+            return /^[a-zA-Z0-9][a-zA-Z0-9-]*\.[a-zA-Z]{2,}/.test(text) && validTLDs.test(text);
         }
     }
 

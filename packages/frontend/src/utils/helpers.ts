@@ -185,6 +185,7 @@ export function extractUrls(text: string): string[] {
 
     // First, extract URLs from markdown links [title](url)
     const markdownLinkRegex = /\[([^\]]+?)\]\((.+?)\)/g;
+    const validTLDs = /\.(com|org|net|edu|gov|io|co|uk|us|de|fr|jp|cn|au|in|br|ca|ru|nl|se|no|fi|dk|pl|it|es|be|ch|at|nz|sg|hk|kr|tw|my|th|id|ph|vn|za|ae|sa|eg|ng|ke)$/i;
     let match;
     while ((match = markdownLinkRegex.exec(text)) !== null) {
         const url = match[2].trim();
@@ -193,7 +194,7 @@ export function extractUrls(text: string): string[] {
             urls.push('https://' + url);
         } else if (url.startsWith('http://') || url.startsWith('https://')) {
             urls.push(url);
-        } else if (/^[a-zA-Z0-9][a-zA-Z0-9-]*\.[a-zA-Z]{2,}/.test(url)) {
+        } else if (/^[a-zA-Z0-9][a-zA-Z0-9-]*\.[a-zA-Z]{2,}/.test(url) && validTLDs.test(url)) {
             // Plain domain like "google.com" or "example.org"
             urls.push('https://' + url);
         }
@@ -204,17 +205,22 @@ export function extractUrls(text: string): string[] {
 
     // Extract plain URLs from the remaining text
     // Match: https://..., http://..., www...., or domain.com
-    const urlRegex = /(https?:\/\/[^\s]+|www\.[^\s]+|(?<![/@])[a-zA-Z0-9][a-zA-Z0-9-]*\.[a-zA-Z]{2,}[^\s]*)/g;
+    const urlRegex = /(https?:\/\/[^\s]+|www\.[^\s]+|(?<![/@\w])[a-zA-Z0-9][a-zA-Z0-9-]*\.(com|org|net|edu|gov|io|co|uk|us|de|fr|jp|cn|au|in|br|ca|ru|nl|se|no|fi|dk|pl|it|es|be|ch|at|nz|sg|hk|kr|tw|my|th|id|ph|vn|za|ae|sa|eg|ng|ke|ma|tn|gh|ug|zm|zw|bw|mw|sz|ls|na|ao|mz|cd|tz|rw|bi|dj|so|sd|ss|et|er|km|sc|mu|re|yt|mg|ml|mr|ne|bf|ci|sn|gm|gw|gn|sl|lr|tg|bj|cv|st|gq|ga|cg|cm|cf|td|ly|tn|dz|ma|eh|mr|sn|gm|gw|gn|sl|lr)[^\s]*)/gi;
     const plainMatches = textWithoutMarkdownLinks.match(urlRegex);
 
     // Normalize and add plain URLs
     if (plainMatches) {
         plainMatches.forEach(url => {
+            // Skip if it looks like a function call (contains parentheses immediately after)
+            if (/\w\(\)/.test(url)) {
+                return;
+            }
+
             if (url.startsWith('www.')) {
                 urls.push('https://' + url);
             } else if (url.startsWith('http://') || url.startsWith('https://')) {
                 urls.push(url);
-            } else if (/^[a-zA-Z0-9][a-zA-Z0-9-]*\.[a-zA-Z]{2,}/.test(url)) {
+            } else if (/^[a-zA-Z0-9][a-zA-Z0-9-]*\.(com|org|net|edu|gov|io|co|uk|us|de|fr|jp|cn|au|in|br|ca|ru|nl|se|no|fi|dk|pl|it|es|be|ch|at|nz|sg|hk|kr|tw|my|th|id|ph|vn|za|ae|sa|eg|ng|ke|ma|tn|gh|ug|zm|zw|bw|mw|sz|ls|na|ao|mz|cd|tz|rw|bi|dj|so|sd|ss|et|er|km|sc|mu|re|yt|mg|ml|mr|ne|bf|ci|sn|gm|gw|gn|sl|lr|tg|bj|cv|st|gq|ga|cg|cm|cf|td|ly|tn|dz|ma|eh|mr|sn|gm|gw|gn|sl|lr)/i.test(url)) {
                 // Plain domain like "google.com" or "example.org"
                 urls.push('https://' + url);
             }
