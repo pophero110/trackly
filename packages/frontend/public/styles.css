@@ -3518,7 +3518,6 @@ modal-panel:not(.active) .modal-dialog {
 .toast-content {
   display: flex;
   align-items: center;
-  gap: 12px;
 }
 
 .toast-icon {
@@ -3531,6 +3530,7 @@ modal-panel:not(.active) .modal-dialog {
   border-radius: 50%;
   font-weight: bold;
   font-size: 0.875rem;
+  margin-right: 12px;
 }
 
 .toast-message {
