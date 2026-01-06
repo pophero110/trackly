@@ -3540,6 +3540,39 @@ modal-panel:not(.active) .modal-dialog {
   line-height: 1.5;
 }
 
+.toast-action {
+  flex-shrink: 0;
+  background: none;
+  border: none;
+  color: var(--primary);
+  font-size: 0.875rem;
+  font-weight: 600;
+  padding: 4px 8px;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.toast-action:hover {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.toast-action:active {
+  background: rgba(0, 0, 0, 0.1);
+}
+
+@media (prefers-color-scheme: dark) {
+  .toast-action:hover {
+    background: rgba(255, 255, 255, 0.1);
+  }
+
+  .toast-action:active {
+    background: rgba(255, 255, 255, 0.15);
+  }
+}
+
 /* Toast type styles */
 .toast-success {
   border-left: 4px solid #10b981;

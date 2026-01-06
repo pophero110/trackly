@@ -1011,14 +1011,37 @@ export class EntryListComponent extends WebComponent {
         });
     }
 
-    private handleDelete(entryId: string): void {
+    private async handleDelete(entryId: string): Promise<void> {
         if (!confirm('Are you sure you want to delete this entry?')) {
             return;
         }
 
+        // Get entry data before deletion for undo
+        const entry = this.store.getEntryById(entryId);
+        if (!entry) {
+            toast.error('Entry not found');
+            return;
+        }
+
         try {
-            this.store.deleteEntry(entryId);
-            toast.success('Entry deleted successfully');
+            await this.store.deleteEntry(entryId);
+            toast.show({
+                message: 'Entry deleted',
+                type: 'success',
+                duration: 5000,
+                action: {
+                    label: 'Undo',
+                    onClick: async () => {
+                        try {
+                            await this.store.addEntry(entry);
+                            toast.success('Entry restored');
+                        } catch (error) {
+                            const message = error instanceof Error ? error.message : 'Unknown error';
+                            toast.error(`Failed to restore entry: ${message}`);
+                        }
+                    }
+                }
+            });
         } catch (error) {
             const message = error instanceof Error ? error.message : 'Unknown error';
             toast.error(`Error deleting entry: ${message}`);

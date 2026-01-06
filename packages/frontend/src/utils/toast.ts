@@ -5,11 +5,17 @@
 
 export type ToastType = 'success' | 'error' | 'info' | 'warning';
 
+export interface ToastAction {
+    label: string;
+    onClick: () => void;
+}
+
 export interface ToastOptions {
     message: string;
     type?: ToastType;
     duration?: number; // milliseconds, 0 for permanent
     customIcon?: string; // Optional custom SVG icon HTML
+    action?: ToastAction; // Optional action button
 }
 
 class ToastManager {
@@ -34,7 +40,8 @@ class ToastManager {
             message,
             type = 'info',
             duration = 3000,
-            customIcon
+            customIcon,
+            action
         } = options;
 
         // Create toast element
@@ -44,12 +51,30 @@ class ToastManager {
         // Use custom icon if provided, otherwise use default
         const icon = customIcon || this.getIcon(type);
 
+        const actionButton = action ? `
+            <button class="toast-action" data-action="true">
+                ${this.escapeHtml(action.label)}
+            </button>
+        ` : '';
+
         toast.innerHTML = `
             <div class="toast-content">
                 <span class="toast-icon">${icon}</span>
                 <span class="toast-message">${this.escapeHtml(message)}</span>
+                ${actionButton}
             </div>
         `;
+
+        // Add action button handler if provided
+        if (action) {
+            const actionBtn = toast.querySelector('.toast-action');
+            if (actionBtn) {
+                actionBtn.addEventListener('click', () => {
+                    action.onClick();
+                    this.dismiss(toast);
+                });
+            }
+        }
 
         // Add to container
         if (this.container) {
