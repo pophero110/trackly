@@ -78,7 +78,7 @@ export class EntryCreateFormComponent extends WebComponent {
                 <div id="image-preview" class="image-preview"></div>
 
                 <div id="link-input-container" class="link-input-container" style="display: none;">
-                    <input type="url" id="link-input" class="link-input" placeholder="https://example.com" pattern="https?://.+" />
+                    <input type="text" id="link-input" class="link-input" placeholder="example.com or https://example.com" />
                     <button type="button" id="add-link-btn-action" class="btn-insert-link">Add</button>
                     <button type="button" id="cancel-link-btn" class="btn-cancel-link">×</button>
                 </div>
