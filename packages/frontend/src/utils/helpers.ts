@@ -109,10 +109,26 @@ export async function fetchPageTitle(url: string): Promise<string> {
 
                 if (title && title.trim()) {
                     const trimmedTitle = title.trim();
-                    // Cache the successful result
-                    titleCache.set(url, trimmedTitle);
-                    saveTitleCache();
-                    return trimmedTitle;
+
+                    // Detect proxy error pages by checking for common proxy error patterns
+                    const proxyErrorPatterns = [
+                        /corsproxy/i,
+                        /cors.*error/i,
+                        /access.*denied/i,
+                        /error.*fetching/i,
+                        /allorigins/i,
+                        /proxy.*error/i
+                    ];
+
+                    const isProxyError = proxyErrorPatterns.some(pattern => pattern.test(trimmedTitle));
+
+                    if (!isProxyError) {
+                        // Cache the successful result
+                        titleCache.set(url, trimmedTitle);
+                        saveTitleCache();
+                        return trimmedTitle;
+                    }
+                    // If it's a proxy error, continue to next proxy
                 }
             }
         } catch (error) {
