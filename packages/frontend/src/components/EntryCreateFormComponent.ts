@@ -796,8 +796,17 @@ export class EntryCreateFormComponent extends WebComponent {
             return;
         }
 
-        // Add the URL to links array
-        this.links.push(trimmedUrl);
+        // Normalize URL to include protocol
+        let normalizedUrl = trimmedUrl;
+        if (trimmedUrl.startsWith('www.')) {
+            normalizedUrl = 'https://' + trimmedUrl;
+        } else if (!/^https?:\/\//.test(trimmedUrl)) {
+            // Plain domain like "example.com"
+            normalizedUrl = 'https://' + trimmedUrl;
+        }
+
+        // Add the normalized URL to links array
+        this.links.push(normalizedUrl);
 
         // Mark as having unsaved changes
         this.hasUnsavedChanges = true;
@@ -810,14 +819,14 @@ export class EntryCreateFormComponent extends WebComponent {
 
         // Fetch title asynchronously
         try {
-            const metadata = await fetchUrlMetadata(trimmedUrl);
-            if (metadata.title && metadata.title !== trimmedUrl) {
-                this.linkTitles[trimmedUrl] = metadata.title;
+            const metadata = await fetchUrlMetadata(normalizedUrl);
+            if (metadata.title && metadata.title !== normalizedUrl) {
+                this.linkTitles[normalizedUrl] = metadata.title;
                 // Re-render to show the title
                 this.renderLinksDisplay();
             }
         } catch (error) {
-            console.error(`Failed to fetch title for link ${trimmedUrl}:`, error);
+            console.error(`Failed to fetch title for link ${normalizedUrl}:`, error);
             // Keep showing the URL if title fetch fails
         }
     }

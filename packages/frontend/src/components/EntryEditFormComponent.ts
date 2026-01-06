@@ -1241,11 +1241,20 @@ export class EntryEditFormComponent extends WebComponent {
             return;
         }
 
-        // Add the URL to entry's links array
+        // Normalize URL to include protocol
+        let normalizedUrl = trimmedUrl;
+        if (trimmedUrl.startsWith('www.')) {
+            normalizedUrl = 'https://' + trimmedUrl;
+        } else if (!/^https?:\/\//.test(trimmedUrl)) {
+            // Plain domain without www or protocol
+            normalizedUrl = 'https://' + trimmedUrl;
+        }
+
+        // Add the normalized URL to entry's links array
         if (!this.entry.links) {
             this.entry.links = [];
         }
-        this.entry.links.push(trimmedUrl);
+        this.entry.links.push(normalizedUrl);
 
         // Mark as having unsaved changes
         this.hasUnsavedChanges = true;
@@ -1257,17 +1266,17 @@ export class EntryEditFormComponent extends WebComponent {
         // Hide the link input
         this.hideLinkInput();
 
-        // Fetch title asynchronously
+        // Fetch title asynchronously with normalized URL
         try {
-            const metadata = await fetchUrlMetadata(trimmedUrl);
-            if (metadata.title && metadata.title !== trimmedUrl) {
-                this.linkTitles[trimmedUrl] = metadata.title;
+            const metadata = await fetchUrlMetadata(normalizedUrl);
+            if (metadata.title && metadata.title !== normalizedUrl) {
+                this.linkTitles[normalizedUrl] = metadata.title;
                 // Re-render to show the title
                 this.render();
                 this.attachEventListeners();
             }
         } catch (error) {
-            console.error(`Failed to fetch title for link ${trimmedUrl}:`, error);
+            console.error(`Failed to fetch title for link ${normalizedUrl}:`, error);
             // Keep showing the URL if title fetch fails
         }
     }
