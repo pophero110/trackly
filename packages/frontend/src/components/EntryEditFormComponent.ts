@@ -752,7 +752,8 @@ export class EntryEditFormComponent extends WebComponent {
             const url = new URL(text);
             return url.protocol === 'http:' || url.protocol === 'https:';
         } catch {
-            return false;
+            // Check for plain domain format (e.g., example.com, github.io)
+            return /^[a-zA-Z0-9][a-zA-Z0-9-]*\.[a-zA-Z]{2,}/.test(text);
         }
     }
 
@@ -765,8 +766,15 @@ export class EntryEditFormComponent extends WebComponent {
                 if (prop.valueType === 'url' && propertyValues[prop.id]) {
                     const url = String(propertyValues[prop.id]);
                     if (this.isUrl(url)) {
-                        // Normalize www URLs to include https://
-                        const normalizedUrl = url.startsWith('www.') ? 'https://' + url : url;
+                        // Normalize URLs to include https://
+                        let normalizedUrl = url;
+                        if (url.startsWith('www.')) {
+                            normalizedUrl = 'https://' + url;
+                        } else if (!/^https?:\/\//.test(url)) {
+                            // Plain domain like "example.com"
+                            normalizedUrl = 'https://' + url;
+                        }
+
                         const promise = fetchUrlMetadata(normalizedUrl).then(metadata => {
                             if (metadata.title && metadata.title !== normalizedUrl) {
                                 propertyValueDisplays[prop.id] = metadata.title;
