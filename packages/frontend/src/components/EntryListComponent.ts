@@ -15,6 +15,10 @@ export class EntryListComponent extends WebComponent {
   private resizeObserver: ResizeObserver | null = null;
 
   render(): void {
+    // Save scroll position before re-rendering
+    const scrollableGrid = this.querySelector('.scrollable-grid') as HTMLElement;
+    const savedScrollTop = scrollableGrid ? scrollableGrid.scrollTop : 0;
+
     // Show loading state while data is being fetched
     if (!this.store.getIsLoaded()) {
       const entryIcon = `
@@ -374,6 +378,14 @@ export class EntryListComponent extends WebComponent {
     this.attachEntityPageMenuHandlers();
     this.detectTruncatedContent();
     this.setupResizeObserver();
+
+    // Restore scroll position after re-rendering
+    if (savedScrollTop > 0) {
+      const newScrollableGrid = this.querySelector('.scrollable-grid') as HTMLElement;
+      if (newScrollableGrid) {
+        newScrollableGrid.scrollTop = savedScrollTop;
+      }
+    }
   }
 
   private detectTruncatedContent(): void {

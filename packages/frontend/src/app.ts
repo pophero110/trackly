@@ -57,6 +57,8 @@ class TracklyApp {
         // Track last loaded sort to prevent infinite reload loop
         let lastSortBy: string | undefined = undefined;
         let lastSortOrder: 'asc' | 'desc' | undefined = undefined;
+        // Track last pathname to detect when only query params changed
+        let lastPathname: string = window.location.pathname;
 
         const updatePageTitle = (view: string, entityName?: string, entryTitle?: string) => {
             let title = 'Trackly';
@@ -79,6 +81,17 @@ class TracklyApp {
             const view = URLStateManager.getView();
             const entitySlug = URLStateManager.getSelectedEntityName();
             const panelType = URLStateManager.getPanel();
+
+            // Detect if only query parameters changed (not the path)
+            const onlyQueryChanged = path === lastPathname;
+            lastPathname = path;
+
+            // If only query params changed (e.g., opening a modal), skip view re-rendering
+            if (onlyQueryChanged) {
+                // Only update panel state, don't re-render views
+                this.updatePanelState(panelType, panel);
+                return;
+            }
 
             // Redirect home (/) to /entries
             if (path === '/') {
@@ -242,8 +255,8 @@ class TracklyApp {
             const selectedEntityName = URLStateManager.getSelectedEntityName();
             const entity = selectedEntityName ? this.store.getEntityByName(selectedEntityName) : null;
 
-            // Set selected entity in store if found
-            if (entity) {
+            // Set selected entity in store if found (only if it changed to avoid unnecessary re-renders)
+            if (entity && this.store.getSelectedEntityId() !== entity.id) {
                 this.store.setSelectedEntityId(entity.id);
             }
 
