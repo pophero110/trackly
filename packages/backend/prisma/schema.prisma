@@ -59,6 +59,7 @@ model Entry {
   locationName          String?  // Optional location name (e.g., "San Francisco, CA")
   links                 String[] // Array of URLs for context/reference
   linkTitles            Json?    // URL to page title mappings
+  entryReferences       String[] // Array of entry IDs that this entry references
   isArchived            Boolean  @default(false)
   createdAt             DateTime @default(now())
   updatedAt             DateTime @updatedAt

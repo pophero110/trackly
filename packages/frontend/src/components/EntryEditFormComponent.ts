@@ -15,8 +15,10 @@ export class EntryEditFormComponent extends WebComponent {
     private images: string[] = [];
     private links: string[] = [];
     private linkTitles: Record<string, string> = {};
+    private entryReferences: string[] = []; // Entry IDs that this entry references
     private location: { latitude: number; longitude: number; name?: string } | null = null;
     private hasUnsavedChanges: boolean = false;
+    private linkInputMode: 'url' | 'entry' = 'url'; // Track which tab is active
 
     connectedCallback(): void {
         // Don't auto-render, wait for setEntry()
@@ -53,6 +55,7 @@ export class EntryEditFormComponent extends WebComponent {
             this.entry = foundEntry;
             this.images = foundEntry.images ? [...foundEntry.images] : [];
             this.linkTitles = foundEntry.linkTitles ? { ...foundEntry.linkTitles } : {};
+            this.entryReferences = foundEntry.entryReferences ? [...foundEntry.entryReferences] : [];
             // Initialize location from entry
             if (foundEntry.latitude !== undefined && foundEntry.longitude !== undefined) {
                 this.location = {
@@ -127,9 +130,19 @@ export class EntryEditFormComponent extends WebComponent {
                 <div id="image-preview" class="image-preview"></div>
 
                 <div id="link-input-container" class="link-input-container" style="display: none;">
-                    <input type="text" id="link-input" class="link-input" placeholder="example.com or https://example.com" />
-                    <button type="button" id="add-link-btn-action" class="btn-insert-link">Add</button>
-                    <button type="button" id="cancel-link-btn" class="btn-cancel-link">×</button>
+                    <div class="link-input-tabs">
+                        <button type="button" class="link-tab link-tab-active" data-tab="url">URL</button>
+                        <button type="button" class="link-tab" data-tab="entry">Entry</button>
+                    </div>
+                    <div class="link-input-content">
+                        <input type="text" id="link-input" class="link-input" placeholder="example.com or https://example.com" />
+                        <input type="text" id="entry-search-input" class="link-input" placeholder="Search entries..." style="display: none;" />
+                        <div id="entry-search-results" class="entry-search-results" style="display: none;"></div>
+                    </div>
+                    <div class="link-input-actions">
+                        <button type="button" id="add-link-btn-action" class="btn-insert-link">Add</button>
+                        <button type="button" id="cancel-link-btn" class="btn-cancel-link">×</button>
+                    </div>
                 </div>
 
                 ${this.renderLinksDisplay()}
@@ -383,8 +396,10 @@ export class EntryEditFormComponent extends WebComponent {
         const addLinkBtn = this.querySelector('#add-link-btn') as HTMLButtonElement;
         const linkInputContainer = this.querySelector('#link-input-container') as HTMLElement;
         const linkInput = this.querySelector('#link-input') as HTMLInputElement;
+        const entrySearchInput = this.querySelector('#entry-search-input') as HTMLInputElement;
         const addLinkBtnAction = this.querySelector('#add-link-btn-action') as HTMLButtonElement;
         const cancelLinkBtn = this.querySelector('#cancel-link-btn') as HTMLButtonElement;
+        const linkTabs = this.querySelectorAll('.link-tab');
 
         // Handle entity change - update value and property inputs
         if (entitySelect) {
@@ -425,12 +440,38 @@ export class EntryEditFormComponent extends WebComponent {
             addLinkBtn.addEventListener('click', () => this.showLinkInput());
         }
 
-        if (addLinkBtnAction && linkInput) {
-            addLinkBtnAction.addEventListener('click', () => this.addLink(linkInput.value));
+        // Tab switching
+        linkTabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                const tabType = (tab as HTMLElement).dataset.tab as 'url' | 'entry';
+                this.switchLinkTab(tabType);
+            });
+        });
+
+        if (addLinkBtnAction) {
+            addLinkBtnAction.addEventListener('click', () => {
+                if (this.linkInputMode === 'url' && linkInput) {
+                    this.addLink(linkInput.value);
+                }
+                // Entry references are added by clicking on search results
+            });
         }
 
         if (cancelLinkBtn && linkInputContainer) {
             cancelLinkBtn.addEventListener('click', () => this.hideLinkInput());
+        }
+
+        // Entry search input
+        if (entrySearchInput) {
+            entrySearchInput.addEventListener('input', () => {
+                this.handleEntrySearch(entrySearchInput.value);
+            });
+
+            entrySearchInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') {
+                    this.hideLinkInput();
+                }
+            });
         }
 
         if (linkInput) {
@@ -1206,21 +1247,199 @@ export class EntryEditFormComponent extends WebComponent {
     private showLinkInput(): void {
         const linkInputContainer = this.querySelector('#link-input-container') as HTMLElement;
         const linkInput = this.querySelector('#link-input') as HTMLInputElement;
+        const entrySearchInput = this.querySelector('#entry-search-input') as HTMLInputElement;
 
-        if (linkInputContainer && linkInput) {
+        if (linkInputContainer) {
             linkInputContainer.style.display = 'flex';
-            linkInput.value = '';
-            linkInput.focus();
+
+            // Focus on the correct input based on current mode
+            if (this.linkInputMode === 'url' && linkInput) {
+                linkInput.value = '';
+                linkInput.focus();
+            } else if (this.linkInputMode === 'entry' && entrySearchInput) {
+                entrySearchInput.value = '';
+                entrySearchInput.focus();
+                this.handleEntrySearch(''); // Show all entries initially
+            }
         }
     }
 
     private hideLinkInput(): void {
         const linkInputContainer = this.querySelector('#link-input-container') as HTMLElement;
         const linkInput = this.querySelector('#link-input') as HTMLInputElement;
+        const entrySearchInput = this.querySelector('#entry-search-input') as HTMLInputElement;
+        const searchResults = this.querySelector('#entry-search-results') as HTMLElement;
 
-        if (linkInputContainer && linkInput) {
+        if (linkInputContainer) {
             linkInputContainer.style.display = 'none';
-            linkInput.value = '';
+            if (linkInput) linkInput.value = '';
+            if (entrySearchInput) entrySearchInput.value = '';
+            if (searchResults) searchResults.style.display = 'none';
+        }
+    }
+
+    private switchLinkTab(mode: 'url' | 'entry'): void {
+        this.linkInputMode = mode;
+
+        const linkInput = this.querySelector('#link-input') as HTMLInputElement;
+        const entrySearchInput = this.querySelector('#entry-search-input') as HTMLInputElement;
+        const addButton = this.querySelector('#add-link-btn-action') as HTMLButtonElement;
+        const tabs = this.querySelectorAll('.link-tab');
+        const searchResults = this.querySelector('#entry-search-results') as HTMLElement;
+
+        // Update tab active state
+        tabs.forEach(tab => {
+            const tabElement = tab as HTMLElement;
+            if (tabElement.dataset.tab === mode) {
+                tabElement.classList.add('link-tab-active');
+            } else {
+                tabElement.classList.remove('link-tab-active');
+            }
+        });
+
+        // Show/hide inputs based on mode
+        if (mode === 'url') {
+            if (linkInput) {
+                linkInput.style.display = 'block';
+                linkInput.focus();
+            }
+            if (entrySearchInput) entrySearchInput.style.display = 'none';
+            if (searchResults) searchResults.style.display = 'none';
+            if (addButton) addButton.style.display = 'block';
+        } else {
+            if (linkInput) linkInput.style.display = 'none';
+            if (entrySearchInput) {
+                entrySearchInput.style.display = 'block';
+                entrySearchInput.focus();
+                this.handleEntrySearch(''); // Show all entries
+            }
+            if (addButton) addButton.style.display = 'none'; // Hide add button for entry mode
+        }
+    }
+
+    private handleEntrySearch(query: string): void {
+        const searchResults = this.querySelector('#entry-search-results') as HTMLElement;
+        if (!searchResults) return;
+
+        const entries = this.store.getEntries();
+        const lowerQuery = query.toLowerCase();
+
+        // Filter entries based on search query
+        const filteredEntries = entries.filter(entry => {
+            if (query === '') return true; // Show all if no query
+
+            const entityName = entry.entityName.toLowerCase();
+            const notes = (entry.notes || '').toLowerCase();
+            const value = (entry.valueDisplay || entry.value || '').toString().toLowerCase();
+
+            return entityName.includes(lowerQuery) ||
+                   notes.includes(lowerQuery) ||
+                   value.includes(lowerQuery);
+        });
+
+        // Sort by timestamp (most recent first)
+        filteredEntries.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+
+        // Limit to 50 results for performance
+        const limitedEntries = filteredEntries.slice(0, 50);
+
+        // Render results
+        if (limitedEntries.length === 0) {
+            searchResults.innerHTML = '<div class="entry-search-no-results">No entries found</div>';
+        } else {
+            searchResults.innerHTML = limitedEntries.map(entry => {
+                const timestamp = new Date(entry.timestamp);
+                const formattedTime = timestamp.toLocaleDateString('en-US', {
+                    month: 'short',
+                    day: 'numeric',
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+
+                const displayValue = entry.valueDisplay || entry.value;
+                const notes = entry.notes || '';
+                const preview = notes ? notes.substring(0, 100) : (displayValue ? `Value: ${displayValue}` : '');
+
+                return `
+                    <div class="entry-search-result-item" data-entry-id="${entry.id}">
+                        <div class="entry-search-result-entity">${escapeHtml(entry.entityName)}</div>
+                        <div class="entry-search-result-time">${formattedTime}</div>
+                        ${preview ? `<div class="entry-search-result-notes">${escapeHtml(preview)}</div>` : ''}
+                    </div>
+                `;
+            }).join('');
+
+            // Add click handlers to result items
+            const resultItems = searchResults.querySelectorAll('.entry-search-result-item');
+            resultItems.forEach(item => {
+                item.addEventListener('click', () => {
+                    const entryId = (item as HTMLElement).dataset.entryId;
+                    if (entryId) {
+                        this.addEntryReference(entryId);
+                    }
+                });
+            });
+        }
+
+        // Position the dropdown using fixed positioning
+        const entrySearchInput = this.querySelector('#entry-search-input') as HTMLInputElement;
+        if (entrySearchInput) {
+            const rect = entrySearchInput.getBoundingClientRect();
+            const dropdownMaxHeight = 250;
+            const viewportHeight = window.innerHeight;
+            const viewportWidth = window.innerWidth;
+
+            // Calculate available space below and above
+            const spaceBelow = viewportHeight - rect.bottom;
+            const spaceAbove = rect.top;
+
+            let top = rect.bottom + 4;
+            let maxHeight = Math.min(dropdownMaxHeight, spaceBelow - 20);
+
+            // If not enough space below, show above
+            if (spaceBelow < 150 && spaceAbove > spaceBelow) {
+                top = rect.top - Math.min(dropdownMaxHeight, spaceAbove - 20);
+                maxHeight = Math.min(dropdownMaxHeight, spaceAbove - 20);
+            }
+
+            // Ensure left position stays within viewport
+            let left = rect.left;
+            const dropdownWidth = Math.min(rect.width, viewportWidth - 40);
+            if (left + dropdownWidth > viewportWidth - 20) {
+                left = viewportWidth - dropdownWidth - 20;
+            }
+            if (left < 20) {
+                left = 20;
+            }
+
+            searchResults.style.left = `${left}px`;
+            searchResults.style.top = `${top}px`;
+            searchResults.style.width = `${dropdownWidth}px`;
+            searchResults.style.maxHeight = `${maxHeight}px`;
+        }
+
+        searchResults.style.display = 'block';
+    }
+
+    private addEntryReference(entryId: string): void {
+        // Check if already referenced
+        if (this.entryReferences.includes(entryId)) {
+            return;
+        }
+
+        this.entryReferences.push(entryId);
+        this.renderLinksDisplay();
+        this.hideLinkInput();
+        this.hasUnsavedChanges = true;
+    }
+
+    private removeEntryReference(entryId: string): void {
+        const index = this.entryReferences.indexOf(entryId);
+        if (index > -1) {
+            this.entryReferences.splice(index, 1);
+            this.renderLinksDisplay();
+            this.hasUnsavedChanges = true;
         }
     }
 

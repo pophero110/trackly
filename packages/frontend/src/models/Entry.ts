@@ -21,6 +21,7 @@ export class Entry implements IEntry {
     locationName?: string;
     links?: string[];
     linkTitles?: Record<string, string>;
+    entryReferences?: string[];
     isArchived?: boolean;
     createdAt: string;
 
@@ -41,6 +42,7 @@ export class Entry implements IEntry {
         this.locationName = data.locationName;
         this.links = data.links || [];
         this.linkTitles = data.linkTitles || {};
+        this.entryReferences = data.entryReferences || [];
         this.isArchived = data.isArchived;
         this.createdAt = data.createdAt || new Date().toISOString();
     }
@@ -90,6 +92,7 @@ export class Entry implements IEntry {
             locationName: this.locationName,
             links: this.links,
             linkTitles: this.linkTitles,
+            entryReferences: this.entryReferences,
             isArchived: this.isArchived,
             createdAt: this.createdAt
         };
