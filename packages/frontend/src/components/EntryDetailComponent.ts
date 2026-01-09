@@ -216,6 +216,29 @@ export class EntryDetailComponent extends WebComponent {
          </div>`
       : '';
 
+    // Entry References (linked entries)
+    const entryReferencesHtml = entry.entryReferences && entry.entryReferences.length > 0
+      ? `<div class="entry-references-section">
+            <h4>Linked Entries</h4>
+            <ul class="entry-references-list">
+                ${entry.entryReferences.map(refId => {
+        const refEntry = this.store.getEntryById(refId);
+        if (!refEntry) return '';
+        // Get first line of notes as title, or use entity name
+        const title = refEntry.notes ? refEntry.notes.split('\n')[0].replace(/^#\s*/, '').trim() : refEntry.entityName;
+        const truncatedTitle = title.length > 50 ? title.substring(0, 50) + '...' : title;
+        return `
+                    <li class="entry-reference-item">
+                        <a href="#" class="entry-reference-link" data-entry-id="${escapeHtml(refId)}">
+                            <span class="entry-reference-title">${escapeHtml(truncatedTitle)}</span>
+                            <span class="entry-reference-entity">${escapeHtml(refEntry.entityName)}</span>
+                        </a>
+                    </li>
+                `}).filter(html => html).join('')}
+            </ul>
+         </div>`
+      : '';
+
     // Tags (Hashtags only)
     const tagsHtml = entry.notes ? this.renderTags(entry.notes) : '';
 
@@ -235,6 +258,7 @@ export class EntryDetailComponent extends WebComponent {
                 ${imagesHtml}
                 ${tagsHtml}
                 ${linksHtml}
+                ${entryReferencesHtml}
             </div>
         `;
   }
@@ -387,6 +411,7 @@ export class EntryDetailComponent extends WebComponent {
     this.attachMenuHandlers();
     this.attachHashtagHandlers();
     this.attachEntityChipHandler();
+    this.attachEntryReferenceHandlers();
     this.attachImagePreviewHandlers();
   }
 
@@ -539,6 +564,19 @@ export class EntryDetailComponent extends WebComponent {
         }
       });
     }
+  }
+
+  private attachEntryReferenceHandlers(): void {
+    const entryReferenceLinks = this.querySelectorAll('.entry-reference-link');
+    entryReferenceLinks.forEach(link => {
+      link.addEventListener('click', (e) => {
+        e.preventDefault();
+        const entryId = (link as HTMLElement).dataset.entryId;
+        if (entryId) {
+          URLStateManager.showEntryDetail(entryId);
+        }
+      });
+    });
   }
 
   private attachImagePreviewHandlers(): void {
