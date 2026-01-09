@@ -198,11 +198,14 @@ export class EntryDetailComponent extends WebComponent {
     // Notes content
     const notesHtml = entry.notes ? `<div class="entry-notes-detail">${this.formatNotes(entry.notes)}</div>` : '';
 
-    // Links (from entry.links field)
-    const linksHtml = entry.links && entry.links.length > 0
+    // Links section - combines external links and entry references
+    const hasLinks = entry.links && entry.links.length > 0;
+    const hasEntryReferences = entry.entryReferences && entry.entryReferences.length > 0;
+
+    const linksHtml = (hasLinks || hasEntryReferences)
       ? `<div class="entry-links-section">
             <ul class="entry-links-list">
-                ${entry.links.map(link => {
+                ${hasLinks ? entry.links.map(link => {
         // Use title if available, otherwise fall back to URL
         const displayText = entry.linkTitles?.[link] || link;
         return `
@@ -211,30 +214,21 @@ export class EntryDetailComponent extends WebComponent {
                             ${escapeHtml(displayText)}
                         </a>
                     </li>
-                `}).join('')}
-            </ul>
-         </div>`
-      : '';
-
-    // Entry References (linked entries)
-    const entryReferencesHtml = entry.entryReferences && entry.entryReferences.length > 0
-      ? `<div class="entry-references-section">
-            <h4>Linked Entries</h4>
-            <ul class="entry-references-list">
-                ${entry.entryReferences.map(refId => {
+                `}).join('') : ''}
+                ${hasEntryReferences ? entry.entryReferences.map(refId => {
         const refEntry = this.store.getEntryById(refId);
         if (!refEntry) return '';
         // Get first line of notes as title, or use entity name
         const title = refEntry.notes ? refEntry.notes.split('\n')[0].replace(/^#\s*/, '').trim() : refEntry.entityName;
         const truncatedTitle = title.length > 50 ? title.substring(0, 50) + '...' : title;
         return `
-                    <li class="entry-reference-item">
-                        <a href="#" class="entry-reference-link" data-entry-id="${escapeHtml(refId)}">
+                    <li class="entry-link-item entry-reference-item">
+                        <a href="#" class="entry-link-url entry-reference-link" data-entry-id="${escapeHtml(refId)}">
                             <span class="entry-reference-title">${escapeHtml(truncatedTitle)}</span>
                             <span class="entry-reference-entity">${escapeHtml(refEntry.entityName)}</span>
                         </a>
                     </li>
-                `}).filter(html => html).join('')}
+                `}).filter(html => html).join('') : ''}
             </ul>
          </div>`
       : '';
@@ -258,7 +252,6 @@ export class EntryDetailComponent extends WebComponent {
                 ${imagesHtml}
                 ${tagsHtml}
                 ${linksHtml}
-                ${entryReferencesHtml}
             </div>
         `;
   }
