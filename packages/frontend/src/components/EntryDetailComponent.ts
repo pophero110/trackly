@@ -220,12 +220,10 @@ export class EntryDetailComponent extends WebComponent {
         if (!refEntry) return '';
         // Get first line of notes as title, or use entity name
         const title = refEntry.notes ? refEntry.notes.split('\n')[0].replace(/^#\s*/, '').trim() : refEntry.entityName;
-        const truncatedTitle = title.length > 50 ? title.substring(0, 50) + '...' : title;
         return `
-                    <li class="entry-link-item entry-reference-item">
-                        <a href="#" class="entry-link-url entry-reference-link" data-entry-id="${escapeHtml(refId)}">
-                            <span class="entry-reference-title">${escapeHtml(truncatedTitle)}</span>
-                            <span class="entry-reference-entity">${escapeHtml(refEntry.entityName)}</span>
+                    <li class="entry-link-item">
+                        <a href="#" class="entry-link-url" data-entry-id="${escapeHtml(refId)}">
+                            ${escapeHtml(title)}
                         </a>
                     </li>
                 `}).filter(html => html).join('') : ''}

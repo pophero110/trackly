@@ -3381,40 +3381,6 @@ modal-panel:not(.active) .modal-dialog {
   text-decoration: underline;
 }
 
-/* Entry reference items within links section */
-.entry-link-item.entry-reference-item {
-  background: rgba(37, 99, 235, 0.08);
-  border: 1px solid rgba(37, 99, 235, 0.2);
-  border-radius: 6px;
-  transition: all 0.15s ease;
-}
-
-.entry-link-url.entry-reference-link {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  padding: 8px 12px;
-  color: var(--text);
-  word-break: normal;
-}
-
-.entry-link-item.entry-reference-item:hover {
-  background: var(--bg-hover);
-  border-color: var(--primary);
-  transform: translateX(2px);
-}
-
-.entry-reference-title {
-  font-size: 0.875rem;
-  font-weight: 500;
-  color: var(--text);
-}
-
-.entry-reference-entity {
-  font-size: 0.75rem;
-  color: var(--text-muted);
-}
-
 .error-state {
   padding: 40px 20px;
   text-align: center;
