@@ -58,7 +58,8 @@ class TracklyApp {
         let lastSortBy: string | undefined = undefined;
         let lastSortOrder: 'asc' | 'desc' | undefined = undefined;
         // Track last pathname to detect when only query params changed
-        let lastPathname: string = window.location.pathname;
+        // Initialize to empty string so first run always updates view
+        let lastPathname: string = '';
 
         const updatePageTitle = (view: string, entityName?: string, entryTitle?: string) => {
             let title = 'Trackly';
