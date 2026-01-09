@@ -495,6 +495,14 @@ export class EntryEditFormComponent extends WebComponent {
       });
     });
 
+    // Attach remove entry reference handlers
+    this.querySelectorAll('.btn-remove-entry-ref').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const entryId = (e.target as HTMLElement).dataset.entryId || '';
+        this.removeEntryReference(entryId);
+      });
+    });
+
     // Tab key handling for note textareas
     const notesTextarea = this.querySelector('#entry-notes') as HTMLTextAreaElement;
     const zenTextarea = this.querySelector('#zen-mode-textarea') as HTMLTextAreaElement;
@@ -1511,11 +1519,15 @@ export class EntryEditFormComponent extends WebComponent {
   }
 
   private renderLinksDisplay(): string {
-    if (!this.entry.links || this.entry.links.length === 0) {
+    const hasLinks = this.entry.links && this.entry.links.length > 0;
+    const hasEntryReferences = this.entryReferences && this.entryReferences.length > 0;
+
+    if (!hasLinks && !hasEntryReferences) {
       return '';
     }
 
-    const linksHtml = this.entry.links.map((link, index) => {
+    // Render external links
+    const linksHtml = hasLinks ? this.entry.links.map((link, index) => {
       // Use title if available, otherwise show URL
       const displayText = this.linkTitles[link] || link;
       return `
@@ -1523,8 +1535,21 @@ export class EntryEditFormComponent extends WebComponent {
                 <a href="${escapeHtml(link)}" target="_blank" rel="noopener noreferrer" class="link-url" title="${escapeHtml(link)}">${escapeHtml(displayText)}</a>
                 <button type="button" class="btn-remove-link" data-index="${index}">×</button>
             </div>
-        `}).join('');
+        `}).join('') : '';
 
-    return `<div class="links-display"><div class="links-container">${linksHtml}</div></div>`;
+    // Render entry references
+    const entryReferencesHtml = hasEntryReferences ? this.entryReferences.map((entryId) => {
+      const refEntry = this.store.getEntryById(entryId);
+      if (!refEntry) return '';
+      // Get first line of notes as title, or use entity name
+      const title = refEntry.notes ? refEntry.notes.split('\n')[0].replace(/^#\s*/, '').trim() : refEntry.entityName;
+      return `
+            <div class="link-item entry-reference-item">
+                <a href="/entries/${escapeHtml(entryId)}" class="link-url entry-reference-link">${escapeHtml(title)}</a>
+                <button type="button" class="btn-remove-entry-ref" data-entry-id="${escapeHtml(entryId)}">×</button>
+            </div>
+        `}).filter(html => html).join('') : '';
+
+    return `<div class="links-display"><div class="links-container">${linksHtml}${entryReferencesHtml}</div></div>`;
   }
 }
