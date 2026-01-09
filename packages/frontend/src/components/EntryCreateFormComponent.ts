@@ -1549,7 +1549,7 @@ export class EntryCreateFormComponent extends WebComponent {
                 entry.propertyValues = propertyValues;
             }
 
-            this.store.addEntry(entry);
+            await this.store.addEntry(entry);
 
             // Show success toast
             toast.success('Entry logged successfully!');
