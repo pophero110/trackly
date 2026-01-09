@@ -222,7 +222,7 @@ export class EntryDetailComponent extends WebComponent {
         const title = refEntry.notes ? refEntry.notes.split('\n')[0].replace(/^#\s*/, '').trim() : refEntry.entityName;
         return `
                     <li class="entry-link-item">
-                        <a href="#" class="entry-link-url" data-entry-id="${escapeHtml(refId)}">
+                        <a href="/entries/${escapeHtml(refId)}" class="entry-link-url">
                             ${escapeHtml(title)}
                         </a>
                     </li>
@@ -402,7 +402,6 @@ export class EntryDetailComponent extends WebComponent {
     this.attachMenuHandlers();
     this.attachHashtagHandlers();
     this.attachEntityChipHandler();
-    this.attachEntryReferenceHandlers();
     this.attachImagePreviewHandlers();
   }
 
@@ -557,18 +556,6 @@ export class EntryDetailComponent extends WebComponent {
     }
   }
 
-  private attachEntryReferenceHandlers(): void {
-    const entryReferenceLinks = this.querySelectorAll('.entry-reference-link');
-    entryReferenceLinks.forEach(link => {
-      link.addEventListener('click', (e) => {
-        e.preventDefault();
-        const entryId = (link as HTMLElement).dataset.entryId;
-        if (entryId) {
-          URLStateManager.showEntryDetail(entryId);
-        }
-      });
-    });
-  }
 
   private attachImagePreviewHandlers(): void {
     const images = this.querySelectorAll('.entry-image-detail');
