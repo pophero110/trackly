@@ -777,9 +777,25 @@ export class EntryListComponent extends WebComponent {
             if ('vibrate' in navigator) {
               navigator.vibrate(50);
             }
-            // Show context menu at touch position
-            // Pass coordinates directly to menu positioning
-            this.showMenuAtPosition(entryId, touchStartX, touchStartY);
+            // Find the menu button and create a click event from it
+            const menuButton = card.querySelector(`[data-entry-id="${entryId}"][data-action="menu"]`) as HTMLElement;
+            if (menuButton) {
+              // Create a synthetic MouseEvent with the button as target
+              const rect = menuButton.getBoundingClientRect();
+              const syntheticEvent = new MouseEvent('click', {
+                bubbles: true,
+                cancelable: true,
+                clientX: rect.left,
+                clientY: rect.top,
+                view: window
+              });
+              // Override target to be the button
+              Object.defineProperty(syntheticEvent, 'target', {
+                value: menuButton,
+                enumerable: true
+              });
+              this.toggleMenu(entryId, syntheticEvent);
+            }
           }
         }, 500);
       });

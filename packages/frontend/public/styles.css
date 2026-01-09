@@ -1517,6 +1517,9 @@ form {
   display: flex;
   flex-direction: column;
   gap: 12px;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+  user-select: none;
 }
 
 .entry-card:hover {
