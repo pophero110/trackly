@@ -1333,8 +1333,11 @@ export class EntryEditFormComponent extends WebComponent {
     const entries = this.store.getEntries();
     const lowerQuery = query.toLowerCase();
 
-    // Filter entries based on search query
+    // Filter entries based on search query (exclude current entry)
     const filteredEntries = entries.filter(entry => {
+      // Exclude the current entry being edited
+      if (entry.id === this.entry.id) return false;
+
       if (query === '') return true; // Show all if no query
 
       const entityName = entry.entityName.toLowerCase();
@@ -1438,17 +1441,19 @@ export class EntryEditFormComponent extends WebComponent {
     }
 
     this.entryReferences.push(entryId);
-    this.renderLinksDisplay();
-    this.hideLinkInput();
     this.hasUnsavedChanges = true;
+    this.render();
+    this.attachEventListeners();
+    this.hideLinkInput();
   }
 
   private removeEntryReference(entryId: string): void {
     const index = this.entryReferences.indexOf(entryId);
     if (index > -1) {
       this.entryReferences.splice(index, 1);
-      this.renderLinksDisplay();
       this.hasUnsavedChanges = true;
+      this.render();
+      this.attachEventListeners();
     }
   }
 
