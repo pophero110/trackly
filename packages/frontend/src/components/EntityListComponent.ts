@@ -9,6 +9,8 @@ import { EntityProperty } from '../types/index.js';
  * EntityList Web Component for displaying entities in a grid layout on the home page
  */
 export class EntityListComponent extends WebComponent {
+  private documentClickHandler: (() => void) | null = null;
+
   render(): void {
     // Show loading state while data is being fetched
     if (!this.store.getIsLoaded()) {
@@ -475,6 +477,7 @@ export class EntityListComponent extends WebComponent {
     // Menu item clicks
     this.querySelectorAll('.entity-context-menu .context-menu-item').forEach(item => {
       item.addEventListener('click', (e) => {
+        e.stopPropagation(); // Stop propagation to prevent document click
         const target = e.target as HTMLElement;
         // Find the menu item (in case user clicked on icon or span)
         const menuItem = target.closest('.context-menu-item') as HTMLElement;
@@ -490,8 +493,28 @@ export class EntityListComponent extends WebComponent {
       });
     });
 
+    // Click on menu itself should not close it
+    this.querySelectorAll('.entity-context-menu').forEach(menu => {
+      menu.addEventListener('click', (e) => {
+        e.stopPropagation();
+      });
+    });
+
     // Click outside to close menus
-    document.addEventListener('click', () => this.hideAllMenus());
+    // Remove old listener if exists
+    if (this.documentClickHandler) {
+      document.removeEventListener('click', this.documentClickHandler);
+    }
+
+    // Add new listener
+    this.documentClickHandler = (e: Event) => {
+      const target = e.target as HTMLElement;
+      // Check if click is outside menu and menu button
+      if (!target.closest('.entity-context-menu') && !target.closest('[data-action="menu"]')) {
+        this.hideAllMenus();
+      }
+    };
+    document.addEventListener('click', this.documentClickHandler);
   }
 
   private toggleMenu(entityId: string, e: MouseEvent): void {
@@ -632,6 +655,15 @@ export class EntityListComponent extends WebComponent {
           filterMenu.style.display = 'none';
         }
       });
+    }
+  }
+
+  disconnectedCallback(): void {
+    super.disconnectedCallback();
+    // Clean up document click listener
+    if (this.documentClickHandler) {
+      document.removeEventListener('click', this.documentClickHandler);
+      this.documentClickHandler = null;
     }
   }
 }
