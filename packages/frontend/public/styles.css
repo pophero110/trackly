@@ -1173,35 +1173,83 @@ form {
   }
 }
 
-/* Entity Card - Bento Style */
+/* Entity Card - Bento 2.0 Style with Glassmorphism */
 .entity-card {
   position: relative;
-  background: var(--card-background);
-  border: 1px solid var(--border);
-  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  border-radius: 24px;
   padding: 0;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   cursor: pointer;
   overflow: hidden;
   display: flex;
   flex-direction: column;
+  box-shadow: 0 8px 32px rgba(31, 38, 135, 0.08);
 }
 
 .entity-card:hover {
   border-color: var(--primary);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
-  transform: translateY(-2px);
+  box-shadow: 0 12px 40px rgba(31, 38, 135, 0.15);
+  transform: translateY(-4px);
+}
+
+/* Quick Action Overlay on Hover */
+.entity-card::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.03) 0%, rgba(168, 85, 247, 0.03) 100%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.entity-card:hover::after {
+  opacity: 1;
+}
+
+/* Ensure content is above the overlay */
+.entity-card-header,
+.entity-recent-entry {
+  position: relative;
+  z-index: 1;
+}
+
+/* Dark mode glassmorphic adjustments */
+@media (prefers-color-scheme: dark) {
+  .entity-card {
+    background: rgba(30, 30, 30, 0.7);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  }
+
+  .entity-card:hover {
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
+  }
 }
 
 .entity-card-header {
-  background: var(--background);
-  padding: var(--base-size-16);
-  border-bottom: 1px solid var(--border);
-  border-radius: var(--radius) var(--radius) 0 0;
+  background: transparent;
+  padding: 20px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 24px 24px 0 0;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
+}
+
+@media (prefers-color-scheme: dark) {
+  .entity-card-header {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  }
 }
 
 .entity-name-type {
@@ -1245,18 +1293,48 @@ form {
   background: var(--background);
 }
 
-/* Entity Type Badge - Simplified */
+/* Entity Type Badge - 2026 Pill Style */
 .entity-type {
   display: inline-block;
-  padding: 2px 6px;
-  border-radius: 4px;
+  padding: 6px 12px;
+  border-radius: 16px;
   font-size: 0.6875rem;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  line-height: 1.4;
+  line-height: 1.2;
   vertical-align: middle;
   flex-shrink: 0;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+/* Type-specific subtle background tints */
+.entity-type.task {
+  background: rgba(34, 197, 94, 0.12);
+  color: #16a34a;
+  border: 1px solid rgba(34, 197, 94, 0.2);
+}
+
+.entity-type.note,
+.entity-type.journal {
+  background: rgba(168, 85, 247, 0.12);
+  color: #9333ea;
+  border: 1px solid rgba(168, 85, 247, 0.2);
+}
+
+.entity-type.tracking {
+  background: rgba(59, 130, 246, 0.12);
+  color: #2563eb;
+  border: 1px solid rgba(59, 130, 246, 0.2);
+}
+
+.entity-type.decision,
+.entity-type.goal,
+.entity-type.plan {
+  background: rgba(245, 158, 11, 0.12);
+  color: #d97706;
+  border: 1px solid rgba(245, 158, 11, 0.2);
 }
 
 /* Entity Stats Progress Bar */
@@ -1473,15 +1551,15 @@ form {
 
 /* Entity Recent Entry */
 .entity-recent-entry {
-  padding: var(--base-size-16);
-  background: var(--card-background);
+  padding: 20px;
+  background: transparent;
   position: relative;
-  border-radius: 0 0 18px 18px;
+  border-radius: 0 0 24px 24px;
   flex: 1;
   overflow: auto;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
 }
 
 .property-value-item-compact {
