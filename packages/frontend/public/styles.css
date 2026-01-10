@@ -4662,6 +4662,16 @@ slide-panel:not(.active) .slide-panel-container {
     48	.milkdown-editor .milkdown p {
     49	  margin: 0.5em 0;
     50	}
+
+.milkdown-editor .milkdown ul,
+.milkdown-editor .milkdown ol {
+  padding-left: 1.5em;
+  margin: 0.5em 0;
+}
+
+.milkdown-editor .milkdown li {
+  margin: 0.25em 0;
+}
     51	
     52	.milkdown-editor .milkdown code {
     53	  background: var(--background);
