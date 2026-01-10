@@ -9,7 +9,7 @@
   --border: #E5E7EB;
   --border-light: #F1F5F9;
   --background: #F9FAFB;
-  --card-background: #FFFFFF;
+  --card-background: #FDFCFB;
 
   /* Ambient Occlusion Shadow System (2026 Standard) */
   --shadow-ambient: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
