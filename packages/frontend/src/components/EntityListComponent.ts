@@ -146,7 +146,7 @@ export class EntityListComponent extends WebComponent {
                         </div>
                     </div>
                 </div>
-                <div class="entities-list page-grid scrollable-grid">
+                <div class="entities-bento-grid">
                     ${entitiesHtml}
                 </div>
             </div>
@@ -157,6 +157,49 @@ export class EntityListComponent extends WebComponent {
     this.attachSortHandler();
     this.attachCardClickHandlers();
     this.attachContextMenuHandlers();
+  }
+
+  private getBentoSize(entity: Entity, totalEntries: number, mostRecentEntry: any): string {
+    // Determine size based on multiple factors:
+    // 1. High entry count = larger boxes
+    // 2. Recent activity = larger boxes
+    // 3. Recency decay = older entities get smaller
+
+    const now = new Date();
+    const daysSinceLastEntry = mostRecentEntry
+      ? (now.getTime() - new Date(mostRecentEntry.timestamp).getTime()) / (1000 * 60 * 60 * 24)
+      : 999;
+
+    // Calculate importance score
+    let score = 0;
+
+    // Entry count scoring (0-40 points)
+    if (totalEntries >= 50) score += 40;
+    else if (totalEntries >= 20) score += 30;
+    else if (totalEntries >= 10) score += 20;
+    else if (totalEntries >= 5) score += 10;
+
+    // Recency scoring (0-40 points)
+    if (daysSinceLastEntry <= 1) score += 40; // Today or yesterday
+    else if (daysSinceLastEntry <= 7) score += 30; // This week
+    else if (daysSinceLastEntry <= 30) score += 20; // This month
+    else if (daysSinceLastEntry <= 90) score += 10; // Last 3 months
+
+    // Type scoring (0-20 points) - prioritize certain types
+    if (entity.type === 'Tracking') score += 15;
+    else if (entity.type === 'Task') score += 10;
+    else if (entity.type === 'Journal') score += 10;
+
+    // Map score to Bento size
+    // large: 80+ points (2x2 grid)
+    // wide: 50-79 points (2x1 grid)
+    // tall: 30-49 points (1x2 grid)
+    // small: 0-29 points (1x1 grid)
+
+    if (score >= 80) return 'large';
+    if (score >= 50) return 'wide';
+    if (score >= 30) return 'tall';
+    return 'small';
   }
 
   private renderEntityCard(entity: Entity): string {
@@ -182,8 +225,11 @@ export class EntityListComponent extends WebComponent {
     const activePercent = totalEntries > 0 ? (entryCount / totalEntries) * 100 : 0;
     const archivedPercent = totalEntries > 0 ? (archivedCount / totalEntries) * 100 : 0;
 
+    // Determine Bento size based on importance
+    const bentoSize = this.getBentoSize(entity, totalEntries, mostRecentEntry);
+
     return `
-            <div class="entity-card ${isSelected ? 'selected' : ''}" data-entity-id="${entity.id}">
+            <div class="entity-card bento-${bentoSize} ${isSelected ? 'selected' : ''}" data-entity-id="${entity.id}">
                 <div class="entity-card-header">
                     <div class="entity-name-type">
                         <h3>${escapeHtml(entity.name)}</h3>

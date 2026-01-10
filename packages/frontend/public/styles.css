@@ -1090,19 +1090,107 @@ form {
   transform: scale(1.02);
 }
 
-/* Entity Card - Simplified */
+/* Bento Grid System */
+.entities-bento-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-auto-rows: 200px;
+  gap: 16px;
+  padding: var(--base-size-24);
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+/* Bento Size Classes */
+.bento-large {
+  grid-column: span 2;
+  grid-row: span 2;
+}
+
+.bento-wide {
+  grid-column: span 2;
+  grid-row: span 1;
+}
+
+.bento-tall {
+  grid-column: span 1;
+  grid-row: span 2;
+}
+
+.bento-small {
+  grid-column: span 1;
+  grid-row: span 1;
+}
+
+/* Responsive Bento Grid */
+@media (max-width: 1200px) {
+  .entities-bento-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .bento-large {
+    grid-column: span 2;
+    grid-row: span 2;
+  }
+
+  .bento-wide {
+    grid-column: span 2;
+  }
+}
+
+@media (max-width: 768px) {
+  .entities-bento-grid {
+    grid-template-columns: repeat(2, 1fr);
+    grid-auto-rows: 180px;
+    gap: 12px;
+    padding: var(--base-size-16);
+  }
+
+  .bento-large {
+    grid-column: span 2;
+    grid-row: span 2;
+  }
+
+  .bento-wide,
+  .bento-tall {
+    grid-column: span 1;
+    grid-row: span 1;
+  }
+}
+
+@media (max-width: 480px) {
+  .entities-bento-grid {
+    grid-template-columns: 1fr;
+    grid-auto-rows: auto;
+  }
+
+  .bento-large,
+  .bento-wide,
+  .bento-tall,
+  .bento-small {
+    grid-column: span 1;
+    grid-row: span 1;
+  }
+}
+
+/* Entity Card - Bento Style */
 .entity-card {
   position: relative;
   background: var(--card-background);
   border: 1px solid var(--border);
-  border-radius: var(--radius);
+  border-radius: 18px;
   padding: 0;
-  transition: var(--transition);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   cursor: pointer;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }
 
 .entity-card:hover {
-  border-color: var(--text-muted);
+  border-color: var(--primary);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  transform: translateY(-2px);
 }
 
 .entity-card-header {
@@ -1388,7 +1476,12 @@ form {
   padding: var(--base-size-16);
   background: var(--card-background);
   position: relative;
-  border-radius: 0 0 var(--radius) var(--radius);
+  border-radius: 0 0 18px 18px;
+  flex: 1;
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
 .property-value-item-compact {
