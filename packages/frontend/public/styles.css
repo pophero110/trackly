@@ -64,11 +64,12 @@ p,
   flex-direction: column;
 }
 
-/* Header - Minimalist */
+/* Header - Paper & Ink 2026 */
 header {
   background: var(--card-background);
-  padding: var(--base-size-24) var(--base-size-24) var(--base-size-16);
-  border-bottom: 1px solid var(--border);
+  padding: 20px var(--base-size-24) 16px;
+  border-bottom: 1px solid var(--border-light);
+  box-shadow: var(--shadow-ambient);
 }
 
 .header-content {
@@ -120,7 +121,8 @@ header h1 {
   font-weight: 700;
   color: var(--text-primary);
   margin-bottom: 4px;
-  letter-spacing: -0.025em;
+  letter-spacing: -0.03em;
+  line-height: 1.2;
 }
 
 .subtitle {
@@ -285,12 +287,12 @@ entry-detail {
   line-height: 1;
 }
 
-/* Stronger Section Header Design */
+/* Stronger Section Header Design - Paper & Ink 2026 */
 .section-header-strong {
   background: var(--card-background);
-  border-bottom: 1px solid var(--border);
-  padding: 20px var(--base-size-24);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  border-bottom: 1px solid var(--border-light);
+  padding: 20px var(--base-size-24) 16px;
+  box-shadow: var(--shadow-ambient);
   flex-shrink: 0;
   /* Don't shrink header */
 }
@@ -311,18 +313,19 @@ entry-detail {
   font-weight: 700;
   color: var(--text-primary);
   margin: 0 0 4px 0;
-  letter-spacing: -0.025em;
+  letter-spacing: -0.03em;
   line-height: 1.2;
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
 }
 
 .section-subtitle {
-  font-size: 0.9375rem;
+  font-size: 0.875rem;
   color: var(--text-secondary);
   margin: 0;
   font-weight: 400;
+  line-height: 1.4;
 }
 
 .section-header-actions {
