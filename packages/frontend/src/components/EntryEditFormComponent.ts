@@ -1222,7 +1222,11 @@ export class EntryEditFormComponent extends WebComponent {
         updates.entityName = entity.name;
       }
 
-      this.store.updateEntry(this.entryId, updates);
+      // Update entry with optimistic update (doesn't wait for API)
+      this.store.updateEntry(this.entryId, updates).catch(error => {
+        console.error('Error updating entry:', error);
+        toast.error('Failed to update entry. Please try again.');
+      });
 
       // Process URLs asynchronously in text fields
       if (value && typeof value === 'string' && entity.valueType === 'text') {

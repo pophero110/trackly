@@ -146,39 +146,86 @@ export class Store {
             throw new Error(errors.join(', '));
         }
 
-        // Create entry via API
-        await APIClient.createEntry({
-            entityId: entry.entityId,
-            entityName: entry.entityName,
-            timestamp: entry.timestamp,
-            value: entry.value,
-            valueDisplay: entry.valueDisplay,
-            notes: entry.notes,
-            images: entry.images,
-            links: entry.links,
-            linkTitles: entry.linkTitles,
-            entryReferences: entry.entryReferences,
-            propertyValues: entry.propertyValues,
-            propertyValueDisplays: entry.propertyValueDisplays,
-            latitude: entry.latitude,
-            longitude: entry.longitude,
-            locationName: entry.locationName
-        });
+        // Optimistic update: Add entry to local state immediately
+        // Generate a temporary ID that will be replaced by the server's ID
+        const tempId = `temp-${Date.now()}`;
+        const optimisticEntry = new Entry({ ...entry, id: tempId });
+        this.entries.unshift(optimisticEntry); // Add to beginning
+        this.notify(); // Trigger immediate re-render
 
-        // Reload entries with current sort to ensure correct order
-        const sortBy = URLStateManager.getSortBy() || undefined;
-        const sortOrder = URLStateManager.getSortOrder() || undefined;
-        await this.reloadEntries(sortBy, sortOrder);
+        try {
+            // Create entry via API in the background
+            const createdEntry = await APIClient.createEntry({
+                entityId: entry.entityId,
+                entityName: entry.entityName,
+                timestamp: entry.timestamp,
+                value: entry.value,
+                valueDisplay: entry.valueDisplay,
+                notes: entry.notes,
+                images: entry.images,
+                links: entry.links,
+                linkTitles: entry.linkTitles,
+                entryReferences: entry.entryReferences,
+                propertyValues: entry.propertyValues,
+                propertyValueDisplays: entry.propertyValueDisplays,
+                latitude: entry.latitude,
+                longitude: entry.longitude,
+                locationName: entry.locationName
+            });
+
+            // Replace optimistic entry with real entry from server
+            const index = this.entries.findIndex(e => e.id === tempId);
+            if (index !== -1) {
+                this.entries[index] = new Entry(createdEntry);
+            }
+
+            // Reload to ensure correct sort order
+            const sortBy = URLStateManager.getSortBy() || undefined;
+            const sortOrder = URLStateManager.getSortOrder() || undefined;
+            await this.reloadEntries(sortBy, sortOrder);
+        } catch (error) {
+            // If API call fails, remove the optimistic entry
+            const index = this.entries.findIndex(e => e.id === tempId);
+            if (index !== -1) {
+                this.entries.splice(index, 1);
+                this.notify();
+            }
+            throw error; // Re-throw so the form can handle the error
+        }
     }
 
     async updateEntry(id: string, updates: Partial<IEntry>): Promise<void> {
-        // Update via API (entry might not be in local store yet due to async operations)
-        await APIClient.updateEntry(id, updates);
+        // Optimistic update: Update entry in local state immediately
+        const index = this.entries.findIndex(e => e.id === id);
+        if (index !== -1) {
+            // Store original entry for rollback
+            const originalEntry = this.entries[index];
 
-        // Reload entries with current sort to ensure correct order
-        const sortBy = URLStateManager.getSortBy() || undefined;
-        const sortOrder = URLStateManager.getSortOrder() || undefined;
-        await this.reloadEntries(sortBy, sortOrder);
+            // Apply updates optimistically
+            this.entries[index] = new Entry({ ...this.entries[index], ...updates });
+            this.notify(); // Trigger immediate re-render
+
+            try {
+                // Update via API in the background
+                await APIClient.updateEntry(id, updates);
+
+                // Reload entries with current sort to ensure correct order
+                const sortBy = URLStateManager.getSortBy() || undefined;
+                const sortOrder = URLStateManager.getSortOrder() || undefined;
+                await this.reloadEntries(sortBy, sortOrder);
+            } catch (error) {
+                // If API call fails, rollback to original entry
+                this.entries[index] = originalEntry;
+                this.notify();
+                throw error;
+            }
+        } else {
+            // Entry not in local state, just call API and reload
+            await APIClient.updateEntry(id, updates);
+            const sortBy = URLStateManager.getSortBy() || undefined;
+            const sortOrder = URLStateManager.getSortOrder() || undefined;
+            await this.reloadEntries(sortBy, sortOrder);
+        }
     }
 
     async deleteEntry(id: string): Promise<void> {

@@ -1549,9 +1549,13 @@ export class EntryCreateFormComponent extends WebComponent {
                 entry.propertyValues = propertyValues;
             }
 
-            await this.store.addEntry(entry);
+            // Add entry with optimistic update (doesn't wait for API)
+            this.store.addEntry(entry).catch(error => {
+                console.error('Error creating entry:', error);
+                toast.error('Failed to create entry. Please try again.');
+            });
 
-            // Show success toast
+            // Show success toast immediately (optimistic)
             toast.success('Entry logged successfully!');
 
             // Reset form state after successful submit
