@@ -1424,6 +1424,15 @@ form {
   overflow: visible;
 }
 
+/* Show only H1 in entry cards - hide all other content */
+.timeline-entry-notes > *:not(h1) {
+  display: none;
+}
+
+.timeline-entry-notes > h1 {
+  margin: 0;
+}
+
 .timeline-entry-notes.is-collapsible {
   max-height: 100px;
   overflow: hidden;
