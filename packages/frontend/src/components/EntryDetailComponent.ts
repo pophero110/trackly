@@ -1,6 +1,6 @@
 import { WebComponent } from './WebComponent.js';
 import { Entry } from '../models/Entry.js';
-import { escapeHtml, formatDate } from '../utils/helpers.js';
+import { escapeHtml, formatDate, debounce } from '../utils/helpers.js';
 import { parseMarkdown } from '../utils/markdown.js';
 import { URLStateManager } from '../utils/urlState.js';
 import { EntityProperty } from '../types/index.js';
@@ -16,6 +16,8 @@ export class EntryDetailComponent extends WebComponent {
   private unsubscribeUrl: (() => void) | null = null;
   private milkdownEditor: Editor | null = null;
   private editedNotes: string = '';
+  private saveStatus: 'idle' | 'saving' | 'saved' | 'error' = 'idle';
+  private debouncedSave: ((...args: any[]) => void) | null = null;
 
   connectedCallback(): void {
     super.connectedCallback();
@@ -204,9 +206,7 @@ export class EntryDetailComponent extends WebComponent {
     const notesHtml = entry.notes ? `
       <div class="entry-notes-editor-container">
         <div id="milkdown-editor" class="milkdown-editor"></div>
-        <div class="editor-actions">
-          <button class="btn btn-primary" id="save-notes-btn">Save</button>
-        </div>
+        <div class="save-status" id="save-status"></div>
       </div>
     ` : '';
 
@@ -670,18 +670,15 @@ export class EntryDetailComponent extends WebComponent {
     if (entry && entry.notes) {
       this.initializeMilkdownEditor(entry.notes);
     }
-
-    // Save notes button
-    const saveNotesBtn = this.querySelector('#save-notes-btn');
-    if (saveNotesBtn) {
-      saveNotesBtn.addEventListener('click', () => {
-        this.saveNotes();
-      });
-    }
   }
 
   private async initializeMilkdownEditor(initialNotes: string): Promise<void> {
     this.editedNotes = initialNotes;
+
+    // Create debounced save function (2 second delay)
+    this.debouncedSave = debounce(() => {
+      this.saveNotes();
+    }, 2000);
 
     const editorContainer = this.querySelector('#milkdown-editor') as HTMLElement;
     if (editorContainer) {
@@ -692,12 +689,16 @@ export class EntryDetailComponent extends WebComponent {
           this.milkdownEditor = null;
         }
 
-        // Create new editor
+        // Create new editor with auto-save on change
         this.milkdownEditor = await createMilkdownEditor(
           editorContainer,
           this.editedNotes,
           (markdown) => {
             this.editedNotes = markdown;
+            // Trigger auto-save with debounce
+            if (this.debouncedSave) {
+              this.debouncedSave();
+            }
           }
         );
       } catch (error) {
@@ -710,17 +711,48 @@ export class EntryDetailComponent extends WebComponent {
   private async saveNotes(): Promise<void> {
     if (!this.entryId || !this.editedNotes) return;
 
+    this.updateSaveStatus('saving');
+
     try {
       // Update the entry with new notes
       await this.store.updateEntry(this.entryId, {
         notes: this.editedNotes
       });
 
-      // Show success feedback (optional - could add a toast notification)
-      console.log('Notes saved successfully');
+      this.updateSaveStatus('saved');
+
+      // Clear "Saved" status after 2 seconds
+      setTimeout(() => {
+        if (this.saveStatus === 'saved') {
+          this.updateSaveStatus('idle');
+        }
+      }, 2000);
     } catch (error) {
       console.error('Failed to save notes:', error);
-      alert('Failed to save notes. Please try again.');
+      this.updateSaveStatus('error');
+
+      // Clear error status after 3 seconds
+      setTimeout(() => {
+        if (this.saveStatus === 'error') {
+          this.updateSaveStatus('idle');
+        }
+      }, 3000);
     }
+  }
+
+  private updateSaveStatus(status: 'idle' | 'saving' | 'saved' | 'error'): void {
+    this.saveStatus = status;
+    const statusEl = this.querySelector('#save-status') as HTMLElement;
+
+    if (!statusEl) return;
+
+    const statusMessages = {
+      idle: '',
+      saving: '<span class="save-status-text saving">Saving...</span>',
+      saved: '<span class="save-status-text saved">✓ Saved</span>',
+      error: '<span class="save-status-text error">Failed to save</span>'
+    };
+
+    statusEl.innerHTML = statusMessages[status];
   }
 }

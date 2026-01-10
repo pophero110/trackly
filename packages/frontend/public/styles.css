@@ -4729,6 +4729,31 @@ slide-panel:not(.active) .slide-panel-container {
    105	  color: var(--text-primary);
    106	}
    107	
+
+/* Auto-save status indicator */
+.save-status {
+  display: flex;
+  justify-content: flex-end;
+  padding: 8px 0;
+  min-height: 24px;
+}
+
+.save-status-text {
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.save-status-text.saving {
+  color: var(--text-secondary);
+}
+
+.save-status-text.saved {
+  color: #22c55e;
+}
+
+.save-status-text.error {
+  color: #ef4444;
+}
    108	/* Dark mode support */
    109	@media (prefers-color-scheme: dark) {
    110	  .milkdown-editor {
