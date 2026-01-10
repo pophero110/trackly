@@ -1291,7 +1291,7 @@ form {
 .timeline-entry {
   position: relative;
   display: grid;
-  grid-template-columns: auto 20px 1fr;
+  grid-template-columns: auto 20px minmax(0, 1fr);
   gap: 16px;
   margin-bottom: 32px;
   align-items: start;
@@ -1343,6 +1343,9 @@ form {
   box-shadow: var(--shadow-ambient);
   transition: all 0.2s ease;
   cursor: pointer;
+  min-width: 0;
+  overflow-wrap: break-word;
+  word-break: break-word;
 }
 
 .timeline-entry-card:hover {
@@ -1377,6 +1380,8 @@ form {
   font-weight: 600;
   color: var(--text-primary);
   letter-spacing: -0.02em;
+  overflow-wrap: break-word;
+  word-break: break-word;
 }
 
 .timeline-menu-btn {
@@ -1447,6 +1452,27 @@ form {
   color: var(--text-primary);
   line-height: 1.4;
   margin: 0.5em 0 0.25em 0;
+  overflow-wrap: break-word;
+  word-break: break-word;
+}
+
+/* Timeline entry notes code/pre blocks - prevent overflow */
+.timeline-entry-notes pre,
+.timeline-entry-notes code {
+  max-width: 100%;
+  overflow-x: auto;
+  word-wrap: break-word;
+  white-space: pre-wrap;
+}
+
+.timeline-entry-notes pre {
+  overflow-x: auto;
+}
+
+/* Timeline entry notes images - constrain width */
+.timeline-entry-notes img {
+  max-width: 100%;
+  height: auto;
 }
 
 .timeline-entry-tags {
@@ -1500,7 +1526,7 @@ form {
   }
 
   .timeline-entry {
-    grid-template-columns: auto 16px 1fr;
+    grid-template-columns: auto 16px minmax(0, 1fr);
     gap: 10px;
     margin-bottom: 24px;
   }
