@@ -3308,7 +3308,7 @@ modal-panel:not(.active) .modal-dialog {
   }
 }
 
-/* Slide Panel - Right to Left */
+/* Slide Panel - Slide up from bottom */
 slide-panel {
   display: none;
 }
@@ -3332,17 +3332,18 @@ slide-panel.active {
 
 .slide-panel-container {
   position: fixed;
-  top: 0;
-  right: 0;
-  width: 600px;
-  max-width: 90%;
-  height: 100%;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 85vh;
+  max-height: 800px;
   background: var(--background);
-  box-shadow: -4px 0 24px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.15);
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
   z-index: 1000;
   display: flex;
   flex-direction: column;
-  animation: slideInFromRight 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  animation: slideInFromBottom 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   overflow: hidden;
 }
 
@@ -3384,21 +3385,21 @@ slide-panel.active {
 }
 
 /* Slide panel animations */
-@keyframes slideInFromRight {
+@keyframes slideInFromBottom {
   from {
-    transform: translateX(100%);
+    transform: translateY(100%);
   }
   to {
-    transform: translateX(0);
+    transform: translateY(0);
   }
 }
 
-@keyframes slideOutToRight {
+@keyframes slideOutToBottom {
   from {
-    transform: translateX(0);
+    transform: translateY(0);
   }
   to {
-    transform: translateX(100%);
+    transform: translateY(100%);
   }
 }
 
@@ -3417,14 +3418,15 @@ slide-panel:not(.active) .slide-panel-backdrop {
 }
 
 slide-panel:not(.active) .slide-panel-container {
-  animation: slideOutToRight 0.2s ease-out forwards;
+  animation: slideOutToBottom 0.2s ease-out forwards;
 }
 
 /* Mobile adjustments for slide panel */
 @media (max-width: 768px) {
   .slide-panel-container {
-    width: 100%;
-    max-width: 100%;
+    height: 90vh;
+    max-height: none;
+    border-radius: var(--radius-md) var(--radius-md) 0 0;
   }
 
   .slide-panel-header {
