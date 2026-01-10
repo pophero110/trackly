@@ -3,6 +3,7 @@ import { storeRegistry } from './state/StoreRegistry.js';
 import { URLStateManager } from './utils/urlState.js';
 import { AppTabs } from './components/AppTabs.js';
 import { ModalPanel } from './components/ModalPanel.js';
+import { SlidePanel } from './components/SlidePanel.js';
 import { EntityCreateFormComponent } from './components/EntityCreateFormComponent.js';
 import { EntityEditFormComponent } from './components/EntityEditFormComponent.js';
 import { EntityListComponent } from './components/EntityListComponent.js';
@@ -53,6 +54,7 @@ class TracklyApp {
         const entryList = document.querySelector('entry-list') as HTMLElement;
         const entryDetail = document.querySelector('entry-detail') as HTMLElement;
         const panel = document.querySelector('modal-panel') as any;
+        const slidePanel = document.querySelector('slide-panel') as SlidePanel;
 
         // Track last loaded sort to prevent infinite reload loop
         let lastSortBy: string | undefined = undefined;
@@ -86,40 +88,45 @@ class TracklyApp {
                 return;
             }
 
-            // Check if we're on an entry detail page
+            // Check if we're on an entry detail page - use slide panel instead of full page
             const entryDetailMatch = path.match(/^\/entries\/([^/]+)$/);
             if (entryDetailMatch) {
-                // Show entry detail page
-                if (entityGrid) entityGrid.style.display = 'none';
-                if (entryList) entryList.style.display = 'none';
-                if (entryDetail) entryDetail.style.display = 'block';
-                // Only update if changed to avoid infinite loop
-                if (this.store.getSelectedEntityId() !== null) {
-                    this.store.setSelectedEntityId(null);
-                }
-
-                // Update page title with entry info if available
                 const entryId = entryDetailMatch[1];
-                if (this.store.getIsLoaded()) {
+
+                // Show entry list in background (or entities if that was the previous view)
+                const previousView = sessionStorage.getItem('previousView') || 'entries';
+                if (previousView === 'entities') {
+                    if (entityGrid) entityGrid.style.display = 'block';
+                    if (entryList) entryList.style.display = 'none';
+                } else {
+                    if (entityGrid) entityGrid.style.display = 'none';
+                    if (entryList) entryList.style.display = 'block';
+                }
+                if (entryDetail) entryDetail.style.display = 'none';
+
+                // Open slide panel with entry detail
+                if (slidePanel && this.store.getIsLoaded()) {
                     const entry = this.store.getEntryById(entryId);
                     if (entry) {
+                        // Create a fresh entry detail component
+                        const detailComponent = new EntryDetailComponent();
+                        slidePanel.open(detailComponent);
+
+                        // Update page title
                         const entity = this.store.getEntityById(entry.entityId);
                         const entryTitle = entry.notes ? entry.notes.split('\n')[0].trim().substring(0, 50) : entity?.name || 'Entry';
                         updatePageTitle('entry-detail', undefined, entryTitle);
-                    } else {
-                        updatePageTitle('entry-detail');
                     }
-                } else {
-                    updatePageTitle('entry-detail');
                 }
 
-                // Still handle panel state for entry detail page
+                // Still handle modal panel state for other forms
                 this.updatePanelState(actionType, panel);
                 return;
             }
 
-            // Hide entry detail for other views
+            // Hide entry detail and close slide panel for other views
             if (entryDetail) entryDetail.style.display = 'none';
+            if (slidePanel) slidePanel.close();
 
             // Look up entity by slug (case-insensitive match)
             let entity = null;
