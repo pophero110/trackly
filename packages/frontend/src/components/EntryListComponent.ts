@@ -270,10 +270,9 @@ export class EntryListComponent extends WebComponent {
       return;
     }
 
-    const entriesHtml = entries
-      .slice(0, this.maxEntries)
-      .map(entry => this.renderEntryCard(entry))
-      .join('');
+    // Group entries by date
+    const entriesByDate = this.groupEntriesByDate(entries.slice(0, this.maxEntries));
+    const entriesHtml = this.renderTimelineEntries(entriesByDate);
 
     const subtitle = selectedEntity
       ? `Capture ${selectedEntity.name.toLowerCase()} moments`
@@ -343,8 +342,8 @@ Delete</div>
   }
 
   private detectTruncatedContent(): void {
-    // Check each entry-content div to see if it's truncated
-    this.querySelectorAll('.entry-content').forEach(contentEl => {
+    // Check each timeline-entry-notes div to see if it's truncated
+    this.querySelectorAll('.timeline-entry-notes.is-collapsible').forEach(contentEl => {
       const element = contentEl as HTMLElement;
       // Check if content height exceeds max-height
       if (element.scrollHeight > element.clientHeight) {
@@ -366,8 +365,8 @@ Delete</div>
       this.detectTruncatedContent();
     });
 
-    // Observe all entry cards
-    this.querySelectorAll('.entry-card').forEach(card => {
+    // Observe all timeline entry cards
+    this.querySelectorAll('.timeline-entry-card').forEach(card => {
       this.resizeObserver!.observe(card as HTMLElement);
     });
   }
@@ -379,6 +378,155 @@ Delete</div>
       this.resizeObserver.disconnect();
       this.resizeObserver = null;
     }
+  }
+
+  private groupEntriesByDate(entries: Entry[]): Map<string, Entry[]> {
+    const groups = new Map<string, Entry[]>();
+
+    entries.forEach(entry => {
+      const date = new Date(entry.timestamp);
+      const dateKey = date.toLocaleDateString('en-US', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      });
+
+      if (!groups.has(dateKey)) {
+        groups.set(dateKey, []);
+      }
+      groups.get(dateKey)!.push(entry);
+    });
+
+    return groups;
+  }
+
+  private renderTimelineEntries(entriesByDate: Map<string, Entry[]>): string {
+    let html = '';
+
+    for (const [dateKey, dateEntries] of entriesByDate) {
+      html += `
+        <div class="timeline-date-group">
+          <div class="timeline-date-header">${dateKey}</div>
+          <div class="timeline-entries">
+            ${dateEntries.map(entry => this.renderTimelineEntry(entry)).join('')}
+          </div>
+        </div>
+      `;
+    }
+
+    return html;
+  }
+
+  private renderTimelineEntry(entry: Entry): string {
+    const entity = this.store.getEntityById(entry.entityId);
+    const time = new Date(entry.timestamp).toLocaleTimeString('en-US', {
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: true
+    });
+
+    // Get entity type icon
+    const typeIcon = this.getEntityTypeIcon(entity?.type);
+
+    // Determine status indicator color
+    const statusClass = this.getEntryStatusClass(entry, entity);
+
+    // Entry value - primary data point
+    const entryValue = entry.value !== undefined
+      ? this.formatValue(entry.value, entry.valueDisplay, entity?.valueType)
+      : '';
+
+    // Entity name chip
+    const entityColor = entity ? getEntityColor(entity.name) : '';
+    const entityChip = entity ? `<span class="entry-chip entry-chip-entity" data-entity-name="${escapeHtml(entity.name)}" style="--entity-color: ${entityColor}">${escapeHtml(entity.name)}</span>` : '';
+
+    // Extract hashtags from notes
+    const hashtags = entry.notes ? extractHashtags(entry.notes) : [];
+    const hashtagChips = hashtags.length > 0
+      ? hashtags.map(tag => `<span class="entry-chip entry-chip-tag" data-tag="${escapeHtml(tag)}">#${escapeHtml(tag)}</span>`).join('')
+      : '';
+
+    // Render custom properties
+    const propertiesHtml = entity && entity.properties && entity.properties.length > 0 && entry.propertyValues
+      ? this.renderPropertyValues(entity.properties, entry.propertyValues, entry.propertyValueDisplays)
+      : '';
+
+    // Notes with collapsible support
+    const notesHtml = entry.notes ? `
+      <div class="timeline-entry-notes ${entry.notes.length > 150 ? 'is-collapsible' : ''}">
+        ${this.formatNotes(entry.notes)}
+      </div>
+    ` : '';
+
+    // Location
+    const locationHtml = entry.latitude && entry.longitude
+      ? `<span class="timeline-entry-location">
+          <i class="ph ph-map-pin"></i>
+          <a href="https://www.google.com/maps?q=${entry.latitude},${entry.longitude}"
+             target="_blank"
+             rel="noopener noreferrer"
+             class="location-link">
+              ${entry.locationName || `${entry.latitude.toFixed(4)}, ${entry.longitude.toFixed(4)}`}
+          </a>
+        </span>`
+      : '';
+
+    // Images
+    const imagesHtml = entry.images && entry.images.length > 0 ? `
+      <div class="timeline-entry-media">
+        ${entry.images.map(img => `<img src="${img}" alt="Entry image" class="timeline-media-image">`).join('')}
+      </div>
+    ` : '';
+
+    return `
+      <div class="timeline-entry" data-entry-id="${entry.id}">
+        <div class="timeline-time">${time}</div>
+        <div class="timeline-dot ${statusClass}"></div>
+        <div class="timeline-entry-card">
+          <div class="timeline-entry-header">
+            <div class="timeline-entry-primary">
+              ${typeIcon && entryValue ? `<span class="timeline-entry-icon">${typeIcon}</span>` : ''}
+              ${entryValue ? `<div class="timeline-entry-value">${entryValue}</div>` : ''}
+              ${entityChip}
+            </div>
+            <button class="entry-menu-btn timeline-menu-btn" data-entry-id="${entry.id}" data-action="menu">
+              <i class="ph ph-dots-three"></i>
+            </button>
+          </div>
+          ${propertiesHtml ? `<div class="timeline-entry-properties">${propertiesHtml}</div>` : ''}
+          ${notesHtml}
+          ${hashtagChips ? `<div class="timeline-entry-tags">${hashtagChips}</div>` : ''}
+          ${locationHtml ? `<div class="timeline-entry-metadata">${locationHtml}</div>` : ''}
+          ${imagesHtml}
+        </div>
+      </div>
+      <div class="entry-context-menu" id="entry-menu-${entry.id}" style="display: none;">
+        <div class="context-menu-item" data-entry-id="${entry.id}" data-action="edit">
+          <i class="ph-duotone ph-pencil-simple"></i>
+          <span>Edit</span>
+        </div>
+        <div class="context-menu-item" data-entry-id="${entry.id}" data-action="archive">
+          <i class="ph-duotone ph-archive"></i>
+          <span>Archive</span>
+        </div>
+        <div class="context-menu-item danger" data-entry-id="${entry.id}" data-action="delete">
+          <i class="ph-duotone ph-trash"></i>
+          <span>Delete</span>
+        </div>
+      </div>
+    `;
+  }
+
+  private getEntryStatusClass(entry: Entry, entity: any): string {
+    // Determine status based on entry value or entity type
+    if (entity?.type === 'Habit' || entity?.type === 'Goal') {
+      return 'status-positive'; // Green for positive tracking
+    }
+    if (entity?.type === 'Note' || entity?.type === 'Journal') {
+      return 'status-neutral'; // Yellow/amber for notes
+    }
+    return 'status-default'; // Default gray
   }
 
   private renderEntryCard(entry: Entry): string {
@@ -687,11 +835,14 @@ Delete</div>
   }
 
   private attachCardClickHandlers(): void {
-    this.querySelectorAll('.entry-card').forEach(card => {
+    this.querySelectorAll('.timeline-entry').forEach(entryEl => {
       let longPressTimer: number | null = null;
       let touchStartX = 0;
       let touchStartY = 0;
       let longPressTriggered = false;
+
+      const card = entryEl.querySelector('.timeline-entry-card');
+      if (!card) return;
 
       // Touch start - begin long press detection
       card.addEventListener('touchstart', (e) => {
@@ -701,7 +852,7 @@ Delete</div>
         if (target.closest('[data-action="menu"]') ||
           target.tagName === 'A' ||
           target.closest('a') ||
-          target.closest('.hashtag-link')) {
+          target.closest('.entry-chip-tag')) {
           return;
         }
 
@@ -712,7 +863,7 @@ Delete</div>
 
         // Start long press timer (500ms)
         longPressTimer = window.setTimeout(() => {
-          const entryId = (card as HTMLElement).dataset.entryId;
+          const entryId = (entryEl as HTMLElement).dataset.entryId;
           if (entryId) {
             longPressTriggered = true;
             // Trigger haptic feedback if available
@@ -793,12 +944,12 @@ Delete</div>
           return;
         }
 
-        // Don't navigate if clicking on hashtag
-        if (target.closest('.hashtag-link')) {
+        // Don't navigate if clicking on hashtag or entity chip
+        if (target.closest('.entry-chip-tag') || target.closest('.entry-chip-entity')) {
           return;
         }
 
-        const entryId = (card as HTMLElement).dataset.entryId;
+        const entryId = (entryEl as HTMLElement).dataset.entryId;
         if (entryId) {
           URLStateManager.showEntryDetail(entryId);
         }
@@ -820,7 +971,7 @@ Delete</div>
           return;
         }
 
-        const entryId = (card as HTMLElement).dataset.entryId;
+        const entryId = (entryEl as HTMLElement).dataset.entryId;
         if (entryId) {
           this.toggleMenu(entryId, e as MouseEvent);
         }
