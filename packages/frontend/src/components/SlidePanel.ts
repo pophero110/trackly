@@ -74,6 +74,3 @@ export class SlidePanel extends HTMLElement {
     }
   }
 }
-
-// Register the custom element
-customElements.define('slide-panel', SlidePanel);

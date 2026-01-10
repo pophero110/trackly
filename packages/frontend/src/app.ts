@@ -358,6 +358,7 @@ class TracklyApp {
         // Register custom elements
         customElements.define('app-tabs', AppTabs);
         customElements.define('modal-panel', ModalPanel);
+        customElements.define('slide-panel', SlidePanel);
         customElements.define('entity-create-form', EntityCreateFormComponent);
         customElements.define('entity-edit-form', EntityEditFormComponent);
         customElements.define('entity-list', EntityListComponent);
