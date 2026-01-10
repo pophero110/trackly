@@ -1435,6 +1435,20 @@ form {
   pointer-events: none;
 }
 
+/* Timeline entry notes headings - all base size 16px */
+.timeline-entry-notes h1,
+.timeline-entry-notes h2,
+.timeline-entry-notes h3,
+.timeline-entry-notes h4,
+.timeline-entry-notes h5,
+.timeline-entry-notes h6 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  line-height: 1.4;
+  margin: 0.5em 0 0.25em 0;
+}
+
 .timeline-entry-tags {
   display: flex;
   flex-wrap: wrap;
