@@ -39,6 +39,30 @@
   --base-size-24: 24px;
 }
 
+/* Dark Mode - Ink & Paper 2026 Palette */
+@media (prefers-color-scheme: dark) {
+  :root {
+    /* Inverted Paper & Ink for Dark Mode */
+    --primary: #60A5FA;
+    --primary-hover: #3B82F6;
+    --success: #34D399;
+    --text-primary: #F9FAFB;
+    --text-secondary: #D1D5DB;
+    --text-muted: #9CA3AF;
+    --border: #374151;
+    --border-light: #2D3748;
+    --background: #111827;
+    --card-background: #1F2937;
+
+    /* Dark Mode Shadow System (more pronounced for visibility) */
+    --shadow-ambient: 0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -1px rgba(0, 0, 0, 0.3);
+    --shadow-hover: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
+    --shadow-elevated: 0 20px 25px -5px rgba(0, 0, 0, 0.6);
+    --shadow-glass: 0 8px 32px rgba(0, 0, 0, 0.4);
+    --shadow-glass-hover: 0 12px 40px rgba(0, 0, 0, 0.6);
+  }
+}
+
 * {
   margin: 0;
   padding: 0;
@@ -1222,19 +1246,6 @@ form {
 .entity-card-header,
 .entity-recent-entry {
   position: relative;
-}
-
-/* Dark mode glassmorphic adjustments */
-@media (prefers-color-scheme: dark) {
-  .entity-card {
-    background: rgba(30, 30, 30, 0.7);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-  }
-
-  .entity-card:hover {
-    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
-  }
 }
 
 .entity-card-header {
