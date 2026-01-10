@@ -1486,11 +1486,13 @@ form {
 
   .timeline-entry {
     grid-template-columns: auto 16px 1fr;
-    gap: 12px;
+    gap: 10px;
+    margin-bottom: 24px;
   }
 
   .timeline-time {
     font-size: 0.6875rem;
+    white-space: nowrap;
   }
 
   .timeline-dot {
@@ -1500,15 +1502,193 @@ form {
   }
 
   .timeline-entry-card {
-    padding: 16px;
+    padding: 14px;
   }
 
   .timeline-entry-value {
     font-size: 1rem;
   }
 
+  .timeline-entry-icon {
+    font-size: 1.25rem;
+  }
+
   .timeline-menu-btn {
     opacity: 1; /* Always visible on mobile */
+    min-width: 44px;
+    min-height: 44px;
+    padding: 8px;
+  }
+
+  .timeline-entry-header {
+    gap: 8px;
+  }
+
+  .timeline-entry-primary {
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .timeline-date-header {
+    font-size: 0.8125rem;
+    padding: 12px 0 10px 0;
+  }
+
+  .timeline-entry-media {
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    gap: 6px;
+  }
+
+  .timeline-media-image {
+    height: 100px;
+  }
+
+  .timeline-date-group {
+    margin-bottom: 32px;
+  }
+}
+
+/* Extra small mobile (≤480px) - Simplified timeline */
+@media (max-width: 480px) {
+  .timeline-entries {
+    padding-left: 0;
+    padding-right: 0;
+  }
+
+  .timeline-entries::before {
+    display: none; /* Hide timeline rail on very small screens */
+  }
+
+  .timeline-entry {
+    grid-template-columns: 1fr;
+    gap: 0;
+    margin-bottom: 16px;
+  }
+
+  .timeline-time {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    font-size: 0.625rem;
+    padding: 2px 6px;
+    background: var(--background-secondary);
+    border-radius: var(--radius-sm);
+    z-index: 1;
+  }
+
+  .timeline-dot {
+    display: none; /* Hide dot on very small screens */
+  }
+
+  .timeline-entry {
+    position: relative; /* For absolute positioning of time badge */
+  }
+
+  .timeline-entry-card {
+    padding: 12px;
+    padding-top: 40px; /* Space for time badge */
+    border-radius: var(--radius-md);
+  }
+
+  .timeline-entry-card:hover {
+    transform: none; /* Disable hover transform on mobile */
+  }
+
+  .timeline-entry-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+
+  .timeline-entry-primary {
+    width: 100%;
+    gap: 6px;
+  }
+
+  .timeline-menu-btn {
+    position: absolute;
+    top: 8px;
+    right: 50px;
+    min-width: 36px;
+    min-height: 36px;
+    background: var(--background-secondary);
+    border-radius: var(--radius-sm);
+  }
+
+  .timeline-entry-value {
+    font-size: 0.9375rem;
+    word-break: break-word;
+  }
+
+  .timeline-entry-icon {
+    font-size: 1.125rem;
+  }
+
+  .timeline-date-header {
+    font-size: 0.75rem;
+    padding: 10px 0 8px 0;
+    text-align: left;
+  }
+
+  .timeline-entry-notes {
+    font-size: 0.875rem;
+    line-height: 1.5;
+  }
+
+  .timeline-entry-notes.is-collapsible {
+    max-height: 80px;
+  }
+
+  .timeline-entry-tags {
+    gap: 4px;
+    margin-top: 8px;
+  }
+
+  .entry-chip {
+    font-size: 0.75rem;
+    padding: 3px 8px;
+  }
+
+  .timeline-entry-metadata {
+    font-size: 0.8125rem;
+    margin-top: 8px;
+  }
+
+  .timeline-entry-properties {
+    font-size: 0.8125rem;
+    margin-bottom: 8px;
+  }
+
+  .timeline-date-group {
+    margin-bottom: 24px;
+  }
+
+  /* Improve section header on mobile */
+  .section-header-strong {
+    padding: 12px var(--base-size-16);
+  }
+
+  .section-header-content {
+    gap: 12px;
+  }
+
+  .section-header-actions {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .btn-add-entry,
+  .btn-primary {
+    min-height: 44px;
+    padding: 10px 16px;
+    font-size: 0.9375rem;
+  }
+
+  .btn-tag-filter {
+    min-height: 40px;
+    padding: 8px 12px;
+    font-size: 0.875rem;
   }
 }
 
