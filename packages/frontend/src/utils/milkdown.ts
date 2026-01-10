@@ -41,12 +41,25 @@ export function getMarkdown(editor: Editor): string {
 }
 
 /**
- * Focus the editor
+ * Focus the editor and position cursor at the end
  */
 export function focusEditor(editor: Editor): void {
   editor.action((ctx) => {
     const view = ctx.get(editorViewCtx);
+
+    // Focus the view first
     view.focus();
+
+    // Move cursor to the end of the document
+    const { state } = view;
+    const endPos = state.doc.content.size;
+    const $endPos = state.doc.resolve(endPos);
+
+    // Find a valid cursor position near the end
+    const selection = state.selection.constructor.near($endPos, -1);
+    const transaction = state.tr.setSelection(selection);
+
+    view.dispatch(transaction);
   });
 }
 
