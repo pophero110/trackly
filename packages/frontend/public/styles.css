@@ -4623,6 +4623,13 @@ slide-panel:not(.active) .slide-panel-container {
     16	  max-height: 60vh;
     17	  overflow-y: auto;
     18	}
+
+.milkdown-editor:focus,
+.milkdown-editor:focus-within,
+.milkdown-editor *:focus {
+  outline: none;
+  border: none;
+}
     19	
     20	.milkdown-editor .milkdown {
     21	  font-family: inherit;
