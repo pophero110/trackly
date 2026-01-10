@@ -483,9 +483,11 @@ export class EntryDetailComponent extends WebComponent {
   }
 
   private handleDelete(): void {
-    this.store.deleteEntry(this.entryId!).then(() => {
-      window.history.back();
-    }).catch((error) => {
+    // Navigate back immediately (optimistic update)
+    window.history.back();
+
+    // Delete in background
+    this.store.deleteEntry(this.entryId!).catch((error) => {
       console.error('Error deleting entry:', error);
       alert('Failed to delete entry. Please try again.');
     });

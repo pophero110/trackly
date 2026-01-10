@@ -229,13 +229,33 @@ export class Store {
     }
 
     async deleteEntry(id: string): Promise<void> {
-        // Delete via API
-        await APIClient.deleteEntry(id);
+        // Optimistic update: Remove entry from local state immediately
+        const index = this.entries.findIndex(e => e.id === id);
+        if (index === -1) {
+            throw new Error('Entry not found');
+        }
 
-        // Reload entries with current sort to ensure correct order
-        const sortBy = URLStateManager.getSortBy() || undefined;
-        const sortOrder = URLStateManager.getSortOrder() || undefined;
-        await this.reloadEntries(sortBy, sortOrder);
+        // Store original entry for rollback
+        const originalEntry = this.entries[index];
+
+        // Remove from local state
+        this.entries.splice(index, 1);
+        this.notify(); // Trigger immediate re-render
+
+        try {
+            // Delete via API in the background
+            await APIClient.deleteEntry(id);
+
+            // Reload entries with current sort to ensure correct order
+            const sortBy = URLStateManager.getSortBy() || undefined;
+            const sortOrder = URLStateManager.getSortOrder() || undefined;
+            await this.reloadEntries(sortBy, sortOrder);
+        } catch (error) {
+            // If API call fails, restore the entry
+            this.entries.splice(index, 0, originalEntry);
+            this.notify();
+            throw error;
+        }
     }
 
     async archiveEntry(id: string, isArchived: boolean = true): Promise<void> {

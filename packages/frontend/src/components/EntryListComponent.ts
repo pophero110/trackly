@@ -1039,7 +1039,7 @@ export class EntryListComponent extends WebComponent {
     });
   }
 
-  private async handleDelete(entryId: string): Promise<void> {
+  private handleDelete(entryId: string): void {
     // Get entry data before deletion for undo
     const entry = this.store.getEntryById(entryId);
     if (!entry) {
@@ -1047,29 +1047,30 @@ export class EntryListComponent extends WebComponent {
       return;
     }
 
-    try {
-      await this.store.deleteEntry(entryId);
-      toast.show({
-        message: 'Entry deleted',
-        type: 'success',
-        duration: 5000,
-        action: {
-          label: 'Undo',
-          onClick: async () => {
-            try {
-              await this.store.addEntry(entry);
-              toast.success('Entry restored');
-            } catch (error) {
-              const message = error instanceof Error ? error.message : 'Unknown error';
-              toast.error(`Failed to restore entry: ${message}`);
-            }
+    // Show success toast immediately with undo option
+    toast.show({
+      message: 'Entry deleted',
+      type: 'success',
+      duration: 5000,
+      action: {
+        label: 'Undo',
+        onClick: async () => {
+          try {
+            await this.store.addEntry(entry);
+            toast.success('Entry restored');
+          } catch (error) {
+            const message = error instanceof Error ? error.message : 'Unknown error';
+            toast.error(`Failed to restore entry: ${message}`);
           }
         }
-      });
-    } catch (error) {
+      }
+    });
+
+    // Delete in background (optimistic update)
+    this.store.deleteEntry(entryId).catch((error) => {
       const message = error instanceof Error ? error.message : 'Unknown error';
       toast.error(`Error deleting entry: ${message}`);
-    }
+    });
   }
 
   private async handleArchive(entryId: string): Promise<void> {
