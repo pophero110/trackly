@@ -1368,12 +1368,12 @@ form {
 }
 
 .timeline-entry-icon {
-  font-size: 1.5rem;
+  font-size: 1rem;
   flex-shrink: 0;
 }
 
 .timeline-entry-value {
-  font-size: 1.125rem;
+  font-size: 1rem;
   font-weight: 600;
   color: var(--text-primary);
   letter-spacing: -0.02em;
@@ -1511,7 +1511,7 @@ form {
   }
 
   .timeline-entry-icon {
-    font-size: 1.25rem;
+    font-size: 1rem;
   }
 
   .timeline-menu-btn {
@@ -1618,12 +1618,12 @@ form {
   }
 
   .timeline-entry-value {
-    font-size: 0.9375rem;
+    font-size: 1rem;
     word-break: break-word;
   }
 
   .timeline-entry-icon {
-    font-size: 1.125rem;
+    font-size: 1rem;
   }
 
   .timeline-date-header {
