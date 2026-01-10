@@ -88,7 +88,7 @@ class TracklyApp {
                 return;
             }
 
-            // Check if we're on an entry detail page - use slide panel instead of full page
+            // Check if we're on an entry detail page - use slide panel with edit form for direct editing
             const entryDetailMatch = path.match(/^\/entries\/([^/]+)$/);
             if (entryDetailMatch) {
                 const entryId = entryDetailMatch[1];
@@ -104,13 +104,19 @@ class TracklyApp {
                 }
                 if (entryDetail) entryDetail.style.display = 'none';
 
-                // Open slide panel with entry detail
+                // Open slide panel with entry edit form for direct editing
                 if (slidePanel && this.store.getIsLoaded()) {
                     const entry = this.store.getEntryById(entryId);
                     if (entry) {
-                        // Create a fresh entry detail component
-                        const detailComponent = new EntryDetailComponent();
-                        slidePanel.open(detailComponent);
+                        // Create a fresh entry edit form component for inline editing
+                        const editFormComponent = new EntryEditFormComponent();
+                        slidePanel.open(editFormComponent);
+
+                        // Initialize the form with the entry data
+                        // Need to wait for the component to be added to DOM before calling setEntry
+                        setTimeout(() => {
+                            editFormComponent.setEntry(entryId);
+                        }, 0);
 
                         // Update page title
                         const entity = this.store.getEntityById(entry.entityId);
