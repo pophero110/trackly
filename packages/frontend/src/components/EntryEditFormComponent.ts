@@ -156,13 +156,6 @@ export class EntryEditFormComponent extends WebComponent {
                 <div class="form-actions">
                     <button type="submit" class="btn btn-primary">Update Entry</button>
                     <div class="action-menu-buttons">
-                        <button type="button" id="location-btn" class="btn-action-menu" title="Add location">📍</button>
-                        <button type="button" id="add-link-btn" class="btn-action-menu" title="Add link to notes">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
-                                <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
-                            </svg>
-                        </button>
                         <div style="position: relative;">
                             <button type="button" id="image-menu-btn" class="btn-action-menu" title="Add images">
                                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -189,6 +182,13 @@ export class EntryEditFormComponent extends WebComponent {
                                 </div>
                             </div>
                         </div>
+                        <button type="button" id="add-link-btn" class="btn-action-menu" title="Add link to notes">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
+                                <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
+                            </svg>
+                        </button>
+                        <button type="button" id="location-btn" class="btn-action-menu" title="Add location">📍</button>
                     </div>
                 </div>
             </form>
