@@ -3182,7 +3182,7 @@ modal-panel.active {
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 1000;
+  z-index: 1100;
   animation: fadeIn 0.2s ease-out;
 }
 
@@ -3198,6 +3198,8 @@ modal-panel.active {
   animation: modalSlideIn 0.2s ease-out;
   gap: var(--base-size-16);
   padding: var(--base-size-24);
+  position: relative;
+  z-index: 1101;
 }
 
 .glass-card {
