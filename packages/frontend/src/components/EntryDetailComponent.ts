@@ -14,7 +14,6 @@ import type { Editor } from '@milkdown/core';
 export class EntryDetailComponent extends WebComponent {
   private entryId: string | null = null;
   private unsubscribeUrl: (() => void) | null = null;
-  private isEditMode: boolean = false;
   private milkdownEditor: Editor | null = null;
   private editedNotes: string = '';
 
@@ -147,13 +146,10 @@ export class EntryDetailComponent extends WebComponent {
                     ${locationHtml}
                 </div>
                 <div class="entry-detail-actions">
-                    ${!this.isEditMode && entry.notes ? `<button class="btn-icon" id="edit-notes-btn" title="Edit notes">
-                        <i class="ph-duotone ph-pencil-simple"></i>
-                    </button>` : ''}
-                    ${!this.isEditMode && entry.notes ? `<button class="btn-icon" id="copy-notes-btn" title="Copy notes">
+                    ${entry.notes ? `<button class="btn-icon" id="copy-notes-btn" title="Copy notes">
                         <i class="ph-duotone ph-copy"></i>
                     </button>` : ''}
-                    ${!this.isEditMode ? `<button class="entry-menu-btn" id="detail-menu-btn" data-action="menu">⋮</button>` : ''}
+                    <button class="entry-menu-btn" id="detail-menu-btn" data-action="menu">⋮</button>
                 </div>
             </div>
             <div class="entry-context-menu" id="detail-menu" style="display: none;">
@@ -204,21 +200,15 @@ export class EntryDetailComponent extends WebComponent {
       ? `<div class="entry-detail-properties">${propertiesHtml}</div>`
       : '';
 
-    // Notes content - show editor if in edit mode, otherwise show formatted notes
-    let notesHtml = '';
-    if (this.isEditMode) {
-      notesHtml = entry.notes ? `
-        <div class="entry-notes-editor-container">
-          <div id="milkdown-editor" class="milkdown-editor"></div>
-          <div class="editor-actions">
-            <button class="btn btn-primary" id="save-notes-btn">Save</button>
-            <button class="btn btn-secondary" id="cancel-notes-btn">Cancel</button>
-          </div>
+    // Notes content - always show Milkdown editor
+    const notesHtml = entry.notes ? `
+      <div class="entry-notes-editor-container">
+        <div id="milkdown-editor" class="milkdown-editor"></div>
+        <div class="editor-actions">
+          <button class="btn btn-primary" id="save-notes-btn">Save</button>
         </div>
-      ` : '';
-    } else {
-      notesHtml = entry.notes ? `<div class="entry-notes-detail">${this.formatNotes(entry.notes)}</div>` : '';
-    }
+      </div>
+    ` : '';
 
     // Links section - combines external links and entry references
     const hasLinks = entry.links && entry.links.length > 0;
@@ -675,44 +665,34 @@ export class EntryDetailComponent extends WebComponent {
   }
 
   private attachNotesEditorHandlers(): void {
-    // Edit notes button
-    const editNotesBtn = this.querySelector('#edit-notes-btn');
-    if (editNotesBtn) {
-      editNotesBtn.addEventListener('click', () => {
-        this.enterEditMode();
-      });
+    // Initialize Milkdown editor after render
+    const entry = this.store.getEntryById(this.entryId!);
+    if (entry && entry.notes) {
+      this.initializeMilkdownEditor(entry.notes);
     }
 
-    // Save notes button (only available in edit mode)
+    // Save notes button
     const saveNotesBtn = this.querySelector('#save-notes-btn');
     if (saveNotesBtn) {
       saveNotesBtn.addEventListener('click', () => {
         this.saveNotes();
       });
     }
-
-    // Cancel notes button (only available in edit mode)
-    const cancelNotesBtn = this.querySelector('#cancel-notes-btn');
-    if (cancelNotesBtn) {
-      cancelNotesBtn.addEventListener('click', () => {
-        this.exitEditMode();
-      });
-    }
   }
 
-  private async enterEditMode(): Promise<void> {
-    const entry = this.store.getEntryById(this.entryId!);
-    if (!entry || !entry.notes) return;
+  private async initializeMilkdownEditor(initialNotes: string): Promise<void> {
+    this.editedNotes = initialNotes;
 
-    this.isEditMode = true;
-    this.editedNotes = entry.notes;
-    this.render();
-    this.attachEventHandlers();
-
-    // Initialize Milkdown editor after render
     const editorContainer = this.querySelector('#milkdown-editor') as HTMLElement;
     if (editorContainer) {
       try {
+        // Destroy existing editor if any
+        if (this.milkdownEditor) {
+          destroyEditor(this.milkdownEditor);
+          this.milkdownEditor = null;
+        }
+
+        // Create new editor
         this.milkdownEditor = await createMilkdownEditor(
           editorContainer,
           this.editedNotes,
@@ -723,20 +703,8 @@ export class EntryDetailComponent extends WebComponent {
       } catch (error) {
         console.error('Failed to initialize Milkdown editor:', error);
         alert('Failed to initialize editor. Please try again.');
-        this.exitEditMode();
       }
     }
-  }
-
-  private exitEditMode(): void {
-    if (this.milkdownEditor) {
-      destroyEditor(this.milkdownEditor);
-      this.milkdownEditor = null;
-    }
-    this.isEditMode = false;
-    this.editedNotes = '';
-    this.render();
-    this.attachEventHandlers();
   }
 
   private async saveNotes(): Promise<void> {
@@ -748,8 +716,8 @@ export class EntryDetailComponent extends WebComponent {
         notes: this.editedNotes
       });
 
-      // Exit edit mode and re-render
-      this.exitEditMode();
+      // Show success feedback (optional - could add a toast notification)
+      console.log('Notes saved successfully');
     } catch (error) {
       console.error('Failed to save notes:', error);
       alert('Failed to save notes. Please try again.');
