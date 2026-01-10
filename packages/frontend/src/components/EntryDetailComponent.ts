@@ -483,10 +483,6 @@ export class EntryDetailComponent extends WebComponent {
   }
 
   private handleDelete(): void {
-    if (!confirm('Are you sure you want to delete this entry?')) {
-      return;
-    }
-
     this.store.deleteEntry(this.entryId!).then(() => {
       window.history.back();
     }).catch((error) => {

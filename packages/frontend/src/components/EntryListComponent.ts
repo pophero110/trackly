@@ -1040,10 +1040,6 @@ export class EntryListComponent extends WebComponent {
   }
 
   private async handleDelete(entryId: string): Promise<void> {
-    if (!confirm('Are you sure you want to delete this entry?')) {
-      return;
-    }
-
     // Get entry data before deletion for undo
     const entry = this.store.getEntryById(entryId);
     if (!entry) {
