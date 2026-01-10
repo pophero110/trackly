@@ -5,7 +5,7 @@ import { parseMarkdown } from '../utils/markdown.js';
 import { URLStateManager } from '../utils/urlState.js';
 import { EntityProperty } from '../types/index.js';
 import { getEntityColor } from '../utils/entryHelpers.js';
-import { createMilkdownEditor, destroyEditor } from '../utils/milkdown.js';
+import { createMilkdownEditor, destroyEditor, focusEditor } from '../utils/milkdown.js';
 import type { Editor } from '@milkdown/core';
 
 /**
@@ -701,6 +701,14 @@ export class EntryDetailComponent extends WebComponent {
             }
           }
         );
+
+        // Automatically focus the editor after a brief delay
+        // to ensure it's fully rendered
+        setTimeout(() => {
+          if (this.milkdownEditor) {
+            focusEditor(this.milkdownEditor);
+          }
+        }, 100);
       } catch (error) {
         console.error('Failed to initialize Milkdown editor:', error);
         alert('Failed to initialize editor. Please try again.');
