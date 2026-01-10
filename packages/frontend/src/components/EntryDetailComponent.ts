@@ -5,6 +5,8 @@ import { parseMarkdown } from '../utils/markdown.js';
 import { URLStateManager } from '../utils/urlState.js';
 import { EntityProperty } from '../types/index.js';
 import { getEntityColor } from '../utils/entryHelpers.js';
+import { createMilkdownEditor, destroyEditor } from '../utils/milkdown.js';
+import type { Editor } from '@milkdown/core';
 
 /**
  * EntryDetail Web Component for displaying a single entry's full details
@@ -12,6 +14,9 @@ import { getEntityColor } from '../utils/entryHelpers.js';
 export class EntryDetailComponent extends WebComponent {
   private entryId: string | null = null;
   private unsubscribeUrl: (() => void) | null = null;
+  private isEditMode: boolean = false;
+  private milkdownEditor: Editor | null = null;
+  private editedNotes: string = '';
 
   connectedCallback(): void {
     super.connectedCallback();
@@ -28,6 +33,10 @@ export class EntryDetailComponent extends WebComponent {
     super.disconnectedCallback();
     if (this.unsubscribeUrl) {
       this.unsubscribeUrl();
+    }
+    if (this.milkdownEditor) {
+      destroyEditor(this.milkdownEditor);
+      this.milkdownEditor = null;
     }
   }
 
@@ -138,10 +147,13 @@ export class EntryDetailComponent extends WebComponent {
                     ${locationHtml}
                 </div>
                 <div class="entry-detail-actions">
-                    ${entry.notes ? `<button class="btn-icon" id="copy-notes-btn" title="Copy notes">
+                    ${!this.isEditMode && entry.notes ? `<button class="btn-icon" id="edit-notes-btn" title="Edit notes">
+                        <i class="ph-duotone ph-pencil-simple"></i>
+                    </button>` : ''}
+                    ${!this.isEditMode && entry.notes ? `<button class="btn-icon" id="copy-notes-btn" title="Copy notes">
                         <i class="ph-duotone ph-copy"></i>
                     </button>` : ''}
-                    <button class="entry-menu-btn" id="detail-menu-btn" data-action="menu">⋮</button>
+                    ${!this.isEditMode ? `<button class="entry-menu-btn" id="detail-menu-btn" data-action="menu">⋮</button>` : ''}
                 </div>
             </div>
             <div class="entry-context-menu" id="detail-menu" style="display: none;">
@@ -192,8 +204,21 @@ export class EntryDetailComponent extends WebComponent {
       ? `<div class="entry-detail-properties">${propertiesHtml}</div>`
       : '';
 
-    // Notes content
-    const notesHtml = entry.notes ? `<div class="entry-notes-detail">${this.formatNotes(entry.notes)}</div>` : '';
+    // Notes content - show editor if in edit mode, otherwise show formatted notes
+    let notesHtml = '';
+    if (this.isEditMode) {
+      notesHtml = entry.notes ? `
+        <div class="entry-notes-editor-container">
+          <div id="milkdown-editor" class="milkdown-editor"></div>
+          <div class="editor-actions">
+            <button class="btn btn-primary" id="save-notes-btn">Save</button>
+            <button class="btn btn-secondary" id="cancel-notes-btn">Cancel</button>
+          </div>
+        </div>
+      ` : '';
+    } else {
+      notesHtml = entry.notes ? `<div class="entry-notes-detail">${this.formatNotes(entry.notes)}</div>` : '';
+    }
 
     // Links section - combines external links and entry references
     const hasLinks = entry.links && entry.links.length > 0;
@@ -400,6 +425,7 @@ export class EntryDetailComponent extends WebComponent {
     this.attachHashtagHandlers();
     this.attachEntityChipHandler();
     this.attachImagePreviewHandlers();
+    this.attachNotesEditorHandlers();
   }
 
   private attachMenuHandlers(): void {
@@ -646,5 +672,87 @@ export class EntryDetailComponent extends WebComponent {
     };
 
     document.addEventListener('keydown', handleKeyPress);
+  }
+
+  private attachNotesEditorHandlers(): void {
+    // Edit notes button
+    const editNotesBtn = this.querySelector('#edit-notes-btn');
+    if (editNotesBtn) {
+      editNotesBtn.addEventListener('click', () => {
+        this.enterEditMode();
+      });
+    }
+
+    // Save notes button (only available in edit mode)
+    const saveNotesBtn = this.querySelector('#save-notes-btn');
+    if (saveNotesBtn) {
+      saveNotesBtn.addEventListener('click', () => {
+        this.saveNotes();
+      });
+    }
+
+    // Cancel notes button (only available in edit mode)
+    const cancelNotesBtn = this.querySelector('#cancel-notes-btn');
+    if (cancelNotesBtn) {
+      cancelNotesBtn.addEventListener('click', () => {
+        this.exitEditMode();
+      });
+    }
+  }
+
+  private async enterEditMode(): Promise<void> {
+    const entry = this.store.getEntryById(this.entryId!);
+    if (!entry || !entry.notes) return;
+
+    this.isEditMode = true;
+    this.editedNotes = entry.notes;
+    this.render();
+    this.attachEventHandlers();
+
+    // Initialize Milkdown editor after render
+    const editorContainer = this.querySelector('#milkdown-editor') as HTMLElement;
+    if (editorContainer) {
+      try {
+        this.milkdownEditor = await createMilkdownEditor(
+          editorContainer,
+          this.editedNotes,
+          (markdown) => {
+            this.editedNotes = markdown;
+          }
+        );
+      } catch (error) {
+        console.error('Failed to initialize Milkdown editor:', error);
+        alert('Failed to initialize editor. Please try again.');
+        this.exitEditMode();
+      }
+    }
+  }
+
+  private exitEditMode(): void {
+    if (this.milkdownEditor) {
+      destroyEditor(this.milkdownEditor);
+      this.milkdownEditor = null;
+    }
+    this.isEditMode = false;
+    this.editedNotes = '';
+    this.render();
+    this.attachEventHandlers();
+  }
+
+  private async saveNotes(): Promise<void> {
+    if (!this.entryId || !this.editedNotes) return;
+
+    try {
+      // Update the entry with new notes
+      await this.store.updateEntry(this.entryId, {
+        notes: this.editedNotes
+      });
+
+      // Exit edit mode and re-render
+      this.exitEditMode();
+    } catch (error) {
+      console.error('Failed to save notes:', error);
+      alert('Failed to save notes. Please try again.');
+    }
   }
 }

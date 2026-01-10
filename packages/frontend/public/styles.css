@@ -1,6 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 @import url('https://unpkg.com/@phosphor-icons/web@2.0.3/src/duotone/style.css');
 @import url('https://unpkg.com/@phosphor-icons/web@2.0.3/src/regular/style.css');
+@import url('https://cdn.jsdelivr.net/npm/@milkdown/theme-nord@7.18.0/style.css');
 
 
 :root {
@@ -4595,3 +4596,126 @@ slide-panel:not(.active) .slide-panel-container {
     width: 100%;
   }
 }
+     1	
+     2	/* Milkdown Editor Styles */
+     3	.entry-notes-editor-container {
+     4	  display: flex;
+     5	  flex-direction: column;
+     6	  gap: 16px;
+     7	  margin-top: 16px;
+     8	}
+     9	
+    10	.milkdown-editor {
+    11	  border: 1px solid var(--border);
+    12	  border-radius: var(--radius);
+    13	  padding: 16px;
+    14	  background: var(--card-background);
+    15	  min-height: 300px;
+    16	  max-height: 60vh;
+    17	  overflow-y: auto;
+    18	}
+    19	
+    20	.milkdown-editor .milkdown {
+    21	  font-family: inherit;
+    22	  font-size: 1rem;
+    23	  line-height: 1.6;
+    24	  color: var(--text-primary);
+    25	}
+    26	
+    27	.milkdown-editor .milkdown h1 {
+    28	  font-size: 1.5rem;
+    29	  font-weight: 600;
+    30	  margin: 1em 0 0.5em;
+    31	  color: var(--text-primary);
+    32	}
+    33	
+    34	.milkdown-editor .milkdown h2 {
+    35	  font-size: 1.25rem;
+    36	  font-weight: 600;
+    37	  margin: 1em 0 0.5em;
+    38	  color: var(--text-primary);
+    39	}
+    40	
+    41	.milkdown-editor .milkdown h3 {
+    42	  font-size: 1.125rem;
+    43	  font-weight: 600;
+    44	  margin: 1em 0 0.5em;
+    45	  color: var(--text-primary);
+    46	}
+    47	
+    48	.milkdown-editor .milkdown p {
+    49	  margin: 0.5em 0;
+    50	}
+    51	
+    52	.milkdown-editor .milkdown code {
+    53	  background: var(--background);
+    54	  padding: 2px 6px;
+    55	  border-radius: 4px;
+    56	  font-family: 'IBM Plex Mono', 'Courier New', monospace;
+    57	  font-size: 0.9em;
+    58	}
+    59	
+    60	.milkdown-editor .milkdown pre {
+    61	  background: var(--background);
+    62	  padding: 12px;
+    63	  border-radius: var(--radius);
+    64	  overflow-x: auto;
+    65	  margin: 1em 0;
+    66	}
+    67	
+    68	.milkdown-editor .milkdown pre code {
+    69	  background: transparent;
+    70	  padding: 0;
+    71	}
+    72	
+    73	.editor-actions {
+    74	  display: flex;
+    75	  gap: 12px;
+    76	  justify-content: flex-end;
+    77	}
+    78	
+    79	.editor-actions .btn {
+    80	  padding: 10px 20px;
+    81	  border-radius: var(--radius);
+    82	  border: none;
+    83	  font-weight: 500;
+    84	  cursor: pointer;
+    85	  transition: all 0.2s ease;
+    86	}
+    87	
+    88	.editor-actions .btn-primary {
+    89	  background: var(--primary);
+    90	  color: white;
+    91	}
+    92	
+    93	.editor-actions .btn-primary:hover {
+    94	  background: var(--primary-hover);
+    95	}
+    96	
+    97	.editor-actions .btn-secondary {
+    98	  background: var(--background);
+    99	  color: var(--text-secondary);
+   100	  border: 1px solid var(--border);
+   101	}
+   102	
+   103	.editor-actions .btn-secondary:hover {
+   104	  background: var(--border-light);
+   105	  color: var(--text-primary);
+   106	}
+   107	
+   108	/* Dark mode support */
+   109	@media (prefers-color-scheme: dark) {
+   110	  .milkdown-editor {
+   111	    background: var(--card-background);
+   112	    border-color: var(--border);
+   113	  }
+   114	
+   115	  .milkdown-editor .milkdown {
+   116	    color: var(--text-primary);
+   117	  }
+   118	
+   119	  .milkdown-editor .milkdown code,
+   120	  .milkdown-editor .milkdown pre {
+   121	    background: var(--background);
+   122	  }
+   123	}
