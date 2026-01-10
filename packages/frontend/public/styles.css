@@ -3382,19 +3382,6 @@ slide-panel.active {
   flex: 1;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
-  padding: 20px;
-}
-
-/* Style entry edit form inside slide panel */
-.slide-panel-body entry-edit-form {
-  display: block;
-  max-width: 100%;
-}
-
-.slide-panel-body entry-edit-form form {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
 }
 
 /* Slide panel animations */
