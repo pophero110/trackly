@@ -1,19 +1,40 @@
 :root {
-  --primary: #2563eb;
-  --primary-hover: #1d4ed8;
-  --text-primary: #1f2937;
-  --text-secondary: #6b7280;
-  --text-muted: #9ca3af;
-  --border: #e5e7eb;
-  --background: #f9fafb;
-  --card-background: #ffffff;
-  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-  --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  /* Paper & Ink 2026 Color Palette */
+  --primary: #3B82F6;
+  --primary-hover: #2563EB;
+  --success: #10B981;
+  --text-primary: #111827;
+  --text-secondary: #6B7280;
+  --text-muted: #9CA3AF;
+  --border: #E5E7EB;
+  --border-light: #F1F5F9;
+  --background: #F9FAFB;
+  --card-background: #FFFFFF;
+
+  /* Ambient Occlusion Shadow System (2026 Standard) */
+  --shadow-ambient: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+  --shadow-hover: 0 10px 15px -3px rgba(0, 0, 0, 0.04);
+  --shadow-elevated: 0 20px 25px -5px rgba(0, 0, 0, 0.08);
+  --shadow-glass: 0 8px 32px rgba(31, 38, 135, 0.08);
+  --shadow-glass-hover: 0 12px 40px rgba(31, 38, 135, 0.15);
+
+  /* Legacy shadows (for backwards compatibility) */
+  --shadow-sm: var(--shadow-ambient);
+  --shadow: var(--shadow-ambient);
+  --shadow-md: var(--shadow-hover);
+  --shadow-lg: var(--shadow-elevated);
+
+  /* Radii */
   --radius: 12px;
   --radius-sm: 8px;
-  --transition: all 0.2s ease;
+  --radius-lg: 24px;
+  --radius-pill: 16px;
+
+  /* Transitions */
+  --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-fast: all 0.2s ease;
+
+  /* Spacing */
   --base-size-16: 16px;
   --base-size-24: 24px;
 }
@@ -1173,53 +1194,31 @@ form {
   }
 }
 
-/* Entity Card - Bento 2.0 Style with Glassmorphism */
+/* Entity Card - Paper & Ink 2026 Style */
 .entity-card {
   position: relative;
-  background: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.4);
-  border-radius: 24px;
-  padding: 0;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  background: var(--card-background);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  transition: var(--transition);
   cursor: pointer;
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  box-shadow: 0 8px 32px rgba(31, 38, 135, 0.08);
+  box-shadow: var(--shadow-ambient);
 }
 
 .entity-card:hover {
   border-color: var(--primary);
-  box-shadow: 0 12px 40px rgba(31, 38, 135, 0.15);
-  transform: translateY(-4px);
+  box-shadow: var(--shadow-elevated);
+  transform: translateY(-5px);
 }
 
-/* Quick Action Overlay on Hover */
-.entity-card::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(135deg, rgba(59, 130, 246, 0.03) 0%, rgba(168, 85, 247, 0.03) 100%);
-  opacity: 0;
-  transition: opacity 0.3s ease;
-  pointer-events: none;
-  z-index: 0;
-}
-
-.entity-card:hover::after {
-  opacity: 1;
-}
-
-/* Ensure content is above the overlay */
+/* Ensure proper layering for card elements */
 .entity-card-header,
 .entity-recent-entry {
   position: relative;
-  z-index: 1;
 }
 
 /* Dark mode glassmorphic adjustments */
@@ -1237,9 +1236,8 @@ form {
 
 .entity-card-header {
   background: transparent;
-  padding: 20px;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
-  border-radius: 24px 24px 0 0;
+  padding: 0 0 16px 0;
+  border-bottom: 1px solid var(--border-light);
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -1337,32 +1335,34 @@ form {
   border: 1px solid rgba(245, 158, 11, 0.2);
 }
 
-/* Entity Stats Progress Bar */
+/* Entity Stats Progress Bar - 2026 Gradient Style */
 .entity-stats-bar {
   width: 100%;
-  margin-top: 8px;
+  margin-top: 12px;
 }
 
 .stats-bar-container {
   display: flex;
-  height: 6px;
-  background: var(--border);
-  border-radius: 3px;
+  height: 8px;
+  background: var(--border-light);
+  border-radius: 10px;
   overflow: hidden;
-  margin-bottom: 6px;
+  margin-bottom: 8px;
 }
 
 .stats-bar-fill {
   height: 100%;
-  transition: width 0.3s ease;
+  transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .stats-bar-active {
-  background: var(--primary);
+  background: linear-gradient(90deg, var(--primary), #60A5FA);
+  border-radius: 10px;
 }
 
 .stats-bar-archived {
-  background: #9ca3af;
+  background: linear-gradient(90deg, #9CA3AF, #D1D5DB);
+  border-radius: 10px;
 }
 
 .stats-bar-labels {
@@ -1551,10 +1551,9 @@ form {
 
 /* Entity Recent Entry */
 .entity-recent-entry {
-  padding: 20px;
+  padding: 16px 0 0 0;
   background: transparent;
   position: relative;
-  border-radius: 0 0 24px 24px;
   flex: 1;
   overflow: auto;
   display: flex;
