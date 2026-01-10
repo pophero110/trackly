@@ -16,7 +16,7 @@ export class EntryListComponent extends WebComponent {
 
   render(): void {
     // Save scroll position before re-rendering
-    const scrollableGrid = this.querySelector('.scrollable-grid') as HTMLElement;
+    const scrollableGrid = this.querySelector('.entries-grid') as HTMLElement;
     const savedScrollTop = scrollableGrid ? scrollableGrid.scrollTop : 0;
 
     // Show loading state while data is being fetched
@@ -313,7 +313,7 @@ Delete</div>
                         </div>
                     </div>
                 </div>
-                <div class="entries-list page-grid scrollable-grid">
+                <div class="entries-grid">
                     ${entriesHtml}
                 </div>
             </div>
@@ -335,7 +335,7 @@ Delete</div>
 
     // Restore scroll position after re-rendering
     if (savedScrollTop > 0) {
-      const newScrollableGrid = this.querySelector('.scrollable-grid') as HTMLElement;
+      const newScrollableGrid = this.querySelector('.entries-grid') as HTMLElement;
       if (newScrollableGrid) {
         newScrollableGrid.scrollTop = savedScrollTop;
       }

@@ -1230,6 +1230,32 @@ form {
   }
 }
 
+/* Entries Grid System */
+.entries-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 16px;
+  padding: var(--base-size-24);
+  max-width: 1400px;
+  margin: 0 auto;
+  align-content: start;
+}
+
+/* Responsive Entries Grid */
+@media (max-width: 768px) {
+  .entries-grid {
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 12px;
+    padding: var(--base-size-16);
+  }
+}
+
+@media (max-width: 480px) {
+  .entries-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 /* Entity Card - Paper & Ink 2026 Style */
 .entity-card {
   position: relative;
