@@ -5,7 +5,7 @@
 
 type StateChangeCallback = () => void;
 
-export type PanelType = 'log-entry' | 'create-entity' | 'edit-entity' | 'clone-entity' | 'edit-entry' | null;
+export type ActionType = 'log-entry' | 'create-entity' | 'edit-entity' | 'clone-entity' | 'edit-entry' | null;
 
 export class URLStateManager {
     private static listeners: StateChangeCallback[] = [];
@@ -73,14 +73,14 @@ export class URLStateManager {
     }
 
     /**
-     * Get current panel from URL
+     * Get current action from URL
      */
-    static getPanel(): PanelType {
+    static getAction(): ActionType {
         const params = new URLSearchParams(window.location.search);
-        const panel = params.get('panel');
+        const action = params.get('action');
 
-        if (panel === 'log-entry' || panel === 'create-entity' || panel === 'edit-entity' || panel === 'clone-entity' || panel === 'edit-entry') {
-            return panel;
+        if (action === 'log-entry' || action === 'create-entity' || action === 'edit-entity' || action === 'clone-entity' || action === 'edit-entry') {
+            return action;
         }
         return null;
     }
@@ -163,7 +163,7 @@ export class URLStateManager {
      */
     static openLogEntryPanel(entityName?: string): void {
         const params = new URLSearchParams(window.location.search);
-        params.set('panel', 'log-entry');
+        params.set('action', 'log-entry');
 
         if (entityName) {
             params.set('entity', URLStateManager.encodeEntityName(entityName));
@@ -177,7 +177,7 @@ export class URLStateManager {
      */
     static openCreateEntityPanel(): void {
         const params = new URLSearchParams(window.location.search);
-        params.set('panel', 'create-entity');
+        params.set('action', 'create-entity');
         URLStateManager.updateURL(params);
     }
 
@@ -186,7 +186,7 @@ export class URLStateManager {
      */
     static openEditEntityPanel(entityName: string): void {
         const params = new URLSearchParams(window.location.search);
-        params.set('panel', 'edit-entity');
+        params.set('action', 'edit-entity');
         params.set('edit', URLStateManager.encodeEntityName(entityName));
         URLStateManager.updateURL(params);
     }
@@ -196,7 +196,7 @@ export class URLStateManager {
      */
     static openCloneEntityPanel(entityName: string): void {
         const params = new URLSearchParams(window.location.search);
-        params.set('panel', 'clone-entity');
+        params.set('action', 'clone-entity');
         params.set('clone', URLStateManager.encodeEntityName(entityName));
         URLStateManager.updateURL(params);
     }
@@ -206,7 +206,7 @@ export class URLStateManager {
      */
     static openEditEntryPanel(entryId: string): void {
         const params = new URLSearchParams(window.location.search);
-        params.set('panel', 'edit-entry');
+        params.set('action', 'edit-entry');
         params.set('entryId', entryId);
         URLStateManager.updateURL(params);
     }
@@ -445,7 +445,7 @@ export class URLStateManager {
      */
     static closePanel(): void {
         const params = new URLSearchParams(window.location.search);
-        params.delete('panel');
+        params.delete('action');
         params.delete('edit');
         params.delete('entryId');
         URLStateManager.updateURL(params);

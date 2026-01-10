@@ -78,7 +78,7 @@ class TracklyApp {
             const path = window.location.pathname;
             const view = URLStateManager.getView();
             const entitySlug = URLStateManager.getSelectedEntityName();
-            const panelType = URLStateManager.getPanel();
+            const actionType = URLStateManager.getAction();
 
             // Redirect home (/) to /entries
             if (path === '/') {
@@ -114,7 +114,7 @@ class TracklyApp {
                 }
 
                 // Still handle panel state for entry detail page
-                this.updatePanelState(panelType, panel);
+                this.updatePanelState(actionType, panel);
                 return;
             }
 
@@ -222,7 +222,7 @@ class TracklyApp {
             }
 
             // Handle panel state
-            this.updatePanelState(panelType, panel);
+            this.updatePanelState(actionType, panel);
         };
 
         // Subscribe to URL changes
@@ -235,10 +235,10 @@ class TracklyApp {
         updateView();
     }
 
-    private updatePanelState(panelType: any, panel: any): void {
+    private updatePanelState(actionType: any, panel: any): void {
         if (!panel) return;
 
-        if (panelType === 'log-entry') {
+        if (actionType === 'log-entry') {
             const selectedEntityName = URLStateManager.getSelectedEntityName();
             const entity = selectedEntityName ? this.store.getEntityByName(selectedEntityName) : null;
 
@@ -255,7 +255,7 @@ class TracklyApp {
                 formClone.style.display = 'block';
                 panel.open('Log New Entry', formClone);
             }
-        } else if (panelType === 'create-entity') {
+        } else if (actionType === 'create-entity') {
             // Open create entity panel
             const formTemplate = document.querySelector('#entity-create-form-template');
             if (formTemplate && !panel.getIsOpen()) {
@@ -270,7 +270,7 @@ class TracklyApp {
 
                 panel.open('Create New Entity', formClone);
             }
-        } else if (panelType === 'edit-entity') {
+        } else if (actionType === 'edit-entity') {
             // Open edit entity panel
             const editEntitySlug = URLStateManager.getEditEntityName();
             if (editEntitySlug) {
@@ -291,7 +291,7 @@ class TracklyApp {
                     }, 0);
                 }
             }
-        } else if (panelType === 'clone-entity') {
+        } else if (actionType === 'clone-entity') {
             // Open clone entity panel
             const cloneEntitySlug = URLStateManager.getCloneEntityName();
             // Find entity by matching slug (lowercase with hyphens)
@@ -318,7 +318,7 @@ class TracklyApp {
                     panel.open('Clone Entity', formClone);
                 }
             }
-        } else if (panelType === 'edit-entry') {
+        } else if (actionType === 'edit-entry') {
             // Open edit entry panel
             const entryId = URLStateManager.getEntryId();
             if (entryId) {
