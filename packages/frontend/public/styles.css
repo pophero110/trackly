@@ -97,7 +97,7 @@ p,
 
 /* Header - Paper & Ink 2026 */
 header {
-  background: var(--card-background);
+  background: transparent;
   padding: 20px var(--base-size-24) 16px;
   border-bottom: 1px solid var(--border-light);
   box-shadow: var(--shadow-ambient);
@@ -213,8 +213,8 @@ header h1 {
   position: absolute;
   top: calc(100% + 8px);
   right: 0;
-  background: var(--card-background);
-  border: 1px solid var(--border);
+  background: transparent;
+  border: none;
   border-radius: var(--radius-sm);
   box-shadow: var(--shadow-lg);
   min-width: 160px;
@@ -324,7 +324,7 @@ entry-detail {
 
 /* Stronger Section Header Design - Paper & Ink 2026 */
 .section-header-strong {
-  background: var(--card-background);
+  background: transparent;
   border-bottom: 1px solid var(--border-light);
   padding: 20px var(--base-size-24) 16px;
   box-shadow: var(--shadow-ambient);
@@ -388,8 +388,8 @@ entry-detail {
   font-size: 0.875rem;
   font-weight: 500;
   color: var(--text-secondary);
-  background: var(--card-background);
-  border: 1px solid var(--border);
+  background: transparent;
+  border: none;
   border-radius: var(--radius-sm);
   cursor: pointer;
   transition: var(--transition);
@@ -418,7 +418,7 @@ entry-detail {
 
 .sort-select option {
   padding: 8px;
-  background: var(--card-background);
+  background: transparent;
   color: var(--text-primary);
 }
 
@@ -436,8 +436,8 @@ entry-detail {
   font-size: 0.875rem;
   font-weight: 500;
   color: var(--text-secondary);
-  background: var(--card-background);
-  border: 1px solid var(--border);
+  background: transparent;
+  border: none;
   border-radius: var(--radius-sm);
   cursor: pointer;
   transition: var(--transition);
@@ -483,8 +483,8 @@ entry-detail {
   top: 100%;
   right: 0;
   margin-top: 4px;
-  background: var(--card-background);
-  border: 1px solid var(--border);
+  background: transparent;
+  border: none;
   border-radius: var(--radius-sm);
   box-shadow: var(--shadow-lg);
   min-width: 200px;
@@ -580,7 +580,7 @@ entry-detail {
   left: 0;
   width: 100%;
   height: 100%;
-  background: var(--card-background);
+  background: transparent;
   z-index: 10000;
   display: flex;
   align-items: center;
@@ -646,7 +646,7 @@ entry-detail {
   padding: 20px 12px 20px 20px;
   font-size: 1.125rem;
   color: var(--text-muted);
-  background: var(--card-background);
+  background: transparent;
   text-align: right;
   user-select: none;
   overflow-y: hidden;
@@ -669,7 +669,7 @@ entry-detail {
   font-size: 1.125rem;
   line-height: 1.5;
   color: var(--text-primary);
-  background: var(--card-background);
+  background: transparent;
   resize: none;
   font-family: inherit;
   transition: var(--transition);
@@ -727,10 +727,10 @@ entry-detail {
 
 /* Forms - Card Style */
 form {
-  background: var(--card-background);
-  border-radius: var(--radius);
+  background: transparent;
+  border-radius: 0;
   box-shadow: var(--shadow);
-  border: 1px solid var(--border);
+  border: none;
   overflow: visible;
 }
 
@@ -751,11 +751,11 @@ form {
 .form-group textarea {
   width: 100%;
   padding: 8px 12px;
-  border: 1px solid var(--border);
+  border: none;
   border-radius: var(--radius-sm);
   font-size: 16px;
   color: var(--text-primary);
-  background: var(--card-background);
+  background: transparent;
   transition: var(--transition);
   font-family: inherit;
 }
@@ -842,7 +842,7 @@ form {
 .btn-secondary {
   background: var(--background);
   color: var(--text-primary);
-  border: 1px solid var(--border);
+  border: none;
 }
 
 .btn-secondary:hover {
@@ -905,7 +905,7 @@ form {
   aspect-ratio: 1;
   border-radius: var(--radius-sm);
   overflow: hidden;
-  border: 1px solid var(--border);
+  border: none;
 }
 
 .image-preview-item img {
@@ -944,7 +944,7 @@ form {
   align-items: center;
   padding: 12px;
   background: var(--background);
-  border: 1px solid var(--border);
+  border: none;
   border-radius: var(--radius-sm);
   margin-bottom: 8px;
 }
@@ -979,7 +979,7 @@ form {
 
 .btn-edit-property {
   background: none;
-  border: 1px solid var(--border);
+  border: none;
   color: var(--text-secondary);
   padding: 6px 12px;
   border-radius: var(--radius-sm);
@@ -996,7 +996,7 @@ form {
 
 .btn-remove-property {
   background: none;
-  border: 1px solid var(--border);
+  border: none;
   color: var(--text-secondary);
   padding: 6px 12px;
   border-radius: var(--radius-sm);
@@ -1032,9 +1032,9 @@ form {
 }
 
 .modal-container {
-  background: var(--card-background);
+  background: transparent;
   padding: var(--base-size-24);
-  border-radius: var(--radius);
+  border-radius: 0;
   max-width: 500px;
   width: 90%;
   box-shadow: var(--shadow-lg);
@@ -1074,7 +1074,7 @@ form {
   gap: var(--base-size-16);
   background: white;
   padding: var(--base-size-24);
-  border-radius: var(--radius);
+  border-radius: 0;
 }
 
 .camera-container video {
@@ -1139,7 +1139,7 @@ form {
 .entry-image {
   width: 100%;
   border-radius: var(--radius-sm);
-  border: 1px solid var(--border);
+  border: none;
   cursor: pointer;
   transition: var(--transition);
 }
@@ -1337,7 +1337,7 @@ form {
 }
 
 .timeline-entry-card {
-  background: var(--card-background);
+  background: transparent;
   border: 1px solid var(--border-light);
   border-radius: var(--radius-lg);
   padding: 20px;
@@ -1746,7 +1746,7 @@ form {
 /* Entity Card - Paper & Ink 2026 Style */
 .entity-card {
   position: relative;
-  background: var(--card-background);
+  background: transparent;
   border: 1px solid var(--border-light);
   border-radius: var(--radius-lg);
   padding: 24px;
@@ -2016,7 +2016,7 @@ form {
   padding: 2px 6px;
   border-radius: 4px;
   font-size: 0.875rem;
-  border: 1px solid var(--border);
+  border: none;
   font-weight: 400;
 }
 
@@ -2161,7 +2161,7 @@ form {
   margin-top: 12px;
   padding: 6px 12px;
   background: var(--background);
-  border: 1px solid var(--border);
+  border: none;
   border-radius: 6px;
   color: var(--primary);
   font-size: 0.875rem;
@@ -2213,8 +2213,8 @@ form {
 
 /* Entry Card - Modern & Clean */
 .entry-card {
-  background: var(--card-background);
-  border: 1px solid var(--border);
+  background: transparent;
+  border: none;
   border-radius: 12px;
   padding: var(--base-size-16) 18px;
   transition: all 0.2s ease;
@@ -2412,7 +2412,7 @@ form {
 .link-input {
   flex: 1;
   padding: 6px 10px;
-  border: 1px solid var(--border);
+  border: none;
   border-radius: 6px;
   font-size: 0.875rem;
   outline: none;
@@ -2467,7 +2467,7 @@ form {
 .entry-search-results {
   position: fixed;
   background: white;
-  border: 1px solid var(--border);
+  border: none;
   border-radius: 6px;
   max-height: 250px;
   overflow-y: auto;
@@ -2914,8 +2914,8 @@ form {
 }
 
 .entry-media-card {
-  background: var(--card-background);
-  border: 1px solid var(--border);
+  background: transparent;
+  border: none;
   border-radius: 8px;
   overflow: hidden;
   transition: transform 0.2s;
@@ -2934,8 +2934,8 @@ form {
 /* Entry Context Menu */
 .entry-context-menu {
   position: absolute;
-  background: var(--card-background);
-  border: 1px solid var(--border);
+  background: transparent;
+  border: none;
   border-radius: var(--radius-sm);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   min-width: 120px;
@@ -3197,8 +3197,8 @@ modal-panel.active {
 }
 
 .modal-dialog {
-  background: var(--card-background);
-  border-radius: var(--radius);
+  background: transparent;
+  border-radius: 0;
   max-width: 600px;
   width: 90%;
   max-height: 90vh;
@@ -3506,8 +3506,8 @@ slide-panel:not(.active) .slide-panel-container {
 .entity-context-menu,
 .entry-context-menu {
   position: fixed;
-  background: var(--card-background);
-  border: 1px solid var(--border);
+  background: transparent;
+  border: none;
   border-radius: var(--radius-sm);
   box-shadow: var(--shadow-lg);
   padding: 0;
@@ -3521,8 +3521,8 @@ slide-panel:not(.active) .slide-panel-container {
 
 .image-dropdown-menu {
   position: fixed;
-  background: var(--card-background);
-  border: 1px solid var(--border);
+  background: transparent;
+  border: none;
   border-radius: var(--radius-sm);
   box-shadow: var(--shadow-lg);
   padding: 0;
@@ -3573,8 +3573,8 @@ slide-panel:not(.active) .slide-panel-container {
 }
 
 .auth-card {
-  background: var(--card-background);
-  border-radius: var(--radius);
+  background: transparent;
+  border-radius: 0;
   box-shadow: var(--shadow-lg);
   padding: 40px;
   max-width: 420px;
@@ -3619,7 +3619,7 @@ slide-panel:not(.active) .slide-panel-container {
 }
 
 .auth-tab.active {
-  background: var(--card-background);
+  background: transparent;
   color: var(--primary);
   box-shadow: var(--shadow-sm);
 }
@@ -3644,7 +3644,7 @@ slide-panel:not(.active) .slide-panel-container {
 
 .auth-form input {
   padding: 12px var(--base-size-16);
-  border: 1px solid var(--border);
+  border: none;
   border-radius: var(--radius-sm);
   font-size: 16px;
   transition: var(--transition);
@@ -3740,7 +3740,7 @@ slide-panel:not(.active) .slide-panel-container {
 
 .entry-notes code {
   background: var(--surface);
-  border: 1px solid var(--border);
+  border: none;
   border-radius: 4px;
   padding: 2px 6px;
   font-family: 'Courier New', Courier, monospace;
@@ -3750,7 +3750,7 @@ slide-panel:not(.active) .slide-panel-container {
 
 .entry-notes pre {
   background: var(--surface);
-  border: 1px solid var(--border);
+  border: none;
   border-radius: var(--radius-sm);
   padding: 12px;
   overflow-x: auto;
@@ -3818,13 +3818,13 @@ slide-panel:not(.active) .slide-panel-container {
   width: 100%;
   margin: 12px 0;
   border-collapse: collapse;
-  border: 1px solid var(--border);
+  border: none;
 }
 
 .entry-notes th,
 .entry-notes td {
   padding: 8px 12px;
-  border: 1px solid var(--border);
+  border: none;
   text-align: left;
 }
 
@@ -3930,8 +3930,8 @@ slide-panel:not(.active) .slide-panel-container {
   align-items: center;
   gap: 8px;
   padding: 8px var(--base-size-16);
-  background: var(--card-background);
-  border: 1px solid var(--border);
+  background: transparent;
+  border: none;
   border-radius: var(--radius-sm);
   color: var(--text-secondary);
   font-size: 0.9375rem;
@@ -4009,9 +4009,9 @@ slide-panel:not(.active) .slide-panel-container {
 }
 
 .entry-detail-section {
-  background: var(--card-background);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
+  background: transparent;
+  border: none;
+  border-radius: 0;
   padding: 20px;
 }
 
@@ -4470,7 +4470,7 @@ slide-panel:not(.active) .slide-panel-container {
   pointer-events: auto;
   padding: var(--base-size-16);
   background: white;
-  border: 1px solid var(--border);
+  border: none;
   border-radius: 8px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   transform: scale(0.8);
@@ -4587,8 +4587,8 @@ slide-panel:not(.active) .slide-panel-container {
 /* Dark mode */
 @media (prefers-color-scheme: dark) {
   .toast {
-    background: var(--card-background);
-    border: 1px solid var(--border);
+    background: transparent;
+    border: none;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
   }
 }
@@ -4615,10 +4615,10 @@ slide-panel:not(.active) .slide-panel-container {
      8	}
      9	
     10	.milkdown-editor {
-    11	  border: 1px solid var(--border);
-    12	  border-radius: var(--radius);
-    13	  padding: 16px;
-    14	  background: var(--card-background);
+    11	  border: none;
+    12	  border-radius: 0;
+    13	  padding: 0;
+    14	  background: transparent;
     15	  min-height: 300px;
     16	  max-height: 60vh;
     17	  overflow-y: auto;
@@ -4667,7 +4667,7 @@ slide-panel:not(.active) .slide-panel-container {
     60	.milkdown-editor .milkdown pre {
     61	  background: var(--background);
     62	  padding: 12px;
-    63	  border-radius: var(--radius);
+    63	  border-radius: 0;
     64	  overflow-x: auto;
     65	  margin: 1em 0;
     66	}
@@ -4685,7 +4685,7 @@ slide-panel:not(.active) .slide-panel-container {
     78	
     79	.editor-actions .btn {
     80	  padding: 10px 20px;
-    81	  border-radius: var(--radius);
+    81	  border-radius: 0;
     82	  border: none;
     83	  font-weight: 500;
     84	  cursor: pointer;
@@ -4704,7 +4704,7 @@ slide-panel:not(.active) .slide-panel-container {
     97	.editor-actions .btn-secondary {
     98	  background: var(--background);
     99	  color: var(--text-secondary);
-   100	  border: 1px solid var(--border);
+   100	  border: none;
    101	}
    102	
    103	.editor-actions .btn-secondary:hover {
@@ -4715,7 +4715,7 @@ slide-panel:not(.active) .slide-panel-container {
    108	/* Dark mode support */
    109	@media (prefers-color-scheme: dark) {
    110	  .milkdown-editor {
-   111	    background: var(--card-background);
+   111	    background: transparent;
    112	    border-color: var(--border);
    113	  }
    114	
