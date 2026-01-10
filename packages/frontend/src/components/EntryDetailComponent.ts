@@ -139,18 +139,15 @@ export class EntryDetailComponent extends WebComponent {
                 </div>
                 <div class="entry-detail-actions">
                     ${entry.notes ? `<button class="btn-icon" id="copy-notes-btn" title="Copy notes">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-                            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-                        </svg>
+                        <i class="ph-duotone ph-copy"></i>
                     </button>` : ''}
                     <button class="entry-menu-btn" id="detail-menu-btn" data-action="menu">⋮</button>
                 </div>
             </div>
             <div class="entry-context-menu" id="detail-menu" style="display: none;">
-                <div class="context-menu-item" data-action="edit">Edit</div>
-                <div class="context-menu-item" data-action="archive">Archive</div>
-                <div class="context-menu-item danger" data-action="delete">Delete</div>
+                <div class="context-menu-item" data-action="edit"><i class="ph-duotone ph-pencil-simple"></i> Edit</div>
+                <div class="context-menu-item" data-action="archive"><i class="ph-duotone ph-archive"></i> Archive</div>
+                <div class="context-menu-item danger" data-action="delete"><i class="ph-duotone ph-trash"></i> Delete</div>
             </div>
         `;
   }

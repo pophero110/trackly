@@ -1,3 +1,8 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+@import url('https://unpkg.com/@phosphor-icons/web@2.0.3/src/duotone/style.css');
+@import url('https://unpkg.com/@phosphor-icons/web@2.0.3/src/regular/style.css');
+
+
 :root {
   /* Paper & Ink 2026 Color Palette */
   --primary: #3B82F6;
@@ -70,7 +75,7 @@
 }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
   background: var(--background);
   color: var(--text-primary);
   line-height: 1.5;
@@ -121,6 +126,9 @@ header {
 }
 
 .nav-link {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   font-size: 0.9375rem;
   font-weight: 500;
   color: var(--text-secondary);
@@ -232,6 +240,9 @@ header h1 {
   text-align: left;
   cursor: pointer;
   transition: var(--transition);
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .dropdown-item:hover {
@@ -2881,26 +2892,30 @@ modal-panel:not(.active) .modal-dialog {
 }
 
 .context-menu-item {
-  padding: 8px var(--base-size-16);
-  cursor: pointer;
-  font-size: 0.875rem;
-  color: var(--text-primary);
-  transition: var(--transition);
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 12px;
+  padding: 10px 16px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.2s;
+  user-select: none;
 }
 
 .context-menu-item:hover {
   background: var(--background);
+  color: var(--text-primary);
 }
 
 .context-menu-item.danger {
-  color: #dc2626;
+  color: #ef4444;
 }
 
 .context-menu-item.danger:hover {
   background: #fee2e2;
+  color: #dc2626;
 }
 
 /* Authentication Component */
