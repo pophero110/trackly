@@ -859,9 +859,8 @@ form {
 
 /* Entry Detail Footer */
 .entry-detail-footer {
-  padding: 16px 0;
+  padding: 0 var(--base-size-16) var(--base-size-16);
   border-top: var(--border-light);
-  margin-top: 24px;
 }
 
 .action-menu-buttons {
@@ -4666,7 +4665,14 @@ slide-panel:not(.active) .slide-panel-container {
   22 font-size: 1rem;
   23 line-height: 1.6;
   24 color: var(--text-primary);
+  width: 100%;
+  max-width: none;
   25
+}
+
+.milkdown-editor .ProseMirror {
+  width: 100%;
+  max-width: none;
 }
 
 26 27 .milkdown-editor .milkdown h1 {
