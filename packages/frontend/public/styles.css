@@ -367,6 +367,9 @@ entry-detail {
   display: flex;
   align-items: center;
   gap: 12px;
+  justify-content: center;
+  padding-top: var(--base-size-16);
+  padding-right: var(--base-size-16);
 }
 
 .btn-add-entry {
@@ -388,7 +391,7 @@ entry-detail {
   font-size: 0.875rem;
   font-weight: 500;
   color: var(--text-secondary);
-  background: transparent;
+  background: var(--background);
   border: none;
   border-radius: var(--radius-sm);
   cursor: pointer;
@@ -483,7 +486,7 @@ entry-detail {
   top: 100%;
   right: 0;
   margin-top: 4px;
-  background: transparent;
+  background: var(--background);
   border: none;
   border-radius: var(--radius-sm);
   box-shadow: var(--shadow-lg);
