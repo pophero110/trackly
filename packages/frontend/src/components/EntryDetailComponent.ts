@@ -18,6 +18,7 @@ export class EntryDetailComponent extends WebComponent {
   private editedNotes: string = '';
   private saveStatus: 'idle' | 'saving' | 'saved' | 'error' = 'idle';
   private debouncedSave: ((...args: any[]) => void) | null = null;
+  private documentClickHandler: (() => void) | null = null;
 
   connectedCallback(): void {
     super.connectedCallback();
@@ -38,6 +39,10 @@ export class EntryDetailComponent extends WebComponent {
     if (this.milkdownEditor) {
       destroyEditor(this.milkdownEditor);
       this.milkdownEditor = null;
+    }
+    if (this.documentClickHandler) {
+      document.removeEventListener('click', this.documentClickHandler);
+      this.documentClickHandler = null;
     }
   }
 
@@ -474,7 +479,7 @@ export class EntryDetailComponent extends WebComponent {
     // Menu item clicks
     this.querySelectorAll('#detail-menu .context-menu-item').forEach(item => {
       item.addEventListener('click', (e) => {
-        const target = e.target as HTMLElement;
+        const target = e.currentTarget as HTMLElement;
         const action = target.dataset.action;
 
         if (action === 'archive') {
@@ -486,8 +491,14 @@ export class EntryDetailComponent extends WebComponent {
       });
     });
 
-    // Click outside to close menu
-    document.addEventListener('click', () => this.hideMenu());
+    // Remove old document click handler if exists
+    if (this.documentClickHandler) {
+      document.removeEventListener('click', this.documentClickHandler);
+    }
+
+    // Add new document click handler to close menu
+    this.documentClickHandler = () => this.hideMenu();
+    document.addEventListener('click', this.documentClickHandler);
   }
 
   private toggleMenu(e: MouseEvent): void {
