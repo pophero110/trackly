@@ -2903,18 +2903,6 @@ form {
   display: block;
 }
 
-/* Entry Context Menu */
-.entry-context-menu {
-  position: fixed;
-  background: var(--background);
-  border: none;
-  border-radius: var(--radius-sm);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  min-width: 120px;
-  z-index: 10000;
-  overflow: hidden;
-}
-
 /* Placeholder States */
 .placeholder,
 .empty-state,
