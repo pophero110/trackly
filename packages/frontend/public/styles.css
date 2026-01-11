@@ -1313,7 +1313,7 @@ form {
 
 .timeline-entries {
   position: relative;
-  padding-left: 80px;
+  padding-left: var(--base-size-24);
   margin-top: 24px;
 }
 
@@ -1385,6 +1385,7 @@ form {
   box-shadow: var(--shadow-ambient);
   transition: all 0.2s ease;
   cursor: pointer;
+  width: 100%;
   min-width: 0;
   overflow-wrap: break-word;
   word-break: break-word;
@@ -1677,8 +1678,6 @@ form {
 
   .timeline-entry-card {
     padding: 12px;
-    padding-top: 40px;
-    /* Space for time badge */
     border-radius: var(--radius-md);
   }
 
