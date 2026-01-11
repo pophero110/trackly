@@ -86,9 +86,6 @@ export class EntryEditFormComponent extends WebComponent {
       return;
     }
 
-    // Get value input based on entity type (only if entity has valueType)
-    const valueInputHtml = entity.valueType ? this.renderValueInput(entity.valueType, this.entry.value, entity.options) : '';
-
     // Get all entities for the dropdown
     const allEntities = this.store.getEntities();
     const entityOptionsHtml = allEntities.map(e => {
@@ -105,94 +102,16 @@ export class EntryEditFormComponent extends WebComponent {
                     </select>
                 </div>
 
-                <div id="value-input-container">
-                    ${valueInputHtml}
-                </div>
-
-                <div id="properties-input-container">
-                    ${entity.properties && entity.properties.length > 0 ? this.renderPropertyInputs(entity.properties, this.entry.propertyValues || {}) : ''}
-                </div>
-
                 <div class="form-group">
                     <label for="entry-timestamp">Time</label>
                     <input type="datetime-local" id="entry-timestamp" value="${this.formatTimestampForInput(this.entry.timestamp)}">
                 </div>
 
-                <div class="form-group">
-                    <label for="entry-notes">Notes</label>
-                    <textarea id="entry-notes" rows="5">${escapeHtml(this.entry.notes || '')}</textarea>
-                </div>
-
-                <input type="file" id="image-upload" accept="image/*" style="display: none;" multiple>
-                <div id="image-preview" class="image-preview"></div>
-
-                <div id="link-input-container" class="link-input-container" style="display: none;">
-                    <div class="link-input-tabs">
-                        <button type="button" class="link-tab link-tab-active" data-tab="url">URL</button>
-                        <button type="button" class="link-tab" data-tab="entry">Entry</button>
-                    </div>
-                    <div class="link-input-content">
-                        <input type="text" id="link-input" class="link-input" placeholder="example.com or https://example.com" />
-                        <input type="text" id="entry-search-input" class="link-input" placeholder="Search entries..." style="display: none;" />
-                        <div id="entry-search-results" class="entry-search-results" style="display: none;"></div>
-                    </div>
-                    <div class="link-input-actions">
-                        <button type="button" id="add-link-btn-action" class="btn-insert-link">Add</button>
-                        <button type="button" id="cancel-link-btn" class="btn-cancel-link">×</button>
-                    </div>
-                </div>
-
-                ${this.renderLinksDisplay()}
-
-                <div id="location-display" class="location-display" style="display: ${this.location ? 'flex' : 'none'};">
-                    <span class="location-icon">📍</span>
-                    <span id="location-text" class="location-text">${this.location?.name || (this.location ? `${this.location.latitude.toFixed(4)}, ${this.location.longitude.toFixed(4)}` : '')}</span>
-                    <button type="button" id="remove-location-btn" class="btn-remove-location">×</button>
-                </div>
-
                 <div class="form-actions">
                     <button type="submit" class="btn btn-primary">Update Entry</button>
-                    <div class="action-menu-buttons">
-                        <div style="position: relative;">
-                            <button type="button" id="image-menu-btn" class="btn-action-menu" title="Add images">
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-                                    <circle cx="8.5" cy="8.5" r="1.5"></circle>
-                                    <polyline points="21 15 16 10 5 21"></polyline>
-                                </svg>
-                            </button>
-                            <div id="image-menu" class="image-dropdown-menu" style="display: none;">
-                                <div class="context-menu-item" id="upload-image-menu-item">
-                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                                        <polyline points="17 8 12 3 7 8"></polyline>
-                                        <line x1="12" y1="3" x2="12" y2="15"></line>
-                                    </svg>
-                                    <span>Upload Image</span>
-                                </div>
-                                <div class="context-menu-item" id="capture-image-menu-item">
-                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                        <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
-                                        <circle cx="12" cy="13" r="4"></circle>
-                                    </svg>
-                                    <span>Take Photo</span>
-                                </div>
-                            </div>
-                        </div>
-                        <button type="button" id="add-link-btn" class="btn-action-menu" title="Add link to notes">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
-                                <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
-                            </svg>
-                        </button>
-                        <button type="button" id="location-btn" class="btn-action-menu" title="Add location">📍</button>
-                    </div>
                 </div>
             </form>
         `;
-
-    // Render existing images
-    this.renderImagePreview();
   }
 
   private renderValueInput(valueType: ValueType, currentValue?: string | number | boolean, entityOptions?: Array<{ value: string; label: string }>): string {
@@ -369,37 +288,9 @@ export class EntryEditFormComponent extends WebComponent {
 
   protected attachEventListeners(): void {
     const form = this.querySelector('#entry-edit-form') as HTMLFormElement;
-    const entitySelect = this.querySelector('#entry-entity') as HTMLSelectElement;
-    const imageMenuBtn = this.querySelector('#image-menu-btn') as HTMLButtonElement;
-    const imageMenu = this.querySelector('#image-menu') as HTMLElement;
-    const uploadMenuItem = this.querySelector('#upload-image-menu-item') as HTMLElement;
-    const captureMenuItem = this.querySelector('#capture-image-menu-item') as HTMLElement;
-    const fileInput = this.querySelector('#image-upload') as HTMLInputElement;
-    const addLinkBtn = this.querySelector('#add-link-btn') as HTMLButtonElement;
-    const linkInputContainer = this.querySelector('#link-input-container') as HTMLElement;
-    const linkInput = this.querySelector('#link-input') as HTMLInputElement;
-    const entrySearchInput = this.querySelector('#entry-search-input') as HTMLInputElement;
-    const addLinkBtnAction = this.querySelector('#add-link-btn-action') as HTMLButtonElement;
-    const cancelLinkBtn = this.querySelector('#cancel-link-btn') as HTMLButtonElement;
-    const linkTabs = this.querySelectorAll('.link-tab');
-
-    // Handle entity change - update value and property inputs
-    if (entitySelect) {
-      entitySelect.addEventListener('change', () => {
-        this.handleEntityChange(entitySelect.value);
-      });
-    }
 
     if (form) {
       form.addEventListener('submit', (e) => this.handleSubmit(e));
-
-      // Track form changes
-      form.addEventListener('input', () => {
-        this.hasUnsavedChanges = true;
-      });
-      form.addEventListener('change', () => {
-        this.hasUnsavedChanges = true;
-      });
 
       // Add Cmd+Enter keyboard shortcut to submit
       form.addEventListener('keydown', (e) => {
@@ -409,183 +300,6 @@ export class EntryEditFormComponent extends WebComponent {
         }
       });
     }
-
-    if (addLinkBtn && linkInputContainer) {
-      addLinkBtn.addEventListener('click', () => this.showLinkInput());
-    }
-
-    // Tab switching
-    linkTabs.forEach(tab => {
-      tab.addEventListener('click', () => {
-        const tabType = (tab as HTMLElement).dataset.tab as 'url' | 'entry';
-        this.switchLinkTab(tabType);
-      });
-    });
-
-    if (addLinkBtnAction) {
-      addLinkBtnAction.addEventListener('click', () => {
-        if (this.linkInputMode === 'url' && linkInput) {
-          this.addLink(linkInput.value);
-        }
-        // Entry references are added by clicking on search results
-      });
-    }
-
-    if (cancelLinkBtn && linkInputContainer) {
-      cancelLinkBtn.addEventListener('click', () => this.hideLinkInput());
-    }
-
-    // Entry search input
-    if (entrySearchInput) {
-      entrySearchInput.addEventListener('input', () => {
-        this.handleEntrySearch(entrySearchInput.value);
-      });
-
-      entrySearchInput.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape') {
-          this.hideLinkInput();
-        }
-      });
-    }
-
-    if (linkInput) {
-      // Handle Enter key to add link
-      linkInput.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') {
-          e.preventDefault();
-          this.addLink(linkInput.value);
-        }
-        if (e.key === 'Escape') {
-          this.hideLinkInput();
-        }
-      });
-    }
-
-    // Attach remove link handlers
-    this.querySelectorAll('.btn-remove-link').forEach(btn => {
-      btn.addEventListener('click', (e) => {
-        const index = parseInt((e.target as HTMLElement).dataset.index || '0');
-        this.removeLink(index);
-      });
-    });
-
-    // Attach remove entry reference handlers
-    this.querySelectorAll('.btn-remove-entry-ref').forEach(btn => {
-      btn.addEventListener('click', (e) => {
-        const entryId = (e.target as HTMLElement).dataset.entryId || '';
-        this.removeEntryReference(entryId);
-      });
-    });
-
-    // Tab key handling for notes textarea
-    const notesTextarea = this.querySelector('#entry-notes') as HTMLTextAreaElement;
-
-    const handleTabKey = (e: KeyboardEvent) => {
-      if (e.key === 'Tab') {
-        e.preventDefault();
-        const textarea = e.target as HTMLTextAreaElement;
-        const start = textarea.selectionStart;
-        const end = textarea.selectionEnd;
-        const value = textarea.value;
-
-        // Insert tab (2 spaces)
-        textarea.value = value.substring(0, start) + '  ' + value.substring(end);
-
-        // Move cursor after the inserted tab
-        textarea.selectionStart = textarea.selectionEnd = start + 2;
-      }
-    };
-
-    if (notesTextarea) {
-      notesTextarea.addEventListener('keydown', handleTabKey);
-    }
-
-    // Image menu handlers
-    if (imageMenuBtn && imageMenu) {
-      imageMenuBtn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        const isVisible = imageMenu.style.display === 'block';
-
-        if (!isVisible) {
-          // Position the menu above the button with right edge aligned to button's right edge
-          const rect = imageMenuBtn.getBoundingClientRect();
-
-          // Temporarily show menu to get its dimensions
-          imageMenu.style.visibility = 'hidden';
-          imageMenu.style.display = 'block';
-          const menuHeight = imageMenu.offsetHeight;
-          const menuWidth = imageMenu.offsetWidth;
-          imageMenu.style.visibility = 'visible';
-
-          imageMenu.style.top = `${rect.top - menuHeight - 4}px`;
-          imageMenu.style.left = `${rect.right - menuWidth}px`;
-        } else {
-          imageMenu.style.display = 'none';
-        }
-      });
-
-      // Close menu when clicking outside
-      document.addEventListener('click', (e) => {
-        if (imageMenu.style.display === 'block' &&
-          !imageMenu.contains(e.target as Node) &&
-          e.target !== imageMenuBtn) {
-          imageMenu.style.display = 'none';
-        }
-      });
-    }
-
-    if (uploadMenuItem) {
-      uploadMenuItem.addEventListener('click', () => {
-        fileInput?.click();
-        if (imageMenu) imageMenu.style.display = 'none';
-      });
-    }
-
-    if (captureMenuItem) {
-      captureMenuItem.addEventListener('click', () => {
-        this.handleCameraCapture();
-        if (imageMenu) imageMenu.style.display = 'none';
-      });
-    }
-
-    if (fileInput) {
-      fileInput.addEventListener('change', (e) => this.handleImageUpload(e));
-    }
-
-    // Location button handler
-    const locationBtn = this.querySelector('#location-btn') as HTMLButtonElement;
-    if (locationBtn) {
-      locationBtn.addEventListener('click', async () => {
-        try {
-          locationBtn.disabled = true;
-          locationBtn.textContent = '⏳';
-          await this.handleLocationCapture();
-        } catch (error) {
-          alert('Failed to get location. Please ensure location permissions are enabled.');
-          console.error('Location error:', error);
-        } finally {
-          locationBtn.disabled = false;
-          locationBtn.textContent = '📍';
-        }
-      });
-    }
-
-    // Remove location handler
-    const removeLocationBtn = this.querySelector('#remove-location-btn') as HTMLButtonElement;
-    if (removeLocationBtn) {
-      removeLocationBtn.addEventListener('click', () => {
-        this.location = null;
-        this.hasUnsavedChanges = true;
-        this.render();
-        this.attachEventListeners();
-      });
-    }
-
-    // Attach range input listener
-    this.attachRangeListener();
-
-    // Attach paste handler for notes textarea
-    this.attachNotesAreaPasteHandler();
   }
 
   private attachRangeListener(): void {
@@ -963,108 +677,13 @@ export class EntryEditFormComponent extends WebComponent {
         throw new Error('Entity not found');
       }
 
-      // Get value based on valueType (only if entity has valueType)
-      let value: string | number | boolean | undefined;
-      const valueInput = this.querySelector('#entry-value') as HTMLInputElement;
-
-      if (valueInput && entity.valueType) {
-        switch (entity.valueType) {
-          // Number types
-          case 'number':
-          case 'duration':
-          case 'rating':
-          case 'range':
-            value = parseFloat(valueInput.value);
-            break;
-
-          // Boolean
-          case 'checkbox':
-            value = (valueInput as HTMLInputElement).checked;
-            break;
-
-          // Text types
-          case 'text':
-          case 'email':
-          case 'tel':
-            value = valueInput.value;
-            break;
-
-          // Date/Time types
-          case 'date':
-          case 'time':
-          case 'datetime-local':
-          case 'month':
-          case 'week':
-            value = valueInput.value;
-            break;
-
-          // Color
-          case 'color':
-            value = valueInput.value;
-            break;
-
-          // Select
-          case 'select':
-            value = valueInput.value;
-            break;
-
-          // URL-based types
-          case 'url':
-          case 'image':
-          case 'audio':
-          case 'video':
-          case 'hyperlink':
-            value = valueInput.value;
-            break;
-        }
-      }
-
-      // Get notes and ensure first line has h1 heading
-      const rawNotes = (this.querySelector('#entry-notes') as HTMLTextAreaElement).value;
-      const notes = ensureH1Heading(rawNotes);
-
       // Get timestamp and convert to ISO format
       const timestampInput = (this.querySelector('#entry-timestamp') as HTMLInputElement).value;
       const timestamp = timestampInput ? new Date(timestampInput).toISOString() : this.entry.timestamp;
 
-      // Collect property values
-      let propertyValues: Record<string, string | number | boolean> | undefined;
-      if (entity.properties && entity.properties.length > 0) {
-        propertyValues = {};
-        entity.properties.forEach(prop => {
-          const input = this.querySelector(`#property-${prop.id}`) as HTMLInputElement;
-          if (input) {
-            if (prop.valueType === 'checkbox') {
-              propertyValues![prop.id] = input.checked;
-            } else if (prop.valueType === 'number' || prop.valueType === 'duration' || prop.valueType === 'rating') {
-              propertyValues![prop.id] = parseFloat(input.value) || 0;
-            } else {
-              propertyValues![prop.id] = input.value;
-            }
-          }
-        });
-      }
-
-      // Extract URLs from notes and combine with manually added links
-      const notesUrls = extractUrls(notes || '');
-      const manualLinks = this.entry.links || [];
-      const allLinks = [...manualLinks, ...notesUrls];
-      // Remove duplicates
-      const uniqueLinks = Array.from(new Set(allLinks));
-
       // Update the entry (include entityId and entityName if changed)
       const updates: any = {
-        timestamp: timestamp,
-        value: value,
-        notes: notes,
-        images: this.images, // Send empty array to remove all images
-        links: uniqueLinks, // Include all unique links
-        linkTitles: Object.keys(this.linkTitles).length > 0 ? { ...this.linkTitles } : undefined,
-        entryReferences: this.entryReferences.length > 0 ? [...this.entryReferences] : [],
-        propertyValues: propertyValues,
-        latitude: this.location?.latitude,
-        longitude: this.location?.longitude,
-        locationName: this.location?.name
+        timestamp: timestamp
       };
 
       // Add entityId and entityName if entity was changed
@@ -1073,32 +692,8 @@ export class EntryEditFormComponent extends WebComponent {
         updates.entityName = entity.name;
       }
 
-      // Update entry with optimistic update (doesn't wait for API)
-      this.store.updateEntry(this.entryId, updates).catch(error => {
-        console.error('Error updating entry:', error);
-        toast.error('Failed to update entry. Please try again.');
-      });
-
-      // Process URLs asynchronously in text fields
-      if (value && typeof value === 'string' && entity.valueType === 'text') {
-        this.processTextWithUrls(this.entryId, value, 'value');
-      }
-      if (notes && notes.trim()) {
-        this.processTextWithUrls(this.entryId, notes, 'notes');
-      }
-
-      // Fetch titles for URL-type properties
-      if (entity.properties && entity.properties.length > 0 && propertyValues) {
-        this.fetchPropertyUrlTitles(this.entryId, entity.properties, propertyValues);
-      }
-
-      // Fetch titles for links
-      if (uniqueLinks.length > 0) {
-        this.fetchLinkTitles(this.entryId, uniqueLinks);
-      }
-
-      // Reset unsaved changes flag
-      this.hasUnsavedChanges = false;
+      // Update entry
+      await this.store.updateEntry(this.entryId, updates);
 
       // Close the panel
       URLStateManager.closePanel();
