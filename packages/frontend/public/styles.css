@@ -3316,9 +3316,10 @@ slide-panel.active {
 
 .slide-panel-container {
   position: fixed;
+  left: 50%;
+  transform: translateX(-50%);
   bottom: 0;
-  left: 0;
-  width: 100%;
+  width: 75ch;
   height: 85vh;
   max-height: 800px;
   background: var(--background);
@@ -3370,21 +3371,23 @@ slide-panel.active {
 /* Slide panel animations */
 @keyframes slideInFromBottom {
   from {
-    transform: translateY(100%);
+    /* Keep horizontal center, start below screen */
+    transform: translateX(-50%) translateY(100%);
   }
 
   to {
-    transform: translateY(0);
+    /* Keep horizontal center, end at original position */
+    transform: translateX(-50%) translateY(0);
   }
 }
 
 @keyframes slideOutToBottom {
   from {
-    transform: translateY(0);
+    transform: translateX(-50%) translateY(0);
   }
 
   to {
-    transform: translateY(100%);
+    transform: translateX(-50%) translateY(100%);
   }
 }
 
@@ -3410,6 +3413,7 @@ slide-panel:not(.active) .slide-panel-container {
 /* Mobile adjustments for slide panel */
 @media (max-width: 768px) {
   .slide-panel-container {
+    width: 100%;
     height: 90vh;
     max-height: none;
     border-radius: var(--radius-md) var(--radius-md) 0 0;
@@ -3752,20 +3756,6 @@ slide-panel:not(.active) .slide-panel-container {
   font-size: 1em;
 }
 
-.entry-notes h1 {}
-
-.entry-notes h2 {}
-
-.entry-notes h3 {}
-
-.entry-notes h4 {}
-
-.entry-notes h5 {}
-
-.entry-notes h6 {
-  color: var(--text-secondary);
-}
-
 /* Markdown Blockquotes */
 .entry-notes blockquote {
   margin: 12px 0;
@@ -3826,12 +3816,6 @@ slide-panel:not(.active) .slide-panel-container {
   .entry-notes .markdown-list {
     margin-left: var(--base-size-16);
   }
-
-  .entry-notes h1 {}
-
-  .entry-notes h2 {}
-
-  .entry-notes h3 {}
 
   .entry-notes pre {
     padding: 8px;
@@ -4622,26 +4606,18 @@ slide-panel:not(.active) .slide-panel-container {
   }
 }
 
-1 2
-
 /* Milkdown Editor Styles */
-3 .entry-notes-editor-container {
-  4 display: flex;
-  5 flex-direction: column;
-  6 gap: 16px;
-  7 margin-top: 16px;
-  8
+.entry-notes-editor-container {
+  margin-bottom: var(--base-size-24);
 }
 
-9 10 .milkdown-editor {
-  11 border: none;
-  12 border-radius: 0;
-  13 padding: 0;
-  14 background: transparent;
-  15 min-height: 300px;
-  16 max-height: 60vh;
-  17 overflow-y: auto;
-  18
+.milkdown-editor {
+  border: none;
+  border-radius: 0;
+  padding: 0;
+  background: transparent;
+  min-height: 300px;
+  max-height: 60vh;
 }
 
 .milkdown-editor:focus,
@@ -4651,14 +4627,13 @@ slide-panel:not(.active) .slide-panel-container {
   border: none;
 }
 
-19 20 .milkdown-editor .milkdown {
-  21 font-family: inherit;
-  22 font-size: 1rem;
-  23 line-height: 1.6;
-  24 color: var(--text-primary);
+.milkdown-editor .milkdown {
+  font-family: inherit;
+  font-size: 1rem;
+  line-height: 1.6;
+  color: var(--text-primary);
   width: 100%;
   max-width: none;
-  25
 }
 
 .milkdown-editor .ProseMirror {
@@ -4666,33 +4641,29 @@ slide-panel:not(.active) .slide-panel-container {
   max-width: none;
 }
 
-26 27 .milkdown-editor .milkdown h1 {
-  28 font-size: 1.5rem;
-  29 font-weight: 600;
-  30 margin: 1em 0 0.5em;
-  31 color: var(--text-primary);
-  32
+.milkdown-editor .milkdown h1 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 0.5em;
+  color: var(--text-primary);
 }
 
-33 34 .milkdown-editor .milkdown h2 {
-  35 font-size: 1.25rem;
-  36 font-weight: 600;
-  37 margin: 1em 0 0.5em;
-  38 color: var(--text-primary);
-  39
+.milkdown-editor .milkdown h2 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin: 1em 0 0.5em;
+  color: var(--text-primary);
 }
 
-40 41 .milkdown-editor .milkdown h3 {
-  42 font-size: 1.125rem;
-  43 font-weight: 600;
-  44 margin: 1em 0 0.5em;
-  45 color: var(--text-primary);
-  46
+.milkdown-editor .milkdown h3 {
+  font-size: 1.125rem;
+  font-weight: 600;
+  margin: 1em 0 0.5em;
+  color: var(--text-primary);
 }
 
-47 48 .milkdown-editor .milkdown p {
-  49 margin: 0.5em 0;
-  50
+.milkdown-editor .milkdown p {
+  margin: 0.5em 0;
 }
 
 .milkdown-editor .milkdown ul,
@@ -4705,72 +4676,62 @@ slide-panel:not(.active) .slide-panel-container {
   margin: 0.25em 0;
 }
 
-51 52 .milkdown-editor .milkdown code {
-  53 background: var(--background);
-  54 padding: 2px 6px;
-  55 border-radius: 4px;
-  56 font-family: 'IBM Plex Mono', 'Courier New', monospace;
-  57 font-size: 0.9em;
-  58
+.milkdown-editor .milkdown code {
+  background: var(--background);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-family: 'IBM Plex Mono', 'Courier New', monospace;
+  font-size: 0.9em;
 }
 
-59 60 .milkdown-editor .milkdown pre {
-  61 background: var(--background);
-  62 padding: 12px;
-  63 border-radius: 0;
-  64 overflow-x: auto;
-  65 margin: 1em 0;
-  66
+.milkdown-editor .milkdown pre {
+  background: var(--background);
+  padding: 12px;
+  border-radius: 0;
+  overflow-x: auto;
+  margin: 1em 0;
 }
 
-67 68 .milkdown-editor .milkdown pre code {
-  69 background: transparent;
-  70 padding: 0;
-  71
+.milkdown-editor .milkdown pre code {
+  background: transparent;
+  padding: 0;
 }
 
-72 73 .editor-actions {
-  74 display: flex;
-  75 gap: 12px;
-  76 justify-content: flex-end;
-  77
+.editor-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
 }
 
-78 79 .editor-actions .btn {
-  80 padding: 10px 20px;
-  81 border-radius: 0;
-  82 border: none;
-  83 font-weight: 500;
-  84 cursor: pointer;
-  85 transition: all 0.2s ease;
-  86
+.editor-actions .btn {
+  padding: 10px 20px;
+  border-radius: 0;
+  border: none;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
 }
 
-87 88 .editor-actions .btn-primary {
-  89 background: var(--primary);
-  90 color: white;
-  91
+.editor-actions .btn-primary {
+  background: var(--primary);
+  color: white;
 }
 
-92 93 .editor-actions .btn-primary:hover {
-  94 background: var(--primary-hover);
-  95
+.editor-actions .btn-primary:hover {
+  background: var(--primary-hover);
 }
 
-96 97 .editor-actions .btn-secondary {
-  98 background: var(--background);
-  99 color: var(--text-secondary);
-  100 border: none;
-  101
+.editor-actions .btn-secondary {
+  background: var(--background);
+  color: var(--text-secondary);
+  border: none;
 }
 
-102 103 .editor-actions .btn-secondary:hover {
-  104 background: var(--border-light);
-  105 color: var(--text-primary);
-  106
+.editor-actions .btn-secondary:hover {
+  background: var(--border-light);
+  color: var(--text-primary);
 }
 
-107
 
 /* Auto-save status indicator */
 .save-status {
@@ -4797,25 +4758,19 @@ slide-panel:not(.active) .slide-panel-container {
   color: #ef4444;
 }
 
-108
 /* Dark mode support */
-109 @media (prefers-color-scheme: dark) {
-  110 .milkdown-editor {
-    111 background: transparent;
-    112 border-color: var(--border);
-    113
+@media (prefers-color-scheme: dark) {
+  .milkdown-editor {
+    background: transparent;
+    border-color: var(--border);
   }
 
-  114 115 .milkdown-editor .milkdown {
-    116 color: var(--text-primary);
-    117
+  .milkdown-editor .milkdown {
+    color: var(--text-primary);
   }
 
-  118 119 .milkdown-editor .milkdown code,
-  120 .milkdown-editor .milkdown pre {
-    121 background: var(--background);
-    122
+  .milkdown-editor .milkdown code,
+  .milkdown-editor .milkdown pre {
+    background: var(--background);
   }
-
-  123
 }

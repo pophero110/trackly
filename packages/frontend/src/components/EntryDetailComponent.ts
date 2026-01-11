@@ -227,7 +227,6 @@ export class EntryDetailComponent extends WebComponent {
     const notesHtml = entry.notes ? `
       <div class="entry-notes-editor-container">
         <div id="milkdown-editor" class="milkdown-editor"></div>
-        <div class="save-status" id="save-status"></div>
       </div>
     ` : '';
 
