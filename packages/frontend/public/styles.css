@@ -2943,7 +2943,7 @@ form {
 /* Entry Context Menu */
 .entry-context-menu {
   position: fixed;
-  background: transparent;
+  background: var(--background);
   border: none;
   border-radius: var(--radius-sm);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
@@ -3518,7 +3518,7 @@ slide-panel:not(.active) .slide-panel-container {
 .entity-context-menu,
 .entry-context-menu {
   position: fixed;
-  background: transparent;
+  background: var(--background);
   border: none;
   border-radius: var(--radius-sm);
   box-shadow: var(--shadow-lg);

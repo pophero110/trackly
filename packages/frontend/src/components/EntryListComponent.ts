@@ -985,7 +985,9 @@ Delete</div>
       btn.addEventListener('click', (e) => {
         e.stopPropagation();
         const target = e.target as HTMLElement;
-        const entryId = target.dataset.entryId;
+        // Use closest to find the button element (in case user clicked on icon)
+        const button = target.closest('[data-action="menu"]') as HTMLElement;
+        const entryId = button?.dataset.entryId;
         if (entryId) {
           this.toggleMenu(entryId, e as MouseEvent);
         }
