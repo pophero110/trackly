@@ -448,6 +448,7 @@ export class EntryDetailComponent extends WebComponent {
     this.attachEntityChipHandler();
     this.attachImagePreviewHandlers();
     this.attachNotesEditorHandlers();
+    this.attachActionButtonHandlers();
   }
 
   private attachMenuHandlers(): void {
@@ -797,5 +798,285 @@ export class EntryDetailComponent extends WebComponent {
     };
 
     statusEl.innerHTML = statusMessages[status];
+  }
+
+  private attachActionButtonHandlers(): void {
+    const imageMenuBtn = this.querySelector('#image-menu-btn') as HTMLButtonElement;
+    const imageMenu = this.querySelector('#image-menu') as HTMLElement;
+    const uploadMenuItem = this.querySelector('#upload-image-menu-item') as HTMLElement;
+    const captureMenuItem = this.querySelector('#capture-image-menu-item') as HTMLElement;
+    const addLinkBtn = this.querySelector('#add-link-btn') as HTMLButtonElement;
+    const locationBtn = this.querySelector('#location-btn') as HTMLButtonElement;
+
+    // Image menu handlers
+    if (imageMenuBtn && imageMenu) {
+      imageMenuBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const isVisible = imageMenu.style.display === 'block';
+
+        if (!isVisible) {
+          // Position the menu above the button with right edge aligned to button's right edge
+          const rect = imageMenuBtn.getBoundingClientRect();
+
+          // Temporarily show menu to get its dimensions
+          imageMenu.style.visibility = 'hidden';
+          imageMenu.style.display = 'block';
+          const menuHeight = imageMenu.offsetHeight;
+          const menuWidth = imageMenu.offsetWidth;
+          imageMenu.style.visibility = 'visible';
+
+          imageMenu.style.top = `${rect.top - menuHeight - 4}px`;
+          imageMenu.style.left = `${rect.right - menuWidth}px`;
+        } else {
+          imageMenu.style.display = 'none';
+        }
+      });
+
+      // Close menu when clicking outside
+      document.addEventListener('click', (e) => {
+        if (imageMenu.style.display === 'block' &&
+          !imageMenu.contains(e.target as Node) &&
+          e.target !== imageMenuBtn) {
+          imageMenu.style.display = 'none';
+        }
+      });
+    }
+
+    if (uploadMenuItem) {
+      uploadMenuItem.addEventListener('click', () => {
+        // Create hidden file input
+        const fileInput = document.createElement('input');
+        fileInput.type = 'file';
+        fileInput.accept = 'image/*';
+        fileInput.multiple = true;
+        fileInput.style.display = 'none';
+
+        fileInput.addEventListener('change', (e) => {
+          this.handleImageUpload(e);
+          fileInput.remove();
+        });
+
+        document.body.appendChild(fileInput);
+        fileInput.click();
+
+        if (imageMenu) imageMenu.style.display = 'none';
+      });
+    }
+
+    if (captureMenuItem) {
+      captureMenuItem.addEventListener('click', () => {
+        this.handleCameraCapture();
+        if (imageMenu) imageMenu.style.display = 'none';
+      });
+    }
+
+    if (addLinkBtn) {
+      addLinkBtn.addEventListener('click', () => {
+        // TODO: Implement add link functionality
+        console.log('Add link button clicked');
+      });
+    }
+
+    if (locationBtn) {
+      locationBtn.addEventListener('click', async () => {
+        try {
+          locationBtn.disabled = true;
+          locationBtn.textContent = '⏳';
+          await this.handleLocationCapture();
+        } catch (error) {
+          alert('Failed to get location. Please ensure location permissions are enabled.');
+          console.error('Location error:', error);
+        } finally {
+          locationBtn.disabled = false;
+          locationBtn.textContent = '📍';
+        }
+      });
+    }
+  }
+
+  private handleImageUpload(e: Event): void {
+    const input = e.target as HTMLInputElement;
+    const files = input.files;
+
+    if (!files || files.length === 0 || !this.entryId) return;
+
+    const entry = this.store.getEntryById(this.entryId);
+    if (!entry) return;
+
+    const currentImages = entry.images || [];
+    const newImages: string[] = [];
+
+    let processedCount = 0;
+    const totalFiles = files.length;
+
+    Array.from(files).forEach(file => {
+      if (file.type.startsWith('image/')) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const result = e.target?.result as string;
+          newImages.push(result);
+          processedCount++;
+
+          // Update entry when all images are processed
+          if (processedCount === totalFiles) {
+            this.store.updateEntry(this.entryId!, {
+              images: [...currentImages, ...newImages]
+            }).catch(error => {
+              console.error('Error updating entry with images:', error);
+              alert('Failed to add images. Please try again.');
+            });
+          }
+        };
+        reader.readAsDataURL(file);
+      } else {
+        processedCount++;
+      }
+    });
+  }
+
+  private async handleCameraCapture(): Promise<void> {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: 'environment' },
+        audio: false
+      });
+
+      // Create video element for camera preview
+      const modal = document.createElement('div');
+      modal.className = 'camera-modal';
+      modal.innerHTML = `
+        <div class="camera-container">
+          <video id="camera-video" autoplay playsinline></video>
+          <canvas id="camera-canvas" style="display: none;"></canvas>
+          <div class="camera-controls">
+            <button type="button" class="btn btn-primary" id="take-photo-btn">📸 Capture</button>
+            <button type="button" class="btn btn-secondary" id="cancel-camera-btn">Cancel</button>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(modal);
+
+      const video = modal.querySelector('#camera-video') as HTMLVideoElement;
+      const canvas = modal.querySelector('#camera-canvas') as HTMLCanvasElement;
+      const takePhotoBtn = modal.querySelector('#take-photo-btn') as HTMLButtonElement;
+      const cancelBtn = modal.querySelector('#cancel-camera-btn') as HTMLButtonElement;
+
+      video.srcObject = stream;
+
+      const cleanup = () => {
+        stream.getTracks().forEach(track => track.stop());
+        document.body.removeChild(modal);
+      };
+
+      takePhotoBtn.addEventListener('click', () => {
+        if (!this.entryId) {
+          cleanup();
+          return;
+        }
+
+        const entry = this.store.getEntryById(this.entryId);
+        if (!entry) {
+          cleanup();
+          return;
+        }
+
+        // Set canvas dimensions to match video
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+
+        // Draw video frame to canvas
+        const ctx = canvas.getContext('2d');
+        ctx?.drawImage(video, 0, 0);
+
+        // Convert to base64
+        const imageData = canvas.toDataURL('image/jpeg', 0.8);
+        const currentImages = entry.images || [];
+
+        // Update entry with new image
+        this.store.updateEntry(this.entryId, {
+          images: [...currentImages, imageData]
+        }).catch(error => {
+          console.error('Error updating entry with camera image:', error);
+          alert('Failed to add photo. Please try again.');
+        });
+
+        cleanup();
+      });
+
+      cancelBtn.addEventListener('click', cleanup);
+
+    } catch (error) {
+      console.error('Camera access error:', error);
+      alert('Unable to access camera. Please check permissions or use the upload option.');
+    }
+  }
+
+  private async handleLocationCapture(): Promise<void> {
+    if (!this.entryId) return;
+
+    const entry = this.store.getEntryById(this.entryId);
+    if (!entry) return;
+
+    // Request geolocation permission and get current position
+    const position = await new Promise<GeolocationPosition>((resolve, reject) => {
+      navigator.geolocation.getCurrentPosition(resolve, reject, {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 0
+      });
+    });
+
+    const location = {
+      latitude: position.coords.latitude,
+      longitude: position.coords.longitude
+    };
+
+    // Reverse geocode to get location name
+    const locationName = await this.reverseGeocode(position.coords.latitude, position.coords.longitude);
+
+    // Update entry with location
+    await this.store.updateEntry(this.entryId, {
+      latitude: location.latitude,
+      longitude: location.longitude,
+      locationName: locationName || undefined
+    });
+  }
+
+  private async reverseGeocode(latitude: number, longitude: number): Promise<string | null> {
+    try {
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`,
+        {
+          headers: {
+            'User-Agent': 'Trackly App'
+          }
+        }
+      );
+
+      if (!response.ok) {
+        return null;
+      }
+
+      const data = await response.json();
+      const address = data.address;
+
+      // Build short version (City, State/Province)
+      const shortParts: string[] = [];
+
+      if (address.city || address.town || address.village) {
+        shortParts.push(address.city || address.town || address.village);
+      }
+
+      if (address.state) {
+        shortParts.push(address.state);
+      } else if (address.county) {
+        shortParts.push(address.county);
+      }
+
+      return shortParts.length > 0 ? shortParts.join(', ') : null;
+    } catch (error) {
+      console.error('Reverse geocoding error:', error);
+      return null;
+    }
   }
 }
