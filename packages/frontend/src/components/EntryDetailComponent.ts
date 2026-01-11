@@ -122,9 +122,11 @@ export class EntryDetailComponent extends WebComponent {
     // Get all entities for dropdown
     const allEntities = this.store.getEntities();
     const entitiesDropdownHtml = allEntities.map(e => {
-      const selected = entity && e.id === entity.id ? 'selected' : '';
       const color = getEntityColor(e.name);
-      return `<option value="${e.id}" ${selected} data-color="${color}">${escapeHtml(e.name)}</option>`;
+      return `<div class="context-menu-item entity-dropdown-item" data-entity-id="${e.id}" data-entity-color="${color}">
+                <span class="entity-dropdown-color" style="background: ${color};"></span>
+                ${escapeHtml(e.name)}
+              </div>`;
     }).join('');
 
     const entityChip = entity
@@ -138,9 +140,9 @@ export class EntryDetailComponent extends WebComponent {
                <polyline points="6 9 12 15 18 9"></polyline>
              </svg>
            </span>
-           <select id="entity-dropdown" class="entity-dropdown-select" style="display: none;">
+           <div id="entity-dropdown-menu" class="entity-dropdown-menu" style="display: none;">
              ${entitiesDropdownHtml}
-           </select>
+           </div>
          </div>`
       : '';
 
@@ -576,7 +578,7 @@ export class EntryDetailComponent extends WebComponent {
 
   private attachEntityChipHandler(): void {
     const entityChip = this.querySelector('.entry-chip-entity');
-    const entityDropdown = this.querySelector('#entity-dropdown') as HTMLSelectElement;
+    const entityDropdown = this.querySelector('#entity-dropdown-menu') as HTMLElement;
 
     if (entityChip && entityDropdown) {
       // Show dropdown when chip is clicked
@@ -587,32 +589,35 @@ export class EntryDetailComponent extends WebComponent {
         // Toggle dropdown visibility
         if (entityDropdown.style.display === 'none') {
           entityDropdown.style.display = 'block';
-          entityDropdown.focus();
         } else {
           entityDropdown.style.display = 'none';
         }
       });
 
-      // Handle entity change
-      entityDropdown.addEventListener('change', async () => {
-        const newEntityId = entityDropdown.value;
-        const newEntity = this.store.getEntityById(newEntityId);
+      // Handle entity item clicks
+      const entityItems = entityDropdown.querySelectorAll('.entity-dropdown-item');
+      entityItems.forEach(item => {
+        item.addEventListener('click', async (e) => {
+          e.stopPropagation();
+          const newEntityId = (item as HTMLElement).dataset.entityId;
+          const newEntity = this.store.getEntityById(newEntityId || '');
 
-        if (newEntity && this.entryId) {
-          try {
-            // Update the entry with new entity
-            await this.store.updateEntry(this.entryId, {
-              entityId: newEntityId,
-              entityName: newEntity.name
-            });
+          if (newEntity && this.entryId) {
+            try {
+              // Update the entry with new entity
+              await this.store.updateEntry(this.entryId, {
+                entityId: newEntityId,
+                entityName: newEntity.name
+              });
 
-            // Hide dropdown after change
-            entityDropdown.style.display = 'none';
-          } catch (error) {
-            console.error('Error updating entry entity:', error);
-            alert('Failed to update entity. Please try again.');
+              // Hide dropdown after change
+              entityDropdown.style.display = 'none';
+            } catch (error) {
+              console.error('Error updating entry entity:', error);
+              alert('Failed to update entity. Please try again.');
+            }
           }
-        }
+        });
       });
 
       // Hide dropdown when clicking outside
@@ -622,13 +627,6 @@ export class EntryDetailComponent extends WebComponent {
           !entityChip.contains(e.target as Node)) {
           entityDropdown.style.display = 'none';
         }
-      });
-
-      // Hide dropdown on blur
-      entityDropdown.addEventListener('blur', () => {
-        setTimeout(() => {
-          entityDropdown.style.display = 'none';
-        }, 200);
       });
     }
   }
