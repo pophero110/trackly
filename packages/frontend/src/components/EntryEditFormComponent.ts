@@ -119,10 +119,7 @@ export class EntryEditFormComponent extends WebComponent {
                 </div>
 
                 <div class="form-group">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-                        <label for="entry-notes" style="margin-bottom: 0;">Notes</label>
-                        <button type="button" id="zen-mode-btn" class="btn-zen-mode" title="Zen mode (focus on writing)">🧘</button>
-                    </div>
+                    <label for="entry-notes">Notes</label>
                     <textarea id="entry-notes" rows="5">${escapeHtml(this.entry.notes || '')}</textarea>
                 </div>
 
@@ -192,19 +189,6 @@ export class EntryEditFormComponent extends WebComponent {
                     </div>
                 </div>
             </form>
-
-            <div id="zen-mode-overlay" class="zen-mode-overlay" style="display: none;">
-                <div class="zen-mode-container">
-                    <div class="zen-mode-header">
-                        <span class="zen-mode-title">Notes</span>
-                        <button type="button" id="zen-mode-close" class="btn-zen-close" title="Exit zen mode (Esc)">✕</button>
-                    </div>
-                    <div class="zen-mode-editor">
-                        <div id="zen-line-numbers" class="zen-line-numbers"></div>
-                        <textarea id="zen-mode-textarea" class="zen-mode-textarea" placeholder="Write your notes here..."></textarea>
-                    </div>
-                </div>
-            </div>
         `;
 
     // Render existing images
@@ -391,8 +375,6 @@ export class EntryEditFormComponent extends WebComponent {
     const uploadMenuItem = this.querySelector('#upload-image-menu-item') as HTMLElement;
     const captureMenuItem = this.querySelector('#capture-image-menu-item') as HTMLElement;
     const fileInput = this.querySelector('#image-upload') as HTMLInputElement;
-    const zenModeBtn = this.querySelector('#zen-mode-btn') as HTMLButtonElement;
-    const zenModeClose = this.querySelector('#zen-mode-close') as HTMLButtonElement;
     const addLinkBtn = this.querySelector('#add-link-btn') as HTMLButtonElement;
     const linkInputContainer = this.querySelector('#link-input-container') as HTMLElement;
     const linkInput = this.querySelector('#link-input') as HTMLInputElement;
@@ -426,14 +408,6 @@ export class EntryEditFormComponent extends WebComponent {
           form.requestSubmit();
         }
       });
-    }
-
-    if (zenModeBtn) {
-      zenModeBtn.addEventListener('click', () => this.openZenMode());
-    }
-
-    if (zenModeClose) {
-      zenModeClose.addEventListener('click', () => this.closeZenMode());
     }
 
     if (addLinkBtn && linkInputContainer) {
@@ -503,9 +477,8 @@ export class EntryEditFormComponent extends WebComponent {
       });
     });
 
-    // Tab key handling for note textareas
+    // Tab key handling for notes textarea
     const notesTextarea = this.querySelector('#entry-notes') as HTMLTextAreaElement;
-    const zenTextarea = this.querySelector('#zen-mode-textarea') as HTMLTextAreaElement;
 
     const handleTabKey = (e: KeyboardEvent) => {
       if (e.key === 'Tab') {
@@ -525,10 +498,6 @@ export class EntryEditFormComponent extends WebComponent {
 
     if (notesTextarea) {
       notesTextarea.addEventListener('keydown', handleTabKey);
-    }
-
-    if (zenTextarea) {
-      zenTextarea.addEventListener('keydown', handleTabKey);
     }
 
     // Image menu handlers
@@ -881,124 +850,6 @@ export class EntryEditFormComponent extends WebComponent {
     } catch (error) {
       console.error('Failed to fetch link titles:', error);
     }
-  }
-
-  private updateZenLineNumbers(): void {
-    const zenTextarea = this.querySelector('#zen-mode-textarea') as HTMLTextAreaElement;
-    const lineNumbers = this.querySelector('#zen-line-numbers') as HTMLElement;
-
-    if (!zenTextarea || !lineNumbers) return;
-
-    const lines = zenTextarea.value.split('\n');
-    const lineCount = lines.length;
-
-    // Get textarea's computed styles for accurate measurement
-    const textareaStyles = window.getComputedStyle(zenTextarea);
-    const width = zenTextarea.clientWidth - parseFloat(textareaStyles.paddingLeft) - parseFloat(textareaStyles.paddingRight);
-    const computedLineHeight = parseFloat(textareaStyles.lineHeight);
-
-    // Create a hidden div to measure wrapped line heights
-    let measuringDiv = document.getElementById('zen-line-measurer') as HTMLDivElement;
-    if (!measuringDiv) {
-      measuringDiv = document.createElement('div');
-      measuringDiv.id = 'zen-line-measurer';
-      document.body.appendChild(measuringDiv);
-    }
-
-    // Update measuring div styles to match textarea
-    measuringDiv.style.cssText = `
-            position: absolute;
-            visibility: hidden;
-            white-space: pre-wrap;
-            word-wrap: break-word;
-            overflow-wrap: break-word;
-            font-family: ${textareaStyles.fontFamily};
-            font-size: ${textareaStyles.fontSize};
-            line-height: ${textareaStyles.lineHeight};
-            padding: 0;
-            width: ${width}px;
-        `;
-
-    // Generate line numbers with proper positioning
-    let html = '';
-    let previousLineHeight = 0;
-
-    for (let i = 0; i < lineCount; i++) {
-      const lineText = lines[i] || ' '; // Use space for empty lines
-      measuringDiv.textContent = lineText;
-      const lineVisualHeight = measuringDiv.offsetHeight;
-
-      // Position line number at the start of each logical line
-      // First line has no margin, subsequent lines use previous line's height as margin
-      if (i === 0) {
-        html += `<div>${i + 1}</div>`;
-      } else {
-        // Subtract the natural line number height to prevent double-spacing
-        const marginTop = previousLineHeight - computedLineHeight;
-        html += `<div style="margin-top: ${marginTop}px;">${i + 1}</div>`;
-      }
-
-      previousLineHeight = lineVisualHeight;
-    }
-
-    lineNumbers.innerHTML = html;
-
-    // Sync scroll
-    lineNumbers.scrollTop = zenTextarea.scrollTop;
-  }
-
-  private openZenMode(): void {
-    const notesTextarea = this.querySelector('#entry-notes') as HTMLTextAreaElement;
-    const zenOverlay = this.querySelector('#zen-mode-overlay') as HTMLElement;
-    const zenTextarea = this.querySelector('#zen-mode-textarea') as HTMLTextAreaElement;
-
-    if (!notesTextarea || !zenOverlay || !zenTextarea) return;
-
-    // Copy content to zen mode textarea
-    zenTextarea.value = notesTextarea.value;
-
-    // Show zen mode overlay
-    zenOverlay.style.display = 'flex';
-
-    // Update line numbers
-    this.updateZenLineNumbers();
-
-    // Add event listeners for line number updates
-    zenTextarea.addEventListener('input', () => this.updateZenLineNumbers());
-    zenTextarea.addEventListener('scroll', () => {
-      const lineNumbers = this.querySelector('#zen-line-numbers') as HTMLElement;
-      if (lineNumbers) {
-        lineNumbers.scrollTop = zenTextarea.scrollTop;
-      }
-    });
-
-    // Focus on zen mode textarea
-    setTimeout(() => zenTextarea.focus(), 100);
-
-    // Add escape key listener with stopPropagation to prevent closing the modal
-    const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        e.preventDefault();
-        e.stopPropagation();
-        this.closeZenMode();
-        document.removeEventListener('keydown', handleEscape);
-      }
-    };
-    document.addEventListener('keydown', handleEscape, true);
-  }
-
-  private closeZenMode(): void {
-    const notesTextarea = this.querySelector('#entry-notes') as HTMLTextAreaElement;
-    const zenOverlay = this.querySelector('#zen-mode-overlay') as HTMLElement;
-    const zenTextarea = this.querySelector('#zen-mode-textarea') as HTMLTextAreaElement;
-
-    if (!notesTextarea || !zenOverlay || !zenTextarea) return;
-
-    // Copy content back to notes textarea
-    notesTextarea.value = zenTextarea.value;
-
-    // Hide zen mode overlay
-    zenOverlay.style.display = 'none';
   }
 
   private async handleLocationCapture(): Promise<void> {
