@@ -66,6 +66,9 @@ importers:
       '@milkdown/ctx':
         specifier: ^7.18.0
         version: 7.18.0
+      '@milkdown/plugin-clipboard':
+        specifier: ^7.18.0
+        version: 7.18.0
       '@milkdown/plugin-listener':
         specifier: ^7.18.0
         version: 7.18.0
@@ -386,6 +389,17 @@ packages:
 
   /@milkdown/exception@7.18.0:
     resolution: {integrity: sha512-sAyi4IqdChh4+lpgucmgDZNGjYuIRvJimZeMj0SdfdeHDABan5Nco3X+5yOGaBq1z9QOJG90+vEcEvUASHBmFw==}
+    dev: false
+
+  /@milkdown/plugin-clipboard@7.18.0:
+    resolution: {integrity: sha512-Gnp+GqkoLS1pKG9S2QfdvZQjfoJosQek5Yv5zOIj5X388yfVlguKNtCwnDCJKVEVws9e8PnhfPBmzr06713dZw==}
+    dependencies:
+      '@milkdown/core': 7.18.0
+      '@milkdown/ctx': 7.18.0
+      '@milkdown/prose': 7.18.0
+      '@milkdown/utils': 7.18.0
+    transitivePeerDependencies:
+      - supports-color
     dev: false
 
   /@milkdown/plugin-listener@7.18.0:
