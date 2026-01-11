@@ -176,7 +176,6 @@ export class EntryDetailComponent extends WebComponent {
                 </div>
             </div>
             <div class="entry-context-menu" id="detail-menu" style="display: none;">
-                <div class="context-menu-item" data-action="edit"><i class="ph-duotone ph-pencil-simple"></i> Edit</div>
                 <div class="context-menu-item" data-action="archive"><i class="ph-duotone ph-archive"></i> Archive</div>
                 <div class="context-menu-item danger" data-action="delete"><i class="ph-duotone ph-trash"></i> Delete</div>
             </div>
@@ -478,9 +477,7 @@ export class EntryDetailComponent extends WebComponent {
         const target = e.target as HTMLElement;
         const action = target.dataset.action;
 
-        if (action === 'edit') {
-          URLStateManager.openEditEntryPanel(this.entryId!);
-        } else if (action === 'archive') {
+        if (action === 'archive') {
           this.handleArchive();
         } else if (action === 'delete') {
           this.handleDelete();

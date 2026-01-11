@@ -474,10 +474,6 @@ Delete</div>
         </div>
       </div>
       <div class="entry-context-menu" id="entry-menu-${entry.id}" style="display: none;">
-        <div class="context-menu-item" data-entry-id="${entry.id}" data-action="edit">
-          <i class="ph-duotone ph-pencil-simple"></i>
-          <span>Edit</span>
-        </div>
         <div class="context-menu-item" data-entry-id="${entry.id}" data-action="archive">
           <i class="ph-duotone ph-archive"></i>
           <span>Archive</span>
@@ -578,10 +574,6 @@ Delete</div>
                 </div>
             </div>
             <div class="entry-context-menu" id="entry-menu-${entry.id}" style="display: none;">
-                <div class="context-menu-item" data-entry-id="${entry.id}" data-action="edit">
-                    <i class="ph-duotone ph-pencil-simple"></i>
-                    <span>Edit</span>
-                </div>
                 <div class="context-menu-item" data-entry-id="${entry.id}" data-action="archive">
                     <i class="ph-duotone ph-archive"></i>
                     <span>Archive</span>
@@ -978,9 +970,7 @@ Delete</div>
         const action = menuItem.dataset.action;
 
         if (entryId && action) {
-          if (action === 'edit') {
-            URLStateManager.openEditEntryPanel(entryId);
-          } else if (action === 'archive') {
+          if (action === 'archive') {
             this.handleArchive(entryId);
           } else if (action === 'delete') {
             this.handleDelete(entryId);
