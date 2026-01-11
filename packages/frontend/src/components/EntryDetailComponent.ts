@@ -525,25 +525,38 @@ export class EntryDetailComponent extends WebComponent {
 
       // Temporarily hide to measure dimensions
       menu.style.visibility = 'hidden';
+      menu.style.display = 'block';
       // Force reflow to ensure dimensions are calculated
       void menu.offsetHeight;
       const menuWidth = menu.offsetWidth;
       const menuHeight = menu.offsetHeight;
       menu.style.visibility = 'visible';
 
-      // Position menu below and aligned to right edge of button
+      // Calculate position to align right edges
+      // Menu right edge should align with button right edge
       let left = rect.right - menuWidth;
       let top = rect.bottom + 4;
 
-      // Ensure menu doesn't go off screen
+      // Viewport boundaries
       const viewportWidth = window.innerWidth;
       const viewportHeight = window.innerHeight;
 
+      // Only adjust left if menu would go off the left edge of viewport
       if (left < 8) {
         left = 8;
       }
-      if (top + menuHeight > viewportHeight) {
-        top = rect.top - menuHeight - 4; // Show above button instead
+      // Make sure menu doesn't go off right edge either
+      if (left + menuWidth > viewportWidth - 8) {
+        left = viewportWidth - menuWidth - 8;
+      }
+
+      // If menu would go off bottom, show above button instead
+      if (top + menuHeight > viewportHeight - 8) {
+        top = rect.top - menuHeight - 4;
+      }
+      // Make sure it doesn't go off top
+      if (top < 8) {
+        top = 8;
       }
 
       menu.style.left = `${left}px`;
