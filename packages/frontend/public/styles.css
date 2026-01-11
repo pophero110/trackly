@@ -4111,11 +4111,49 @@ slide-panel:not(.active) .slide-panel-container {
   gap: 12px;
 }
 
+.entry-image-wrapper {
+  position: relative;
+  display: inline-block;
+}
+
 .entry-image-detail {
   width: 100%;
   height: auto;
   border-radius: var(--radius-sm);
   box-shadow: var(--shadow-sm);
+  display: block;
+}
+
+.btn-remove-entry-image {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.7);
+  color: white;
+  border: none;
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--transition);
+  padding: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.entry-image-wrapper:hover .btn-remove-entry-image {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.btn-remove-entry-image:hover {
+  background: rgba(220, 38, 38, 0.9);
+  transform: scale(1.1);
 }
 
 /* Entry Links Section - Citation Style */

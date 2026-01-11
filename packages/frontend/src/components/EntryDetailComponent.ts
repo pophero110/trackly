@@ -248,7 +248,10 @@ export class EntryDetailComponent extends WebComponent {
     const imagesHtml = entry.images && entry.images.length > 0
       ? `<div class="entry-images-detail">
             ${entry.images.map((img, index) => `
-                <img src="${escapeHtml(img)}" alt="Entry image" class="entry-image-detail" data-image-index="${index}" style="cursor: pointer;" />
+                <div class="entry-image-wrapper">
+                    <img src="${escapeHtml(img)}" alt="Entry image" class="entry-image-detail" data-image-index="${index}" style="cursor: pointer;" />
+                    <button type="button" class="btn-remove-entry-image" data-image-index="${index}" title="Remove image">×</button>
+                </div>
             `).join('')}
          </div>`
       : '';
@@ -662,6 +665,16 @@ export class EntryDetailComponent extends WebComponent {
     };
 
     document.addEventListener('keydown', handleKeyPress);
+
+    // Attach remove image handlers
+    const removeImageBtns = this.querySelectorAll('.btn-remove-entry-image');
+    removeImageBtns.forEach(btn => {
+      btn.addEventListener('click', async (e) => {
+        e.stopPropagation(); // Prevent opening the image preview modal
+        const index = parseInt((btn as HTMLElement).dataset.imageIndex || '0');
+        await this.handleRemoveImage(index);
+      });
+    });
   }
 
   private attachNotesEditorHandlers(): void {
@@ -937,5 +950,23 @@ export class EntryDetailComponent extends WebComponent {
       console.error('Reverse geocoding error:', error);
       return null;
     }
+  }
+
+  private async handleRemoveImage(index: number): Promise<void> {
+    if (!this.entryId) return;
+
+    const entry = this.store.getEntryById(this.entryId);
+    if (!entry || !entry.images) return;
+
+    // Create a new array without the image at the specified index
+    const updatedImages = entry.images.filter((_, i) => i !== index);
+
+    // Update the entry with the new images array
+    await this.store.updateEntry(this.entryId, {
+      images: updatedImages
+    }).catch(error => {
+      console.error('Error removing image from entry:', error);
+      alert('Failed to remove image. Please try again.');
+    });
   }
 }
