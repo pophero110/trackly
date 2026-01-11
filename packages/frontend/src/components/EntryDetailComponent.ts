@@ -44,6 +44,11 @@ export class EntryDetailComponent extends WebComponent {
       document.removeEventListener('click', this.documentClickHandler);
       this.documentClickHandler = null;
     }
+    // Clean up menu from document body
+    const menu = document.getElementById('detail-menu');
+    if (menu) {
+      menu.remove();
+    }
   }
 
   render(): void {
@@ -98,6 +103,21 @@ export class EntryDetailComponent extends WebComponent {
     if (oldModal) {
       oldModal.remove();
     }
+
+    // Remove old context menu if exists
+    const oldMenu = document.getElementById('detail-menu');
+    if (oldMenu) {
+      oldMenu.remove();
+    }
+
+    // Add context menu to document body
+    const menuHtml = `
+      <div class="entry-context-menu" id="detail-menu" style="display: none;">
+        <div class="context-menu-item" data-action="archive"><i class="ph-duotone ph-archive"></i> Archive</div>
+        <div class="context-menu-item danger" data-action="delete"><i class="ph-duotone ph-trash"></i> Delete</div>
+      </div>
+    `;
+    document.body.insertAdjacentHTML('beforeend', menuHtml);
 
     // Add modal to document body
     if (entry.images && entry.images.length > 0) {
@@ -179,10 +199,6 @@ export class EntryDetailComponent extends WebComponent {
                     </button>` : ''}
                     <button class="entry-menu-btn" id="detail-menu-btn" data-action="menu">⋮</button>
                 </div>
-            </div>
-            <div class="entry-context-menu" id="detail-menu" style="display: none;">
-                <div class="context-menu-item" data-action="archive"><i class="ph-duotone ph-archive"></i> Archive</div>
-                <div class="context-menu-item danger" data-action="delete"><i class="ph-duotone ph-trash"></i> Delete</div>
             </div>
         `;
   }
@@ -476,20 +492,23 @@ export class EntryDetailComponent extends WebComponent {
       });
     }
 
-    // Menu item clicks
-    this.querySelectorAll('#detail-menu .context-menu-item').forEach(item => {
-      item.addEventListener('click', (e) => {
-        const target = e.currentTarget as HTMLElement;
-        const action = target.dataset.action;
+    // Menu item clicks - menu is now at document body level
+    const menu = document.getElementById('detail-menu');
+    if (menu) {
+      menu.querySelectorAll('.context-menu-item').forEach(item => {
+        item.addEventListener('click', (e) => {
+          const target = e.currentTarget as HTMLElement;
+          const action = target.dataset.action;
 
-        if (action === 'archive') {
-          this.handleArchive();
-        } else if (action === 'delete') {
-          this.handleDelete();
-        }
-        this.hideMenu();
+          if (action === 'archive') {
+            this.handleArchive();
+          } else if (action === 'delete') {
+            this.handleDelete();
+          }
+          this.hideMenu();
+        });
       });
-    });
+    }
 
     // Remove old document click handler if exists
     if (this.documentClickHandler) {
@@ -502,7 +521,7 @@ export class EntryDetailComponent extends WebComponent {
   }
 
   private toggleMenu(e: MouseEvent): void {
-    const menu = this.querySelector('#detail-menu') as HTMLElement;
+    const menu = document.getElementById('detail-menu') as HTMLElement;
     if (!menu) return;
 
     const isVisible = menu.style.display === 'block';
@@ -529,7 +548,7 @@ export class EntryDetailComponent extends WebComponent {
   }
 
   private hideMenu(): void {
-    const menu = this.querySelector('#detail-menu') as HTMLElement;
+    const menu = document.getElementById('detail-menu') as HTMLElement;
     if (menu) {
       menu.style.display = 'none';
     }

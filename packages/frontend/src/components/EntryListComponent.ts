@@ -1,6 +1,6 @@
 import { WebComponent } from './WebComponent.js';
 import { Entry } from '../models/Entry.js';
-import { escapeHtml, formatDate, extractHashtags } from '../utils/helpers.js';
+import { escapeHtml, extractHashtags } from '../utils/helpers.js';
 import { parseMarkdown } from '../utils/markdown.js';
 import { URLStateManager } from '../utils/urlState.js';
 import { EntityProperty } from '../types/index.js';
@@ -75,17 +75,6 @@ export class EntryListComponent extends WebComponent {
 
     // Get selected entity name for header
     const selectedEntity = selectedEntityId ? this.store.getEntityById(selectedEntityId) : null;
-
-    // Entry icon for "Your Entries" header
-    const entryIcon = !selectedEntity ? `<i class="ph-duotone ph-list-bullets"></i>` : '';
-
-    const headerText = selectedEntity
-      ? `${selectedEntity.name}`
-      : `${entryIcon}Entries`;
-
-    const entityTypeAndCategories = selectedEntity
-      ? `<span class="entity-type ${selectedEntity.type.toLowerCase()}">${selectedEntity.type}</span>${selectedEntity.categories.length > 0 ? selectedEntity.categories.map(cat => `<span class="entity-category-chip">${escapeHtml(cat)}</span>`).join('') : ''}`
-      : '';
 
     // Hashtag filter badge
     const hashtagBadge = hashtagFilter
@@ -204,10 +193,6 @@ export class EntryListComponent extends WebComponent {
         ? `No entries yet for ${selectedEntity.name}. Log your first entry!`
         : 'No entries yet. Log your first entry!';
 
-      const subtitle = selectedEntity
-        ? `Capture ${selectedEntity.name.toLowerCase()} moments`
-        : 'Your activity log';
-
       // Entity menu (only show when viewing a specific entity)
       const entityMenu = selectedEntity ? `
                 <button class="entry-menu-btn" id="entity-page-menu-btn" data-entity-id="${selectedEntity.id}" data-action="menu">⋮</button>
@@ -255,10 +240,6 @@ export class EntryListComponent extends WebComponent {
     // Group entries by date
     const entriesByDate = this.groupEntriesByDate(entries.slice(0, this.maxEntries));
     const entriesHtml = this.renderTimelineEntries(entriesByDate);
-
-    const subtitle = selectedEntity
-      ? `Capture ${selectedEntity.name.toLowerCase()} moments`
-      : 'Your activity log';
 
     // Entity menu (only show when viewing a specific entity)
     const entityMenu = selectedEntity ? `
@@ -394,17 +375,9 @@ Delete</div>
 
   private renderTimelineEntry(entry: Entry): string {
     const entity = this.store.getEntityById(entry.entityId);
-    const time = new Date(entry.timestamp).toLocaleTimeString('en-US', {
-      hour: '2-digit',
-      minute: '2-digit',
-      hour12: true
-    });
 
     // Get entity type icon
     const typeIcon = this.getEntityTypeIcon(entity?.type);
-
-    // Determine status indicator color
-    const statusClass = this.getEntryStatusClass(entry, entity);
 
     // Entry value - primary data point
     const entryValue = entry.value !== undefined
@@ -484,106 +457,6 @@ Delete</div>
         </div>
       </div>
     `;
-  }
-
-  private getEntryStatusClass(entry: Entry, entity: any): string {
-    // Determine status based on entry value or entity type
-    if (entity?.type === 'Habit' || entity?.type === 'Goal') {
-      return 'status-positive'; // Green for positive tracking
-    }
-    if (entity?.type === 'Note' || entity?.type === 'Journal') {
-      return 'status-neutral'; // Yellow/amber for notes
-    }
-    return 'status-default'; // Default gray
-  }
-
-  private renderEntryCard(entry: Entry): string {
-    const entity = this.store.getEntityById(entry.entityId);
-
-    // Get entity type icon/emoji
-    const typeIcon = this.getEntityTypeIcon(entity?.type);
-
-    // Entry title (value) - now primary and prominent
-    const entryTitle = entry.value !== undefined
-      ? `<h3 class="entry-title-primary">${typeIcon} ${this.formatValue(entry.value, entry.valueDisplay, entity?.valueType)}</h3>`
-      : '';
-
-    // Notes content
-    const notesHtml = entry.notes ? `<div class="entry-notes">${this.formatNotes(entry.notes)}</div>` : '';
-
-    // Extract hashtags from notes
-    const hashtags = entry.notes ? extractHashtags(entry.notes) : [];
-    const hashtagChips = hashtags.length > 0
-      ? hashtags.map(tag => `<span class="entry-chip entry-chip-tag" data-tag="${escapeHtml(tag)}">#${escapeHtml(tag)}</span>`).join('')
-      : '';
-
-    // Entity name as chip with color
-    const entityColor = entity ? getEntityColor(entity.name) : '';
-    const entityChip = entity ? `<span class="entry-chip entry-chip-entity" data-entity-name="${escapeHtml(entity.name)}" style="--entity-color: ${entityColor}">${escapeHtml(entity.name)}</span>` : '';
-
-    // Render custom properties
-    const propertiesHtml = entity && entity.properties && entity.properties.length > 0 && entry.propertyValues
-      ? this.renderPropertyValues(entity.properties, entry.propertyValues, entry.propertyValueDisplays)
-      : '';
-
-    // Image attachments with media card styling
-    const imagesHtml = entry.images && entry.images.length > 0 ? `
-            <div class="entry-media-grid">
-                ${entry.images.map(img => `
-                    <div class="entry-media-card">
-                        <img src="${img}" alt="Entry image" class="entry-media-image">
-                    </div>
-                `).join('')}
-            </div>
-        ` : '';
-
-    const hasContent = notesHtml;
-    const hasAttachments = imagesHtml;
-
-    // Location display (inline in header with separator)
-    const locationHeaderHtml = entry.latitude && entry.longitude
-      ? `<span class="metadata-separator">•</span>
-            <span class="entry-location-header">
-                <span class="location-icon-small">📍</span>
-                <a href="https://www.google.com/maps?q=${entry.latitude},${entry.longitude}"
-                   target="_blank"
-                   rel="noopener noreferrer"
-                   class="location-link-header"
-                   title="Click to open in Google Maps">
-                    ${entry.locationName || `${entry.latitude.toFixed(4)}, ${entry.longitude.toFixed(4)}`}
-                </a>
-            </span>`
-      : '';
-
-    return `
-            <div class="entry-card" data-entry-id="${entry.id}">
-                <div class="entry-card-header">
-                    <div class="entry-header-left">
-                        ${entityChip}
-                        <span class="entry-timestamp-secondary">🕒 ${formatDate(entry.timestamp)}</span>
-                        ${locationHeaderHtml}
-                    </div>
-                    <button class="entry-menu-btn" data-entry-id="${entry.id}" data-action="menu">⋮</button>
-                </div>
-                ${propertiesHtml ? `<div class="entry-card-properties">${propertiesHtml}</div>` : ''}
-                <div class="entry-card-content">
-                    ${entryTitle}
-                    ${hasContent ? `<div class="entry-content">${notesHtml}</div>` : ''}
-                    ${hashtagChips ? `<div class="entry-tags">${hashtagChips}</div>` : ''}
-                    ${hasAttachments ? `<div class="entry-attachments">${imagesHtml}</div>` : ''}
-                </div>
-            </div>
-            <div class="entry-context-menu" id="entry-menu-${entry.id}" style="display: none;">
-                <div class="context-menu-item" data-entry-id="${entry.id}" data-action="archive">
-                    <i class="ph-duotone ph-archive"></i>
-                    <span>Archive</span>
-                </div>
-                <div class="context-menu-item danger" data-entry-id="${entry.id}" data-action="delete">
-                    <i class="ph-duotone ph-trash"></i>
-                    <span>Delete</span>
-                </div>
-            </div>
-        `;
   }
 
   private getEntityTypeIcon(type?: string): string {
@@ -1048,46 +921,6 @@ Delete</div>
       menu.style.left = `${left}px`;
       menu.style.top = `${top}px`;
     }
-  }
-
-  private showMenuAtPosition(entryId: string, x: number, y: number): void {
-    const menu = this.querySelector(`#entry-menu-${entryId}`) as HTMLElement;
-    if (!menu) return;
-
-    // Hide all other menus first
-    this.hideAllMenus();
-
-    // Position and show this menu
-    menu.style.display = 'block';
-    menu.style.position = 'fixed';
-
-    // Get menu dimensions
-    const menuWidth = menu.offsetWidth;
-    const menuHeight = menu.offsetHeight;
-    const viewportWidth = window.innerWidth;
-    const viewportHeight = window.innerHeight;
-
-    // Align right edge of menu with touch position
-    let left = x - menuWidth;
-    let top = y;
-
-    // Adjust if menu would go off left edge
-    if (left < 8) {
-      left = 8;
-    }
-
-    // Adjust if menu would go off right edge
-    if (left + menuWidth > viewportWidth - 8) {
-      left = viewportWidth - menuWidth - 8;
-    }
-
-    // Adjust if menu would go off bottom edge
-    if (top + menuHeight > viewportHeight) {
-      top = Math.max(8, viewportHeight - menuHeight - 8);
-    }
-
-    menu.style.left = `${left}px`;
-    menu.style.top = `${top}px`;
   }
 
   private hideAllMenus(): void {
