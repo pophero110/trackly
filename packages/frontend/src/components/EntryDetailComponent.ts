@@ -276,32 +276,13 @@ export class EntryDetailComponent extends WebComponent {
             <div class="entry-detail-footer">
                 ${hashtagsHtml}
                 <div class="action-menu-buttons">
-                    <div style="position: relative;">
-                        <button type="button" id="image-menu-btn" class="btn-action-menu" title="Add images">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-                                <circle cx="8.5" cy="8.5" r="1.5"></circle>
-                                <polyline points="21 15 16 10 5 21"></polyline>
-                            </svg>
-                        </button>
-                        <div id="image-menu" class="image-dropdown-menu" style="display: none;">
-                            <div class="context-menu-item" id="upload-image-menu-item">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                                    <polyline points="17 8 12 3 7 8"></polyline>
-                                    <line x1="12" y1="3" x2="12" y2="15"></line>
-                                </svg>
-                                <span>Upload Image</span>
-                            </div>
-                            <div class="context-menu-item" id="capture-image-menu-item">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                    <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
-                                    <circle cx="12" cy="13" r="4"></circle>
-                                </svg>
-                                <span>Take Photo</span>
-                            </div>
-                        </div>
-                    </div>
+                    <button type="button" id="upload-image-btn" class="btn-action-menu" title="Upload images">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                            <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                            <polyline points="21 15 16 10 5 21"></polyline>
+                        </svg>
+                    </button>
                     <button type="button" id="add-link-btn" class="btn-action-menu" title="Add link to notes">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
@@ -801,49 +782,13 @@ export class EntryDetailComponent extends WebComponent {
   }
 
   private attachActionButtonHandlers(): void {
-    const imageMenuBtn = this.querySelector('#image-menu-btn') as HTMLButtonElement;
-    const imageMenu = this.querySelector('#image-menu') as HTMLElement;
-    const uploadMenuItem = this.querySelector('#upload-image-menu-item') as HTMLElement;
-    const captureMenuItem = this.querySelector('#capture-image-menu-item') as HTMLElement;
+    const uploadImageBtn = this.querySelector('#upload-image-btn') as HTMLButtonElement;
     const addLinkBtn = this.querySelector('#add-link-btn') as HTMLButtonElement;
     const locationBtn = this.querySelector('#location-btn') as HTMLButtonElement;
 
-    // Image menu handlers
-    if (imageMenuBtn && imageMenu) {
-      imageMenuBtn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        const isVisible = imageMenu.style.display === 'block';
-
-        if (!isVisible) {
-          // Position the menu above the button with right edge aligned to button's right edge
-          const rect = imageMenuBtn.getBoundingClientRect();
-
-          // Temporarily show menu to get its dimensions
-          imageMenu.style.visibility = 'hidden';
-          imageMenu.style.display = 'block';
-          const menuHeight = imageMenu.offsetHeight;
-          const menuWidth = imageMenu.offsetWidth;
-          imageMenu.style.visibility = 'visible';
-
-          imageMenu.style.top = `${rect.top - menuHeight - 4}px`;
-          imageMenu.style.left = `${rect.right - menuWidth}px`;
-        } else {
-          imageMenu.style.display = 'none';
-        }
-      });
-
-      // Close menu when clicking outside
-      document.addEventListener('click', (e) => {
-        if (imageMenu.style.display === 'block' &&
-          !imageMenu.contains(e.target as Node) &&
-          e.target !== imageMenuBtn) {
-          imageMenu.style.display = 'none';
-        }
-      });
-    }
-
-    if (uploadMenuItem) {
-      uploadMenuItem.addEventListener('click', () => {
+    // Upload image button - directly open file picker
+    if (uploadImageBtn) {
+      uploadImageBtn.addEventListener('click', () => {
         // Create hidden file input
         const fileInput = document.createElement('input');
         fileInput.type = 'file';
@@ -858,15 +803,6 @@ export class EntryDetailComponent extends WebComponent {
 
         document.body.appendChild(fileInput);
         fileInput.click();
-
-        if (imageMenu) imageMenu.style.display = 'none';
-      });
-    }
-
-    if (captureMenuItem) {
-      captureMenuItem.addEventListener('click', () => {
-        this.handleCameraCapture();
-        if (imageMenu) imageMenu.style.display = 'none';
       });
     }
 
@@ -932,83 +868,6 @@ export class EntryDetailComponent extends WebComponent {
         processedCount++;
       }
     });
-  }
-
-  private async handleCameraCapture(): Promise<void> {
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: 'environment' },
-        audio: false
-      });
-
-      // Create video element for camera preview
-      const modal = document.createElement('div');
-      modal.className = 'camera-modal';
-      modal.innerHTML = `
-        <div class="camera-container">
-          <video id="camera-video" autoplay playsinline></video>
-          <canvas id="camera-canvas" style="display: none;"></canvas>
-          <div class="camera-controls">
-            <button type="button" class="btn btn-primary" id="take-photo-btn">📸 Capture</button>
-            <button type="button" class="btn btn-secondary" id="cancel-camera-btn">Cancel</button>
-          </div>
-        </div>
-      `;
-      document.body.appendChild(modal);
-
-      const video = modal.querySelector('#camera-video') as HTMLVideoElement;
-      const canvas = modal.querySelector('#camera-canvas') as HTMLCanvasElement;
-      const takePhotoBtn = modal.querySelector('#take-photo-btn') as HTMLButtonElement;
-      const cancelBtn = modal.querySelector('#cancel-camera-btn') as HTMLButtonElement;
-
-      video.srcObject = stream;
-
-      const cleanup = () => {
-        stream.getTracks().forEach(track => track.stop());
-        document.body.removeChild(modal);
-      };
-
-      takePhotoBtn.addEventListener('click', () => {
-        if (!this.entryId) {
-          cleanup();
-          return;
-        }
-
-        const entry = this.store.getEntryById(this.entryId);
-        if (!entry) {
-          cleanup();
-          return;
-        }
-
-        // Set canvas dimensions to match video
-        canvas.width = video.videoWidth;
-        canvas.height = video.videoHeight;
-
-        // Draw video frame to canvas
-        const ctx = canvas.getContext('2d');
-        ctx?.drawImage(video, 0, 0);
-
-        // Convert to base64
-        const imageData = canvas.toDataURL('image/jpeg', 0.8);
-        const currentImages = entry.images || [];
-
-        // Update entry with new image
-        this.store.updateEntry(this.entryId, {
-          images: [...currentImages, imageData]
-        }).catch(error => {
-          console.error('Error updating entry with camera image:', error);
-          alert('Failed to add photo. Please try again.');
-        });
-
-        cleanup();
-      });
-
-      cancelBtn.addEventListener('click', cleanup);
-
-    } catch (error) {
-      console.error('Camera access error:', error);
-      alert('Unable to access camera. Please check permissions or use the upload option.');
-    }
   }
 
   private async handleLocationCapture(): Promise<void> {
