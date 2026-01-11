@@ -21,18 +21,8 @@ export class EntryListComponent extends WebComponent {
 
     // Show loading state while data is being fetched
     if (!this.store.getIsLoaded()) {
-      const entryIcon = `<i class="ph-duotone ph-list-bullets"></i>`
-
       this.innerHTML = `
                 <div class="section">
-                    <div class="section-header-strong">
-                        <div class="section-header-content">
-                            <div class="section-header-text">
-                                <h2 class="section-title">${entryIcon}Entries</h2>
-                                <p class="section-subtitle">Your activity log</p>
-                            </div>
-                        </div>
-                    </div>
                     ${this.renderLoadingState('Loading entries...')}
                 </div>
             `;
@@ -239,24 +229,16 @@ export class EntryListComponent extends WebComponent {
 
       this.innerHTML = `
                 <div class="section">
-                    <div class="section-header-strong">
-                        <div class="section-header-content">
-                            <div class="section-header-text">
-                                <h2 class="section-title">${headerText} ${entityTypeAndCategories}</h2>
-                                <p class="section-subtitle">${subtitle}</p>
-                            </div>
-                            <div class="section-header-actions">
-                                ${sortSelect}
-                                ${entityFilterDropdown}
-                                ${tagFilterDropdown}
-                                ${hashtagBadge}
-                                <button class="btn btn-primary btn-add-entry" id="log-entry-btn">
-                                    <i class="ph ph-plus"></i>
-                                    Add Entry
-                                </button>
-                                ${entityMenu}
-                            </div>
-                        </div>
+                    <div class="section-header-actions">
+                        ${sortSelect}
+                        ${entityFilterDropdown}
+                        ${tagFilterDropdown}
+                        ${hashtagBadge}
+                        <button class="btn btn-primary btn-add-entry" id="log-entry-btn">
+                            <i class="ph ph-plus"></i>
+                            Add Entry
+                        </button>
+                        ${entityMenu}
                     </div>
                     <div class="empty-state">${emptyMessage}</div>
                 </div>
@@ -293,24 +275,16 @@ Delete</div>
 
     this.innerHTML = `
             <div class="section">
-                <div class="section-header-strong">
-                    <div class="section-header-content">
-                        <div class="section-header-text">
-                            <h2 class="section-title">${headerText} ${entityTypeAndCategories}</h2>
-                            <p class="section-subtitle">${subtitle}</p>
-                        </div>
-                        <div class="section-header-actions">
-                            ${sortSelect}
-                            ${entityFilterDropdown}
-                            ${tagFilterDropdown}
-                            ${hashtagBadge}
-                            <button class="btn-primary btn-add-entry" id="log-entry-btn">
-                                <i class="ph ph-plus"></i>
-                                Add Entry
-                            </button>
-                            ${entityMenu}
-                        </div>
-                    </div>
+                <div class="section-header-actions">
+                    ${sortSelect}
+                    ${entityFilterDropdown}
+                    ${tagFilterDropdown}
+                    ${hashtagBadge}
+                    <button class="btn-primary btn-add-entry" id="log-entry-btn">
+                        <i class="ph ph-plus"></i>
+                        Add Entry
+                    </button>
+                    ${entityMenu}
                 </div>
                 <div class="entries-grid">
                     ${entriesHtml}

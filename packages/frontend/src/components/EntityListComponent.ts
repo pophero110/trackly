@@ -16,16 +16,6 @@ export class EntityListComponent extends WebComponent {
     if (!this.store.getIsLoaded()) {
       this.innerHTML = `
                 <div class="section">
-                    <div class="section-header-strong">
-                        <div class="section-header-content">
-                            <div class="section-header-text">
-                                <h2 class="section-title">
-                                    <i class="ph-duotone ph-circles-four"></i>                                    Entities
-                                </h2>
-                                <p class="section-subtitle">Track what matters to you</p>
-                            </div>
-                        </div>
-                    </div>
                     ${this.renderLoadingState('Loading entities...')}
                 </div>
             `;
@@ -72,21 +62,11 @@ export class EntityListComponent extends WebComponent {
     if (entities.length === 0) {
       this.innerHTML = `
                 <div class="section">
-                    <div class="section-header-strong">
-                        <div class="section-header-content">
-                            <div class="section-header-text">
-                                <h2 class="section-title">
-                                    <i class="ph-duotone ph-circles-four"></i>                                    Entities
-                                </h2>
-                                <p class="section-subtitle">Track what matters to you</p>
-                            </div>
-                            <div class="section-header-actions">
-                                <button class="btn btn-primary btn-add-entry" id="create-entity-btn">
-                                    <i class="ph ph-plus"></i>
-                                    Create Entity
-                                </button>
-                            </div>
-                        </div>
+                    <div class="section-header-actions">
+                        <button class="btn btn-primary btn-add-entry" id="create-entity-btn">
+                            <i class="ph ph-plus"></i>
+                            Create Entity
+                        </button>
                     </div>
                     <div class="empty-state">No entities yet. Create your first entity to get started!</div>
                 </div>
@@ -101,22 +81,12 @@ export class EntityListComponent extends WebComponent {
 
     this.innerHTML = `
             <div class="section">
-                <div class="section-header-strong">
-                    <div class="section-header-content">
-                        <div class="section-header-text">
-                            <h2 class="section-title">
-                                <i class="ph-duotone ph-circles-four"></i>                                Entities
-                            </h2>
-                            <p class="section-subtitle">Track what matters to you</p>
-                        </div>
-                        <div class="section-header-actions">
-                            ${sortSelect}
-                            <button class="btn-primary btn-add-entry" id="create-entity-btn">
-                                <i class="ph ph-plus"></i>
-                                Create Entity
-                            </button>
-                        </div>
-                    </div>
+                <div class="section-header-actions">
+                    ${sortSelect}
+                    <button class="btn-primary btn-add-entry" id="create-entity-btn">
+                        <i class="ph ph-plus"></i>
+                        Create Entity
+                    </button>
                 </div>
                 <div class="entities-bento-grid">
                     ${entitiesHtml}
