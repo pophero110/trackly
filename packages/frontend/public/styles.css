@@ -860,16 +860,44 @@ form {
 /* Entry Detail Footer */
 .entry-detail-footer {
   flex-shrink: 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
   padding: var(--base-size-16) var(--base-size-24);
   border-top: var(--border-light);
   background: var(--background);
+}
+
+.entry-footer-hashtags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.hashtag-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  background: var(--background-secondary);
+  border: 1px solid var(--border-light);
+  border-radius: 12px;
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  transition: var(--transition);
+}
+
+.hashtag-tag:hover {
+  background: var(--background-hover);
+  color: var(--text-primary);
 }
 
 .action-menu-buttons {
   display: flex;
   gap: 8px;
   align-items: center;
-  justify-content: flex-end;
+  flex-shrink: 0;
 }
 
 .btn-action-menu {

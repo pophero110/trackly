@@ -264,8 +264,17 @@ export class EntryDetailComponent extends WebComponent {
   }
 
   private renderDetailFooter(entry: Entry): string {
+    // Extract hashtags from notes
+    const hashtags = entry.notes ? this.extractHashtags(entry.notes) : [];
+    const hashtagsHtml = hashtags.length > 0
+      ? `<div class="entry-footer-hashtags">
+           ${hashtags.map(tag => `<span class="hashtag-tag">#${escapeHtml(tag)}</span>`).join('')}
+         </div>`
+      : '';
+
     return `
             <div class="entry-detail-footer">
+                ${hashtagsHtml}
                 <div class="action-menu-buttons">
                     <div style="position: relative;">
                         <button type="button" id="image-menu-btn" class="btn-action-menu" title="Add images">
@@ -414,6 +423,24 @@ export class EntryDetailComponent extends WebComponent {
     return text.replace(hashtagRegex, (match, tag) => {
       return `<a href="#" class="hashtag-link" data-hashtag="${tag}">${match}</a>`;
     });
+  }
+
+  private extractHashtags(text: string): string[] {
+    // Remove markdown links first to avoid matching hashtags in URLs
+    const textWithoutLinks = text.replace(/\[([^\]]+?)\]\((.+?)\)/g, '');
+
+    const hashtagRegex = /(?<![a-zA-Z0-9_])#([a-zA-Z0-9_]+)(?![a-zA-Z0-9_])/g;
+    const hashtags: string[] = [];
+    let match;
+
+    while ((match = hashtagRegex.exec(textWithoutLinks)) !== null) {
+      // Avoid duplicates
+      if (!hashtags.includes(match[1])) {
+        hashtags.push(match[1]);
+      }
+    }
+
+    return hashtags;
   }
 
   private attachEventHandlers(): void {
