@@ -8,7 +8,6 @@ import { EntityCreateFormComponent } from './components/EntityCreateFormComponen
 import { EntityEditFormComponent } from './components/EntityEditFormComponent.js';
 import { EntityListComponent } from './components/EntityListComponent.js';
 import { EntryCreateFormComponent } from './components/EntryCreateFormComponent.js';
-import { EntryEditFormComponent } from './components/EntryEditFormComponent.js';
 import { EntryListComponent } from './components/EntryListComponent.js';
 import { EntryDetailComponent } from './components/EntryDetailComponent.js';
 import './components/AuthComponent.js'; // Register custom element
@@ -325,27 +324,6 @@ class TracklyApp {
                     panel.open('Clone Entity', formClone);
                 }
             }
-        } else if (actionType === 'edit-entry') {
-            // Open edit entry panel
-            const entryId = URLStateManager.getEntryId();
-            if (entryId) {
-                const formTemplate = document.querySelector('#entry-edit-form-template');
-                if (formTemplate && !panel.getIsOpen()) {
-                    const formClone = formTemplate.cloneNode(true) as HTMLElement;
-                    formClone.removeAttribute('id');
-                    formClone.style.display = 'block';
-
-                    panel.open('Edit Entry', formClone);
-
-                    // Wait for element to be connected before calling setEntry
-                    setTimeout(() => {
-                        const editForm = formClone as any;
-                        if (editForm && typeof editForm.setEntry === 'function') {
-                            editForm.setEntry(entryId);
-                        }
-                    }, 0);
-                }
-            }
         } else {
             // No panel in URL, close if open
             if (panel.getIsOpen()) {
@@ -363,7 +341,6 @@ class TracklyApp {
         customElements.define('entity-edit-form', EntityEditFormComponent);
         customElements.define('entity-list', EntityListComponent);
         customElements.define('entry-create-form', EntryCreateFormComponent);
-        customElements.define('entry-edit-form', EntryEditFormComponent);
         customElements.define('entry-list', EntryListComponent);
         customElements.define('entry-detail', EntryDetailComponent);
     }
