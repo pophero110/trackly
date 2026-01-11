@@ -857,14 +857,18 @@ form {
   overflow: visible;
 }
 
+/* Entry Detail Footer */
+.entry-detail-footer {
+  padding: 16px 0;
+  border-top: var(--border-light);
+  margin-top: 24px;
+}
+
 .action-menu-buttons {
   display: flex;
   gap: 8px;
   align-items: center;
-  position: fixed;
-  bottom: 20px;
-  right: 20px;
-  z-index: 100;
+  justify-content: flex-end;
 }
 
 .btn-action-menu {
@@ -3889,10 +3893,18 @@ slide-panel:not(.active) .slide-panel-container {
   }
 }
 
+.entry-detail-page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--base-size-16);
+  overflow-y: hidden;
+}
+
 .entry-detail-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  padding: var(--base-size-24) var(--base-size-24) 0 var(--base-size-24);
 }
 
 .entry-detail-actions {
@@ -3973,9 +3985,8 @@ slide-panel:not(.active) .slide-panel-container {
 }
 
 .entry-detail-content {
-  display: flex;
-  flex-direction: column;
-  gap: var(--base-size-16);
+  padding: 0 var(--base-size-24);
+  overflow-y: auto;
 }
 
 /* Metadata Section */

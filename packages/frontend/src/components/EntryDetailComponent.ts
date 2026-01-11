@@ -80,9 +80,10 @@ export class EntryDetailComponent extends WebComponent {
 
     this.innerHTML = `
             <div class="section">
-                <div class="entry-detail-page page-grid">
+                <div class="entry-detail-page">
                     ${this.renderDetailHeader(entry, entity)}
                     ${this.renderDetailContent(entry, entity)}
+                    ${this.renderDetailFooter(entry)}
                 </div>
             </div>
         `;
@@ -228,11 +229,11 @@ export class EntryDetailComponent extends WebComponent {
                     </li>
                 `}).join('') : ''}
                 ${hasEntryReferences ? entry.entryReferences.map(refId => {
-        const refEntry = this.store.getEntryById(refId);
-        if (!refEntry) return '';
-        // Get first line of notes as title, or use entity name
-        const title = refEntry.notes ? refEntry.notes.split('\n')[0].replace(/^#\s*/, '').trim() : refEntry.entityName;
-        return `
+          const refEntry = this.store.getEntryById(refId);
+          if (!refEntry) return '';
+          // Get first line of notes as title, or use entity name
+          const title = refEntry.notes ? refEntry.notes.split('\n')[0].replace(/^#\s*/, '').trim() : refEntry.entityName;
+          return `
                     <li class="entry-link-item">
                         <a href="/entries/${escapeHtml(refId)}" class="entry-link-url">
                             ${escapeHtml(title)}
@@ -255,45 +256,6 @@ export class EntryDetailComponent extends WebComponent {
          </div>`
       : '';
 
-    // Action menu buttons
-    const actionButtonsHtml = `
-      <div class="action-menu-buttons">
-        <div style="position: relative;">
-          <button type="button" id="image-menu-btn" class="btn-action-menu" title="Add images">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-              <circle cx="8.5" cy="8.5" r="1.5"></circle>
-              <polyline points="21 15 16 10 5 21"></polyline>
-            </svg>
-          </button>
-          <div id="image-menu" class="image-dropdown-menu" style="display: none;">
-            <div class="context-menu-item" id="upload-image-menu-item">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                <polyline points="17 8 12 3 7 8"></polyline>
-                <line x1="12" y1="3" x2="12" y2="15"></line>
-              </svg>
-              <span>Upload Image</span>
-            </div>
-            <div class="context-menu-item" id="capture-image-menu-item">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
-                <circle cx="12" cy="13" r="4"></circle>
-              </svg>
-              <span>Take Photo</span>
-            </div>
-          </div>
-        </div>
-        <button type="button" id="add-link-btn" class="btn-action-menu" title="Add link to notes">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
-            <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
-          </svg>
-        </button>
-        <button type="button" id="location-btn" class="btn-action-menu" title="Add location">📍</button>
-      </div>
-    `;
-
     return `
             ${propertiesSection}
             <div class="entry-detail-content">
@@ -301,7 +263,48 @@ export class EntryDetailComponent extends WebComponent {
                 ${imagesHtml}
                 ${tagsHtml}
                 ${linksHtml}
-                ${actionButtonsHtml}
+            </div>
+        `;
+  }
+
+  private renderDetailFooter(entry: Entry): string {
+    return `
+            <div class="entry-detail-footer">
+                <div class="action-menu-buttons">
+                    <div style="position: relative;">
+                        <button type="button" id="image-menu-btn" class="btn-action-menu" title="Add images">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                                <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                                <polyline points="21 15 16 10 5 21"></polyline>
+                            </svg>
+                        </button>
+                        <div id="image-menu" class="image-dropdown-menu" style="display: none;">
+                            <div class="context-menu-item" id="upload-image-menu-item">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                    <polyline points="17 8 12 3 7 8"></polyline>
+                                    <line x1="12" y1="3" x2="12" y2="15"></line>
+                                </svg>
+                                <span>Upload Image</span>
+                            </div>
+                            <div class="context-menu-item" id="capture-image-menu-item">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+                                    <circle cx="12" cy="13" r="4"></circle>
+                                </svg>
+                                <span>Take Photo</span>
+                            </div>
+                        </div>
+                    </div>
+                    <button type="button" id="add-link-btn" class="btn-action-menu" title="Add link to notes">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
+                            <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
+                        </svg>
+                    </button>
+                    <button type="button" id="location-btn" class="btn-action-menu" title="Add location">📍</button>
+                </div>
             </div>
         `;
   }
