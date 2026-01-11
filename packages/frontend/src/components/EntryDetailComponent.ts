@@ -673,10 +673,12 @@ export class EntryDetailComponent extends WebComponent {
   }
 
   private async initializeMilkdownEditor(initialNotes: string): Promise<void> {
+    console.log('[AutoSave] Initializing editor with auto-save (2s debounce)');
     this.editedNotes = initialNotes;
 
     // Create debounced save function (2 second delay)
     this.debouncedSave = debounce(() => {
+      console.log('[AutoSave] Debounce timer expired (2s) - executing save');
       this.saveNotes();
     }, 2000);
 
@@ -694,6 +696,7 @@ export class EntryDetailComponent extends WebComponent {
           editorContainer,
           this.editedNotes,
           (markdown) => {
+            console.log('[AutoSave] Content changed - debounce timer started/reset');
             this.editedNotes = markdown;
             // Trigger auto-save with debounce
             if (this.debouncedSave) {
@@ -717,7 +720,17 @@ export class EntryDetailComponent extends WebComponent {
   }
 
   private async saveNotes(): Promise<void> {
-    if (!this.entryId || !this.editedNotes) return;
+    if (!this.entryId || !this.editedNotes) {
+      console.log('[AutoSave] Save skipped - no entry ID or notes');
+      return;
+    }
+
+    const startTime = Date.now();
+    console.log('[AutoSave] Starting save operation...', {
+      entryId: this.entryId,
+      noteLength: this.editedNotes.length,
+      timestamp: new Date().toISOString()
+    });
 
     this.updateSaveStatus('saving');
 
@@ -726,6 +739,9 @@ export class EntryDetailComponent extends WebComponent {
       await this.store.updateEntry(this.entryId, {
         notes: this.editedNotes
       });
+
+      const duration = Date.now() - startTime;
+      console.log(`[AutoSave] Save completed successfully in ${duration}ms`);
 
       this.updateSaveStatus('saved');
 
@@ -736,7 +752,8 @@ export class EntryDetailComponent extends WebComponent {
         }
       }, 2000);
     } catch (error) {
-      console.error('Failed to save notes:', error);
+      const duration = Date.now() - startTime;
+      console.error(`[AutoSave] Save failed after ${duration}ms:`, error);
       this.updateSaveStatus('error');
 
       // Clear error status after 3 seconds
