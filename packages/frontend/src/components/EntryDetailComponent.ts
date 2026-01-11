@@ -512,55 +512,24 @@ export class EntryDetailComponent extends WebComponent {
       return;
     }
 
-    // Show menu
+    // Position and show this menu
     menu.style.display = 'block';
     menu.style.position = 'fixed';
-    menu.style.zIndex = '10000';
 
     const target = e.target as HTMLElement;
     const menuButton = target.closest('#detail-menu-btn') as HTMLElement;
 
     if (menuButton) {
+      // Menu button click - align menu's right edge with button's right edge
       const rect = menuButton.getBoundingClientRect();
 
-      // Temporarily hide to measure dimensions
+      // Temporarily show menu to get its dimensions
       menu.style.visibility = 'hidden';
-      menu.style.display = 'block';
-      // Force reflow to ensure dimensions are calculated
-      void menu.offsetHeight;
       const menuWidth = menu.offsetWidth;
-      const menuHeight = menu.offsetHeight;
       menu.style.visibility = 'visible';
 
-      // Calculate position to align right edges
-      // Menu right edge should align with button right edge
-      let left = rect.right - menuWidth;
-      let top = rect.bottom + 4;
-
-      // Viewport boundaries
-      const viewportWidth = window.innerWidth;
-      const viewportHeight = window.innerHeight;
-
-      // Only adjust left if menu would go off the left edge of viewport
-      if (left < 8) {
-        left = 8;
-      }
-      // Make sure menu doesn't go off right edge either
-      if (left + menuWidth > viewportWidth - 8) {
-        left = viewportWidth - menuWidth - 8;
-      }
-
-      // If menu would go off bottom, show above button instead
-      if (top + menuHeight > viewportHeight - 8) {
-        top = rect.top - menuHeight - 4;
-      }
-      // Make sure it doesn't go off top
-      if (top < 8) {
-        top = 8;
-      }
-
-      menu.style.left = `${left}px`;
-      menu.style.top = `${top}px`;
+      menu.style.left = `${rect.right - menuWidth}px`;
+      menu.style.top = `${rect.bottom + 4}px`;
     }
   }
 
