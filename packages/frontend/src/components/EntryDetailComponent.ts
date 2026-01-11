@@ -512,28 +512,19 @@ export class EntryDetailComponent extends WebComponent {
       return;
     }
 
-    // Position and show this menu
-    menu.style.display = 'block';
-    menu.style.position = 'fixed';
-    menu.style.zIndex = '10000';
-
     const target = e.target as HTMLElement;
     const menuButton = target.closest('#detail-menu-btn') as HTMLElement;
 
     if (menuButton) {
-      // Menu button click - align menu's right edge with button's right edge
       const rect = menuButton.getBoundingClientRect();
 
-      // Use requestAnimationFrame to ensure browser has calculated layout
-      requestAnimationFrame(() => {
-        // Temporarily hide to get its dimensions
-        menu.style.visibility = 'hidden';
-        const menuWidth = menu.offsetWidth;
-        menu.style.visibility = 'visible';
-
-        menu.style.left = `${rect.right - menuWidth}px`;
-        menu.style.top = `${rect.bottom + 4}px`;
-      });
+      // Position menu using right edge - simplest approach, no width measurement needed
+      menu.style.display = 'block';
+      menu.style.position = 'fixed';
+      menu.style.zIndex = '10000';
+      menu.style.right = `${window.innerWidth - rect.right}px`;
+      menu.style.top = `${rect.bottom + 4}px`;
+      menu.style.left = 'auto'; // Clear any previous left value
     }
   }
 
