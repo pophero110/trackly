@@ -866,7 +866,7 @@ form {
   display: flex;
   align-items: center;
   gap: 16px;
-  padding: var(--base-size-16) var(--base-size-24);
+  padding: var(--base-size-24);
   border-top: var(--border-light);
   background: var(--background);
 }
@@ -3975,8 +3975,6 @@ slide-panel:not(.active) .slide-panel-container {
   gap: 8px;
   flex-wrap: wrap;
 }
-
-.entry-detail-properties {}
 
 .btn-back {
   display: inline-flex;
