@@ -515,6 +515,7 @@ export class EntryDetailComponent extends WebComponent {
     // Position and show this menu
     menu.style.display = 'block';
     menu.style.position = 'fixed';
+    menu.style.zIndex = '10000';
 
     const target = e.target as HTMLElement;
     const menuButton = target.closest('#detail-menu-btn') as HTMLElement;
@@ -523,13 +524,16 @@ export class EntryDetailComponent extends WebComponent {
       // Menu button click - align menu's right edge with button's right edge
       const rect = menuButton.getBoundingClientRect();
 
-      // Temporarily show menu to get its dimensions
-      menu.style.visibility = 'hidden';
-      const menuWidth = menu.offsetWidth;
-      menu.style.visibility = 'visible';
+      // Use requestAnimationFrame to ensure browser has calculated layout
+      requestAnimationFrame(() => {
+        // Temporarily hide to get its dimensions
+        menu.style.visibility = 'hidden';
+        const menuWidth = menu.offsetWidth;
+        menu.style.visibility = 'visible';
 
-      menu.style.left = `${rect.right - menuWidth}px`;
-      menu.style.top = `${rect.bottom + 4}px`;
+        menu.style.left = `${rect.right - menuWidth}px`;
+        menu.style.top = `${rect.bottom + 4}px`;
+      });
     }
   }
 
