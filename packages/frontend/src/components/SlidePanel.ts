@@ -67,10 +67,24 @@ export class SlidePanel extends HTMLElement {
     this.classList.remove('active');
     document.body.style.overflow = ''; // Restore scroll
 
-    // Go back in history if we came from an entry detail URL
+    // Navigate to clean URL without entry detail if we came from an entry detail URL
     const path = window.location.pathname;
     if (path.match(/^\/entries\/([^/]+)$/)) {
-      window.history.back();
+      // Get the previous view from session storage
+      const previousView = sessionStorage.getItem('previousView') || 'entries';
+      const previousEntitySlug = sessionStorage.getItem('previousEntitySlug');
+
+      // Navigate to the appropriate list view
+      if (previousView === 'entities') {
+        window.history.pushState({}, '', '/entities');
+      } else if (previousEntitySlug) {
+        window.history.pushState({}, '', `/entries?entity=${previousEntitySlug}`);
+      } else {
+        window.history.pushState({}, '', '/entries');
+      }
+
+      // Trigger popstate to update the view
+      window.dispatchEvent(new PopStateEvent('popstate'));
     }
   }
 }
