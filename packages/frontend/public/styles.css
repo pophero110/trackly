@@ -861,7 +861,10 @@ form {
   display: flex;
   gap: 8px;
   align-items: center;
-  position: relative;
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 100;
 }
 
 .btn-action-menu {
