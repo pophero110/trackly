@@ -3937,7 +3937,7 @@ slide-panel:not(.active) .slide-panel-container {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: var(--base-size-24) var(--base-size-24) 0 var(--base-size-24);
+  padding: 0 var(--base-size-24);
 }
 
 .entry-detail-actions {
@@ -4293,9 +4293,6 @@ slide-panel:not(.active) .slide-panel-container {
 
 /* Responsive adjustments for entry detail */
 @media (max-width: 768px) {
-  .entry-detail-page {
-    padding: var(--base-size-16);
-  }
 
   .entry-detail-main-title {
     font-size: 1.25rem;
