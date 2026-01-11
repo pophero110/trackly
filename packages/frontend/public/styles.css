@@ -1487,7 +1487,7 @@ form {
   left: 0;
   right: 0;
   height: 40px;
-  background: linear-gradient(to bottom, transparent, var(--card-background));
+  background: linear-gradient(to bottom, transparent, var(--background));
   pointer-events: none;
 }
 
