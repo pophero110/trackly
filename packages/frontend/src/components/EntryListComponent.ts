@@ -455,7 +455,6 @@ Delete</div>
 
     return `
       <div class="timeline-entry" data-entry-id="${entry.id}">
-        <div class="timeline-dot ${statusClass}"></div>
         <div class="timeline-entry-card">
           <div class="timeline-entry-header">
             <div class="timeline-entry-primary">
