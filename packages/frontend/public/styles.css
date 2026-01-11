@@ -1561,12 +1561,6 @@ form {
   border: 1px solid var(--border-light);
 }
 
-/* Alternating Background Tint (Zebra Striping) */
-.timeline-date-group:nth-child(even) .timeline-entry-card {
-  background: #FDFCFB;
-  /* Very light cream */
-}
-
 /* Responsive Timeline */
 @media (max-width: 768px) {
   .timeline-entries {
