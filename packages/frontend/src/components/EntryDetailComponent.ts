@@ -244,9 +244,6 @@ export class EntryDetailComponent extends WebComponent {
          </div>`
       : '';
 
-    // Tags (Hashtags only)
-    const tagsHtml = entry.notes ? this.renderTags(entry.notes) : '';
-
     // Images
     const imagesHtml = entry.images && entry.images.length > 0
       ? `<div class="entry-images-detail">
@@ -261,7 +258,6 @@ export class EntryDetailComponent extends WebComponent {
             <div class="entry-detail-content">
                 ${notesHtml}
                 ${imagesHtml}
-                ${tagsHtml}
                 ${linksHtml}
             </div>
         `;
@@ -420,42 +416,8 @@ export class EntryDetailComponent extends WebComponent {
     });
   }
 
-  private renderTags(notes: string): string {
-    const hashtags = this.extractHashtags(notes);
-    if (hashtags.length === 0) return '';
-
-    const hashtagsHtml = hashtags.map(tag => {
-      return `<a href="#" class="hashtag-link reference-link" data-hashtag="${escapeHtml(tag)}">#${escapeHtml(tag)}</a>`;
-    }).join('');
-
-    return `
-      <div class="entry-tags-detail">
-        <div class="references-links">${hashtagsHtml}</div>
-      </div>
-    `;
-  }
-
-  private extractHashtags(text: string): string[] {
-    // Remove markdown links first to avoid matching hashtags in URLs
-    const textWithoutLinks = text.replace(/\[([^\]]+?)\]\((.+?)\)/g, '');
-
-    const hashtagRegex = /(?<![a-zA-Z0-9_])#([a-zA-Z0-9_]+)(?![a-zA-Z0-9_])/g;
-    const hashtags: string[] = [];
-    let match;
-
-    while ((match = hashtagRegex.exec(textWithoutLinks)) !== null) {
-      // Avoid duplicates
-      if (!hashtags.includes(match[1])) {
-        hashtags.push(match[1]);
-      }
-    }
-
-    return hashtags;
-  }
-
   private attachEventHandlers(): void {
     this.attachMenuHandlers();
-    this.attachHashtagHandlers();
     this.attachEntityChipHandler();
     this.attachImagePreviewHandlers();
     this.attachNotesEditorHandlers();
@@ -579,20 +541,6 @@ export class EntryDetailComponent extends WebComponent {
     }).catch((error) => {
       console.error('Failed to copy notes:', error);
       alert('Failed to copy notes to clipboard');
-    });
-  }
-
-  private attachHashtagHandlers(): void {
-    const hashtagLinks = this.querySelectorAll('.hashtag-link');
-    hashtagLinks.forEach(link => {
-      link.addEventListener('click', (e) => {
-        e.preventDefault();
-        const hashtag = (link as HTMLElement).dataset.hashtag;
-        if (hashtag) {
-          URLStateManager.setHashtagFilter(hashtag);
-          window.history.back();
-        }
-      });
     });
   }
 
