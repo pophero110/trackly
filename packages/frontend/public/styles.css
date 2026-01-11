@@ -2607,6 +2607,33 @@ form {
   box-shadow: 0 2px 4px color-mix(in srgb, var(--entity-color) 15%, transparent);
 }
 
+.entry-chip-entity-container {
+  display: inline-block;
+  position: relative;
+}
+
+.entity-dropdown-select {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  margin-top: 4px;
+  min-width: 150px;
+  padding: 6px 10px;
+  background: var(--background);
+  border: var(--border);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-md);
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  z-index: 1000;
+}
+
+.entity-dropdown-select:focus {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
 .entry-chip-category {
   background: rgba(37, 99, 235, 0.1);
   color: var(--primary);
