@@ -84,10 +84,10 @@ body {
 }
 
 /* Text readability: limit line length for better reading comprehension */
-p,
-.text-content {
-  max-width: 75ch;
-}
+/* p, */
+/* .text-content { */
+/*   max-width: 75ch; */
+/* } */
 
 .container {
   height: 100vh;
@@ -861,7 +861,6 @@ form {
 .entry-detail-footer {
   flex-shrink: 0;
   display: flex;
-  justify-content: space-between;
   align-items: center;
   gap: 16px;
   padding: var(--base-size-16) var(--base-size-24);
@@ -898,6 +897,7 @@ form {
   gap: 8px;
   align-items: center;
   flex-shrink: 0;
+  margin-left: auto;
 }
 
 .btn-action-menu {
