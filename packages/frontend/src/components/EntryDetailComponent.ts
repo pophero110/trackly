@@ -331,7 +331,12 @@ export class EntryDetailComponent extends WebComponent {
                             <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
                         </svg>
                     </button>
-                    <button type="button" id="location-btn" class="btn-action-menu" title="Add location">📍</button>
+                    <button type="button" id="location-btn" class="btn-action-menu" title="Add location">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                            <circle cx="12" cy="10" r="3"></circle>
+                        </svg>
+                    </button>
                 </div>
             </div>
         `;
@@ -911,16 +916,20 @@ export class EntryDetailComponent extends WebComponent {
 
     if (locationBtn) {
       locationBtn.addEventListener('click', async () => {
+        const originalIcon = locationBtn.innerHTML;
         try {
           locationBtn.disabled = true;
-          locationBtn.textContent = '⏳';
+          locationBtn.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <polyline points="12 6 12 12 16 14"></polyline>
+          </svg>`;
           await this.handleLocationCapture();
         } catch (error) {
           alert('Failed to get location. Please ensure location permissions are enabled.');
           console.error('Location error:', error);
         } finally {
           locationBtn.disabled = false;
-          locationBtn.textContent = '📍';
+          locationBtn.innerHTML = originalIcon;
         }
       });
     }
