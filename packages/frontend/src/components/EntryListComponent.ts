@@ -871,16 +871,25 @@ Delete</div>
     const menu = this.querySelector(`#entry-menu-${entryId}`) as HTMLElement;
     if (!menu) return;
 
+    // Check if this menu is already visible (toggle behavior)
+    const isVisible = menu.style.display === 'block';
+
+    // Check if event came from menu button click
+    const target = e.target as HTMLElement;
+    const menuButton = target.closest('[data-action="menu"]') as HTMLElement;
+
+    // If clicking the menu button and menu is already visible, close it
+    if (menuButton && isVisible) {
+      this.hideAllMenus();
+      return;
+    }
+
     // Hide all other menus first
     this.hideAllMenus();
 
     // Position and show this menu
     menu.style.display = 'block';
     menu.style.position = 'fixed';
-
-    // Check if event came from menu button click
-    const target = e.target as HTMLElement;
-    const menuButton = target.closest('[data-action="menu"]') as HTMLElement;
 
     if (menuButton) {
       // Menu button click - align menu's right edge with button's right edge
