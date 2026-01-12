@@ -319,23 +319,13 @@ export class EntryDetailComponent extends WebComponent {
                 ${hashtagsHtml}
                 <div class="action-menu-buttons">
                     <button type="button" id="upload-image-btn" class="btn-action-menu" title="Upload images">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-                            <circle cx="8.5" cy="8.5" r="1.5"></circle>
-                            <polyline points="21 15 16 10 5 21"></polyline>
-                        </svg>
+                        <i class="ph-duotone ph-image"></i>
                     </button>
                     <button type="button" id="add-link-btn" class="btn-action-menu" title="Add link to notes">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
-                            <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
-                        </svg>
+                        <i class="ph-duotone ph-link"></i>
                     </button>
                     <button type="button" id="location-btn" class="btn-action-menu" title="Add location">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
-                            <circle cx="12" cy="10" r="3"></circle>
-                        </svg>
+                        <i class="ph-duotone ph-map-pin"></i>
                     </button>
                 </div>
             </div>
@@ -919,10 +909,7 @@ export class EntryDetailComponent extends WebComponent {
         const originalIcon = locationBtn.innerHTML;
         try {
           locationBtn.disabled = true;
-          locationBtn.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="10"></circle>
-            <polyline points="12 6 12 12 16 14"></polyline>
-          </svg>`;
+          locationBtn.innerHTML = '<i class="ph-duotone ph-spinner"></i>';
           await this.handleLocationCapture();
         } catch (error) {
           alert('Failed to get location. Please ensure location permissions are enabled.');
