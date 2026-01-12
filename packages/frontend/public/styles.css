@@ -3400,11 +3400,11 @@ slide-panel.active .slide-panel-container {
 
 /* Close animation */
 slide-panel:not(.active) .slide-panel-backdrop {
-  animation: fadeOut 0.2s ease-out forwards;
+  animation: fadeOut 0.3s ease-out forwards;
 }
 
 slide-panel:not(.active) .slide-panel-container {
-  animation: slideOutToBottom 0.2s ease-out forwards;
+  animation: slideOutToBottom 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
 }
 
 /* Mobile adjustments for slide panel */

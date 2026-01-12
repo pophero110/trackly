@@ -68,7 +68,7 @@ export class SlidePanel extends HTMLElement {
     // Remove active class to trigger slide-out animation
     this.classList.remove('active');
 
-    // Wait for animation to complete before cleanup (200ms animation duration + small buffer)
+    // Wait for animation to complete before cleanup (300ms animation duration + small buffer)
     setTimeout(() => {
       document.body.style.overflow = ''; // Restore scroll
 
@@ -91,6 +91,6 @@ export class SlidePanel extends HTMLElement {
         // Trigger popstate to update the view
         window.dispatchEvent(new PopStateEvent('popstate'));
       }
-    }, 250); // Wait for 200ms animation + 50ms buffer
+    }, 350); // Wait for 300ms animation + 50ms buffer
   }
 }
