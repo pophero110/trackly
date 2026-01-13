@@ -19,7 +19,6 @@ export class EntryDetailComponent extends WebComponent {
   private saveStatus: 'idle' | 'saving' | 'saved' | 'error' = 'idle';
   private debouncedSave: ((...args: any[]) => void) | null = null;
   private documentClickHandler: (() => void) | null = null;
-  private isInitializingEditor: boolean = false;
 
   connectedCallback(): void {
     super.connectedCallback();
@@ -52,7 +51,6 @@ export class EntryDetailComponent extends WebComponent {
 
     // Clear debounced save to prevent it firing after unmount
     this.debouncedSave = null;
-    this.isInitializingEditor = false;
 
     if (this.unsubscribeUrl) {
       this.unsubscribeUrl();
@@ -785,18 +783,11 @@ export class EntryDetailComponent extends WebComponent {
   }
 
   private async initializeMilkdownEditor(initialNotes: string): Promise<void> {
-    // If editor already exists or is being initialized, skip
-    if (this.milkdownEditor || this.isInitializingEditor) {
-      console.log('[AutoSave] Editor exists or initializing, skipping re-initialization');
-      return;
-    }
-
     console.log('[AutoSave] Initializing editor with auto-save (2s debounce)');
-    this.isInitializingEditor = true;
 
-    // Only set editedNotes if it's not already set
+    // Only set editedNotes if it's not already set or if editor doesn't exist
     // This prevents losing user changes during re-renders
-    if (!this.editedNotes) {
+    if (!this.milkdownEditor || !this.editedNotes) {
       this.editedNotes = initialNotes;
     }
 
@@ -811,6 +802,11 @@ export class EntryDetailComponent extends WebComponent {
     const editorContainer = this.querySelector('#milkdown-editor') as HTMLElement;
     if (editorContainer) {
       try {
+        // If editor already exists, don't re-initialize
+        if (this.milkdownEditor) {
+          console.log('[AutoSave] Editor already exists, skipping re-initialization');
+          return;
+        }
 
         // Create new editor with auto-save on change
         this.milkdownEditor = await createMilkdownEditor(
@@ -836,12 +832,6 @@ export class EntryDetailComponent extends WebComponent {
       } catch (error) {
         console.error('Failed to initialize Milkdown editor:', error);
         alert('Failed to initialize editor. Please try again.');
-        this.isInitializingEditor = false;
-      } finally {
-        // Only reset flag if editor was successfully created
-        if (this.milkdownEditor) {
-          this.isInitializingEditor = false;
-        }
       }
     }
   }
