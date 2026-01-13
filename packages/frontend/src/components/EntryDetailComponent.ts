@@ -21,6 +21,7 @@ export class EntryDetailComponent extends WebComponent {
   private debouncedBackendSave: ((...args: any[]) => void) | null = null;
   private documentClickHandler: (() => void) | null = null;
   private visibilityHandler: (() => void) | null = null;
+  private isInitializingEditor: boolean = false;
 
   connectedCallback(): void {
     super.connectedCallback();
@@ -791,30 +792,38 @@ export class EntryDetailComponent extends WebComponent {
 
   private async initializeMilkdownEditor(initialNotes: string): Promise<void> {
     console.log('[AutoSave] Initializing editor with hybrid auto-save (10s backend debounce)');
+    this.isInitializingEditor = true;
 
-    // Only set editedNotes if it's not already set or if editor doesn't exist
-    // This prevents losing user changes during re-renders
-    if (!this.milkdownEditor || !this.editedNotes) {
+    // Only set editedNotes if not already set
+    if (!this.editedNotes) {
       this.editedNotes = initialNotes;
     }
+
+    // Capture the entryId at initialization time
+    const capturedEntryId = this.entryId;
 
     // Create debounced backend save function only once (10 seconds)
     if (!this.debouncedBackendSave) {
       this.debouncedBackendSave = debounce(() => {
-        console.log('[AutoSave] Debounce timer expired (10s) - saving to backend');
-        this.saveToBackend();
+        console.log('[AutoSave] Debounce timer expired (10s) - saving to backend', {
+          capturedEntryId,
+          currentEntryId: this.entryId,
+          editedNotes: this.editedNotes
+        });
+
+        // Use captured entryId if current one is null
+        const entryIdToSave = this.entryId || capturedEntryId;
+        if (entryIdToSave && this.editedNotes) {
+          this.saveToBackendWithId(entryIdToSave);
+        } else {
+          console.log('[AutoSave] Backend save skipped - missing entryId or notes');
+        }
       }, 10000); // 10 seconds
     }
 
     const editorContainer = this.querySelector('#milkdown-editor') as HTMLElement;
     if (editorContainer) {
       try {
-        // If editor already exists, don't re-initialize
-        if (this.milkdownEditor) {
-          console.log('[AutoSave] Editor already exists, skipping re-initialization');
-          return;
-        }
-
         // Create new editor with hybrid auto-save on change
         this.milkdownEditor = await createMilkdownEditor(
           editorContainer,
@@ -824,8 +833,11 @@ export class EntryDetailComponent extends WebComponent {
 
             // 1. Immediate local update (no re-render)
             this.editedNotes = markdown;
-            if (this.entryId) {
-              this.store.updateEntryLocal(this.entryId, { notes: markdown });
+
+            // Use captured entryId if current one is null
+            const entryIdToUse = this.entryId || capturedEntryId;
+            if (entryIdToUse) {
+              this.store.updateEntryLocal(entryIdToUse, { notes: markdown });
             }
 
             // 2. Debounced backend save (10s)
@@ -835,17 +847,21 @@ export class EntryDetailComponent extends WebComponent {
           }
         );
 
+        this.isInitializingEditor = false;
+
         // Automatically focus the editor after a brief delay
-        // to ensure it's fully rendered
         setTimeout(() => {
           if (this.milkdownEditor) {
             focusEditor(this.milkdownEditor);
           }
         }, 100);
       } catch (error) {
+        this.isInitializingEditor = false;
         console.error('Failed to initialize Milkdown editor:', error);
         alert('Failed to initialize editor. Please try again.');
       }
+    } else {
+      this.isInitializingEditor = false;
     }
   }
 
@@ -863,7 +879,10 @@ export class EntryDetailComponent extends WebComponent {
       console.log('[AutoSave] Backend save skipped - no entry ID');
       return;
     }
+    await this.saveToBackendWithId(this.entryId);
+  }
 
+  private async saveToBackendWithId(entryId: string): Promise<void> {
     if (!this.editedNotes) {
       console.log('[AutoSave] Backend save skipped - no notes');
       return;
@@ -871,7 +890,7 @@ export class EntryDetailComponent extends WebComponent {
 
     const startTime = Date.now();
     console.log('[AutoSave] Starting backend save...', {
-      entryId: this.entryId,
+      entryId,
       noteLength: this.editedNotes.length,
       timestamp: new Date().toISOString()
     });
@@ -880,7 +899,7 @@ export class EntryDetailComponent extends WebComponent {
 
     try {
       // Save to backend using APIClient with keepalive for reliability
-      await APIClient.updateEntry(this.entryId, {
+      await APIClient.updateEntry(entryId, {
         notes: this.editedNotes
       }, { keepalive: true });
 

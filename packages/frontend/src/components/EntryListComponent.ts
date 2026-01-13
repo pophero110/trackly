@@ -284,8 +284,6 @@ Delete</div>
     this.attachHashtagClearHandler();
     this.attachEntityChipHandlers();
     this.attachEntityPageMenuHandlers();
-    this.detectTruncatedContent();
-    this.setupResizeObserver();
 
     // Restore scroll position after re-rendering
     if (savedScrollTop > 0) {
@@ -294,36 +292,6 @@ Delete</div>
         newScrollableGrid.scrollTop = savedScrollTop;
       }
     }
-  }
-
-  private detectTruncatedContent(): void {
-    // Check each timeline-entry-notes div to see if it's truncated
-    this.querySelectorAll('.timeline-entry-notes.is-collapsible').forEach(contentEl => {
-      const element = contentEl as HTMLElement;
-      // Check if content height exceeds max-height
-      if (element.scrollHeight > element.clientHeight) {
-        element.classList.add('is-truncated');
-      } else {
-        element.classList.remove('is-truncated');
-      }
-    });
-  }
-
-  private setupResizeObserver(): void {
-    // Clean up existing observer
-    if (this.resizeObserver) {
-      this.resizeObserver.disconnect();
-    }
-
-    // Create new observer to detect when cards resize
-    this.resizeObserver = new ResizeObserver(() => {
-      this.detectTruncatedContent();
-    });
-
-    // Observe all timeline entry cards
-    this.querySelectorAll('.timeline-entry-card').forEach(card => {
-      this.resizeObserver!.observe(card as HTMLElement);
-    });
   }
 
   disconnectedCallback(): void {
