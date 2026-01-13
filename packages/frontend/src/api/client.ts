@@ -147,10 +147,11 @@ export class APIClient {
     });
   }
 
-  static async updateEntry(id: string, data: Partial<IEntry>): Promise<IEntry> {
+  static async updateEntry(id: string, data: Partial<IEntry>, options?: { keepalive?: boolean }): Promise<IEntry> {
     return this.request<IEntry>(`/api/entries/${id}`, {
       method: 'PUT',
       body: JSON.stringify(data),
+      keepalive: options?.keepalive,
     });
   }
 

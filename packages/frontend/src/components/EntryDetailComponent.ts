@@ -6,6 +6,7 @@ import { URLStateManager } from '../utils/urlState.js';
 import { EntityProperty } from '../types/index.js';
 import { getEntityColor } from '../utils/entryHelpers.js';
 import { createMilkdownEditor, destroyEditor, focusEditor } from '../utils/milkdown.js';
+import { APIClient } from '../api/client.js';
 import type { Editor } from '@milkdown/core';
 
 /**
@@ -878,16 +879,10 @@ export class EntryDetailComponent extends WebComponent {
     this.updateSaveStatus('saving');
 
     try {
-      // Save to backend using fetch with keepalive for reliability
-      await fetch(`/api/entries/${this.entryId}`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        },
-        body: JSON.stringify({ notes: this.editedNotes }),
-        keepalive: true  // Keep request alive even if page unloads
-      });
+      // Save to backend using APIClient with keepalive for reliability
+      await APIClient.updateEntry(this.entryId, {
+        notes: this.editedNotes
+      }, { keepalive: true });
 
       const duration = Date.now() - startTime;
       console.log(`[AutoSave] Backend save completed in ${duration}ms`);
