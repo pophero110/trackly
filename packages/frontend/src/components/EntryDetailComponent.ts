@@ -37,16 +37,44 @@ export class EntryDetailComponent extends WebComponent {
     // Save any pending changes immediately before unmounting
     if (this.entryId && this.editedNotes) {
       const currentEntry = this.store.getEntryById(this.entryId);
+      console.log('[AutoSave] disconnectedCallback - checking for unsaved changes', {
+        entryId: this.entryId,
+        hasEditedNotes: !!this.editedNotes,
+        currentNotes: currentEntry?.notes,
+        editedNotes: this.editedNotes,
+        changed: currentEntry?.notes !== this.editedNotes
+      });
+
       // Only save if notes have changed
       if (currentEntry && currentEntry.notes !== this.editedNotes) {
         console.log('[AutoSave] Component unmounting with unsaved changes - saving immediately');
-        // Use synchronous approach - fire and forget
-        this.store.updateEntry(this.entryId, {
+
+        // Use Navigator sendBeacon for more reliable save on page unload
+        // Fall back to regular fetch if sendBeacon not available
+        const saveData = JSON.stringify({
           notes: this.editedNotes
-        }, { silent: true }).catch(error => {
+        });
+
+        // Try synchronous save using fetch with keepalive
+        fetch(`/api/entries/${this.entryId}`, {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+          },
+          body: saveData,
+          keepalive: true  // Keep request alive even if page unloads
+        }).catch(error => {
           console.error('[AutoSave] Failed to save on unmount:', error);
         });
+      } else {
+        console.log('[AutoSave] No unsaved changes detected on unmount');
       }
+    } else {
+      console.log('[AutoSave] disconnectedCallback - no entryId or editedNotes', {
+        entryId: this.entryId,
+        editedNotes: this.editedNotes
+      });
     }
 
     // Clear debounced save to prevent it firing after unmount
