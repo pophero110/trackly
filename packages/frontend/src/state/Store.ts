@@ -194,7 +194,7 @@ export class Store {
         }
     }
 
-    async updateEntry(id: string, updates: Partial<IEntry>): Promise<void> {
+    async updateEntry(id: string, updates: Partial<IEntry>, options?: { silent?: boolean }): Promise<void> {
         // Optimistic update: Update entry in local state immediately
         const index = this.entries.findIndex(e => e.id === id);
         if (index !== -1) {
@@ -203,16 +203,24 @@ export class Store {
 
             // Apply updates optimistically
             this.entries[index] = new Entry({ ...this.entries[index], ...updates });
-            this.notify(); // Trigger immediate re-render
+
+            // Only notify if not silent (auto-save should be silent)
+            if (!options?.silent) {
+                this.notify(); // Trigger immediate re-render
+            }
 
             try {
                 // Update via API in the background
                 await APIClient.updateEntry(id, updates);
 
-                // Reload entries with current sort to ensure correct order
-                const sortBy = URLStateManager.getSortBy() || undefined;
-                const sortOrder = URLStateManager.getSortOrder() || undefined;
-                await this.reloadEntries(sortBy, sortOrder);
+                // Skip reload for silent updates (auto-save)
+                // The optimistic update is already applied, no need to reload
+                if (!options?.silent) {
+                    // Reload entries with current sort to ensure correct order
+                    const sortBy = URLStateManager.getSortBy() || undefined;
+                    const sortOrder = URLStateManager.getSortOrder() || undefined;
+                    await this.reloadEntries(sortBy, sortOrder);
+                }
             } catch (error) {
                 // If API call fails, rollback to original entry
                 this.entries[index] = originalEntry;
@@ -222,9 +230,13 @@ export class Store {
         } else {
             // Entry not in local state, just call API and reload
             await APIClient.updateEntry(id, updates);
-            const sortBy = URLStateManager.getSortBy() || undefined;
-            const sortOrder = URLStateManager.getSortOrder() || undefined;
-            await this.reloadEntries(sortBy, sortOrder);
+
+            // Skip reload for silent updates
+            if (!options?.silent) {
+                const sortBy = URLStateManager.getSortBy() || undefined;
+                const sortOrder = URLStateManager.getSortOrder() || undefined;
+                await this.reloadEntries(sortBy, sortOrder);
+            }
         }
     }
 

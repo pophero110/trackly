@@ -826,10 +826,10 @@ export class EntryDetailComponent extends WebComponent {
     this.updateSaveStatus('saving');
 
     try {
-      // Update the entry with new notes
+      // Update the entry with new notes (silent mode to avoid re-renders)
       await this.store.updateEntry(this.entryId, {
         notes: this.editedNotes
-      });
+      }, { silent: true });
 
       const duration = Date.now() - startTime;
       console.log(`[AutoSave] Save completed successfully in ${duration}ms`);
