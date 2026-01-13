@@ -33,6 +33,22 @@ export class EntryDetailComponent extends WebComponent {
 
   disconnectedCallback(): void {
     super.disconnectedCallback();
+
+    // Save any pending changes immediately before unmounting
+    if (this.entryId && this.editedNotes) {
+      const currentEntry = this.store.getEntryById(this.entryId);
+      // Only save if notes have changed
+      if (currentEntry && currentEntry.notes !== this.editedNotes) {
+        console.log('[AutoSave] Component unmounting with unsaved changes - saving immediately');
+        // Use synchronous approach - fire and forget
+        this.store.updateEntry(this.entryId, {
+          notes: this.editedNotes
+        }, { silent: true }).catch(error => {
+          console.error('[AutoSave] Failed to save on unmount:', error);
+        });
+      }
+    }
+
     if (this.unsubscribeUrl) {
       this.unsubscribeUrl();
     }
