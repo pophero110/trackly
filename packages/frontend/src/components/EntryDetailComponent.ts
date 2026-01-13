@@ -49,6 +49,9 @@ export class EntryDetailComponent extends WebComponent {
       }
     }
 
+    // Clear debounced save to prevent it firing after unmount
+    this.debouncedSave = null;
+
     if (this.unsubscribeUrl) {
       this.unsubscribeUrl();
     }
@@ -781,21 +784,28 @@ export class EntryDetailComponent extends WebComponent {
 
   private async initializeMilkdownEditor(initialNotes: string): Promise<void> {
     console.log('[AutoSave] Initializing editor with auto-save (2s debounce)');
-    this.editedNotes = initialNotes;
 
-    // Create debounced save function (2 second delay)
-    this.debouncedSave = debounce(() => {
-      console.log('[AutoSave] Debounce timer expired (2s) - executing save');
-      this.saveNotes();
-    }, 2000);
+    // Only set editedNotes if it's not already set or if editor doesn't exist
+    // This prevents losing user changes during re-renders
+    if (!this.milkdownEditor || !this.editedNotes) {
+      this.editedNotes = initialNotes;
+    }
+
+    // Create debounced save function only once
+    if (!this.debouncedSave) {
+      this.debouncedSave = debounce(() => {
+        console.log('[AutoSave] Debounce timer expired (2s) - executing save');
+        this.saveNotes();
+      }, 2000);
+    }
 
     const editorContainer = this.querySelector('#milkdown-editor') as HTMLElement;
     if (editorContainer) {
       try {
-        // Destroy existing editor if any
+        // If editor already exists, don't re-initialize
         if (this.milkdownEditor) {
-          destroyEditor(this.milkdownEditor);
-          this.milkdownEditor = null;
+          console.log('[AutoSave] Editor already exists, skipping re-initialization');
+          return;
         }
 
         // Create new editor with auto-save on change
@@ -827,8 +837,13 @@ export class EntryDetailComponent extends WebComponent {
   }
 
   private async saveNotes(): Promise<void> {
-    if (!this.entryId || !this.editedNotes) {
-      console.log('[AutoSave] Save skipped - no entry ID or notes');
+    if (!this.entryId) {
+      console.log('[AutoSave] Save skipped - no entry ID');
+      return;
+    }
+
+    if (!this.editedNotes) {
+      console.log('[AutoSave] Save skipped - no notes to save');
       return;
     }
 
