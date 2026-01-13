@@ -194,6 +194,16 @@ export class Store {
         }
     }
 
+    // Update entry in local state only (no API call, no notify)
+    updateEntryLocal(id: string, updates: Partial<IEntry>): void {
+        const index = this.entries.findIndex(e => e.id === id);
+        if (index !== -1) {
+            this.entries[index] = new Entry({ ...this.entries[index], ...updates });
+            // No notify() - prevents re-renders
+            // No API call - local only
+        }
+    }
+
     async updateEntry(id: string, updates: Partial<IEntry>, options?: { silent?: boolean }): Promise<void> {
         // Optimistic update: Update entry in local state immediately
         const index = this.entries.findIndex(e => e.id === id);

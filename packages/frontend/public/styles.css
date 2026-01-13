@@ -1071,9 +1071,9 @@ form {
 }
 
 .modal-container {
-  background: transparent;
+  background: var(--background);
   padding: var(--base-size-24);
-  border-radius: 0;
+  border-radius: var(--radius-md);
   max-width: 500px;
   width: 90%;
   box-shadow: var(--shadow-lg);
@@ -3323,6 +3323,8 @@ slide-panel.active .slide-panel-backdrop {
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  will-change: transform;
+  backface-visibility: hidden;
 }
 
 slide-panel.active .slide-panel-container {
@@ -3381,10 +3383,12 @@ slide-panel.active .slide-panel-container {
 @keyframes slideOutToBottom {
   from {
     transform: translateX(-50%) translateY(0);
+    opacity: 1;
   }
 
   to {
     transform: translateX(-50%) translateY(100%);
+    opacity: 1;
   }
 }
 
@@ -3485,7 +3489,6 @@ slide-panel:not(.active) .slide-panel-container {
   border: none;
   border-radius: var(--radius-sm);
   box-shadow: var(--shadow-lg);
-  transition: var(--transition);
   padding: 0;
   min-width: 150px;
   z-index: 10000;

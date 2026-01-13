@@ -17,8 +17,9 @@ export class EntryDetailComponent extends WebComponent {
   private milkdownEditor: Editor | null = null;
   private editedNotes: string = '';
   private saveStatus: 'idle' | 'saving' | 'saved' | 'error' = 'idle';
-  private debouncedSave: ((...args: any[]) => void) | null = null;
+  private debouncedBackendSave: ((...args: any[]) => void) | null = null;
   private documentClickHandler: (() => void) | null = null;
+  private visibilityHandler: (() => void) | null = null;
 
   connectedCallback(): void {
     super.connectedCallback();
@@ -28,6 +29,15 @@ export class EntryDetailComponent extends WebComponent {
       this.render();
     });
 
+    // Add visibility change handler to save when tab becomes hidden
+    this.visibilityHandler = () => {
+      if (document.hidden && this.hasUnsavedChanges()) {
+        console.log('[AutoSave] Tab becoming hidden - saving immediately');
+        this.saveToBackend();
+      }
+    };
+    document.addEventListener('visibilitychange', this.visibilityHandler);
+
     this.render();
   }
 
@@ -35,53 +45,21 @@ export class EntryDetailComponent extends WebComponent {
     super.disconnectedCallback();
 
     // Save any pending changes immediately before unmounting
-    if (this.entryId && this.editedNotes) {
-      const currentEntry = this.store.getEntryById(this.entryId);
-      console.log('[AutoSave] disconnectedCallback - checking for unsaved changes', {
-        entryId: this.entryId,
-        hasEditedNotes: !!this.editedNotes,
-        currentNotes: currentEntry?.notes,
-        editedNotes: this.editedNotes,
-        changed: currentEntry?.notes !== this.editedNotes
-      });
-
-      // Only save if notes have changed
-      if (currentEntry && currentEntry.notes !== this.editedNotes) {
-        console.log('[AutoSave] Component unmounting with unsaved changes - saving immediately');
-
-        // Use Navigator sendBeacon for more reliable save on page unload
-        // Fall back to regular fetch if sendBeacon not available
-        const saveData = JSON.stringify({
-          notes: this.editedNotes
-        });
-
-        // Try synchronous save using fetch with keepalive
-        fetch(`/api/entries/${this.entryId}`, {
-          method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${localStorage.getItem('token')}`
-          },
-          body: saveData,
-          keepalive: true  // Keep request alive even if page unloads
-        }).catch(error => {
-          console.error('[AutoSave] Failed to save on unmount:', error);
-        });
-      } else {
-        console.log('[AutoSave] No unsaved changes detected on unmount');
-      }
-    } else {
-      console.log('[AutoSave] disconnectedCallback - no entryId or editedNotes', {
-        entryId: this.entryId,
-        editedNotes: this.editedNotes
-      });
+    if (this.hasUnsavedChanges()) {
+      console.log('[AutoSave] Component unmounting with unsaved changes - saving immediately');
+      this.saveToBackend();
     }
 
     // Clear debounced save to prevent it firing after unmount
-    this.debouncedSave = null;
+    this.debouncedBackendSave = null;
 
+    // Clean up event listeners
     if (this.unsubscribeUrl) {
       this.unsubscribeUrl();
+    }
+    if (this.visibilityHandler) {
+      document.removeEventListener('visibilitychange', this.visibilityHandler);
+      this.visibilityHandler = null;
     }
     if (this.milkdownEditor) {
       destroyEditor(this.milkdownEditor);
@@ -811,7 +789,7 @@ export class EntryDetailComponent extends WebComponent {
   }
 
   private async initializeMilkdownEditor(initialNotes: string): Promise<void> {
-    console.log('[AutoSave] Initializing editor with auto-save (2s debounce)');
+    console.log('[AutoSave] Initializing editor with hybrid auto-save (10s backend debounce)');
 
     // Only set editedNotes if it's not already set or if editor doesn't exist
     // This prevents losing user changes during re-renders
@@ -819,12 +797,12 @@ export class EntryDetailComponent extends WebComponent {
       this.editedNotes = initialNotes;
     }
 
-    // Create debounced save function only once
-    if (!this.debouncedSave) {
-      this.debouncedSave = debounce(() => {
-        console.log('[AutoSave] Debounce timer expired (2s) - executing save');
-        this.saveNotes();
-      }, 2000);
+    // Create debounced backend save function only once (10 seconds)
+    if (!this.debouncedBackendSave) {
+      this.debouncedBackendSave = debounce(() => {
+        console.log('[AutoSave] Debounce timer expired (10s) - saving to backend');
+        this.saveToBackend();
+      }, 10000); // 10 seconds
     }
 
     const editorContainer = this.querySelector('#milkdown-editor') as HTMLElement;
@@ -836,16 +814,22 @@ export class EntryDetailComponent extends WebComponent {
           return;
         }
 
-        // Create new editor with auto-save on change
+        // Create new editor with hybrid auto-save on change
         this.milkdownEditor = await createMilkdownEditor(
           editorContainer,
           this.editedNotes,
           (markdown) => {
-            console.log('[AutoSave] Content changed - debounce timer started/reset');
+            console.log('[AutoSave] Content changed - updating local store + debouncing backend save');
+
+            // 1. Immediate local update (no re-render)
             this.editedNotes = markdown;
-            // Trigger auto-save with debounce
-            if (this.debouncedSave) {
-              this.debouncedSave();
+            if (this.entryId) {
+              this.store.updateEntryLocal(this.entryId, { notes: markdown });
+            }
+
+            // 2. Debounced backend save (10s)
+            if (this.debouncedBackendSave) {
+              this.debouncedBackendSave();
             }
           }
         );
@@ -864,19 +848,28 @@ export class EntryDetailComponent extends WebComponent {
     }
   }
 
-  private async saveNotes(): Promise<void> {
+  private hasUnsavedChanges(): boolean {
+    if (!this.entryId || !this.editedNotes) {
+      return false;
+    }
+
+    const currentEntry = this.store.getEntryById(this.entryId);
+    return currentEntry ? currentEntry.notes !== this.editedNotes : false;
+  }
+
+  private async saveToBackend(): Promise<void> {
     if (!this.entryId) {
-      console.log('[AutoSave] Save skipped - no entry ID');
+      console.log('[AutoSave] Backend save skipped - no entry ID');
       return;
     }
 
     if (!this.editedNotes) {
-      console.log('[AutoSave] Save skipped - no notes to save');
+      console.log('[AutoSave] Backend save skipped - no notes');
       return;
     }
 
     const startTime = Date.now();
-    console.log('[AutoSave] Starting save operation...', {
+    console.log('[AutoSave] Starting backend save...', {
       entryId: this.entryId,
       noteLength: this.editedNotes.length,
       timestamp: new Date().toISOString()
@@ -885,13 +878,19 @@ export class EntryDetailComponent extends WebComponent {
     this.updateSaveStatus('saving');
 
     try {
-      // Update the entry with new notes (silent mode to avoid re-renders)
-      await this.store.updateEntry(this.entryId, {
-        notes: this.editedNotes
-      }, { silent: true });
+      // Save to backend using fetch with keepalive for reliability
+      await fetch(`/api/entries/${this.entryId}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify({ notes: this.editedNotes }),
+        keepalive: true  // Keep request alive even if page unloads
+      });
 
       const duration = Date.now() - startTime;
-      console.log(`[AutoSave] Save completed successfully in ${duration}ms`);
+      console.log(`[AutoSave] Backend save completed in ${duration}ms`);
 
       this.updateSaveStatus('saved');
 
@@ -903,7 +902,7 @@ export class EntryDetailComponent extends WebComponent {
       }, 2000);
     } catch (error) {
       const duration = Date.now() - startTime;
-      console.error(`[AutoSave] Save failed after ${duration}ms:`, error);
+      console.error(`[AutoSave] Backend save failed after ${duration}ms:`, error);
       this.updateSaveStatus('error');
 
       // Clear error status after 3 seconds
