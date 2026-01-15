@@ -75,6 +75,10 @@ export class SlidePanel extends HTMLElement {
 
       document.body.style.overflow = ''; // Restore scroll
 
+      const contentEl = this.querySelector('.slide-panel-body');
+      if (contentEl) {
+        contentEl.innerHTML = ''; // Clear content to disconnect child components
+      }
       window.history.back();
     };
 

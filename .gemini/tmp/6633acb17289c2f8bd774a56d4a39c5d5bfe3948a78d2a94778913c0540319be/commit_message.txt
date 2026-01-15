@@ -1,0 +1,31 @@
+feat(frontend): Improve EntryDetailComponent auto-save reliability
+
+Refactor auto-save mechanism in EntryDetailComponent to prevent data loss
+and ensure UI consistency across different navigation scenarios.
+
+This commit addresses the following issues:
+- **Data loss on component unmount/re-render:** Previously, if EntryDetailComponent
+  was unmounted or re-rendered with a different entryId before the debounced
+  save fired, pending changes could be lost or incorrectly applied.
+- **UI not updating after save:** Saves triggered by navigation were silent,
+  preventing other UI components from reflecting the latest data.
+
+Changes include:
+- **Enhanced `debounce` utility:** Added `cancel()` and `flush()` methods to
+  `packages/frontend/src/utils/helpers.ts` for better control over debounced calls.
+- **Robust `EntryDetailComponent` auto-save:**
+  - Implemented logic in `render()` to detect `entryId` changes, flush pending
+    saves for the old entry, and cancel its debounce timer before re-rendering.
+  - Updated `disconnectedCallback()`, `visibilityHandler()`, and `handleBeforeUnload()`
+    to use `debouncedBackendSave.flush()` to ensure immediate execution of
+    pending saves during component destruction or tab backgrounding.
+  - Modified `saveToBackend` and `saveToBackendWithId` to accept a `silent` option.
+  - Debounced auto-saves during typing are now explicitly `silent` to avoid UI flicker.
+  - Auto-saves triggered by navigation or unload events are `non-silent` by default
+    to ensure UI updates reflecting the saved data.
+- **`Store.ts` `updateEntry` enhancement:** Modified to accept and propagate
+  `silent` and `keepalive` options to `APIClient.updateEntry` for more
+  flexible and reliable state management.
+
+These changes collectively provide a more predictable and robust auto-save
+experience, ensuring data integrity and correct UI presentation.

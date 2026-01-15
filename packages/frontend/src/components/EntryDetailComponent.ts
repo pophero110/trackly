@@ -49,6 +49,12 @@ export class EntryDetailComponent extends WebComponent {
   disconnectedCallback(): void {
     super.disconnectedCallback();
 
+    // If there are unsaved changes for the current entry, save them immediately
+    if (this.hasUnsavedChanges() && this.entryId) {
+      console.log(`[AutoSave] EntryDetailComponent disconnected. Saving unsaved changes for entry ${this.entryId}.`);
+      this.saveToBackendWithId(this.entryId!, { keepalive: true, silent: true }); // Use keepalive for disconnect
+    }
+
     // Flush any pending debounced save, then clear the reference
     console.log('[AutoSave] Component unmounting - flushing any pending save');
     this.debouncedBackendSave?.flush();
@@ -79,38 +85,10 @@ export class EntryDetailComponent extends WebComponent {
   }
 
   render(): void {
-    // === Handle component re-use for a new entry ===
-    const oldEntryId = this.entryId;
+    // Get entry ID from URL on each render
     const path = window.location.pathname;
     const match = path.match(/^\/entries\/([^/]+)$/);
-    const newEntryId = match ? match[1] : null;
-
-    if (oldEntryId && oldEntryId !== newEntryId) {
-        // If the entry is changing, check for unsaved changes for the OLD entry
-        if (this.hasUnsavedChanges()) {
-            console.log(`[AutoSave] Entry ID changing from ${oldEntryId} to ${newEntryId}. Saving unsaved changes for old entry.`);
-            // Save immediately, but not with keepalive since this is a navigation event.
-            this.saveToBackendWithId(oldEntryId);
-        }
-
-        // Cancel any pending debounced save and destroy it.
-        // A new one will be created for the new entry's editor instance if needed.
-        if (this.debouncedBackendSave) {
-            this.debouncedBackendSave.cancel();
-            this.debouncedBackendSave = null;
-        }
-
-        // Clean up the old editor state to prevent it from bleeding into the new one
-        this.editedNotes = '';
-        if (this.milkdownEditor) {
-            destroyEditor(this.milkdownEditor);
-            this.milkdownEditor = null;
-        }
-    }
-    // =================================================
-
-    // Get entry ID from URL on each render
-    this.entryId = newEntryId;
+    this.entryId = match ? match[1] : null;
 
     if (!this.entryId) {
       this.innerHTML = `
@@ -830,45 +808,45 @@ export class EntryDetailComponent extends WebComponent {
     // Capture the entryId at initialization time
     const capturedEntryId = this.entryId;
 
-        // Create debounced backend save function only once (1 second)
-        if (!this.debouncedBackendSave) {
-            this.debouncedBackendSave = debounce(() => {
-                console.log('[AutoSave] Debounce timer expired (1s) - saving to backend', {
-                    capturedEntryId,
-                    currentEntryId: this.entryId,
-                    editedNotes: this.editedNotes,
-                });
+    // Create debounced backend save function only once (1 second)
+    if (!this.debouncedBackendSave) {
+      this.debouncedBackendSave = debounce(() => {
+        console.log('[AutoSave] Debounce timer expired (1s) - saving to backend', {
+          capturedEntryId,
+          currentEntryId: this.entryId,
+          editedNotes: this.editedNotes,
+        });
 
-                // Use captured entryId if current one is null
-                const entryIdToSave = this.entryId || capturedEntryId;
-                if (entryIdToSave && this.hasUnsavedChanges()) {
-                    // This save should be silent to avoid UI flicker while typing
-                    this.saveToBackendWithId(entryIdToSave, { silent: true });
-                } else {
-                    console.log('[AutoSave] Backend save skipped - no changes, missing entryId or notes');
-                }
-            }, 1000); // 1 second
+        // Use captured entryId if current one is null
+        const entryIdToSave = this.entryId || capturedEntryId;
+        if (entryIdToSave && this.hasUnsavedChanges()) {
+          // This save should be silent to avoid UI flicker while typing
+          this.saveToBackendWithId(entryIdToSave, { silent: true });
+        } else {
+          console.log('[AutoSave] Backend save skipped - no changes, missing entryId or notes');
         }
+      }, 1000); // 1 second
+    }
 
-        const editorContainer = this.querySelector('#milkdown-editor') as HTMLElement;
-        if (editorContainer) {
-            try {
-                // Create new editor with hybrid auto-save on change
-                this.milkdownEditor = await createMilkdownEditor(
-                    editorContainer,
-                    this.editedNotes,
-                    (markdown) => {
-                        console.log('[AutoSave] Content changed - updating local state and debouncing backend save');
+    const editorContainer = this.querySelector('#milkdown-editor') as HTMLElement;
+    if (editorContainer) {
+      try {
+        // Create new editor with hybrid auto-save on change
+        this.milkdownEditor = await createMilkdownEditor(
+          editorContainer,
+          this.editedNotes,
+          (markdown) => {
+            console.log('[AutoSave] Content changed - updating local state and debouncing backend save');
 
-                        // 1. Immediate local update for unsaved changes tracking
-                        this.editedNotes = markdown;
+            // 1. Immediate local update for unsaved changes tracking
+            this.editedNotes = markdown;
 
-                        // 2. Debounced backend save (1s)
-                        if (this.debouncedBackendSave) {
-                            this.debouncedBackendSave();
-                        }
-                    }
-                );
+            // 2. Debounced backend save (1s)
+            if (this.debouncedBackendSave) {
+              this.debouncedBackendSave();
+            }
+          }
+        );
 
         this.isInitializingEditor = false;
 
@@ -890,8 +868,8 @@ export class EntryDetailComponent extends WebComponent {
 
   private handleBeforeUnload = (): void => {
     if (this.hasUnsavedChanges()) {
-        console.log('[AutoSave] beforeunload - flushing pending save');
-        this.debouncedBackendSave?.flush();
+      console.log('[AutoSave] beforeunload - flushing pending save');
+      this.debouncedBackendSave?.flush();
     }
   };
 
@@ -902,14 +880,6 @@ export class EntryDetailComponent extends WebComponent {
 
     const currentEntry = this.store.getEntryById(this.entryId);
     return currentEntry ? currentEntry.notes !== this.editedNotes : false;
-  }
-
-  private async saveToBackend(options?: { keepalive?: boolean; silent?: boolean }): Promise<void> {
-    if (!this.entryId) {
-      console.log('[AutoSave] Backend save skipped - no entry ID');
-      return;
-    }
-    await this.saveToBackendWithId(this.entryId, options);
   }
 
   private async saveToBackendWithId(entryId: string, options?: { keepalive?: boolean; silent?: boolean }): Promise<void> {
