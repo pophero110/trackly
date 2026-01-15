@@ -12,7 +12,7 @@ import { toast } from '../utils/toast.js';
  * Focuses on stable DOM shelling, document fragments, and direct event attachment.
  */
 export class EntryListComponent extends WebComponent {
-  private maxEntries: number = 200;
+  private maxEntries: number = 30;
   private resizeObserver: ResizeObserver | null = null;
 
   // Helper to turn HTML strings into DOM nodes efficiently
