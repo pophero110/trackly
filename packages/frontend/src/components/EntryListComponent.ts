@@ -8,156 +8,187 @@ import { getEntityColor } from '../utils/entryHelpers.js';
 import { toast } from '../utils/toast.js';
 
 /**
- * EntryList Web Component for displaying recent entries
+ * Optimized EntryList Web Component
+ * Focuses on stable DOM shelling, document fragments, and direct event attachment.
  */
 export class EntryListComponent extends WebComponent {
   private maxEntries: number = 200;
   private resizeObserver: ResizeObserver | null = null;
 
-  render(): void {
-    // Save scroll position before re-rendering
-    const scrollableGrid = this.querySelector('.entries-grid') as HTMLElement;
-    const savedScrollTop = scrollableGrid ? scrollableGrid.scrollTop : 0;
+  // Helper to turn HTML strings into DOM nodes efficiently
+  private createTemplate(html: string): DocumentFragment {
+    const template = document.createElement('template');
+    template.innerHTML = html.trim();
+    return template.content;
+  }
 
-    // Show loading state while data is being fetched
-    if (!this.store.getIsLoaded()) {
+  render(): void {
+    // 1. Stable DOM Shelling: Initialize container if it doesn't exist
+    if (!this.querySelector('.section')) {
       this.innerHTML = `
-                <div class="section">
-                    ${this.renderLoadingState('Loading entries...')}
-                </div>
-            `;
+        <div class="section">
+          <div class="section-header-actions" id="header-actions"></div>
+          <div class="entries-grid" id="entries-container"></div>
+        </div>
+      `;
+    }
+
+    const headerActions = this.querySelector('#header-actions') as HTMLElement;
+    const entriesContainer = this.querySelector('#entries-container') as HTMLElement;
+
+    // Loading State
+    if (!this.store.getIsLoaded()) {
+      entriesContainer.replaceChildren(this.createTemplate(this.renderLoadingState('Loading entries...')));
       return;
     }
 
+    // 2. Data Preparation (Logic remains similar but decoupled from UI)
     const selectedEntityId = this.store.getSelectedEntityId();
     let entries = this.store.getEntries();
 
-    // Filter entries by selected entity if one is selected
     if (selectedEntityId) {
       entries = entries.filter(e => e.entityId === selectedEntityId);
     }
 
-    // Filter entries by entities if any are selected (multi-entity filter)
     const entityFilters = URLStateManager.getEntityFilters();
     if (entityFilters.length > 0 && !selectedEntityId) {
       entries = entries.filter(e => {
         const entity = this.store.getEntityById(e.entityId);
-        if (!entity) return false;
-        // Entry must match one of the selected entities (OR logic)
-        return entityFilters.some(filterName =>
-          entity.name.toLowerCase() === filterName.toLowerCase()
-        );
+        return entity && entityFilters.some(f => entity.name.toLowerCase() === f.toLowerCase());
       });
     }
 
-    // Filter entries by tags if any are selected (multi-tag filter)
     const tagFilters = URLStateManager.getTagFilters();
     if (tagFilters.length > 0) {
       entries = entries.filter(e => {
         if (!e.notes) return false;
         const entryTags = extractHashtags(e.notes);
-        // Entry must have ALL selected tags (AND logic)
-        return tagFilters.every(tag =>
-          entryTags.some(entryTag => entryTag.toLowerCase() === tag.toLowerCase())
-        );
+        return tagFilters.every(tag => entryTags.some(et => et.toLowerCase() === tag.toLowerCase()));
       });
     }
 
-    // Legacy: Filter entries by single hashtag (backwards compatibility)
+    // 3. Targeted Header Update
+    // We update the header separately to keep the dropdowns/filters responsive
+    this.updateHeader(headerActions, selectedEntityId, entityFilters, tagFilters);
+
+    // 4. Document Fragments & replaceChildren() for the List
+    if (entries.length === 0) {
+      const selectedEntity = selectedEntityId ? this.store.getEntityById(selectedEntityId) : null;
+      const msg = selectedEntity ? `No entries yet for ${selectedEntity.name}.` : 'No entries yet.';
+      entriesContainer.innerHTML = `<div class="empty-state">${msg}</div>`;
+      return;
+    }
+
+    const fragment = document.createDocumentFragment();
+    const entriesByDate = this.groupEntriesByDate(entries.slice(0, this.maxEntries));
+
+    for (const [dateKey, dateEntries] of entriesByDate) {
+      const dateGroup = document.createElement('div');
+      dateGroup.className = 'timeline-date-group';
+      dateGroup.innerHTML = `<div class="timeline-date-header">${dateKey}</div>`;
+
+      const timelineEntries = document.createElement('div');
+      timelineEntries.className = 'timeline-entries';
+
+      dateEntries.forEach(entry => {
+        // Create individual node and attach listeners directly
+        timelineEntries.appendChild(this.createEntryNode(entry));
+      });
+
+      dateGroup.appendChild(timelineEntries);
+      fragment.appendChild(dateGroup);
+    }
+
+    // Atomic swap of the entire list
+    entriesContainer.replaceChildren(fragment);
+  }
+
+  private createEntryNode(entry: Entry): DocumentFragment {
+    const html = this.renderTimelineEntry(entry);
+    const fragment = this.createTemplate(html);
+
+    // Use the fragment to find elements and attach listeners before they hit the DOM
+    const entryRoot = fragment.querySelector('.timeline-entry') as HTMLElement;
+    const menuBtn = entryRoot.querySelector('[data-action="menu"]') as HTMLElement;
+    const card = entryRoot.querySelector('.timeline-entry-card') as HTMLElement;
+
+    // Card Click Handler
+    card.addEventListener('click', (e) => {
+      const target = e.target as HTMLElement;
+      if (target.closest('[data-action="menu"], a, .entry-chip-tag, .entry-chip-entity')) return;
+      URLStateManager.showEntryDetail(entry.id);
+    });
+
+    // Menu Toggle Handler
+    if (menuBtn) {
+      menuBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        // Now this.querySelector will find the menu because it was appended as a sibling
+        this.toggleMenu(entry.id, e as MouseEvent);
+      });
+    }
+
+    // Chip Handlers
+    fragment.querySelectorAll('.entry-chip-tag, .hashtag').forEach(el => {
+      el.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const tag = (el as HTMLElement).dataset.tag;
+        if (tag) URLStateManager.addTagFilter(tag);
+      });
+    });
+
+    fragment.querySelectorAll('.entry-chip-entity').forEach(el => {
+      el.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const entityName = (el as HTMLElement).dataset.entityName;
+        if (entityName) URLStateManager.showEntryList(entityName);
+      });
+    });
+
+    // Context Menu Action Handlers
+    fragment.querySelectorAll('.context-menu-item').forEach(item => {
+      item.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const action = (item as HTMLElement).dataset.action;
+        if (action === 'archive') this.handleArchive(entry.id);
+        if (action === 'delete') this.handleDelete(entry.id);
+        this.hideAllMenus();
+      });
+    });
+
+    return fragment;
+  }
+
+  private updateHeader(container: HTMLElement, selectedEntityId: string | null, entityFilters: string[], tagFilters: string[]): void {
     const hashtagFilter = URLStateManager.getHashtagFilter();
-    if (hashtagFilter && tagFilters.length === 0) {
-      entries = entries.filter(e => {
-        if (!e.notes) return false;
-        const hashtagRegex = new RegExp(`#${hashtagFilter}\\b`, 'i');
-        return hashtagRegex.test(e.notes);
-      });
-    }
-
-    // Get selected entity name for header
-    const selectedEntity = selectedEntityId ? this.store.getEntityById(selectedEntityId) : null;
-
-    // Hashtag filter badge
-    const hashtagBadge = hashtagFilter
-      ? `<span class="hashtag-filter-badge">#${hashtagFilter} <button class="clear-hashtag" data-action="clear-hashtag">×</button></span>`
-      : '';
-
-    // Get current sort values from URL
     const currentSortBy = URLStateManager.getSortBy() || 'timestamp';
     const currentSortOrder = URLStateManager.getSortOrder() || 'desc';
+    const currentSortValue = `${currentSortBy}-${currentSortOrder}`;
 
-    // Get all available tags from all entries
-    const allEntries = this.store.getEntries();
-    const allTags = new Set<string>();
-    allEntries.forEach(entry => {
-      if (entry.notes) {
-        extractHashtags(entry.notes).forEach(tag => allTags.add(tag));
-      }
-    });
-    const availableTags = Array.from(allTags).sort();
+    container.innerHTML = this.getHeaderHtml(selectedEntityId, entityFilters, tagFilters, hashtagFilter, currentSortValue);
 
-    // Tag filter button with chips
-    const selectedTagChips = tagFilters.length > 0 ? tagFilters.map(tag => `
-            <span class="tag-chip-inline">#${escapeHtml(tag)}</span>
-        `).join('') : '';
+    // 6. Integrated: attachHashtagClearHandler
+    const clearBtn = container.querySelector('[data-action="clear-hashtag"]');
+    if (clearBtn) {
+      clearBtn.addEventListener('click', () => URLStateManager.setHashtagFilter(null));
+    }
 
-    // Always show icon on mobile, show chips on desktop
-    const tagIcon = `<i class="ph-duotone ph-tag"></i>`;
-    const tagButtonLabel = tagFilters.length > 0 ? `${tagIcon}${selectedTagChips}` : tagIcon;
+    // Re-attach dropdown-specific logic
+    this.attachSortHandler();
+    this.attachEntityFilterHandlers();
+    this.attachTagFilterHandlers();
+    this.attachLogEntryButtonHandler();
+    this.attachEntityPageMenuHandlers();
+  }
 
-    // Tag filter dropdown
-    const tagFilterDropdown = availableTags.length > 0 ? `
-            <div class="tag-filter-container">
-                <button class="btn-tag-filter ${tagFilters.length > 0 ? 'has-filters' : ''}"
-                        id="tag-filter-btn"
-                        title="Filter by tags"
-                        ${tagFilters.length > 0 ? `data-filter-count="${tagFilters.length}"` : ''}>
-                    ${tagButtonLabel}
-                </button>
-                <div class="tag-filter-menu" id="tag-filter-menu" style="display: none;">
-                    ${availableTags.map(tag => `
-                        <label class="tag-filter-option">
-                            <input type="checkbox" value="${escapeHtml(tag)}" ${tagFilters.includes(tag) ? 'checked' : ''}>
-                            <span>#${escapeHtml(tag)}</span>
-                        </label>
-                    `).join('')}
-                </div>
-            </div>
-        ` : '';
-
-    // Get all available entities
-    const allEntities = this.store.getEntities();
-    const availableEntities = allEntities.sort((a, b) => a.name.localeCompare(b.name));
-
-    // Entity filter button with chips
-    const selectedEntityChips = entityFilters.length > 0 ? entityFilters.map(entity => `
-            <span class="tag-chip-inline">${escapeHtml(entity)}</span>
-        `).join('') : '';
-
-    // Always show icon on mobile, show chips on desktop
-    const entityIcon = `<i class="ph-duotone ph-circles-four"></i>`;
-    const entityButtonLabel = entityFilters.length > 0 ? `${entityIcon}${selectedEntityChips}` : entityIcon;
-
-    // Entity filter dropdown (only show on "all entries" view, not on entity-specific view)
-    const entityFilterDropdown = !selectedEntityId && availableEntities.length > 0 ? `
-            <div class="tag-filter-container">
-                <button class="btn-tag-filter ${entityFilters.length > 0 ? 'has-filters' : ''}"
-                        id="entity-filter-btn"
-                        title="Filter by entities"
-                        ${entityFilters.length > 0 ? `data-filter-count="${entityFilters.length}"` : ''}>
-                    ${entityButtonLabel}
-                </button>
-                <div class="tag-filter-menu" id="entity-filter-menu" style="display: none;">
-                    ${availableEntities.map(entity => `
-                        <label class="tag-filter-option">
-                            <input type="checkbox" value="${escapeHtml(entity.name)}" ${entityFilters.includes(entity.name) ? 'checked' : ''}>
-                            <span>${escapeHtml(entity.name)}</span>
-                        </label>
-                    `).join('')}
-                </div>
-            </div>
-        ` : '';
-
-    // Sort options
+  private getHeaderHtml(
+    selectedEntityId: string | null,
+    entityFilters: string[],
+    tagFilters: string[],
+    hashtagFilter: string | null,
+    currentSortValue: string
+  ): string {
+    // 1. Sort Options Logic
     const sortOptions = [
       { value: 'timestamp-desc', label: 'Newest First' },
       { value: 'timestamp-asc', label: 'Oldest First' },
@@ -166,132 +197,101 @@ export class EntryListComponent extends WebComponent {
       { value: 'entityName-asc', label: 'Entity (A-Z)' },
       { value: 'entityName-desc', label: 'Entity (Z-A)' }
     ];
-
-    const currentSortValue = `${currentSortBy}-${currentSortOrder}`;
     const currentSortLabel = sortOptions.find(opt => opt.value === currentSortValue)?.label || 'Newest First';
 
-    // Sort select dropdown
     const sortSelect = `
-            <div class="tag-filter-container">
-                <button class="btn-tag-filter" id="sort-filter-btn" title="Sort by">
-                    <i class="ph-duotone ph-sort-ascending"></i>
-                    <span>${currentSortLabel}</span>
-                </button>
-                <div class="tag-filter-menu" id="sort-filter-menu" style="display: none;">
-                    ${sortOptions.map(opt => `
-                        <label class="tag-filter-option">
-                            <input type="radio" name="sort-option" value="${opt.value}" ${opt.value === currentSortValue ? 'checked' : ''}>
-                            <span>${escapeHtml(opt.label)}</span>
-                        </label>
-                    `).join('')}
-                </div>
-            </div>
-        `;
+      <div class="tag-filter-container">
+          <button class="btn-tag-filter" id="sort-filter-btn" title="Sort by">
+              <i class="ph-duotone ph-sort-ascending"></i>
+              <span>${currentSortLabel}</span>
+          </button>
+          <div class="tag-filter-menu" id="sort-filter-menu" style="display: none;">
+              ${sortOptions.map(opt => `
+                  <label class="tag-filter-option">
+                      <input type="radio" name="sort-option" value="${opt.value}" ${opt.value === currentSortValue ? 'checked' : ''}>
+                      <span>${escapeHtml(opt.label)}</span>
+                  </label>
+              `).join('')}
+          </div>
+      </div>
+    `;
 
-    if (entries.length === 0) {
-      const emptyMessage = selectedEntity
-        ? `No entries yet for ${selectedEntity.name}. Log your first entry!`
-        : 'No entries yet. Log your first entry!';
+    // 2. Entity Filter Dropdown (Logic from)
+    const allEntities = this.store.getEntities();
+    const availableEntities = [...allEntities].sort((a, b) => a.name.localeCompare(b.name));
+    const selectedEntityChips = entityFilters.map(entity => `
+        <span class="tag-chip-inline">${escapeHtml(entity)}</span>
+    `).join('');
 
-      // Entity menu (only show when viewing a specific entity)
-      const entityMenu = selectedEntity ? `
-                <button class="entry-menu-btn" id="entity-page-menu-btn" data-entity-id="${selectedEntity.id}" data-action="menu">⋮</button>
-                <div class="entity-context-menu" id="entity-page-menu" style="display: none;">
-                    <div class="context-menu-item" data-entity-id="${selectedEntity.id}" data-action="edit">
-                        <i class="ph-duotone ph-pencil-simple"></i>
-                        <span>Edit</span>
-                    </div>
-                    <div class="context-menu-item" data-entity-id="${selectedEntity.id}" data-action="clone">
-                        <i class="ph-duotone ph-copy"></i>
-                        <span>Clone</span>
-                    </div>
-                    <div class="context-menu-item danger" data-entity-id="${selectedEntity.id}" data-action="delete">
-                        <i class="ph-duotone ph-trash"></i>
-                        <span>Delete</span>
-                    </div>
-                </div>
-            ` : '';
+    const entityButtonLabel = entityFilters.length > 0 ? `<i class="ph-duotone ph-circles-four"></i>${selectedEntityChips}` : `<i class="ph-duotone ph-circles-four"></i>`;
 
-      this.innerHTML = `
-                <div class="section">
-                    <div class="section-header-actions">
-                        ${sortSelect}
-                        ${entityFilterDropdown}
-                        ${tagFilterDropdown}
-                        ${hashtagBadge}
-                        <button class="btn btn-primary btn-add-entry" id="log-entry-btn">
-                            <i class="ph ph-plus"></i>
-                            Add Entry
-                        </button>
-                        ${entityMenu}
-                    </div>
-                    <div class="empty-state">${emptyMessage}</div>
-                </div>
-            `;
-      this.attachLogEntryButtonHandler();
-      this.attachHashtagClearHandler();
-      this.attachEntityPageMenuHandlers();
-      this.attachSortHandler();
-      this.attachEntityFilterHandlers();
-      this.attachTagFilterHandlers();
-      return;
-    }
+    const entityFilterDropdown = !selectedEntityId && availableEntities.length > 0 ? `
+      <div class="tag-filter-container">
+          <button class="btn-tag-filter ${entityFilters.length > 0 ? 'has-filters' : ''}" id="entity-filter-btn" title="Filter by entities">
+              ${entityButtonLabel}
+          </button>
+          <div class="tag-filter-menu" id="entity-filter-menu" style="display: none;">
+              ${availableEntities.map(entity => `
+                  <label class="tag-filter-option">
+                      <input type="checkbox" value="${escapeHtml(entity.name)}" ${entityFilters.includes(entity.name) ? 'checked' : ''}>
+                      <span>${escapeHtml(entity.name)}</span>
+                  </label>
+              `).join('')}
+          </div>
+      </div>
+    ` : '';
 
-    // Group entries by date
-    const entriesByDate = this.groupEntriesByDate(entries.slice(0, this.maxEntries));
-    const entriesHtml = this.renderTimelineEntries(entriesByDate);
+    // 3. Tag Filter Dropdown (Logic from)
+    const allEntries = this.store.getEntries();
+    const allTags = new Set<string>();
+    allEntries.forEach(entry => {
+      if (entry.notes) extractHashtags(entry.notes).forEach(tag => allTags.add(tag));
+    });
+    const availableTags = Array.from(allTags).sort();
+    const selectedTagChips = tagFilters.map(tag => `<span class="tag-chip-inline">#${escapeHtml(tag)}</span>`).join('');
+    const tagButtonLabel = tagFilters.length > 0 ? `<i class="ph-duotone ph-tag"></i>${selectedTagChips}` : `<i class="ph-duotone ph-tag"></i>`;
 
-    // Entity menu (only show when viewing a specific entity)
+    const tagFilterDropdown = availableTags.length > 0 ? `
+      <div class="tag-filter-container">
+          <button class="btn-tag-filter ${tagFilters.length > 0 ? 'has-filters' : ''}" id="tag-filter-btn" title="Filter by tags">
+              ${tagButtonLabel}
+          </button>
+          <div class="tag-filter-menu" id="tag-filter-menu" style="display: none;">
+              ${availableTags.map(tag => `
+                  <label class="tag-filter-option">
+                      <input type="checkbox" value="${escapeHtml(tag)}" ${tagFilters.includes(tag) ? 'checked' : ''}>
+                      <span>#${escapeHtml(tag)}</span>
+                  </label>
+              `).join('')}
+          </div>
+      </div>
+    ` : '';
+
+    // 4. Legacy Hashtag and Entity Menu Logic
+    const hashtagBadge = hashtagFilter ? `
+      <span class="hashtag-filter-badge">#${hashtagFilter} <button class="clear-hashtag" data-action="clear-hashtag">×</button></span>
+    ` : '';
+
+    const selectedEntity = selectedEntityId ? this.store.getEntityById(selectedEntityId) : null;
     const entityMenu = selectedEntity ? `
-            <button class="entry-menu-btn" id="entity-page-menu-btn" data-entity-id="${selectedEntity.id}" data-action="menu">⋮</button>
-            <div class="entity-context-menu" id="entity-page-menu" style="display: none;">
-                <div class="context-menu-item" data-entity-id="${selectedEntity.id}" data-action="edit">                    <i class="ph-duotone ph-pencil-simple"></i>
-Edit</div>
-                <div class="context-menu-item" data-entity-id="${selectedEntity.id}" data-action="clone"><i class="ph-duotone ph-copy"></i>
-Clone</div>
-                <div class="context-menu-item danger" data-entity-id="${selectedEntity.id}" data-action="delete"><i class="ph-duotone ph-trash"></i>
-Delete</div>
-            </div>
-        ` : '';
+      <button class="entry-menu-btn" id="entity-page-menu-btn" data-entity-id="${selectedEntity.id}" data-action="menu">⋮</button>
+      <div class="entity-context-menu" id="entity-page-menu" style="display: none;">
+          <div class="context-menu-item" data-entity-id="${selectedEntity.id}" data-action="edit"><i class="ph-duotone ph-pencil-simple"></i>Edit</div>
+          <div class="context-menu-item" data-entity-id="${selectedEntity.id}" data-action="clone"><i class="ph-duotone ph-copy"></i>Clone</div>
+          <div class="context-menu-item danger" data-entity-id="${selectedEntity.id}" data-action="delete"><i class="ph-duotone ph-trash"></i>Delete</div>
+      </div>
+    ` : '';
 
-    this.innerHTML = `
-            <div class="section">
-                <div class="section-header-actions">
-                    ${sortSelect}
-                    ${entityFilterDropdown}
-                    ${tagFilterDropdown}
-                    ${hashtagBadge}
-                    <button class="btn-primary btn-add-entry" id="log-entry-btn">
-                        <i class="ph ph-plus"></i>
-                        Add Entry
-                    </button>
-                    ${entityMenu}
-                </div>
-                <div class="entries-grid">
-                    ${entriesHtml}
-                </div>
-            </div>
-        `;
-
-    // Attach event handlers after rendering
-    this.attachSortHandler();
-    this.attachEntityFilterHandlers();
-    this.attachTagFilterHandlers();
-    this.attachLogEntryButtonHandler();
-    this.attachMenuHandlers();
-    this.attachCardClickHandlers();
-    this.attachHashtagHandlers();
-    this.attachHashtagClearHandler();
-    this.attachEntityChipHandlers();
-    this.attachEntityPageMenuHandlers();
-
-    // Restore scroll position after re-rendering
-    if (savedScrollTop > 0) {
-      const newScrollableGrid = this.querySelector('.entries-grid') as HTMLElement;
-      if (newScrollableGrid) {
-        newScrollableGrid.scrollTop = savedScrollTop;
-      }
-    }
+    return `
+      ${sortSelect}
+      ${entityFilterDropdown}
+      ${tagFilterDropdown}
+      ${hashtagBadge}
+      <button class="btn btn-primary btn-add-entry" id="log-entry-btn">
+          <i class="ph ph-plus"></i> Add Entry
+      </button>
+      ${entityMenu}
+    `;
   }
 
   disconnectedCallback(): void {
@@ -322,23 +322,6 @@ Delete</div>
     });
 
     return groups;
-  }
-
-  private renderTimelineEntries(entriesByDate: Map<string, Entry[]>): string {
-    let html = '';
-
-    for (const [dateKey, dateEntries] of entriesByDate) {
-      html += `
-        <div class="timeline-date-group">
-          <div class="timeline-date-header">${dateKey}</div>
-          <div class="timeline-entries">
-            ${dateEntries.map(entry => this.renderTimelineEntry(entry)).join('')}
-          </div>
-        </div>
-      `;
-    }
-
-    return html;
   }
 
   private renderTimelineEntry(entry: Entry): string {
@@ -837,6 +820,7 @@ Delete</div>
 
   private toggleMenu(entryId: string, e: MouseEvent, customX?: number, customY?: number): void {
     const menu = this.querySelector(`#entry-menu-${entryId}`) as HTMLElement;
+    console.log("toggleMenu", menu);
     if (!menu) return;
 
     // Check if this menu is already visible (toggle behavior)
@@ -950,34 +934,6 @@ Delete</div>
     }
   }
 
-  private attachHashtagHandlers(): void {
-    // Handle hashtags in notes (clickable hashtags within formatted text)
-    this.querySelectorAll('.hashtag').forEach(hashtag => {
-      hashtag.addEventListener('click', (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        const target = e.target as HTMLElement;
-        const tag = target.dataset.tag;
-        if (tag) {
-          URLStateManager.addTagFilter(tag);
-        }
-      });
-    });
-
-    // Handle hashtag chips in entry-tags section
-    this.querySelectorAll('.entry-chip-tag').forEach(chip => {
-      chip.addEventListener('click', (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        const target = e.target as HTMLElement;
-        const tag = target.dataset.tag;
-        if (tag) {
-          URLStateManager.addTagFilter(tag);
-        }
-      });
-    });
-  }
-
   private attachHashtagClearHandler(): void {
     const clearBtn = this.querySelector('[data-action="clear-hashtag"]');
     if (clearBtn) {
@@ -1055,18 +1011,6 @@ Delete</div>
         });
       });
     }
-  }
-
-  private attachEntityChipHandlers(): void {
-    this.querySelectorAll('.entry-chip-entity').forEach(chip => {
-      chip.addEventListener('click', (e) => {
-        e.stopPropagation();
-        const entityName = (chip as HTMLElement).dataset.entityName;
-        if (entityName) {
-          URLStateManager.showEntryList(entityName);
-        }
-      });
-    });
   }
 
   private attachEntityPageMenuHandlers(): void {
