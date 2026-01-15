@@ -88,7 +88,7 @@ export class EntityListComponent extends WebComponent {
                         Create Entity
                     </button>
                 </div>
-                <div class="entities-bento-grid">
+                <div class="page-grid">
                     ${entitiesHtml}
                 </div>
             </div>
@@ -192,18 +192,6 @@ export class EntityListComponent extends WebComponent {
                         </div>
                     ` : ''}
                 </div>
-                ${mostRecentEntry ? `
-                    <div class="entity-recent-entry">
-                        <div class="recent-entry-timestamp">${formatDate(mostRecentEntry.timestamp)}</div>
-                        ${mostRecentEntry.value !== undefined ? `<div class="recent-entry-value">${this.formatValue(mostRecentEntry.value, mostRecentEntry.valueDisplay, entity.valueType)}</div>` : ''}
-                        ${entity.properties && entity.properties.length > 0 && mostRecentEntry.propertyValues ? this.renderPropertyValues(entity.properties, mostRecentEntry.propertyValues, mostRecentEntry.propertyValueDisplays) : ''}
-                        ${mostRecentEntry.notes ? `<div class="recent-entry-notes">${this.formatNotes(mostRecentEntry.notes)}</div>` : ''}
-                    </div>
-                ` : `
-                    <div class="entity-recent-entry">
-                        <div class="entity-no-entries">No entries yet</div>
-                    </div>
-                `}
             </div>
             <div class="entity-context-menu" id="entity-menu-${entity.id}" style="display: none;">
                 <div class="context-menu-item" data-entity-id="${entity.id}" data-action="log-entry">
