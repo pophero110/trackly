@@ -204,7 +204,7 @@ export class Store {
         }
     }
 
-    async updateEntry(id: string, updates: Partial<IEntry>, options?: { silent?: boolean }): Promise<void> {
+    async updateEntry(id: string, updates: Partial<IEntry>, options?: { silent?: boolean; keepalive?: boolean }): Promise<void> {
         // Optimistic update: Update entry in local state immediately
         const index = this.entries.findIndex(e => e.id === id);
         if (index !== -1) {
@@ -221,7 +221,7 @@ export class Store {
 
             try {
                 // Update via API in the background
-                await APIClient.updateEntry(id, updates);
+                await APIClient.updateEntry(id, updates, { keepalive: options?.keepalive ?? false });
 
                 // Skip reload for silent updates (auto-save)
                 // The optimistic update is already applied, no need to reload
@@ -239,7 +239,7 @@ export class Store {
             }
         } else {
             // Entry not in local state, just call API and reload
-            await APIClient.updateEntry(id, updates);
+            await APIClient.updateEntry(id, updates, { keepalive: options?.keepalive ?? false });
 
             // Skip reload for silent updates
             if (!options?.silent) {

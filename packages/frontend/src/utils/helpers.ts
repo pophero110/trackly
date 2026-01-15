@@ -339,21 +339,51 @@ export function extractHashtags(text: string): string[] {
 
 /**
  * Create a debounced function that delays invoking func until after wait milliseconds
- * have elapsed since the last time the debounced function was invoked
+ * have elapsed since the last time the debounced function was invoked.
+ * The debounced function comes with a `cancel` method to cancel delayed func invocations
+ * and a `flush` method to immediately invoke them.
  */
 export function debounce<T extends (...args: any[]) => any>(
     func: T,
     wait: number
-): (...args: Parameters<T>) => void {
+): { (...args: Parameters<T>): void; cancel: () => void; flush: () => void; } {
     let timeoutId: ReturnType<typeof setTimeout> | null = null;
+    let lastArgs: Parameters<T> | null = null;
+    let lastThis: any = null;
 
-    return function (this: any, ...args: Parameters<T>) {
+    const debounced = function (this: any, ...args: Parameters<T>) {
+        lastArgs = args;
+        lastThis = this;
         if (timeoutId !== null) {
             clearTimeout(timeoutId);
         }
-
         timeoutId = setTimeout(() => {
-            func.apply(this, args);
+            if (lastArgs) {
+                func.apply(lastThis, lastArgs);
+                lastArgs = null;
+                lastThis = null;
+            }
         }, wait);
     };
+
+    debounced.cancel = () => {
+        if (timeoutId !== null) {
+            clearTimeout(timeoutId);
+        }
+        lastArgs = null;
+        lastThis = null;
+    };
+
+    debounced.flush = () => {
+        if (timeoutId) {
+            clearTimeout(timeoutId);
+            if (lastArgs) {
+                func.apply(lastThis, lastArgs);
+                lastArgs = null;
+                lastThis = null;
+            }
+        }
+    }
+
+    return debounced;
 }
