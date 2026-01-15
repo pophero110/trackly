@@ -2604,7 +2604,8 @@ form {
   box-shadow: var(--shadow-lg);
   min-width: 180px;
   z-index: 10000;
-  overflow: hidden;
+  overflow-y: auto;
+  height: 300px;
 }
 
 .entity-dropdown-item {
