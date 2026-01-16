@@ -15,6 +15,12 @@ export class EntryListComponent extends WebComponent {
   private maxEntries: number = 30;
   private resizeObserver: ResizeObserver | null = null;
 
+  // Event listener references for cleanup
+  private sortMenuCloseHandler: ((e: Event) => void) | null = null;
+  private entityFilterCloseHandler: ((e: Event) => void) | null = null;
+  private tagFilterCloseHandler: ((e: Event) => void) | null = null;
+  private entityPageMenuCloseHandler: (() => void) | null = null;
+
   // Helper to turn HTML strings into DOM nodes efficiently
   private createTemplate(html: string): DocumentFragment {
     const template = document.createElement('template');
@@ -75,7 +81,8 @@ export class EntryListComponent extends WebComponent {
     if (entries.length === 0) {
       const selectedEntity = selectedEntityId ? this.store.getEntityById(selectedEntityId) : null;
       const msg = selectedEntity ? `No entries yet for ${selectedEntity.name}.` : 'No entries yet.';
-      entriesContainer.innerHTML = `<div class="empty-state">${msg}</div>`;
+      const emptyStateFragment = this.createTemplate(`<div class="empty-state">${msg}</div>`);
+      entriesContainer.replaceChildren(emptyStateFragment);
       return;
     }
 
@@ -165,7 +172,11 @@ export class EntryListComponent extends WebComponent {
     const currentSortOrder = URLStateManager.getSortOrder() || 'desc';
     const currentSortValue = `${currentSortBy}-${currentSortOrder}`;
 
-    container.innerHTML = this.getHeaderHtml(selectedEntityId, entityFilters, tagFilters, hashtagFilter, currentSortValue);
+    // Use DocumentFragment instead of innerHTML
+    const headerFragment = this.createTemplate(
+      this.getHeaderHtml(selectedEntityId, entityFilters, tagFilters, hashtagFilter, currentSortValue)
+    );
+    container.replaceChildren(headerFragment);
 
     // 6. Integrated: attachHashtagClearHandler
     const clearBtn = container.querySelector('[data-action="clear-hashtag"]');
@@ -296,6 +307,28 @@ export class EntryListComponent extends WebComponent {
 
   disconnectedCallback(): void {
     super.disconnectedCallback();
+
+    // Clean up all document-level event listeners
+    if (this.sortMenuCloseHandler) {
+      document.removeEventListener('click', this.sortMenuCloseHandler);
+      this.sortMenuCloseHandler = null;
+    }
+
+    if (this.entityFilterCloseHandler) {
+      document.removeEventListener('click', this.entityFilterCloseHandler);
+      this.entityFilterCloseHandler = null;
+    }
+
+    if (this.tagFilterCloseHandler) {
+      document.removeEventListener('click', this.tagFilterCloseHandler);
+      this.tagFilterCloseHandler = null;
+    }
+
+    if (this.entityPageMenuCloseHandler) {
+      document.removeEventListener('click', this.entityPageMenuCloseHandler);
+      this.entityPageMenuCloseHandler = null;
+    }
+
     // Clean up resize observer
     if (this.resizeObserver) {
       this.resizeObserver.disconnect();
@@ -613,210 +646,23 @@ export class EntryListComponent extends WebComponent {
         });
       });
 
-      // Close menu when clicking outside
-      document.addEventListener('click', (e) => {
+      // Remove old listener if it exists
+      if (this.sortMenuCloseHandler) {
+        document.removeEventListener('click', this.sortMenuCloseHandler);
+      }
+
+      // Create and store new handler
+      this.sortMenuCloseHandler = (e: Event) => {
         if (!filterMenu.contains(e.target as Node) && !filterBtn.contains(e.target as Node)) {
           filterMenu.style.display = 'none';
         }
-      });
+      };
+
+      // Close menu when clicking outside
+      document.addEventListener('click', this.sortMenuCloseHandler);
     }
   }
 
-  private attachCardClickHandlers(): void {
-    this.querySelectorAll('.timeline-entry').forEach(entryEl => {
-      let longPressTimer: number | null = null;
-      let touchStartX = 0;
-      let touchStartY = 0;
-      let longPressTriggered = false;
-
-      const card = entryEl.querySelector('.timeline-entry-card');
-      if (!card) return;
-
-      // Touch start - begin long press detection
-      card.addEventListener('touchstart', (e) => {
-        const target = e.target as HTMLElement;
-
-        // Don't trigger long press on menu button, links, or hashtags
-        if (target.closest('[data-action="menu"]') ||
-          target.tagName === 'A' ||
-          target.closest('a') ||
-          target.closest('.entry-chip-tag')) {
-          return;
-        }
-
-        const touch = (e as TouchEvent).touches[0];
-        touchStartX = touch.clientX;
-        touchStartY = touch.clientY;
-        longPressTriggered = false;
-
-        // Start long press timer (500ms)
-        longPressTimer = window.setTimeout(() => {
-          const entryId = (entryEl as HTMLElement).dataset.entryId;
-          if (entryId) {
-            longPressTriggered = true;
-            // Trigger haptic feedback if available
-            if ('vibrate' in navigator) {
-              navigator.vibrate(50);
-            }
-            // Find the menu button and create a click event from it
-            const menuButton = card.querySelector(`[data-entry-id="${entryId}"][data-action="menu"]`) as HTMLElement;
-            if (menuButton) {
-              // Create a synthetic MouseEvent with the button as target
-              const rect = menuButton.getBoundingClientRect();
-              const syntheticEvent = new MouseEvent('click', {
-                bubbles: true,
-                cancelable: true,
-                clientX: rect.left,
-                clientY: rect.top,
-                view: window
-              });
-              // Override target to be the button
-              Object.defineProperty(syntheticEvent, 'target', {
-                value: menuButton,
-                enumerable: true
-              });
-              this.toggleMenu(entryId, syntheticEvent);
-            }
-          }
-        }, 500);
-      });
-
-      // Touch move - cancel if moved too much
-      card.addEventListener('touchmove', (e) => {
-        if (longPressTimer) {
-          const touch = (e as TouchEvent).touches[0];
-          const moveX = Math.abs(touch.clientX - touchStartX);
-          const moveY = Math.abs(touch.clientY - touchStartY);
-
-          // Cancel if moved more than 10px
-          if (moveX > 10 || moveY > 10) {
-            window.clearTimeout(longPressTimer);
-            longPressTimer = null;
-          }
-        }
-      });
-
-      // Touch end - cancel timer
-      card.addEventListener('touchend', () => {
-        if (longPressTimer) {
-          window.clearTimeout(longPressTimer);
-          longPressTimer = null;
-        }
-      });
-
-      // Touch cancel - cancel timer
-      card.addEventListener('touchcancel', () => {
-        if (longPressTimer) {
-          window.clearTimeout(longPressTimer);
-          longPressTimer = null;
-        }
-      });
-
-      // Regular click to navigate to detail page
-      card.addEventListener('click', (e) => {
-        // Don't navigate if long press was just triggered
-        if (longPressTriggered) {
-          longPressTriggered = false;
-          return;
-        }
-
-        const target = e.target as HTMLElement;
-
-        // Don't navigate if clicking on menu button
-        if (target.closest('[data-action="menu"]')) {
-          return;
-        }
-
-        // Don't navigate if clicking on a link
-        if (target.tagName === 'A' || target.closest('a')) {
-          return;
-        }
-
-        // Don't navigate if clicking on hashtag or entity chip
-        if (target.closest('.entry-chip-tag') || target.closest('.entry-chip-entity')) {
-          return;
-        }
-
-        const entryId = (entryEl as HTMLElement).dataset.entryId;
-        if (entryId) {
-          URLStateManager.showEntryDetail(entryId);
-        }
-      });
-
-      // Right-click to show context menu
-      card.addEventListener('contextmenu', (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        const target = e.target as HTMLElement;
-
-        // Don't trigger if clicking on menu button
-        if (target.closest('[data-action="menu"]')) {
-          return;
-        }
-
-        // Don't trigger if clicking on a link
-        if (target.tagName === 'A' || target.closest('a')) {
-          return;
-        }
-
-        const entryId = (entryEl as HTMLElement).dataset.entryId;
-        if (entryId) {
-          this.toggleMenu(entryId, e as MouseEvent);
-        }
-      });
-    });
-  }
-
-  private attachMenuHandlers(): void {
-    // Menu button click
-    this.querySelectorAll('[data-action="menu"]').forEach(btn => {
-      btn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        const target = e.target as HTMLElement;
-        // Use closest to find the button element (in case user clicked on icon)
-        const button = target.closest('[data-action="menu"]') as HTMLElement;
-        const entryId = button?.dataset.entryId;
-        if (entryId) {
-          this.toggleMenu(entryId, e as MouseEvent);
-        }
-      });
-    });
-
-    // Menu item clicks
-    this.querySelectorAll('.entry-context-menu .context-menu-item').forEach(item => {
-      item.addEventListener('click', (e) => {
-        const target = e.target as HTMLElement;
-        // Find the menu item (in case user clicked on icon or span)
-        const menuItem = target.closest('.context-menu-item') as HTMLElement;
-        if (!menuItem) return;
-
-        const entryId = menuItem.dataset.entryId;
-        const action = menuItem.dataset.action;
-
-        if (entryId && action) {
-          if (action === 'archive') {
-            this.handleArchive(entryId);
-          } else if (action === 'delete') {
-            this.handleDelete(entryId);
-          }
-        }
-        this.hideAllMenus();
-      });
-    });
-
-    // Click/touch outside to close menus
-    const closeMenusHandler = (e: Event) => {
-      const target = e.target as HTMLElement;
-      // Don't close if clicking inside a menu or on a menu button
-      if (target.closest('.entry-context-menu') || target.closest('[data-action="menu"]')) {
-        return;
-      }
-      this.hideAllMenus();
-    };
-
-    document.addEventListener('click', closeMenusHandler);
-    document.addEventListener('touchstart', closeMenusHandler);
-  }
 
   private toggleMenu(entryId: string, e: MouseEvent, customX?: number, customY?: number): void {
     const menu = this.querySelector(`#entry-menu-${entryId}`) as HTMLElement;
@@ -954,12 +800,20 @@ export class EntryListComponent extends WebComponent {
         filterMenu.style.display = isVisible ? 'none' : 'block';
       });
 
-      // Close menu when clicking outside
-      document.addEventListener('click', (e) => {
+      // Remove old listener if it exists
+      if (this.entityFilterCloseHandler) {
+        document.removeEventListener('click', this.entityFilterCloseHandler);
+      }
+
+      // Create and store new handler
+      this.entityFilterCloseHandler = (e: Event) => {
         if (!filterMenu.contains(e.target as Node) && !filterBtn.contains(e.target as Node)) {
           filterMenu.style.display = 'none';
         }
-      });
+      };
+
+      // Close menu when clicking outside
+      document.addEventListener('click', this.entityFilterCloseHandler);
 
       // Handle checkbox changes
       const checkboxes = filterMenu.querySelectorAll('input[type="checkbox"]');
@@ -989,12 +843,20 @@ export class EntryListComponent extends WebComponent {
         filterMenu.style.display = isVisible ? 'none' : 'block';
       });
 
-      // Close menu when clicking outside
-      document.addEventListener('click', (e) => {
+      // Remove old listener if it exists
+      if (this.tagFilterCloseHandler) {
+        document.removeEventListener('click', this.tagFilterCloseHandler);
+      }
+
+      // Create and store new handler
+      this.tagFilterCloseHandler = (e: Event) => {
         if (!filterMenu.contains(e.target as Node) && !filterBtn.contains(e.target as Node)) {
           filterMenu.style.display = 'none';
         }
-      });
+      };
+
+      // Close menu when clicking outside
+      document.addEventListener('click', this.tagFilterCloseHandler);
 
       // Handle checkbox changes
       const checkboxes = filterMenu.querySelectorAll('input[type="checkbox"]');
@@ -1041,8 +903,16 @@ export class EntryListComponent extends WebComponent {
       });
     });
 
+    // Remove old listener if it exists
+    if (this.entityPageMenuCloseHandler) {
+      document.removeEventListener('click', this.entityPageMenuCloseHandler);
+    }
+
+    // Create and store new handler
+    this.entityPageMenuCloseHandler = () => this.hideEntityPageMenu();
+
     // Click outside to close menu
-    document.addEventListener('click', () => this.hideEntityPageMenu());
+    document.addEventListener('click', this.entityPageMenuCloseHandler);
   }
 
   private toggleEntityPageMenu(e: MouseEvent): void {

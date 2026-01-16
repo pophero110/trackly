@@ -6,7 +6,6 @@ import { URLStateManager } from '../utils/urlState.js';
 import { EntityProperty } from '../types/index.js';
 import { getEntityColor } from '../utils/entryHelpers.js';
 import { createMilkdownEditor, destroyEditor, focusEditor } from '../utils/milkdown.js';
-import { APIClient } from '../api/client.js';
 import type { Editor } from '@milkdown/core';
 
 /**
