@@ -20,7 +20,6 @@ export class EntryDetailComponent extends WebComponent {
   private debouncedBackendSave: ({ (...args: any[]): void; cancel(): void; flush(): void; }) | null = null;
   private documentClickHandler: (() => void) | null = null;
   private visibilityHandler: (() => void) | null = null;
-  private isInitializingEditor: boolean = false;
 
   connectedCallback(): void {
     super.connectedCallback();
@@ -235,39 +234,6 @@ export class EntryDetailComponent extends WebComponent {
         `;
   }
 
-  private getEntryTitle(entry: Entry): string {
-    // Use value as title if available
-    if (entry.value !== undefined && entry.value !== null) {
-      return entry.valueDisplay || String(entry.value);
-    }
-
-    // Extract first line from notes as title
-    if (entry.notes) {
-      const firstLine = entry.notes.split('\n')[0].trim();
-      // Remove markdown formatting for title
-      return firstLine.replace(/^#+\s*/, '').replace(/\*\*/g, '').replace(/\*/g, '').substring(0, 100);
-    }
-
-    return '';
-  }
-
-  private getRelativeTime(timestamp: string): string {
-    const now = new Date();
-    const entryDate = new Date(timestamp);
-    const diffMs = now.getTime() - entryDate.getTime();
-    const diffMins = Math.floor(diffMs / 60000);
-    const diffHours = Math.floor(diffMs / 3600000);
-    const diffDays = Math.floor(diffMs / 86400000);
-
-    if (diffMins < 1) return 'Just now';
-    if (diffMins < 60) return `${diffMins} min ago`;
-    if (diffHours < 24) return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
-    if (diffDays < 7) return `${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
-    if (diffDays < 30) return `${Math.floor(diffDays / 7)} week${Math.floor(diffDays / 7) > 1 ? 's' : ''} ago`;
-    if (diffDays < 365) return `${Math.floor(diffDays / 30)} month${Math.floor(diffDays / 30) > 1 ? 's' : ''} ago`;
-    return `${Math.floor(diffDays / 365)} year${Math.floor(diffDays / 365) > 1 ? 's' : ''} ago`;
-  }
-
   private renderDetailContent(entry: Entry, entity: any): string {
     // Properties section
     const propertiesHtml = this.renderPropertiesInline(entry, entity);
@@ -422,57 +388,6 @@ export class EntryDetailComponent extends WebComponent {
 
     // Use displayValue if available, otherwise escape the raw value
     return escapeHtml(displayValue || valueStr);
-  }
-
-  private renderProperties(entry: Entry, entity: any): string {
-    if (!entity || !entity.properties || entity.properties.length === 0) {
-      return '';
-    }
-
-    const propertyValues = entry.propertyValues || {};
-    const propertyValueDisplays = entry.propertyValueDisplays || {};
-
-    const propertiesWithValues = entity.properties.filter((prop: EntityProperty) =>
-      propertyValues[prop.id] !== undefined && propertyValues[prop.id] !== null && propertyValues[prop.id] !== ''
-    );
-
-    if (propertiesWithValues.length === 0) {
-      return '';
-    }
-
-    const propertiesHtml = propertiesWithValues.map((prop: EntityProperty) => {
-      const value = propertyValues[prop.id];
-      const displayValue = propertyValueDisplays[prop.id];
-      const formattedValue = this.formatPropertyValue(value, prop.valueType, displayValue);
-
-      return `
-                <div class="property-row">
-                    <span class="property-name">${escapeHtml(prop.name)}:</span>
-                    <span class="property-value">${formattedValue}</span>
-                </div>
-            `;
-    }).join('');
-
-    return `
-            <div class="entry-detail-section">
-                <h3 class="entry-detail-section-title">Properties</h3>
-                <div class="entry-properties-detail">
-                    ${propertiesHtml}
-                </div>
-            </div>
-        `;
-  }
-
-  private formatNotes(notes: string): string {
-    const formatted = parseMarkdown(notes);
-    return this.linkifyHashtags(formatted);
-  }
-
-  private linkifyHashtags(text: string): string {
-    const hashtagRegex = /(?<![a-zA-Z0-9_])#([a-zA-Z0-9_]+)(?![a-zA-Z0-9_])/g;
-    return text.replace(hashtagRegex, (match, tag) => {
-      return `<a href="#" class="hashtag-link" data-hashtag="${tag}">${match}</a>`;
-    });
   }
 
   private extractHashtags(text: string): string[] {
@@ -797,7 +712,6 @@ export class EntryDetailComponent extends WebComponent {
 
   private async initializeMilkdownEditor(initialNotes: string): Promise<void> {
     console.log('[AutoSave] Initializing editor with hybrid auto-save (10s backend debounce)');
-    this.isInitializingEditor = true;
 
     // Only set editedNotes if not already set
     if (!this.editedNotes) {
@@ -847,8 +761,6 @@ export class EntryDetailComponent extends WebComponent {
           }
         );
 
-        this.isInitializingEditor = false;
-
         // Automatically focus the editor after a brief delay
         setTimeout(() => {
           if (this.milkdownEditor) {
@@ -856,12 +768,9 @@ export class EntryDetailComponent extends WebComponent {
           }
         }, 100);
       } catch (error) {
-        this.isInitializingEditor = false;
         console.error('Failed to initialize Milkdown editor:', error);
         alert('Failed to initialize editor. Please try again.');
       }
-    } else {
-      this.isInitializingEditor = false;
     }
   }
 
