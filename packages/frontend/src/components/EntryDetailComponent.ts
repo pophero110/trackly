@@ -1,7 +1,6 @@
 import { WebComponent } from './WebComponent.js';
 import { Entry } from '../models/Entry.js';
 import { escapeHtml, formatDate, debounce } from '../utils/helpers.js';
-import { parseMarkdown } from '../utils/markdown.js';
 import { URLStateManager } from '../utils/urlState.js';
 import { EntityProperty } from '../types/index.js';
 import { getEntityColor } from '../utils/entryHelpers.js';
@@ -20,6 +19,8 @@ export class EntryDetailComponent extends WebComponent {
   private debouncedBackendSave: ({ (...args: any[]): void; cancel(): void; flush(): void; }) | null = null;
   private documentClickHandler: (() => void) | null = null;
   private visibilityHandler: (() => void) | null = null;
+  private entityDropdownCloseHandler: (() => void) | null = null;
+  private imagePreviewKeyHandler: ((e: KeyboardEvent) => void) | null = null;
 
   connectedCallback(): void {
     super.connectedCallback();
@@ -32,7 +33,6 @@ export class EntryDetailComponent extends WebComponent {
     // Add visibility change handler to save when tab becomes hidden
     this.visibilityHandler = () => {
       if (document.hidden && this.hasUnsavedChanges()) {
-        console.log('[AutoSave] Tab becoming hidden - flushing pending save');
         this.debouncedBackendSave?.flush();
       }
     };
@@ -49,12 +49,10 @@ export class EntryDetailComponent extends WebComponent {
 
     // If there are unsaved changes for the current entry, save them immediately
     if (this.hasUnsavedChanges() && this.entryId) {
-      console.log(`[AutoSave] EntryDetailComponent disconnected. Saving unsaved changes for entry ${this.entryId}.`);
       this.saveToBackendWithId(this.entryId!, { keepalive: true, silent: true }); // Use keepalive for disconnect
     }
 
     // Flush any pending debounced save, then clear the reference
-    console.log('[AutoSave] Component unmounting - flushing any pending save');
     this.debouncedBackendSave?.flush();
     this.debouncedBackendSave = null;
 
@@ -74,6 +72,14 @@ export class EntryDetailComponent extends WebComponent {
     if (this.documentClickHandler) {
       document.removeEventListener('click', this.documentClickHandler);
       this.documentClickHandler = null;
+    }
+    if (this.entityDropdownCloseHandler) {
+      document.removeEventListener('click', this.entityDropdownCloseHandler);
+      this.entityDropdownCloseHandler = null;
+    }
+    if (this.imagePreviewKeyHandler) {
+      document.removeEventListener('keydown', this.imagePreviewKeyHandler);
+      this.imagePreviewKeyHandler = null;
     }
     // Clean up menu from document body
     const menu = document.getElementById('detail-menu');
@@ -258,6 +264,14 @@ export class EntryDetailComponent extends WebComponent {
                 ${hasLinks ? entry.links.map(link => {
         // Use title if available, otherwise fall back to URL
         const displayText = entry.linkTitles?.[link] || link;
+        // Validate URL for security
+        if (!this.isSafeUrl(link)) {
+          return `
+                    <li class="entry-link-item">
+                        <span class="entry-link-url" title="Invalid or unsafe URL">${escapeHtml(displayText)}</span>
+                    </li>
+                  `;
+        }
         return `
                     <li class="entry-link-item">
                         <a href="${escapeHtml(link)}" target="_blank" rel="noopener noreferrer" class="entry-link-url" title="${escapeHtml(link)}">
@@ -371,6 +385,10 @@ export class EntryDetailComponent extends WebComponent {
     if (valueType === 'url') {
       // Use displayValue (fetched title) if available, otherwise show URL
       const linkText = displayValue || valueStr;
+      // Validate URL for security
+      if (!this.isSafeUrl(valueStr)) {
+        return `<span title="Invalid or unsafe URL">${escapeHtml(linkText)}</span>`;
+      }
       return `<a href="${escapeHtml(valueStr)}" target="_blank" rel="noopener noreferrer">${escapeHtml(linkText)}</a>`;
     }
 
@@ -406,6 +424,26 @@ export class EntryDetailComponent extends WebComponent {
     }
 
     return hashtags;
+  }
+
+  private isSafeUrl(url: string): boolean {
+    // Validate URL protocol to prevent XSS attacks
+    const trimmedUrl = url.trim().toLowerCase();
+
+    // Allow common safe protocols
+    const safeProtocols = ['http://', 'https://', 'mailto:', 'tel:', 'sms:'];
+
+    // Check if URL starts with a safe protocol
+    const hasSafeProtocol = safeProtocols.some(protocol => trimmedUrl.startsWith(protocol));
+
+    // Allow relative URLs (starting with / or # or ?)
+    const isRelative = trimmedUrl.startsWith('/') || trimmedUrl.startsWith('#') || trimmedUrl.startsWith('?');
+
+    // Block dangerous protocols
+    const dangerousProtocols = ['javascript:', 'data:', 'vbscript:', 'file:', 'about:'];
+    const hasDangerousProtocol = dangerousProtocols.some(protocol => trimmedUrl.startsWith(protocol));
+
+    return (hasSafeProtocol || isRelative) && !hasDangerousProtocol;
   }
 
   private attachEventHandlers(): void {
@@ -503,7 +541,6 @@ export class EntryDetailComponent extends WebComponent {
     // Delete in background
     this.store.deleteEntry(this.entryId!).catch((error) => {
       console.error('Error deleting entry:', error);
-      alert('Failed to delete entry. Please try again.');
     });
   }
 
@@ -512,7 +549,6 @@ export class EntryDetailComponent extends WebComponent {
       window.history.back();
     }).catch((error) => {
       console.error('Error archiving entry:', error);
-      alert('Failed to archive entry. Please try again.');
     });
   }
 
@@ -536,7 +572,6 @@ export class EntryDetailComponent extends WebComponent {
       }
     }).catch((error) => {
       console.error('Failed to copy notes:', error);
-      alert('Failed to copy notes to clipboard');
     });
   }
 
@@ -578,20 +613,25 @@ export class EntryDetailComponent extends WebComponent {
               entityDropdown.style.display = 'none';
             } catch (error) {
               console.error('Error updating entry entity:', error);
-              alert('Failed to update entity. Please try again.');
             }
           }
         });
       });
 
+      // Remove old handler if exists
+      if (this.entityDropdownCloseHandler) {
+        document.removeEventListener('click', this.entityDropdownCloseHandler);
+      }
+
       // Hide dropdown when clicking outside
-      document.addEventListener('click', (e) => {
+      this.entityDropdownCloseHandler = (e: MouseEvent) => {
         if (entityDropdown.style.display === 'block' &&
           !entityDropdown.contains(e.target as Node) &&
           !entityChip.contains(e.target as Node)) {
           entityDropdown.style.display = 'none';
         }
-      });
+      };
+      document.addEventListener('click', this.entityDropdownCloseHandler);
     }
   }
 
@@ -674,8 +714,13 @@ export class EntryDetailComponent extends WebComponent {
       });
     }
 
+    // Remove old keyboard handler if exists
+    if (this.imagePreviewKeyHandler) {
+      document.removeEventListener('keydown', this.imagePreviewKeyHandler);
+    }
+
     // Keyboard navigation
-    const handleKeyPress = (e: KeyboardEvent) => {
+    this.imagePreviewKeyHandler = (e: KeyboardEvent) => {
       if (modal && modal.style.display === 'flex') {
         if (e.key === 'Escape') {
           closeModal();
@@ -689,7 +734,7 @@ export class EntryDetailComponent extends WebComponent {
       }
     };
 
-    document.addEventListener('keydown', handleKeyPress);
+    document.addEventListener('keydown', this.imagePreviewKeyHandler);
 
     // Attach remove image handlers
     const removeImageBtns = this.querySelectorAll('.btn-remove-entry-image');
@@ -711,8 +756,6 @@ export class EntryDetailComponent extends WebComponent {
   }
 
   private async initializeMilkdownEditor(initialNotes: string): Promise<void> {
-    console.log('[AutoSave] Initializing editor with hybrid auto-save (10s backend debounce)');
-
     // Only set editedNotes if not already set
     if (!this.editedNotes) {
       this.editedNotes = initialNotes;
@@ -724,19 +767,11 @@ export class EntryDetailComponent extends WebComponent {
     // Create debounced backend save function only once (1 second)
     if (!this.debouncedBackendSave) {
       this.debouncedBackendSave = debounce(() => {
-        console.log('[AutoSave] Debounce timer expired (1s) - saving to backend', {
-          capturedEntryId,
-          currentEntryId: this.entryId,
-          editedNotes: this.editedNotes,
-        });
-
         // Use captured entryId if current one is null
         const entryIdToSave = this.entryId || capturedEntryId;
         if (entryIdToSave && this.hasUnsavedChanges()) {
           // This save should be silent to avoid UI flicker while typing
           this.saveToBackendWithId(entryIdToSave, { silent: true });
-        } else {
-          console.log('[AutoSave] Backend save skipped - no changes, missing entryId or notes');
         }
       }, 1000); // 1 second
     }
@@ -749,8 +784,6 @@ export class EntryDetailComponent extends WebComponent {
           editorContainer,
           this.editedNotes,
           (markdown) => {
-            console.log('[AutoSave] Content changed - updating local state and debouncing backend save');
-
             // 1. Immediate local update for unsaved changes tracking
             this.editedNotes = markdown;
 
@@ -769,14 +802,12 @@ export class EntryDetailComponent extends WebComponent {
         }, 100);
       } catch (error) {
         console.error('Failed to initialize Milkdown editor:', error);
-        alert('Failed to initialize editor. Please try again.');
       }
     }
   }
 
   private handleBeforeUnload = (): void => {
     if (this.hasUnsavedChanges()) {
-      console.log('[AutoSave] beforeunload - flushing pending save');
       this.debouncedBackendSave?.flush();
     }
   };
@@ -792,18 +823,8 @@ export class EntryDetailComponent extends WebComponent {
 
   private async saveToBackendWithId(entryId: string, options?: { keepalive?: boolean; silent?: boolean }): Promise<void> {
     if (!this.editedNotes) {
-      console.log('[AutoSave] Backend save skipped - no notes');
       return;
     }
-
-    const startTime = Date.now();
-    console.log('[AutoSave] Starting backend save...', {
-      entryId,
-      noteLength: this.editedNotes.length,
-      timestamp: new Date().toISOString(),
-      keepalive: options?.keepalive ?? false,
-      silent: options?.silent ?? false,
-    });
 
     this.updateSaveStatus('saving');
 
@@ -815,9 +836,6 @@ export class EntryDetailComponent extends WebComponent {
         silent: options?.silent ?? false,
         keepalive: options?.keepalive ?? false
       });
-
-      const duration = Date.now() - startTime;
-      console.log(`[AutoSave] Backend save completed in ${duration}ms`);
 
       this.updateSaveStatus('saved');
 
@@ -885,7 +903,6 @@ export class EntryDetailComponent extends WebComponent {
     if (addLinkBtn) {
       addLinkBtn.addEventListener('click', () => {
         // TODO: Implement add link functionality
-        console.log('Add link button clicked');
       });
     }
 
@@ -897,7 +914,6 @@ export class EntryDetailComponent extends WebComponent {
           locationBtn.innerHTML = '<i class="ph-duotone ph-spinner"></i>';
           await this.handleLocationCapture();
         } catch (error) {
-          alert('Failed to get location. Please ensure location permissions are enabled.');
           console.error('Location error:', error);
         } finally {
           locationBtn.disabled = false;
@@ -936,7 +952,6 @@ export class EntryDetailComponent extends WebComponent {
               images: [...currentImages, ...newImages]
             }).catch(error => {
               console.error('Error updating entry with images:', error);
-              alert('Failed to add images. Please try again.');
             });
           }
         };
@@ -1030,7 +1045,6 @@ export class EntryDetailComponent extends WebComponent {
       images: updatedImages
     }).catch(error => {
       console.error('Error removing image from entry:', error);
-      alert('Failed to remove image. Please try again.');
     });
   }
 }
