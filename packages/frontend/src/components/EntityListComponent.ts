@@ -10,15 +10,24 @@ import { EntityProperty } from '../types/index.js';
  */
 export class EntityListComponent extends WebComponent {
   private documentClickHandler: (() => void) | null = null;
+  private sortMenuCloseHandler: ((e: Event) => void) | null = null;
+
+  // Helper to turn HTML strings into DOM nodes efficiently
+  private createTemplate(html: string): DocumentFragment {
+    const template = document.createElement('template');
+    template.innerHTML = html.trim();
+    return template.content;
+  }
 
   render(): void {
     // Show loading state while data is being fetched
     if (!this.store.getIsLoaded()) {
-      this.innerHTML = `
-                <div class="section">
-                    ${this.renderLoadingState('Loading entities...')}
-                </div>
-            `;
+      const loadingFragment = this.createTemplate(`
+        <div class="section">
+          ${this.renderLoadingState('Loading entities...')}
+        </div>
+      `);
+      this.replaceChildren(loadingFragment);
       return;
     }
 
@@ -60,17 +69,18 @@ export class EntityListComponent extends WebComponent {
     `;
 
     if (entities.length === 0) {
-      this.innerHTML = `
-                <div class="section">
-                    <div class="section-header-actions">
-                        <button class="btn btn-primary btn-add-entry" id="create-entity-btn">
-                            <i class="ph ph-plus"></i>
-                            Create Entity
-                        </button>
-                    </div>
-                    <div class="empty-state">No entities yet. Create your first entity to get started!</div>
-                </div>
-            `;
+      const emptyFragment = this.createTemplate(`
+        <div class="section">
+          <div class="section-header-actions">
+            <button class="btn btn-primary btn-add-entry" id="create-entity-btn">
+              <i class="ph ph-plus"></i>
+              Create Entity
+            </button>
+          </div>
+          <div class="empty-state">No entities yet. Create your first entity to get started!</div>
+        </div>
+      `);
+      this.replaceChildren(emptyFragment);
       this.attachCreateButtonHandler();
       return;
     }
@@ -79,69 +89,27 @@ export class EntityListComponent extends WebComponent {
       .map(entity => this.renderEntityCard(entity))
       .join('');
 
-    this.innerHTML = `
-            <div class="section">
-                <div class="section-header-actions">
-                    ${sortSelect}
-                    <button class="btn-primary btn-add-entry" id="create-entity-btn">
-                        <i class="ph ph-plus"></i>
-                        Create Entity
-                    </button>
-                </div>
-                <div class="page-grid">
-                    ${entitiesHtml}
-                </div>
-            </div>
-        `;
+    const mainFragment = this.createTemplate(`
+      <div class="section">
+        <div class="section-header-actions">
+          ${sortSelect}
+          <button class="btn-primary btn-add-entry" id="create-entity-btn">
+            <i class="ph ph-plus"></i>
+            Create Entity
+          </button>
+        </div>
+        <div class="page-grid">
+          ${entitiesHtml}
+        </div>
+      </div>
+    `);
+    this.replaceChildren(mainFragment);
 
     // Attach event handlers after rendering
     this.attachCreateButtonHandler();
     this.attachSortHandler();
     this.attachCardClickHandlers();
     this.attachContextMenuHandlers();
-  }
-
-  private getBentoSize(entity: Entity, totalEntries: number, mostRecentEntry: any): string {
-    // Determine size based on multiple factors:
-    // 1. High entry count = larger boxes
-    // 2. Recent activity = larger boxes
-    // 3. Recency decay = older entities get smaller
-
-    const now = new Date();
-    const daysSinceLastEntry = mostRecentEntry
-      ? (now.getTime() - new Date(mostRecentEntry.timestamp).getTime()) / (1000 * 60 * 60 * 24)
-      : 999;
-
-    // Calculate importance score
-    let score = 0;
-
-    // Entry count scoring (0-40 points)
-    if (totalEntries >= 50) score += 40;
-    else if (totalEntries >= 20) score += 30;
-    else if (totalEntries >= 10) score += 20;
-    else if (totalEntries >= 5) score += 10;
-
-    // Recency scoring (0-40 points)
-    if (daysSinceLastEntry <= 1) score += 40; // Today or yesterday
-    else if (daysSinceLastEntry <= 7) score += 30; // This week
-    else if (daysSinceLastEntry <= 30) score += 20; // This month
-    else if (daysSinceLastEntry <= 90) score += 10; // Last 3 months
-
-    // Type scoring (0-20 points) - prioritize certain types
-    if (entity.type === 'Tracking') score += 15;
-    else if (entity.type === 'Task') score += 10;
-    else if (entity.type === 'Journal') score += 10;
-
-    // Map score to Bento size
-    // large: 80+ points (2x2 grid)
-    // wide: 50-79 points (2x1 grid)
-    // tall: 30-49 points (1x2 grid)
-    // small: 0-29 points (1x1 grid)
-
-    if (score >= 80) return 'large';
-    if (score >= 50) return 'wide';
-    if (score >= 30) return 'tall';
-    return 'small';
   }
 
   private renderEntityCard(entity: Entity): string {
@@ -167,11 +135,9 @@ export class EntityListComponent extends WebComponent {
     const activePercent = totalEntries > 0 ? (entryCount / totalEntries) * 100 : 0;
     const archivedPercent = totalEntries > 0 ? (archivedCount / totalEntries) * 100 : 0;
 
-    // Determine Bento size based on importance
-    const bentoSize = this.getBentoSize(entity, totalEntries, mostRecentEntry);
 
     return `
-            <div class="entity-card bento-${bentoSize} ${isSelected ? 'selected' : ''}" data-entity-id="${entity.id}">
+            <div class="entity-card ${isSelected ? 'selected' : ''}" data-entity-id="${entity.id}">
                 <div class="entity-card-header">
                     <div class="entity-name-type">
                         <h3>${escapeHtml(entity.name)}</h3>
@@ -212,149 +178,6 @@ export class EntityListComponent extends WebComponent {
                 </div>
             </div>
         `;
-  }
-
-  private renderPropertyValues(properties: EntityProperty[], propertyValues: Record<string, string | number | boolean>, propertyValueDisplays?: Record<string, string>): string {
-    const capitalizeFirstLetter = (str: string) => str.charAt(0).toUpperCase() + str.slice(1);
-
-    const propertyItems = properties
-      .filter(prop => propertyValues[prop.id] !== undefined && propertyValues[prop.id] !== '')
-      .map(prop => {
-        const value = propertyValues[prop.id];
-        const displayValue = propertyValueDisplays?.[prop.id];
-        const formattedValue = this.formatPropertyValue(value, prop.valueType, displayValue);
-        return `
-                    <div class="property-value-item-compact">
-                        <span class="property-label-compact">${escapeHtml(capitalizeFirstLetter(prop.name))}:</span>
-                        <span class="property-value-compact">${formattedValue}</span>
-                    </div>
-                `;
-      })
-      .join('');
-
-    if (!propertyItems) return '';
-
-    return `<div class="entity-properties-compact">${propertyItems}</div>`;
-  }
-
-  private formatPropertyValue(value: string | number | boolean, valueType: string, displayValue?: string): string {
-    const valueStr = String(value);
-
-    // Handle different value types
-    if (valueType === 'checkbox') {
-      return value === true || value === 'true' ? '✓' : '✗';
-    }
-
-    if (valueType === 'url') {
-      // Use displayValue (fetched title) if available, otherwise use URL
-      // Truncate long titles/URLs for grid display
-      const linkText = displayValue || valueStr;
-      const truncatedText = linkText.length > 25 ? linkText.substring(0, 25) + '...' : linkText;
-      return `<a href="${escapeHtml(valueStr)}" target="_blank" rel="noopener noreferrer" style="color: var(--primary); text-decoration: underline;">${escapeHtml(truncatedText)}</a>`;
-    }
-
-    if (valueType === 'duration') {
-      return `${valueStr} min`;
-    }
-
-    if (valueType === 'rating') {
-      return `${valueStr}/5`;
-    }
-
-    if (valueType === 'date' || valueType === 'time') {
-      return escapeHtml(valueStr);
-    }
-
-    // Default: escape and truncate if too long
-    const displayText = valueStr.length > 30 ? valueStr.substring(0, 30) + '...' : valueStr;
-    return escapeHtml(displayText);
-  }
-
-  private formatNotes(notes: string): string {
-    return parseMarkdown(notes);
-  }
-
-  private formatValue(value: string | number | boolean, displayValue?: string, valueType?: string): string {
-    const valueStr = String(value);
-
-    // For entity cards, show simplified version for media
-    if (valueStr.startsWith('http://') || valueStr.startsWith('https://')) {
-      // Image - show thumbnail
-      if (valueStr.match(/\.(jpg|jpeg|png|gif|webp|svg)(\?|$)/i)) {
-        return `<img src="${escapeHtml(valueStr)}" alt="Preview" style="max-width: 100px; max-height: 60px; border-radius: 4px; object-fit: cover;">`;
-      }
-      // Audio/Video - show icon
-      if (valueStr.match(/\.(mp3|wav|ogg|m4a|mp4|webm|ogv)(\?|$)/i)) {
-        return '🎵 Media';
-      }
-      // Hyperlink - use displayValue if available, otherwise show hostname
-      let linkText: string;
-      if (displayValue) {
-        linkText = displayValue.length > 40 ? displayValue.substring(0, 40) + '...' : displayValue;
-      } else {
-        const urlObj = new URL(valueStr);
-        linkText = urlObj.hostname;
-      }
-      return `<a href="${escapeHtml(valueStr)}" target="_blank" rel="noopener noreferrer" style="color: var(--primary); text-decoration: underline;">${escapeHtml(linkText)}</a>`;
-    }
-
-    // Check if value contains [[title::url]] format (for text values with fetched titles)
-    if (valueStr.includes('[[') && valueStr.includes('::')) {
-      return this.formatNotes(valueStr);
-    }
-
-    // Check if it's a select option value (e.g., task status, decision, goal, plan)
-    if (valueStr === 'todo' || valueStr === 'in-progress' || valueStr === 'done' || valueStr === 'yes' || valueStr === 'no' || valueStr === 'pending' || valueStr === 'not-started' || valueStr === 'completed' || valueStr === 'draft' || valueStr === 'active' || valueStr === 'on-hold') {
-      let displayText = valueStr;
-      if (valueStr === 'in-progress') displayText = 'In Progress';
-      else if (valueStr === 'todo') displayText = 'To Do';
-      else if (valueStr === 'done') displayText = 'Done';
-      else if (valueStr === 'yes') displayText = 'Yes';
-      else if (valueStr === 'no') displayText = 'No';
-      else if (valueStr === 'pending') displayText = 'Pending';
-      else if (valueStr === 'not-started') displayText = 'Not Started';
-      else if (valueStr === 'completed') displayText = 'Completed';
-      else if (valueStr === 'draft') displayText = 'Draft';
-      else if (valueStr === 'active') displayText = 'Active';
-      else if (valueStr === 'on-hold') displayText = 'On Hold';
-      return `<span class="status-badge ${valueStr}">${displayText}</span>`;
-    }
-
-    // Check if it's a boolean/checkbox value
-    if (valueStr === 'true' || valueStr === 'false') {
-      return valueStr === 'true' ? '✓' : '✗';
-    }
-
-    // Check if it's a color value
-    if (valueStr.match(/^#[0-9A-Fa-f]{6}$/)) {
-      return `<div style="width: 20px; height: 20px; background: ${valueStr}; border: 1px solid #ccc; border-radius: 4px;"></div>`;
-    }
-
-    // Check if it's a date/time value (ISO format) - show shortened version for grid
-    if (valueStr.match(/^\d{4}-\d{2}-\d{2}(T\d{2}:\d{2})?/)) {
-      try {
-        const date = new Date(valueStr);
-        if (!isNaN(date.getTime())) {
-          return date.toLocaleDateString();
-        }
-      } catch {
-        // Not a valid date, fall through
-      }
-    }
-
-    // Add units for numeric value types
-    if (valueType) {
-      const numValue = Number(valueStr);
-      if (!isNaN(numValue)) {
-        if (valueType === 'duration') {
-          return `${valueStr} min`;
-        } else if (valueType === 'rating') {
-          return `${valueStr}/5`;
-        }
-      }
-    }
-
-    return escapeHtml(valueStr);
   }
 
   private attachCreateButtonHandler(): void {
@@ -561,10 +384,13 @@ export class EntityListComponent extends WebComponent {
         return sortOrder === 'desc' ? sorted.reverse() : sorted;
 
       case 'entries':
+        // Cache entry counts to avoid repeated lookups
+        const entryCounts = new Map<string, number>();
+        sorted.forEach(entity => {
+          entryCounts.set(entity.id, this.store.getEntriesByEntityId(entity.id, false).length);
+        });
         sorted.sort((a, b) => {
-          const aEntries = this.store.getEntriesByEntityId(a.id, false).length;
-          const bEntries = this.store.getEntriesByEntityId(b.id, false).length;
-          return aEntries - bEntries;
+          return (entryCounts.get(a.id) || 0) - (entryCounts.get(b.id) || 0);
         });
         return sortOrder === 'desc' ? sorted.reverse() : sorted;
 
@@ -608,21 +434,33 @@ export class EntityListComponent extends WebComponent {
         });
       });
 
-      // Close menu when clicking outside
-      document.addEventListener('click', (e) => {
+      // Remove old listener if it exists
+      if (this.sortMenuCloseHandler) {
+        document.removeEventListener('click', this.sortMenuCloseHandler);
+      }
+
+      // Create and store new handler
+      this.sortMenuCloseHandler = (e: Event) => {
         if (!filterBtn.contains(e.target as Node) && !filterMenu.contains(e.target as Node)) {
           filterMenu.style.display = 'none';
         }
-      });
+      };
+
+      // Close menu when clicking outside
+      document.addEventListener('click', this.sortMenuCloseHandler);
     }
   }
 
   disconnectedCallback(): void {
     super.disconnectedCallback();
-    // Clean up document click listener
+    // Clean up document click listeners
     if (this.documentClickHandler) {
       document.removeEventListener('click', this.documentClickHandler);
       this.documentClickHandler = null;
+    }
+    if (this.sortMenuCloseHandler) {
+      document.removeEventListener('click', this.sortMenuCloseHandler);
+      this.sortMenuCloseHandler = null;
     }
   }
 }
