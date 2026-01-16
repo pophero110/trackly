@@ -53,7 +53,6 @@ class TracklyApp {
         const entryList = document.querySelector('entry-list') as HTMLElement;
         const entryDetail = document.querySelector('entry-detail') as HTMLElement;
         const panel = document.querySelector('modal-panel') as any;
-        const slidePanel = document.querySelector('slide-panel') as SlidePanel;
 
         // Track last loaded sort to prevent infinite reload loop
         let lastSortBy: string | undefined = undefined;
@@ -87,7 +86,8 @@ class TracklyApp {
                 return;
             }
 
-            // Check if we're on an entry detail page - use slide panel instead of full page
+            // Check if we're on an entry detail page
+            // SlidePanel now handles opening/closing automatically based on URL
             const entryDetailMatch = path.match(/^\/entries\/([^/]+)$/);
             if (entryDetailMatch) {
                 const entryId = entryDetailMatch[1];
@@ -103,15 +103,10 @@ class TracklyApp {
                 }
                 if (entryDetail) entryDetail.style.display = 'none';
 
-                // Open slide panel with entry detail
-                if (slidePanel && this.store.getIsLoaded()) {
+                // Update page title
+                if (this.store.getIsLoaded()) {
                     const entry = this.store.getEntryById(entryId);
                     if (entry) {
-                        // Create a fresh entry detail component
-                        const detailComponent = new EntryDetailComponent();
-                        slidePanel.open(detailComponent);
-
-                        // Update page title
                         const entity = this.store.getEntityById(entry.entityId);
                         const entryTitle = entry.notes ? entry.notes.split('\n')[0].trim().substring(0, 50) : entity?.name || 'Entry';
                         updatePageTitle('entry-detail', undefined, entryTitle);
@@ -123,9 +118,9 @@ class TracklyApp {
                 return;
             }
 
-            // Hide entry detail and close slide panel for other views
+            // Hide entry detail for other views
+            // SlidePanel closes automatically when not on /entries/:id
             if (entryDetail) entryDetail.style.display = 'none';
-            if (slidePanel) slidePanel.close();
 
             // Look up entity by slug (case-insensitive match)
             let entity = null;
