@@ -1510,10 +1510,6 @@ form {
     line-height: 1.5;
   }
 
-  .timeline-entry-notes.is-collapsible {
-    max-height: 80px;
-  }
-
   .timeline-entry-tags {
     gap: 4px;
     margin-top: 8px;
@@ -4600,32 +4596,6 @@ slide-panel:not(.active) .slide-panel-container {
 .editor-actions .btn-secondary:hover {
   background: var(--border-light);
   color: var(--text-primary);
-}
-
-
-/* Auto-save status indicator */
-.save-status {
-  display: flex;
-  justify-content: flex-end;
-  padding: 8px 0;
-  min-height: 24px;
-}
-
-.save-status-text {
-  font-size: 0.875rem;
-  font-weight: 500;
-}
-
-.save-status-text.saving {
-  color: var(--text-secondary);
-}
-
-.save-status-text.saved {
-  color: #22c55e;
-}
-
-.save-status-text.error {
-  color: #ef4444;
 }
 
 /* Dark mode support */

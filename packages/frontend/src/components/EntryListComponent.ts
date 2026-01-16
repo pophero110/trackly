@@ -383,9 +383,8 @@ export class EntryListComponent extends WebComponent {
       ? this.renderPropertyValues(entity.properties, entry.propertyValues, entry.propertyValueDisplays)
       : '';
 
-    // Notes with collapsible support
     const notesHtml = entry.notes ? `
-      <div class="timeline-entry-notes ${entry.notes.length > 150 ? 'is-collapsible' : ''}">
+      <div class="timeline-entry-notes">
         ${this.formatNotes(entry.notes)}
       </div>
     ` : '';
