@@ -776,15 +776,17 @@ export class EntryDetailComponent extends WebComponent {
     if (!this.debouncedBackendSave) {
       console.log('[AutoSave] Creating debounced save function (1s debounce)');
       this.debouncedBackendSave = debounce(() => {
+        // Use captured entryId if current one is null
+        const entryIdToSave = this.entryId || capturedEntryId;
+
         console.log('[AutoSave] Debounce timer expired (1s) - checking if save needed', {
           currentEntryId: this.entryId,
           capturedEntryId,
-          hasUnsavedChanges: this.hasUnsavedChanges()
+          entryIdToSave,
+          hasUnsavedChanges: this.hasUnsavedChanges(entryIdToSave)
         });
 
-        // Use captured entryId if current one is null
-        const entryIdToSave = this.entryId || capturedEntryId;
-        if (entryIdToSave && this.hasUnsavedChanges()) {
+        if (entryIdToSave && this.hasUnsavedChanges(entryIdToSave)) {
           console.log('[AutoSave] Triggering silent save to backend', { entryId: entryIdToSave });
           // This save should be silent to avoid UI flicker while typing
           this.saveToBackendWithId(entryIdToSave, { silent: true });
@@ -841,16 +843,22 @@ export class EntryDetailComponent extends WebComponent {
     }
   };
 
-  private hasUnsavedChanges(): boolean {
-    if (!this.entryId || !this.editedNotes) {
+  private hasUnsavedChanges(entryId?: string): boolean {
+    const idToCheck = entryId || this.entryId;
+
+    if (!idToCheck || !this.editedNotes) {
+      console.log('[AutoSave] Checking for unsaved changes - no entry ID or edited notes', {
+        entryId: idToCheck,
+        hasEditedNotes: !!this.editedNotes
+      });
       return false;
     }
 
-    const currentEntry = this.store.getEntryById(this.entryId);
+    const currentEntry = this.store.getEntryById(idToCheck);
     const hasChanges = currentEntry ? currentEntry.notes !== this.editedNotes : false;
 
     console.log('[AutoSave] Checking for unsaved changes', {
-      entryId: this.entryId,
+      entryId: idToCheck,
       hasChanges,
       editedLength: this.editedNotes.length,
       storedLength: currentEntry?.notes?.length || 0
