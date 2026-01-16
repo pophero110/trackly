@@ -214,17 +214,16 @@ export class Store {
             // Apply updates optimistically
             this.entries[index] = new Entry({ ...this.entries[index], ...updates });
 
-            // Only notify if not silent (auto-save should be silent)
-            if (!options?.silent) {
-                this.notify(); // Trigger immediate re-render
-            }
+            // Always notify subscribers of the optimistic update
+            // This ensures all components (like EntryList) re-render with the new data
+            this.notify();
 
             try {
                 // Update via API in the background
                 await APIClient.updateEntry(id, updates, { keepalive: options?.keepalive ?? false });
 
                 // Skip reload for silent updates (auto-save)
-                // The optimistic update is already applied, no need to reload
+                // The optimistic update is already applied, no need to reload from backend
                 if (!options?.silent) {
                     // Reload entries with current sort to ensure correct order
                     const sortBy = URLStateManager.getSortBy() || undefined;
