@@ -317,12 +317,16 @@ export class EntryListComponent extends WebComponent {
     `;
 
     return `
-      ${sortSelect}
-      ${entityFilterDropdown}
-      ${tagFilterDropdown}
-      ${hashtagBadge}
-      ${quickEntryGroup}
-      ${entityMenu}
+      <div class="header-filters-row">
+        ${sortSelect}
+        ${entityFilterDropdown}
+        ${tagFilterDropdown}
+        ${hashtagBadge}
+        ${entityMenu}
+      </div>
+      <div class="header-quick-entry-row">
+        ${quickEntryGroup}
+      </div>
     `;
   }
 
