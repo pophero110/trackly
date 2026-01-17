@@ -303,16 +303,18 @@ export class EntryListComponent extends WebComponent {
             </option>
           `).join('')}
         </select>
-        <input
-          type="text"
-          class="quick-entry-input"
-          id="quick-entry-input"
-          placeholder="Add a quick note..."
-          autocomplete="off"
-        />
-        <button class="btn btn-primary quick-entry-submit" id="quick-entry-submit">
-          <i class="ph ph-plus"></i>
-        </button>
+        <div class="quick-entry-input-wrapper">
+          <input
+            type="text"
+            class="quick-entry-input"
+            id="quick-entry-input"
+            placeholder="Add a quick note..."
+            autocomplete="off"
+          />
+          <button class="btn btn-primary quick-entry-submit" id="quick-entry-submit">
+            <i class="ph ph-plus"></i>
+          </button>
+        </div>
       </div>
     `;
 
