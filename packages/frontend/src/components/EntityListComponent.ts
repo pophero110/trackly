@@ -32,7 +32,7 @@ export class EntityListComponent extends WebComponent {
     }
 
     // Get current sort values from URL
-    const currentSortBy = URLStateManager.getEntitySortBy() || 'created';
+    const currentSortBy = URLStateManager.getEntitySortBy() || 'entries';
     const currentSortOrder = URLStateManager.getEntitySortOrder() || 'desc';
     const entities = this.sortEntities(this.store.getEntities(), currentSortBy, currentSortOrder);
 
