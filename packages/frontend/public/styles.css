@@ -362,8 +362,8 @@ entry-detail {
   display: flex;
   flex-direction: column;
   gap: 12px;
-  padding-top: var(--base-size-16);
-  padding-right: var(--base-size-16);
+  margin-top: var(--base-size-16);
+  /* padding-right: var(--base-size-16); */
   justify-content: center;
   align-items: center;
 }
@@ -2961,6 +2961,8 @@ input[type="datetime-local"] {
   }
 
   .header-quick-entry-row {
+    padding-left: var(--base-size-16);
+    padding-right: var(--base-size-16);
     width: 100%;
   }
 

@@ -92,11 +92,11 @@ export class EntityListComponent extends WebComponent {
     const mainFragment = this.createTemplate(`
       <div class="section">
         <div class="section-header-actions">
-          ${sortSelect}
           <button class="btn-primary btn-add-entry" id="create-entity-btn">
             <i class="ph ph-plus"></i>
             Create Entity
           </button>
+          ${sortSelect}
         </div>
         <div class="page-grid">
           ${entitiesHtml}
