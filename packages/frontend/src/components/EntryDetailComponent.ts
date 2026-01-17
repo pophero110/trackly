@@ -22,7 +22,22 @@ export class EntryDetailComponent extends WebComponent {
   private imagePreviewKeyHandler: ((e: KeyboardEvent) => void) | null = null;
 
   connectedCallback(): void {
-    super.connectedCallback();
+    // Don't call super.connectedCallback() - we'll handle store subscription ourselves
+    // super.connectedCallback() subscribes to ALL store changes and re-renders
+    // We need a smarter subscription that skips re-renders during editing
+
+    // Subscribe to store changes with smart re-render logic
+    this.unsubscribe = this.store.subscribe(() => {
+      // Skip re-render if we're actively editing this entry
+      // The editor already has the latest content in editedNotes
+      if (this.milkdownEditor && this.entryId) {
+        console.log('[AutoSave] Store changed but editor is active - skipping re-render to preserve focus');
+        return;
+      }
+
+      // Otherwise, do a full re-render
+      this.render();
+    });
 
     // Subscribe to URL changes
     this.unsubscribeUrl = URLStateManager.subscribe(() => {
