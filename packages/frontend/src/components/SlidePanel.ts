@@ -1,5 +1,5 @@
 import { URLStateManager } from '../utils/urlState.js';
-import { EntryDetailComponent } from './EntryDetailComponent.js';
+import type { EntryDetailComponent } from './EntryDetailComponent.js';
 
 /**
  * SlidePanel component for displaying entry details in a right-to-left sliding panel
@@ -109,8 +109,8 @@ export class SlidePanel extends HTMLElement {
       // Clear previous content
       contentEl.innerHTML = '';
 
-      // Create new EntryDetailComponent
-      const detailComponent = new EntryDetailComponent();
+      // Create new EntryDetailComponent using DOM API (custom elements must be created this way)
+      const detailComponent = document.createElement('entry-detail') as EntryDetailComponent;
       contentEl.appendChild(detailComponent);
     }
 
