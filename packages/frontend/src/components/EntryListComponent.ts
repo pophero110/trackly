@@ -188,7 +188,7 @@ export class EntryListComponent extends WebComponent {
     this.attachSortHandler();
     this.attachEntityFilterHandlers();
     this.attachTagFilterHandlers();
-    this.attachLogEntryButtonHandler();
+    this.attachQuickEntryHandlers();
     this.attachEntityPageMenuHandlers();
   }
 
@@ -293,14 +293,35 @@ export class EntryListComponent extends WebComponent {
       </div>
     ` : '';
 
+    // Quick entry input group - reuse existing allEntities
+    const quickEntryGroup = `
+      <div class="quick-entry-group">
+        <select class="quick-entry-select" id="quick-entry-entity-select">
+          ${allEntities.map(entity => `
+            <option value="${entity.id}" ${entity.id === selectedEntityId ? 'selected' : ''}>
+              ${escapeHtml(entity.name)}
+            </option>
+          `).join('')}
+        </select>
+        <input
+          type="text"
+          class="quick-entry-input"
+          id="quick-entry-input"
+          placeholder="Add a quick note..."
+          autocomplete="off"
+        />
+        <button class="btn btn-primary quick-entry-submit" id="quick-entry-submit">
+          <i class="ph ph-plus"></i>
+        </button>
+      </div>
+    `;
+
     return `
       ${sortSelect}
       ${entityFilterDropdown}
       ${tagFilterDropdown}
       ${hashtagBadge}
-      <button class="btn btn-primary btn-add-entry" id="log-entry-btn">
-          <i class="ph ph-plus"></i> Add Entry
-      </button>
+      ${quickEntryGroup}
       ${entityMenu}
     `;
   }
@@ -603,21 +624,51 @@ export class EntryListComponent extends WebComponent {
     return escapeHtml(valueStr);
   }
 
-  private attachLogEntryButtonHandler(): void {
-    const logEntryBtn = this.querySelector('#log-entry-btn');
-    if (logEntryBtn) {
-      logEntryBtn.addEventListener('click', () => {
-        this.openEntryFormPanel();
-      });
-    }
-  }
+  private attachQuickEntryHandlers(): void {
+    const input = this.querySelector('#quick-entry-input') as HTMLInputElement;
+    const submitBtn = this.querySelector('#quick-entry-submit');
+    const entitySelect = this.querySelector('#quick-entry-entity-select') as HTMLSelectElement;
 
+    if (!input || !submitBtn || !entitySelect) return;
 
-  private openEntryFormPanel(): void {
-    const selectedEntityId = this.store.getSelectedEntityId();
-    const entity = selectedEntityId ? this.store.getEntityById(selectedEntityId) : null;
+    const handleSubmit = async () => {
+      const notes = input.value.trim();
+      if (!notes) return;
 
-    URLStateManager.openLogEntryPanel(entity?.name);
+      const entityId = entitySelect.value;
+      const entity = this.store.getEntityById(entityId);
+      if (!entity) return;
+
+      try {
+        // Create entry with current timestamp and notes
+        const entry = new Entry({
+          entityId: entity.id,
+          entityName: entity.name,
+          timestamp: new Date().toISOString(),
+          notes: notes
+        });
+
+        // Clear input immediately for better UX
+        input.value = '';
+
+        // Add entry to store (optimistic update)
+        await this.store.addEntry(entry);
+
+      } catch (error) {
+        console.error('Error creating quick entry:', error);
+      }
+    };
+
+    // Submit on button click
+    submitBtn.addEventListener('click', handleSubmit);
+
+    // Submit on Enter key
+    input.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        handleSubmit();
+      }
+    });
   }
 
   private attachSortHandler(): void {

@@ -367,6 +367,66 @@ entry-detail {
   padding-right: var(--base-size-16);
 }
 
+/* Quick Entry Input Group */
+.quick-entry-group {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.quick-entry-select {
+  min-width: 120px;
+  max-width: 180px;
+  padding: 8px 12px;
+  font-size: 0.9375rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background-color: var(--bg);
+  color: var(--text-primary);
+  cursor: pointer;
+  outline: none;
+}
+
+.quick-entry-select:focus {
+  border-color: var(--primary);
+}
+
+.quick-entry-input {
+  flex: 1;
+  min-width: 200px;
+  padding: 8px 12px;
+  font-size: 0.9375rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background-color: var(--bg);
+  color: var(--text-primary);
+  outline: none;
+}
+
+.quick-entry-input:focus {
+  border-color: var(--primary);
+}
+
+.quick-entry-input::placeholder {
+  color: var(--text-secondary);
+  opacity: 0.6;
+}
+
+.quick-entry-submit {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 16px;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  white-space: nowrap;
+  border: none;
+  outline: none;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
 .btn-add-entry {
   display: inline-flex;
   align-items: center;
@@ -878,8 +938,6 @@ form {
   align-items: center;
   padding: 4px 10px;
   background: var(--background-secondary);
-  border: 1px solid var(--border-light);
-  border-radius: 12px;
   font-size: 0.875rem;
   color: var(--text-secondary);
   transition: var(--transition);
@@ -2881,6 +2939,25 @@ input[type="datetime-local"] {
     gap: 8px;
   }
 
+  .quick-entry-group {
+    flex-wrap: wrap;
+    width: 100%;
+  }
+
+  .quick-entry-select {
+    min-width: 120px;
+    flex: 1;
+  }
+
+  .quick-entry-input {
+    min-width: 200px;
+    flex: 2;
+  }
+
+  .quick-entry-submit {
+    min-height: 44px;
+  }
+
   .btn-add-entry {
     flex: 1;
     min-width: 120px;
@@ -2928,6 +3005,23 @@ input[type="datetime-local"] {
 
   .section-header-actions {
     gap: 6px;
+  }
+
+  .quick-entry-select {
+    font-size: 0.875rem;
+    padding: 7px 10px;
+    min-width: 100px;
+  }
+
+  .quick-entry-input {
+    font-size: 0.875rem;
+    padding: 7px 10px;
+    min-width: 150px;
+  }
+
+  .quick-entry-submit {
+    padding: 7px 12px;
+    min-height: 40px;
   }
 
   .btn-add-entry {
