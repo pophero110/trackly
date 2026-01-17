@@ -38,6 +38,17 @@ router.post('/register', validate(registerSchema), async (req, res, next): Promi
       }
     });
 
+    // Create default "Uncategorized" entity for new user
+    await prisma.entity.create({
+      data: {
+        name: 'Uncategorized',
+        type: 'General',
+        categories: [],
+        valueType: 'text',
+        userId: user.id
+      }
+    });
+
     // Generate JWT token
     const token = jwt.sign(
       { userId: user.id, email: user.email },
