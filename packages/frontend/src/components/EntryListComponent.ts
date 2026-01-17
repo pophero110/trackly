@@ -296,14 +296,6 @@ export class EntryListComponent extends WebComponent {
     // Quick entry input group - reuse existing allEntities
     const quickEntryGroup = `
       <div class="quick-entry-group">
-        <select class="quick-entry-select" id="quick-entry-entity-select">
-          ${allEntities.map(entity => `
-            <option value="${entity.id}" ${entity.id === selectedEntityId ? 'selected' : ''}>
-              ${escapeHtml(entity.name)}
-            </option>
-          `).join('')}
-        </select>
-        <div class="quick-entry-input-wrapper">
           <input
             type="text"
             class="quick-entry-input"
@@ -311,10 +303,6 @@ export class EntryListComponent extends WebComponent {
             placeholder="Add a quick note..."
             autocomplete="off"
           />
-          <button class="btn btn-primary quick-entry-submit" id="quick-entry-submit">
-            <i class="ph ph-plus"></i>
-          </button>
-        </div>
       </div>
     `;
 
@@ -632,17 +620,14 @@ export class EntryListComponent extends WebComponent {
 
   private attachQuickEntryHandlers(): void {
     const input = this.querySelector('#quick-entry-input') as HTMLInputElement;
-    const submitBtn = this.querySelector('#quick-entry-submit');
-    const entitySelect = this.querySelector('#quick-entry-entity-select') as HTMLSelectElement;
 
-    if (!input || !submitBtn || !entitySelect) return;
+    if (!input) return;
 
     const handleSubmit = async () => {
       const notes = input.value.trim();
       if (!notes) return;
 
-      const entityId = entitySelect.value;
-      const entity = this.store.getEntityById(entityId);
+      const entity = this.store.getEntities().filter(e => e.name === "Inbox")[0];
       if (!entity) return;
 
       try {
@@ -664,9 +649,6 @@ export class EntryListComponent extends WebComponent {
         console.error('Error creating quick entry:', error);
       }
     };
-
-    // Submit on button click
-    submitBtn.addEventListener('click', handleSubmit);
 
     // Submit on Enter key
     input.addEventListener('keypress', (e) => {
@@ -833,15 +815,6 @@ export class EntryListComponent extends WebComponent {
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Unknown error';
       toast.error(`Error archiving entry: ${message}`);
-    }
-  }
-
-  private attachHashtagClearHandler(): void {
-    const clearBtn = this.querySelector('[data-action="clear-hashtag"]');
-    if (clearBtn) {
-      clearBtn.addEventListener('click', () => {
-        URLStateManager.setHashtagFilter(null);
-      });
     }
   }
 

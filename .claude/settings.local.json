@@ -26,7 +26,8 @@
       "Bash(pnpm --filter @trackly/shared run build)",
       "Bash(git mv:*)",
       "Bash(pnpm --filter @trackly/frontend run build:*)",
-      "Bash(pnpm --filter @trackly/frontend add:*)"
+      "Bash(pnpm --filter @trackly/frontend add:*)",
+      "Bash(git restore:*)"
     ],
     "deny": [],
     "ask": []
