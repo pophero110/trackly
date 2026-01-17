@@ -4,7 +4,7 @@ import { escapeHtml, formatDate, debounce } from '../utils/helpers.js';
 import { URLStateManager } from '../utils/urlState.js';
 import { EntityProperty } from '../types/index.js';
 import { getEntityColor } from '../utils/entryHelpers.js';
-import { createMilkdownEditor, destroyEditor, focusEditor } from '../utils/milkdown.js';
+import { createMilkdownEditor, destroyEditor } from '../utils/milkdown.js';
 import type { Editor } from '@milkdown/core';
 
 /**
@@ -256,47 +256,6 @@ export class EntryDetailComponent extends WebComponent {
       </div>
     ` : '';
 
-    // Links section - combines external links and entry references
-    const hasLinks = entry.links && entry.links.length > 0;
-    const hasEntryReferences = entry.entryReferences && entry.entryReferences.length > 0;
-
-    const linksHtml = (hasLinks || hasEntryReferences)
-      ? `<div class="entry-links-section">
-            <ul class="entry-links-list">
-                ${hasLinks ? entry.links.map(link => {
-        // Use title if available, otherwise fall back to URL
-        const displayText = entry.linkTitles?.[link] || link;
-        // Validate URL for security
-        if (!this.isSafeUrl(link)) {
-          return `
-                    <li class="entry-link-item">
-                        <span class="entry-link-url" title="Invalid or unsafe URL">${escapeHtml(displayText)}</span>
-                    </li>
-                  `;
-        }
-        return `
-                    <li class="entry-link-item">
-                        <a href="${escapeHtml(link)}" target="_blank" rel="noopener noreferrer" class="entry-link-url" title="${escapeHtml(link)}">
-                            ${escapeHtml(displayText)}
-                        </a>
-                    </li>
-                `}).join('') : ''}
-                ${hasEntryReferences ? entry.entryReferences.map(refId => {
-          const refEntry = this.store.getEntryById(refId);
-          if (!refEntry) return '';
-          // Get first line of notes as title, or use entity name
-          const title = refEntry.notes ? refEntry.notes.split('\n')[0].replace(/^#\s*/, '').trim() : refEntry.entityName;
-          return `
-                    <li class="entry-link-item">
-                        <a href="/entries/${escapeHtml(refId)}" class="entry-link-url">
-                            ${escapeHtml(title)}
-                        </a>
-                    </li>
-                `}).filter(html => html).join('') : ''}
-            </ul>
-         </div>`
-      : '';
-
     // Images
     const imagesHtml = entry.images && entry.images.length > 0
       ? `<div class="entry-images-detail">
@@ -314,7 +273,6 @@ export class EntryDetailComponent extends WebComponent {
             <div class="entry-detail-content">
                 ${notesHtml}
                 ${imagesHtml}
-                ${linksHtml}
             </div>
         `;
   }
@@ -823,13 +781,6 @@ export class EntryDetailComponent extends WebComponent {
         );
 
         console.log('[AutoSave] Editor created successfully');
-
-        // Automatically focus the editor after a brief delay
-        setTimeout(() => {
-          if (this.milkdownEditor) {
-            focusEditor(this.milkdownEditor);
-          }
-        }, 100);
       } catch (error) {
         console.error('Failed to initialize Milkdown editor:', error);
       }
