@@ -21,29 +21,6 @@ async function main() {
 
   console.log('✅ Created test user:', user.email);
 
-  // Create default "Uncategorized" entity if it doesn't exist
-  let uncategorizedEntity = await prisma.entity.findFirst({
-    where: {
-      userId: user.id,
-      name: 'Uncategorized'
-    }
-  });
-
-  if (!uncategorizedEntity) {
-    uncategorizedEntity = await prisma.entity.create({
-      data: {
-        name: 'Uncategorized',
-        type: 'General',
-        categories: [],
-        valueType: 'text',
-        userId: user.id,
-      },
-    });
-    console.log('✅ Created default entity:', uncategorizedEntity.name);
-  } else {
-    console.log('✅ Default entity already exists:', uncategorizedEntity.name);
-  }
-
   // Create sample entity
   const habitEntity = await prisma.entity.create({
     data: {

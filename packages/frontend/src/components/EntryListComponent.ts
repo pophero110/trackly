@@ -294,15 +294,11 @@ export class EntryListComponent extends WebComponent {
     ` : '';
 
     // Quick entry input group - reuse existing allEntities
-    // Default to "Uncategorized" entity if no entity is selected
-    const uncategorizedEntity = allEntities.find(e => e.name === 'Uncategorized');
-    const defaultEntityId = selectedEntityId || uncategorizedEntity?.id || allEntities[0]?.id;
-
     const quickEntryGroup = `
       <div class="quick-entry-group">
         <select class="quick-entry-select" id="quick-entry-entity-select">
           ${allEntities.map(entity => `
-            <option value="${entity.id}" ${entity.id === defaultEntityId ? 'selected' : ''}>
+            <option value="${entity.id}" ${entity.id === selectedEntityId ? 'selected' : ''}>
               ${escapeHtml(entity.name)}
             </option>
           `).join('')}
