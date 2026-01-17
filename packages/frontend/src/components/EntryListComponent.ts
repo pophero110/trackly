@@ -640,12 +640,12 @@ export class EntryListComponent extends WebComponent {
       if (!entity) return;
 
       try {
-        // Create entry with current timestamp and notes
+        // Create entry with current timestamp and notes (prepend # for heading)
         const entry = new Entry({
           entityId: entity.id,
           entityName: entity.name,
           timestamp: new Date().toISOString(),
-          notes: notes
+          notes: `# ${notes}`
         });
 
         // Clear input immediately for better UX
