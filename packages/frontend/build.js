@@ -11,6 +11,12 @@ await esbuild.build({
   minify: false,
   loader: {
     '.ts': 'ts'
+  },
+  tsconfigRaw: {
+    compilerOptions: {
+      experimentalDecorators: true,
+      useDefineForClassFields: false
+    }
   }
 });
 

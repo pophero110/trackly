@@ -2,14 +2,15 @@ import { Store } from './state/Store.js';
 import { storeRegistry } from './state/StoreRegistry.js';
 import { URLStateManager } from './utils/urlState.js';
 import { AppTabs } from './components/AppTabs.js';
-import { ModalPanel } from './components/ModalPanel.js';
-import { SlidePanel } from './components/SlidePanel.js';
+import './components/ModalPanel.lit.js'; // Lit version (self-registering)
+import './components/SlidePanel.lit.js'; // Lit version (self-registering)
 import { EntityCreateFormComponent } from './components/EntityCreateFormComponent.js';
 import { EntityEditFormComponent } from './components/EntityEditFormComponent.js';
 import { EntityListComponent } from './components/EntityListComponent.js';
 import { EntryListComponent } from './components/EntryListComponent.js';
 import { EntryDetailComponent } from './components/EntryDetailComponent.js';
 import './components/AuthComponent.js'; // Register custom element
+import './components/TestLitComponent.js'; // Test Lit component
 import { APIClient } from './api/client.js';
 
 /**
@@ -32,6 +33,9 @@ class TracklyApp {
 
     // Register all Web Components
     this.registerComponents();
+
+    // Add test Lit component after store is initialized
+    this.addTestComponent();
 
     // Set up view routing
     this.setupViewRouting();
@@ -329,13 +333,23 @@ class TracklyApp {
   private registerComponents(): void {
     // Register custom elements
     customElements.define('app-tabs', AppTabs);
-    customElements.define('modal-panel', ModalPanel);
-    customElements.define('slide-panel', SlidePanel);
+    // modal-panel is registered via @customElement decorator in ModalPanel.lit.ts
+    // slide-panel is registered via @customElement decorator in SlidePanel.lit.ts
     customElements.define('entity-create-form', EntityCreateFormComponent);
     customElements.define('entity-edit-form', EntityEditFormComponent);
     customElements.define('entity-list', EntityListComponent);
     customElements.define('entry-list', EntryListComponent);
     customElements.define('entry-detail', EntryDetailComponent);
+    // Note: test-lit-component is registered via @customElement decorator
+  }
+
+  private addTestComponent(): void {
+    // Add test Lit component to the page after store is initialized
+    const container = document.getElementById('test-lit-container');
+    if (container) {
+      const testComponent = document.createElement('test-lit-component');
+      container.appendChild(testComponent);
+    }
   }
 
   private setupSignOut(): void {
