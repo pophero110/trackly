@@ -577,34 +577,55 @@ export class EntryDetailComponent extends WebComponent {
           const newEntity = this.store.getEntityById(newEntityId || '');
 
           if (newEntity && this.entryId) {
+            // Store original values for rollback
+            const originalEntityId = (entityChip as HTMLElement).dataset.entityId;
+            const originalEntityName = (entityChip as HTMLElement).dataset.entityName;
+            const originalEntityColor = (entityChip as HTMLElement).style.getPropertyValue('--entity-color');
+
+            // Optimistic update: Update UI immediately for instant feedback
+            const newEntityColor = getEntityColor(newEntity.name);
+            (entityChip as HTMLElement).dataset.entityId = newEntity.id;
+            (entityChip as HTMLElement).dataset.entityName = newEntity.name;
+            (entityChip as HTMLElement).style.setProperty('--entity-color', newEntityColor);
+
+            // Update the text content (preserve the dropdown arrow SVG)
+            const textNode = entityChip.childNodes[0];
+            if (textNode && textNode.nodeType === Node.TEXT_NODE) {
+              textNode.textContent = newEntity.name;
+            } else {
+              // Fallback: update innerHTML but preserve the SVG
+              const svg = entityChip.querySelector('svg');
+              entityChip.textContent = newEntity.name;
+              if (svg) entityChip.appendChild(svg);
+            }
+
+            // Hide dropdown immediately
+            entityDropdown.style.display = 'none';
+
             try {
-              // Update the entry with new entity
+              // Update the entry with new entity (API call in background)
               await this.store.updateEntry(this.entryId, {
                 entityId: newEntityId,
                 entityName: newEntity.name
               });
-
-              // Manually update the entity chip without full re-render
-              const newEntityColor = getEntityColor(newEntity.name);
-              (entityChip as HTMLElement).dataset.entityId = newEntity.id;
-              (entityChip as HTMLElement).dataset.entityName = newEntity.name;
-              (entityChip as HTMLElement).style.setProperty('--entity-color', newEntityColor);
-
-              // Update the text content (preserve the dropdown arrow SVG)
-              const textNode = entityChip.childNodes[0];
-              if (textNode && textNode.nodeType === Node.TEXT_NODE) {
-                textNode.textContent = newEntity.name;
-              } else {
-                // Fallback: update innerHTML but preserve the SVG
-                const svg = entityChip.querySelector('svg');
-                entityChip.textContent = newEntity.name;
-                if (svg) entityChip.appendChild(svg);
-              }
-
-              // Hide dropdown after change
-              entityDropdown.style.display = 'none';
             } catch (error) {
               console.error('Error updating entry entity:', error);
+
+              // Rollback UI on error
+              if (originalEntityId) {
+                (entityChip as HTMLElement).dataset.entityId = originalEntityId;
+                (entityChip as HTMLElement).dataset.entityName = originalEntityName || '';
+                (entityChip as HTMLElement).style.setProperty('--entity-color', originalEntityColor);
+
+                const textNode = entityChip.childNodes[0];
+                if (textNode && textNode.nodeType === Node.TEXT_NODE) {
+                  textNode.textContent = originalEntityName || '';
+                } else {
+                  const svg = entityChip.querySelector('svg');
+                  entityChip.textContent = originalEntityName || '';
+                  if (svg) entityChip.appendChild(svg);
+                }
+              }
             }
           }
         });
