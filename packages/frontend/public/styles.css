@@ -1356,7 +1356,7 @@ form {
 }
 
 .timeline-menu-btn {
-  opacity: 0;
+  opacity: 1;
   transition: opacity 0.2s ease;
   background: transparent;
   border: none;
@@ -1367,11 +1367,6 @@ form {
   display: flex;
   align-items: center;
   justify-content: center;
-}
-
-.timeline-entry-card:hover .timeline-menu-btn,
-.timeline-menu-btn:focus {
-  opacity: 1;
 }
 
 .timeline-menu-btn:hover {
