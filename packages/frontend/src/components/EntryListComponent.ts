@@ -160,6 +160,9 @@ export class EntryListComponent extends WebComponent {
         entityChip.addEventListener('click', (e) => {
           e.stopPropagation();
 
+          // Close any open entry context menus
+          this.hideAllMenus();
+
           // Close all other open dropdowns
           this.querySelectorAll('.entity-dropdown-menu').forEach(dropdown => {
             if (dropdown !== entityDropdown) {
