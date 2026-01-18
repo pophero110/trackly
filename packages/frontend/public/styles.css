@@ -1462,10 +1462,6 @@ form {
 
 /* Responsive Timeline */
 @media (max-width: 768px) {
-  .timeline-entries {
-    padding-left: 50px;
-  }
-
   .timeline-entry-card {
     padding: 14px;
   }
