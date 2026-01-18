@@ -377,13 +377,6 @@ entry-detail {
   flex-wrap: wrap;
 }
 
-/* Quick Entry Input Group */
-.quick-entry-group {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-}
-
 .quick-entry-select {
   min-width: 120px;
   max-width: 180px;
@@ -401,16 +394,9 @@ entry-detail {
   border-color: var(--primary);
 }
 
-.quick-entry-input-wrapper {
-  position: relative;
-  flex: 1;
-  min-width: 200px;
-}
-
 .quick-entry-input {
-  width: 100%;
-  padding: 8px 48px 8px 12px;
-  font-size: 0.9375rem;
+  font-size: 1rem;
+  padding: 8px 12px;
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   background-color: var(--bg);
@@ -2914,41 +2900,14 @@ input[type="datetime-local"] {
     gap: 8px;
   }
 
-  .header-quick-entry-row {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    padding: var(--base-size-12) var(--base-size-16);
-    background-color: var(--background);
-    border-top: 1px solid var(--border);
-    box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.1);
-    z-index: 100;
-    width: 100%;
-  }
-
   /* Add bottom padding to entries container to prevent content from being hidden behind sticky input */
   .entries-container {
     padding-bottom: 80px;
   }
 
-  .quick-entry-group {
-    flex-wrap: wrap;
-    width: 100%;
-  }
-
   .quick-entry-select {
     min-width: 120px;
     flex: 1;
-  }
-
-  .quick-entry-input-wrapper {
-    min-width: 200px;
-    flex: 2;
-  }
-
-  .quick-entry-input {
-    width: 100%;
   }
 
   .quick-entry-submit {
@@ -3002,23 +2961,12 @@ input[type="datetime-local"] {
 
   .section-header-actions {
     gap: 6px;
+    flex-direction: column-reverse;
+    align-items: start;
   }
 
   .header-filters-row {
     gap: 6px;
-  }
-
-  .header-quick-entry-row {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    padding: var(--base-size-12) var(--base-size-16);
-    background-color: var(--background);
-    border-top: 1px solid var(--border);
-    box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.1);
-    z-index: 100;
-    width: 100%;
   }
 
   /* Add bottom padding to entries container to prevent content from being hidden behind sticky input */
@@ -3030,18 +2978,6 @@ input[type="datetime-local"] {
     font-size: 0.875rem;
     padding: 7px 10px;
     min-width: 100px;
-  }
-
-  .quick-entry-input-wrapper {
-    min-width: 150px;
-  }
-
-  .quick-entry-input {
-    font-size: 1rem;
-    padding: 16px 24px;
-    width: 100%;
-    border-radius: 0px;
-    text-align: center;
   }
 
   .quick-entry-submit {
@@ -3430,36 +3366,6 @@ slide-panel:not(.active) .slide-panel-container {
 @media (max-width: 480px) {
   .modal-dialog {
     max-width: calc(100% - 16px);
-  }
-}
-
-/* Zen Mode - Mobile Responsive */
-@media (max-width: 768px) {
-  .zen-mode-container {
-    padding: 20px var(--base-size-16);
-  }
-
-  .zen-mode-editor {
-    max-width: 100%;
-  }
-
-  .zen-mode-header {
-    margin-bottom: var(--base-size-16);
-  }
-}
-
-@media (max-width: 480px) {
-  .zen-mode-container {
-    padding: var(--base-size-16) 12px;
-  }
-
-  .zen-line-numbers {
-    padding: var(--base-size-16) 8px var(--base-size-16) 12px;
-    min-width: 40px;
-  }
-
-  .zen-mode-textarea {
-    padding: var(--base-size-16);
   }
 }
 

@@ -385,16 +385,14 @@ export class EntryListComponent extends WebComponent {
     ` : '';
 
     // Quick entry input group - reuse existing allEntities
-    const quickEntryGroup = `
-      <div class="quick-entry-group">
-          <input
-            type="text"
-            class="quick-entry-input"
-            id="quick-entry-input"
-            placeholder="Add a quick note..."
-            autocomplete="off"
-          />
-      </div>
+    const quickEntryInput = `
+        <input
+          type="text"
+          class="quick-entry-input"
+          id="quick-entry-input"
+          placeholder="Add a quick note..."
+          autocomplete="off"
+        />
     `;
 
     return `
@@ -405,9 +403,7 @@ export class EntryListComponent extends WebComponent {
         ${hashtagBadge}
         ${entityMenu}
       </div>
-      <div class="header-quick-entry-row">
-        ${quickEntryGroup}
-      </div>
+      ${quickEntryInput}
     `;
   }
 
