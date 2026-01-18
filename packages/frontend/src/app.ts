@@ -6,8 +6,8 @@ import './components/ModalPanel.lit.js'; // Lit version (self-registering)
 import './components/SlidePanel.lit.js'; // Lit version (self-registering)
 import { EntityCreateFormComponent } from './components/EntityCreateFormComponent.js';
 import { EntityEditFormComponent } from './components/EntityEditFormComponent.js';
-import { EntityListComponent } from './components/EntityListComponent.js';
-import { EntryListComponent } from './components/EntryListComponent.js';
+import './components/EntityListComponent.lit.js'; // Lit version (self-registering)
+import './components/EntryListComponent.lit.js'; // Lit version (self-registering)
 import { EntryDetailComponent } from './components/EntryDetailComponent.js';
 import './components/AuthComponent.js'; // Register custom element
 import './components/TestLitComponent.js'; // Test Lit component
@@ -337,8 +337,8 @@ class TracklyApp {
     // slide-panel is registered via @customElement decorator in SlidePanel.lit.ts
     customElements.define('entity-create-form', EntityCreateFormComponent);
     customElements.define('entity-edit-form', EntityEditFormComponent);
-    customElements.define('entity-list', EntityListComponent);
-    customElements.define('entry-list', EntryListComponent);
+    // entity-list is registered via @customElement decorator in EntityListComponent.lit.ts
+    // entry-list is registered via @customElement decorator in EntryListComponent.lit.ts
     customElements.define('entry-detail', EntryDetailComponent);
     // Note: test-lit-component is registered via @customElement decorator
   }

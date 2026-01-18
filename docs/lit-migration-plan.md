@@ -131,11 +131,6 @@ class AppTabs extends LitBaseComponent {
 - Pre-populate with entity data
 - Two-way binding patterns with Lit
 
-### 3.3 `EntryCreateFormComponent.ts`
-- Quick entry form
-- Minimal complexity
-- Good practice for form patterns
-
 ---
 
 ## Phase 4: Migrate List/View Components
