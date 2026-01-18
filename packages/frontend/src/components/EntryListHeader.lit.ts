@@ -214,7 +214,6 @@ export class EntryListHeader extends LitElement {
     );
 
     return html`
-      <div class="entry-section-header-actions">
         <div class="header-filters-row">
           <!-- Sort Dropdown -->
           <div class="tag-filter-container">
@@ -246,8 +245,8 @@ export class EntryListHeader extends LitElement {
 
           <!-- Tag Filter Dropdown -->
           ${when(
-            availableTags.length > 0,
-            () => html`
+      availableTags.length > 0,
+      () => html`
               <div class="tag-filter-container">
                 <button
                   class="btn-tag-filter ${this.tagFilters.length > 0 ? 'has-filters' : ''}"
@@ -274,23 +273,23 @@ export class EntryListHeader extends LitElement {
                 </div>
               </div>
             `
-          )}
+    )}
 
           <!-- Hashtag Filter Badge -->
           ${when(
-            this.hashtagFilter,
-            () => html`
+      this.hashtagFilter,
+      () => html`
               <span class="hashtag-filter-badge">
                 #${this.hashtagFilter}
                 <button class="clear-hashtag" @click=${this.handleClearHashtag}>×</button>
               </span>
             `
-          )}
+    )}
 
           <!-- Entity Page Menu -->
           ${when(
-            this.selectedEntity,
-            () => html`
+      this.selectedEntity,
+      () => html`
               <button
                 class="entry-menu-btn"
                 id="entity-page-menu-btn"
@@ -313,7 +312,7 @@ export class EntryListHeader extends LitElement {
                 </div>
               </div>
             `
-          )}
+    )}
         </div>
 
         <!-- Quick Entry Input -->
@@ -325,7 +324,6 @@ export class EntryListHeader extends LitElement {
           autocomplete="off"
           @keypress=${this.handleQuickEntrySubmit}
         />
-      </div>
     `;
   }
 }

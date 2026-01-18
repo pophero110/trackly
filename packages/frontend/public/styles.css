@@ -360,7 +360,7 @@ entry-detail {
   line-height: 1.4;
 }
 
-.entry-section-header-actions {
+entry-list-header {
   display: flex;
   margin-top: var(--base-size-16);
   justify-content: space-between;
@@ -2937,7 +2937,7 @@ input[type="datetime-local"] {
     padding: 7px 28px 7px 10px;
   }
 
-  .entry-section-header-actions {
+  entry-list-header {
     gap: 6px;
     flex-direction: column-reverse;
     align-items: start;
