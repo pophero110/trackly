@@ -20,6 +20,7 @@ export class EntryListComponent extends WebComponent {
   private entityFilterCloseHandler: ((e: Event) => void) | null = null;
   private tagFilterCloseHandler: ((e: Event) => void) | null = null;
   private entityPageMenuCloseHandler: (() => void) | null = null;
+  private entityChipDropdownCloseHandler: ((e: Event) => void) | null = null;
 
   // Helper to turn HTML strings into DOM nodes efficiently
   private createTemplate(html: string): DocumentFragment {
@@ -108,6 +109,9 @@ export class EntryListComponent extends WebComponent {
 
     // Atomic swap of the entire list
     entriesContainer.replaceChildren(fragment);
+
+    // Setup document-level click handler to close entity chip dropdowns
+    this.setupEntityChipDropdownCloseHandler();
   }
 
   private createEntryNode(entry: Entry): DocumentFragment {
@@ -122,7 +126,7 @@ export class EntryListComponent extends WebComponent {
     // Card Click Handler
     card.addEventListener('click', (e) => {
       const target = e.target as HTMLElement;
-      if (target.closest('[data-action="menu"], a, .entry-chip-tag, .entry-chip-entity')) return;
+      if (target.closest('[data-action="menu"], a, .entry-chip-tag, .entry-chip-entity-container')) return;
       URLStateManager.showEntryDetail(entry.id);
     });
 
@@ -144,13 +148,96 @@ export class EntryListComponent extends WebComponent {
       });
     });
 
-    fragment.querySelectorAll('.entry-chip-entity').forEach(el => {
-      el.addEventListener('click', (e) => {
-        e.stopPropagation();
-        const entityName = (el as HTMLElement).dataset.entityName;
-        if (entityName) URLStateManager.showEntryList(entityName);
-      });
-    });
+    // Entity Chip Dropdown Handler
+    const entityContainer = fragment.querySelector('.entry-chip-entity-container');
+    if (entityContainer) {
+      const entityChip = entityContainer.querySelector('.entry-chip-entity') as HTMLElement;
+      const entityDropdown = entityContainer.querySelector('.entity-dropdown-menu') as HTMLElement;
+
+      if (entityChip && entityDropdown) {
+        // Toggle dropdown when chip is clicked
+        entityChip.addEventListener('click', (e) => {
+          e.stopPropagation();
+
+          // Close all other open dropdowns
+          this.querySelectorAll('.entity-dropdown-menu').forEach(dropdown => {
+            if (dropdown !== entityDropdown) {
+              (dropdown as HTMLElement).style.display = 'none';
+            }
+          });
+
+          // Toggle this dropdown
+          if (entityDropdown.style.display === 'none') {
+            entityDropdown.style.display = 'block';
+          } else {
+            entityDropdown.style.display = 'none';
+          }
+        });
+
+        // Handle entity item clicks
+        const entityItems = entityDropdown.querySelectorAll('.entity-dropdown-item');
+        entityItems.forEach(item => {
+          item.addEventListener('click', async (e) => {
+            e.stopPropagation();
+            const newEntityId = (item as HTMLElement).dataset.entityId;
+            const newEntity = this.store.getEntityById(newEntityId || '');
+
+            if (newEntity) {
+              // Store original values for rollback
+              const originalEntityId = entityChip.dataset.entityId;
+              const originalEntityName = entityChip.dataset.entityName;
+              const originalEntityColor = entityChip.style.getPropertyValue('--entity-color');
+
+              // Optimistic update: Update UI immediately for instant feedback
+              const newEntityColor = getEntityColor(newEntity.name);
+              entityChip.dataset.entityId = newEntity.id;
+              entityChip.dataset.entityName = newEntity.name;
+              entityChip.style.setProperty('--entity-color', newEntityColor);
+
+              // Update the text content (preserve the dropdown arrow SVG)
+              const textNode = entityChip.childNodes[0];
+              if (textNode && textNode.nodeType === Node.TEXT_NODE) {
+                textNode.textContent = newEntity.name;
+              } else {
+                // Fallback: update innerHTML but preserve the SVG
+                const svg = entityChip.querySelector('svg');
+                entityChip.textContent = newEntity.name;
+                if (svg) entityChip.appendChild(svg);
+              }
+
+              // Hide dropdown immediately
+              entityDropdown.style.display = 'none';
+
+              try {
+                // Update the entry with new entity (API call in background)
+                await this.store.updateEntry(entry.id, {
+                  entityId: newEntityId,
+                  entityName: newEntity.name
+                });
+              } catch (error) {
+                console.error('Error updating entry entity:', error);
+
+                // Rollback UI on error
+                if (originalEntityId) {
+                  entityChip.dataset.entityId = originalEntityId;
+                  entityChip.dataset.entityName = originalEntityName || '';
+                  entityChip.style.setProperty('--entity-color', originalEntityColor);
+
+                  const textNode = entityChip.childNodes[0];
+                  if (textNode && textNode.nodeType === Node.TEXT_NODE) {
+                    textNode.textContent = originalEntityName || '';
+                  } else {
+                    const svg = entityChip.querySelector('svg');
+                    entityChip.textContent = originalEntityName || '';
+                    if (svg) entityChip.appendChild(svg);
+                  }
+                }
+              }
+            }
+          });
+        });
+      }
+    }
 
     // Context Menu Action Handlers
     fragment.querySelectorAll('.context-menu-item').forEach(item => {
@@ -344,6 +431,11 @@ export class EntryListComponent extends WebComponent {
       this.entityPageMenuCloseHandler = null;
     }
 
+    if (this.entityChipDropdownCloseHandler) {
+      document.removeEventListener('click', this.entityChipDropdownCloseHandler);
+      this.entityChipDropdownCloseHandler = null;
+    }
+
     // Clean up resize observer
     if (this.resizeObserver) {
       this.resizeObserver.disconnect();
@@ -383,9 +475,35 @@ export class EntryListComponent extends WebComponent {
       ? this.formatValue(entry.value, entry.valueDisplay, entity?.valueType)
       : '';
 
-    // Entity name chip
+    // Entity name chip with dropdown
     const entityColor = entity ? getEntityColor(entity.name) : '';
-    const entityChip = entity ? `<span class="entry-chip entry-chip-entity" data-entity-name="${escapeHtml(entity.name)}" style="--entity-color: ${entityColor}">${escapeHtml(entity.name)}</span>` : '';
+
+    // Get all entities for dropdown
+    const allEntities = this.store.getEntities();
+    const entitiesDropdownHtml = allEntities.map(e => {
+      const color = getEntityColor(e.name);
+      return `<div class="context-menu-item entity-dropdown-item" data-entity-id="${e.id}" data-entity-color="${color}">
+                <span class="entity-dropdown-color" style="background: ${color};"></span>
+                ${escapeHtml(e.name)}
+              </div>`;
+    }).join('');
+
+    const entityChip = entity
+      ? `<div class="entry-chip-entity-container" style="position: relative;" data-entry-id="${entry.id}">
+           <span class="entry-chip entry-chip-entity"
+                 data-entity-id="${entity.id}"
+                 data-entity-name="${escapeHtml(entity.name)}"
+                 style="--entity-color: ${entityColor}; cursor: pointer;">
+             ${escapeHtml(entity.name)}
+             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-left: 4px; vertical-align: middle;">
+               <polyline points="6 9 12 15 18 9"></polyline>
+             </svg>
+           </span>
+           <div class="entity-dropdown-menu" style="display: none;">
+             ${entitiesDropdownHtml}
+           </div>
+         </div>`
+      : '';
 
     // Extract hashtags from notes
     const hashtags = entry.notes ? extractHashtags(entry.notes) : [];
@@ -902,6 +1020,31 @@ export class EntryListComponent extends WebComponent {
         });
       });
     }
+  }
+
+  private setupEntityChipDropdownCloseHandler(): void {
+    // Remove old listener if it exists
+    if (this.entityChipDropdownCloseHandler) {
+      document.removeEventListener('click', this.entityChipDropdownCloseHandler);
+    }
+
+    // Create and store new handler to close all entity chip dropdowns when clicking outside
+    this.entityChipDropdownCloseHandler = (e: Event) => {
+      const target = e.target as HTMLElement;
+
+      // Don't close if clicking on any entity chip or dropdown
+      if (target.closest('.entry-chip-entity-container')) {
+        return;
+      }
+
+      // Close all entity chip dropdowns
+      this.querySelectorAll('.entity-dropdown-menu').forEach(dropdown => {
+        (dropdown as HTMLElement).style.display = 'none';
+      });
+    };
+
+    // Add document-level click listener
+    document.addEventListener('click', this.entityChipDropdownCloseHandler);
   }
 
   private attachEntityPageMenuHandlers(): void {
