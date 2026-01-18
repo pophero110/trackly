@@ -1,27 +1,43 @@
-import { html } from 'lit';
+import { html, LitElement } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 import { map } from 'lit/directives/map.js';
 import { when } from 'lit/directives/when.js';
-import { LitBaseComponent } from './LitBaseComponent.js';
+import { repeat } from 'lit/directives/repeat.js';
+import { StoreController } from '../controllers/StoreController.js';
+import { EntityListController } from '../controllers/EntityListController.js';
 import { Entity } from '../models/Entity.js';
 import { escapeHtml } from '../utils/helpers.js';
 import { URLStateManager } from '../utils/urlState.js';
-import { storeRegistry } from '../state/StoreRegistry.js';
+import { getEntityColor } from '../utils/entryHelpers.js';
+import { toast } from '../utils/toast.js';
 
 /**
  * EntityList Lit Component for displaying entities in a grid layout
- * Lit version of the original EntityListComponent
+ * Uses Reactive Controllers for separation of concerns:
+ * - StoreController: Manages store connection and updates
+ * - EntityListController: Handles sorting and business logic
  */
 @customElement('entity-list')
-export class EntityListComponent extends LitBaseComponent {
+export class EntityListComponent extends LitElement {
+  // Controllers handle store and business logic
+  private storeController = new StoreController(this);
+  private listController = new EntityListController(this, this.storeController);
+
   @state()
   private openMenuId: string | null = null;
 
   @state()
   private menuPosition: { x: number; y: number } = { x: 0, y: 0 };
 
+  @state()
+  private sortMenuOpen: boolean = false;
+
   private documentClickHandler: ((e: Event) => void) | null = null;
-  private sortMenuCloseHandler: ((e: Event) => void) | null = null;
+
+  // Disable Shadow DOM for compatibility with existing global styles
+  createRenderRoot() {
+    return this;
+  }
 
   connectedCallback(): void {
     super.connectedCallback();
@@ -40,6 +56,9 @@ export class EntityListComponent extends LitBaseComponent {
       if (!target.closest('.entity-context-menu') && !target.closest('[data-action="menu"]')) {
         this.openMenuId = null;
       }
+      if (!target.closest('#sort-filter-btn') && !target.closest('#sort-filter-menu')) {
+        this.sortMenuOpen = false;
+      }
     };
     document.addEventListener('click', this.documentClickHandler);
   }
@@ -48,47 +67,6 @@ export class EntityListComponent extends LitBaseComponent {
     if (this.documentClickHandler) {
       document.removeEventListener('click', this.documentClickHandler);
       this.documentClickHandler = null;
-    }
-    if (this.sortMenuCloseHandler) {
-      document.removeEventListener('click', this.sortMenuCloseHandler);
-      this.sortMenuCloseHandler = null;
-    }
-  }
-
-  private sortEntities(entities: Entity[], sortBy: string, sortOrder: 'asc' | 'desc'): Entity[] {
-    const sorted = [...entities];
-
-    switch (sortBy) {
-      case 'created':
-        sorted.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
-        return sortOrder === 'desc' ? sorted.reverse() : sorted;
-
-      case 'name':
-        sorted.sort((a, b) => a.name.localeCompare(b.name));
-        return sortOrder === 'desc' ? sorted.reverse() : sorted;
-
-      case 'entries':
-        const entryCounts = new Map<string, number>();
-        sorted.forEach(entity => {
-          entryCounts.set(entity.id, this.store.getEntriesByEntityId(entity.id, false).length);
-        });
-        sorted.sort((a, b) => {
-          return (entryCounts.get(a.id) || 0) - (entryCounts.get(b.id) || 0);
-        });
-        return sortOrder === 'desc' ? sorted.reverse() : sorted;
-
-      case 'type':
-        sorted.sort((a, b) => {
-          if (a.type === b.type) {
-            return a.name.localeCompare(b.name);
-          }
-          return a.type.localeCompare(b.type);
-        });
-        return sortOrder === 'desc' ? sorted.reverse() : sorted;
-
-      default:
-        sorted.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-        return sorted;
     }
   }
 
@@ -102,7 +80,7 @@ export class EntityListComponent extends LitBaseComponent {
       return;
     }
 
-    const entity = this.store.getEntityById(entityId);
+    const entity = this.storeController.store?.getEntityById(entityId);
     if (entity) {
       URLStateManager.showEntryList(entity.name);
     }
@@ -166,7 +144,7 @@ export class EntityListComponent extends LitBaseComponent {
   };
 
   private handleDelete(entityId: string): void {
-    const entity = this.store.getEntityById(entityId);
+    const entity = this.storeController.store?.getEntityById(entityId);
     if (!entity) return;
 
     if (!confirm(`Are you sure you want to delete "${entity.name}"? All related entries will also be deleted.`)) {
@@ -174,7 +152,7 @@ export class EntityListComponent extends LitBaseComponent {
     }
 
     try {
-      this.store.deleteEntity(entityId);
+      this.storeController.store?.deleteEntity(entityId);
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Unknown error';
       alert(`Error deleting entity: ${message}`);
@@ -182,19 +160,19 @@ export class EntityListComponent extends LitBaseComponent {
   }
 
   private handleEdit(entityId: string): void {
-    const entity = this.store.getEntityById(entityId);
+    const entity = this.storeController.store?.getEntityById(entityId);
     if (!entity) return;
     URLStateManager.openEditEntityPanel(entity.name);
   }
 
   private handleClone(entityId: string): void {
-    const entity = this.store.getEntityById(entityId);
+    const entity = this.storeController.store?.getEntityById(entityId);
     if (!entity) return;
     URLStateManager.openCloneEntityPanel(entity.name);
   }
 
   private handleLogEntry(entityId: string): void {
-    const entity = this.store.getEntityById(entityId);
+    const entity = this.storeController.store?.getEntityById(entityId);
     if (!entity) return;
     URLStateManager.openLogEntryPanel(entity.name);
   }
@@ -203,20 +181,16 @@ export class EntityListComponent extends LitBaseComponent {
     const value = (e.target as HTMLInputElement).value;
     const [sortBy, sortOrder] = value.split('-') as [string, 'asc' | 'desc'];
     URLStateManager.setEntitySort(sortBy, sortOrder);
+    this.sortMenuOpen = false;
   };
 
   private renderEntityCard(entity: Entity) {
-    const entries = this.store.getEntriesByEntityId(entity.id, true);
-    const selectedId = this.store.getSelectedEntityId();
-    const isSelected = selectedId === entity.id;
+    const { active, archived, total } = this.listController.getEntityEntryCount(entity.id);
+    const isSelected = this.listController.isEntitySelected(entity.id);
 
-    const activeEntries = entries.filter(e => !e.isArchived);
-    const archivedEntries = entries.filter(e => e.isArchived);
-    const entryCount = activeEntries.length;
-    const archivedCount = archivedEntries.length;
-    const totalEntries = entryCount + archivedCount;
-    const activePercent = totalEntries > 0 ? (entryCount / totalEntries) * 100 : 0;
-    const archivedPercent = totalEntries > 0 ? (archivedCount / totalEntries) * 100 : 0;
+    const activePercent = total > 0 ? (active / total) * 100 : 0;
+    const archivedPercent = total > 0 ? (archived / total) * 100 : 0;
+    const entityColor = getEntityColor(entity.name);
 
     return html`
       <div class="entity-card ${isSelected ? 'selected' : ''}"
@@ -233,37 +207,37 @@ export class EntityListComponent extends LitBaseComponent {
                   data-action="menu"
                   @click=${(e: MouseEvent) => this.handleMenuButtonClick(e, entity.id)}>⋮</button>
           ${when(
-      entity.categories.length > 0,
-      () => html`
+            entity.categories.length > 0,
+            () => html`
               <div class="entity-categories">
                 ${map(entity.categories, cat => html`
                   <span class="entity-category-chip">${escapeHtml(cat)}</span>
                 `)}
               </div>
             `
-    )}
+          )}
           ${when(
-      totalEntries > 0,
-      () => html`
+            total > 0,
+            () => html`
               <div class="entity-stats-bar">
                 <div class="stats-bar-container">
                   <div class="stats-bar-fill stats-bar-active" style="width: ${activePercent}%"></div>
                   <div class="stats-bar-fill stats-bar-archived" style="width: ${archivedPercent}%"></div>
                 </div>
                 <div class="stats-bar-labels">
-                  <span class="stats-label-active">${entryCount} active</span>
-                  ${when(archivedCount > 0, () => html`
-                    <span class="stats-label-archived">${archivedCount} archived</span>
+                  <span class="stats-label-active">${active} active</span>
+                  ${when(archived > 0, () => html`
+                    <span class="stats-label-archived">${archived} archived</span>
                   `)}
                 </div>
               </div>
             `
-    )}
+          )}
         </div>
       </div>
       ${when(
-      this.openMenuId === entity.id,
-      () => html`
+        this.openMenuId === entity.id,
+        () => html`
           <div class="entity-context-menu"
                id="entity-menu-${entity.id}"
                style="display: block; position: fixed; left: ${this.menuPosition.x}px; top: ${this.menuPosition.y}px;"
@@ -286,41 +260,26 @@ export class EntityListComponent extends LitBaseComponent {
             </div>
           </div>
         `
-    )}
+      )}
     `;
   }
 
   render() {
-    // Try to get store if not available yet
-    if (!this.store) {
-      try {
-        this.store = storeRegistry.getStore();
-        // Subscribe to store changes
-        if (!this.unsubscribe) {
-          this.unsubscribe = this.store.subscribe(() => this.requestUpdate());
-        }
-      } catch (e) {
-        // Store not ready yet
-        return html`
-          <div class="section">
-            ${this.renderLoadingState('Loading entities...')}
-          </div>
-        `;
-      }
-    }
-
-    // Handle case where store is not loaded yet
-    if (!this.store.getIsLoaded()) {
+    // Check if store is available and loaded
+    if (!this.storeController.store || !this.storeController.isLoaded) {
       return html`
         <div class="section">
-          ${this.renderLoadingState('Loading entities...')}
+          <div class="loading-state">
+            <div class="spinner"></div>
+            <p>Loading entities...</p>
+          </div>
         </div>
       `;
     }
 
-    const currentSortBy = URLStateManager.getEntitySortBy() || 'entries';
-    const currentSortOrder = URLStateManager.getEntitySortOrder() || 'desc';
-    const entities = this.sortEntities(this.store.getEntities(), currentSortBy, currentSortOrder);
+    // Get sorted entities from controller
+    const entities = this.listController.getSortedEntities();
+    const { sortValue } = this.listController.getSortConfig();
 
     const sortOptions = [
       { value: 'created-desc', label: 'Newest First' },
@@ -332,8 +291,7 @@ export class EntityListComponent extends LitBaseComponent {
       { value: 'type-asc', label: 'Type' }
     ];
 
-    const currentSortValue = `${currentSortBy}-${currentSortOrder}`;
-    const currentSortLabel = sortOptions.find(opt => opt.value === currentSortValue)?.label || 'Newest First';
+    const currentSortLabel = sortOptions.find(opt => opt.value === sortValue)?.label || 'Most Entries';
 
     if (entities.length === 0) {
       return html`
@@ -353,17 +311,18 @@ export class EntityListComponent extends LitBaseComponent {
       <div class="section">
         <div class="entity-section-header-actions">
           <div class="tag-filter-container">
-            <button class="btn-tag-filter" id="sort-filter-btn" title="Sort by">
+            <button class="btn-tag-filter" id="sort-filter-btn" title="Sort by"
+                    @click=${(e: Event) => { e.stopPropagation(); this.sortMenuOpen = !this.sortMenuOpen; }}>
               <i class="ph-duotone ph-sort-ascending"></i>
               <span>${currentSortLabel}</span>
             </button>
-            <div class="tag-filter-menu" id="sort-filter-menu" style="display: none;">
+            <div class="tag-filter-menu" id="sort-filter-menu" style="display: ${this.sortMenuOpen ? 'block' : 'none'};">
               ${map(sortOptions, opt => html`
                 <label class="tag-filter-option">
                   <input type="radio"
                          name="entity-sort-option"
                          value="${opt.value}"
-                         ?checked=${opt.value === currentSortValue}
+                         ?checked=${opt.value === sortValue}
                          @change=${this.handleSortChange}>
                   <span>${escapeHtml(opt.label)}</span>
                 </label>
@@ -376,35 +335,14 @@ export class EntityListComponent extends LitBaseComponent {
           </button>
         </div>
         <div class="page-grid">
-          ${map(entities, entity => this.renderEntityCard(entity))}
+          ${repeat(
+            entities,
+            (entity) => entity.id,
+            (entity) => this.renderEntityCard(entity)
+          )}
         </div>
       </div>
     `;
-  }
-
-  updated() {
-    // Re-attach sort menu handler after render
-    const filterBtn = this.querySelector('#sort-filter-btn');
-    const filterMenu = this.querySelector('#sort-filter-menu') as HTMLElement;
-
-    if (filterBtn && filterMenu) {
-      filterBtn.addEventListener('click', () => {
-        const isVisible = filterMenu.style.display === 'block';
-        filterMenu.style.display = isVisible ? 'none' : 'block';
-      });
-
-      if (this.sortMenuCloseHandler) {
-        document.removeEventListener('click', this.sortMenuCloseHandler);
-      }
-
-      this.sortMenuCloseHandler = (e: Event) => {
-        if (!filterBtn.contains(e.target as Node) && !filterMenu.contains(e.target as Node)) {
-          filterMenu.style.display = 'none';
-        }
-      };
-
-      document.addEventListener('click', this.sortMenuCloseHandler);
-    }
   }
 }
 
