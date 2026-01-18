@@ -113,9 +113,7 @@ export class EntryDetailComponent extends WebComponent {
 
     if (!this.entryId) {
       this.innerHTML = `
-                <div class="section">
-                    <div class="error-state">Entry not found</div>
-                </div>
+                <div class="error-state">Entry not found</div>
             `;
       return;
     }
@@ -123,9 +121,7 @@ export class EntryDetailComponent extends WebComponent {
     // Check if store data is loaded
     if (!this.store.getIsLoaded()) {
       this.innerHTML = `
-                <div class="section">
-                    ${this.renderLoadingState('Loading entry...')}
-                </div>
+                ${this.renderLoadingState('Loading entry...')}
             `;
       return;
     }
@@ -143,13 +139,11 @@ export class EntryDetailComponent extends WebComponent {
     const entity = this.store.getEntityById(entry.entityId);
 
     this.innerHTML = `
-            <div class="section">
-                <div class="entry-detail-page">
-                    ${this.renderDetailHeader(entry, entity)}
-                    ${this.renderDetailContent(entry, entity)}
-                    ${this.renderDetailFooter(entry)}
-                </div>
-            </div>
+              <div class="entry-detail-page">
+                  ${this.renderDetailHeader(entry, entity)}
+                  ${this.renderDetailContent(entry, entity)}
+                  ${this.renderDetailFooter(entry)}
+              </div>
         `;
 
     // Remove old modal if exists
