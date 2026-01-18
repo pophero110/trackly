@@ -149,8 +149,8 @@ class TracklyApp {
             lastSortOrder = sortOrder;
             this.store.reloadEntries(sortBy, sortOrder);
           } else {
-            // Just re-render with existing data
-            (entryList as any).render();
+            // Just re-render with existing data (Lit component)
+            (entryList as any).requestUpdate?.();
           }
         }
 
@@ -168,8 +168,8 @@ class TracklyApp {
         // Show entity grid
         if (entityGrid) {
           entityGrid.style.display = 'block';
-          // Force re-render when showing entity grid
-          (entityGrid as any).render();
+          // Force re-render when showing entity grid (Lit component)
+          (entityGrid as any).requestUpdate?.();
         }
         if (entryList) entryList.style.display = 'none';
         if (this.store.getSelectedEntityId() !== null) {
@@ -192,8 +192,8 @@ class TracklyApp {
             lastSortOrder = sortOrder;
             this.store.reloadEntries(sortBy, sortOrder);
           } else {
-            // Just re-render with existing data
-            (entryList as any).render();
+            // Just re-render with existing data (Lit component)
+            (entryList as any).requestUpdate?.();
           }
         }
         if (this.store.getSelectedEntityId() !== null) {
@@ -216,8 +216,8 @@ class TracklyApp {
             lastSortOrder = sortOrder;
             this.store.reloadEntries(sortBy, sortOrder);
           } else {
-            // Just re-render with existing data
-            (entryList as any).render();
+            // Just re-render with existing data (Lit component)
+            (entryList as any).requestUpdate?.();
           }
         }
         if (this.store.getSelectedEntityId() !== null) {
