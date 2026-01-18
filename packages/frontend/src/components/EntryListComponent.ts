@@ -713,11 +713,11 @@ export class EntryListComponent extends WebComponent {
         // Clear input immediately for better UX
         input.value = '';
 
-        // Add entry to store (optimistic update)
-        await this.store.addEntry(entry);
-
         // Show success toast
         toast.success('Quick entry created');
+
+        // Add entry to store (optimistic update)
+        await this.store.addEntry(entry);
 
       } catch (error) {
         console.error('Error creating quick entry:', error);
