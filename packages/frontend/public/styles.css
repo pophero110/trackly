@@ -376,6 +376,11 @@ entry-detail {
   flex-wrap: wrap;
 }
 
+.header-quick-entry-row {
+  display: flex;
+  width: 100%;
+}
+
 /* Quick Entry Input Group */
 .quick-entry-group {
   display: flex;
@@ -2961,9 +2966,21 @@ input[type="datetime-local"] {
   }
 
   .header-quick-entry-row {
-    padding-left: var(--base-size-16);
-    padding-right: var(--base-size-16);
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: var(--base-size-12) var(--base-size-16);
+    background-color: var(--background);
+    border-top: 1px solid var(--border);
+    box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.1);
+    z-index: 100;
     width: 100%;
+  }
+
+  /* Add bottom padding to entries container to prevent content from being hidden behind sticky input */
+  .entries-container {
+    padding-bottom: 80px;
   }
 
   .quick-entry-group {
@@ -3040,6 +3057,24 @@ input[type="datetime-local"] {
 
   .header-filters-row {
     gap: 6px;
+  }
+
+  .header-quick-entry-row {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: var(--base-size-12) var(--base-size-16);
+    background-color: var(--background);
+    border-top: 1px solid var(--border);
+    box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.1);
+    z-index: 100;
+    width: 100%;
+  }
+
+  /* Add bottom padding to entries container to prevent content from being hidden behind sticky input */
+  .entries-container {
+    padding-bottom: 80px;
   }
 
   .quick-entry-select {
