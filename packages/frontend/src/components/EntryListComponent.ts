@@ -850,6 +850,9 @@ export class EntryListComponent extends WebComponent {
     // Hide all other menus first
     this.hideAllMenus();
 
+    // Close all entity dropdowns
+    this.hideAllEntityDropdowns();
+
     // Position and show this menu
     menu.style.display = 'block';
     menu.style.position = 'fixed';
@@ -924,6 +927,12 @@ export class EntryListComponent extends WebComponent {
   private hideAllMenus(): void {
     this.querySelectorAll('.entry-context-menu').forEach(menu => {
       (menu as HTMLElement).style.display = 'none';
+    });
+  }
+
+  private hideAllEntityDropdowns(): void {
+    this.querySelectorAll('.entity-dropdown-menu').forEach(dropdown => {
+      (dropdown as HTMLElement).style.display = 'none';
     });
   }
 
