@@ -47,7 +47,7 @@ export abstract class LitBaseComponent extends LitElement {
         } catch (e) {
             // Store not yet initialized - component will render empty/loading state
             // and will be updated once store is available
-            console.warn('LitBaseComponent: Store not yet initialized, will retry on next render');
+            // This is expected during initial page load
         }
     }
 
