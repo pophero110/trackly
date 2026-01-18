@@ -544,13 +544,6 @@ export class EntryListComponent extends WebComponent {
         </span>`
       : '';
 
-    // Images
-    const imagesHtml = entry.images && entry.images.length > 0 ? `
-      <div class="timeline-entry-media">
-        ${entry.images.map(img => `<img src="${img}" alt="Entry image" class="timeline-media-image">`).join('')}
-      </div>
-    ` : '';
-
     return `
       <div class="timeline-entry" data-entry-id="${entry.id}">
         <div class="timeline-entry-card">
@@ -568,7 +561,6 @@ export class EntryListComponent extends WebComponent {
           ${notesHtml}
           ${hashtagChips ? `<div class="timeline-entry-tags">${hashtagChips}</div>` : ''}
           ${locationHtml ? `<div class="timeline-entry-metadata">${locationHtml}</div>` : ''}
-          ${imagesHtml}
         </div>
       </div>
       <div class="entry-context-menu" id="entry-menu-${entry.id}" style="display: none;">
