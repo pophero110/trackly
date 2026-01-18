@@ -4646,6 +4646,7 @@ slide-panel:not(.active) .slide-panel-container {
   background: transparent;
   min-height: 300px;
   max-height: 60vh;
+  overflow-y: auto;
 }
 
 .milkdown-editor:focus,
