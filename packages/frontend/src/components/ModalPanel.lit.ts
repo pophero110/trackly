@@ -127,3 +127,9 @@ export class ModalPanel extends LitElement {
     `;
   }
 }
+
+declare global {
+  interface HTMLElementTagNameMap {
+    'modal-panel': ModalPanel;
+  }
+}

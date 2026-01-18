@@ -165,3 +165,9 @@ export class SlidePanel extends LitElement {
     `;
   }
 }
+
+declare global {
+  interface HTMLElementTagNameMap {
+    'slide-panel': SlidePanel;
+  }
+}

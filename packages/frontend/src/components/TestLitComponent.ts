@@ -57,3 +57,9 @@ export class TestLitComponent extends LitBaseComponent {
     `;
   }
 }
+
+declare global {
+  interface HTMLElementTagNameMap {
+    'test-lit-component': TestLitComponent;
+  }
+}

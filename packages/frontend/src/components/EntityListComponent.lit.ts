@@ -407,3 +407,9 @@ export class EntityListComponent extends LitBaseComponent {
     }
   }
 }
+
+declare global {
+  interface HTMLElementTagNameMap {
+    'entity-list': EntityListComponent;
+  }
+}

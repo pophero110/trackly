@@ -1,7 +1,6 @@
 import { html } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 import { repeat } from 'lit/directives/repeat.js';
-import { when } from 'lit/directives/when.js';
 import { LitBaseComponent } from './LitBaseComponent.js';
 import { Entry } from '../models/Entry.js';
 import { extractHashtags } from '../utils/helpers.js';
@@ -135,25 +134,31 @@ export class EntryListComponent extends LitBaseComponent {
 
         <div class="entries-grid">
           ${repeat(
-            Array.from(entriesByDate.entries()),
-            ([dateKey]) => dateKey,
-            ([dateKey, dateEntries]) => html`
+      Array.from(entriesByDate.entries()),
+      ([dateKey]) => dateKey,
+      ([dateKey, dateEntries]) => html`
               <div class="timeline-date-group">
                 <div class="timeline-date-header">${dateKey}</div>
                 <div class="timeline-entries">
                   ${repeat(
-                    dateEntries,
-                    (entry) => entry.id,
-                    (entry) => html`
+        dateEntries,
+        (entry) => entry.id,
+        (entry) => html`
                       <entry-list-item .entry=${entry}></entry-list-item>
                     `
-                  )}
+      )}
                 </div>
               </div>
             `
-          )}
+    )}
         </div>
       </div>
     `;
+  }
+}
+
+declare global {
+  interface HTMLElementTagNameMap {
+    'entry-list': EntryListComponent;
   }
 }

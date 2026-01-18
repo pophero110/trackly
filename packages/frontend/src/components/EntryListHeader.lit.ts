@@ -327,3 +327,9 @@ export class EntryListHeader extends LitElement {
     `;
   }
 }
+
+declare global {
+  interface HTMLElementTagNameMap {
+    'entry-list-header': EntryListHeader;
+  }
+}

@@ -546,3 +546,9 @@ export class EntryListItem extends LitElement {
     `;
   }
 }
+
+declare global {
+  interface HTMLElementTagNameMap {
+    'entry-list-item': EntryListItem;
+  }
+}
