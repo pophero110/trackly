@@ -17,7 +17,6 @@ export class EntryListComponent extends WebComponent {
 
   // Event listener references for cleanup
   private sortMenuCloseHandler: ((e: Event) => void) | null = null;
-  private entityFilterCloseHandler: ((e: Event) => void) | null = null;
   private tagFilterCloseHandler: ((e: Event) => void) | null = null;
   private entityPageMenuCloseHandler: (() => void) | null = null;
   private entityChipDropdownCloseHandler: ((e: Event) => void) | null = null;
@@ -58,14 +57,6 @@ export class EntryListComponent extends WebComponent {
       entries = entries.filter(e => e.entityId === selectedEntityId);
     }
 
-    const entityFilters = URLStateManager.getEntityFilters();
-    if (entityFilters.length > 0 && !selectedEntityId) {
-      entries = entries.filter(e => {
-        const entity = this.store.getEntityById(e.entityId);
-        return entity && entityFilters.some(f => entity.name.toLowerCase() === f.toLowerCase());
-      });
-    }
-
     const tagFilters = URLStateManager.getTagFilters();
     if (tagFilters.length > 0) {
       entries = entries.filter(e => {
@@ -77,7 +68,7 @@ export class EntryListComponent extends WebComponent {
 
     // 3. Targeted Header Update
     // We update the header separately to keep the dropdowns/filters responsive
-    this.updateHeader(headerActions, selectedEntityId, entityFilters, tagFilters);
+    this.updateHeader(headerActions, selectedEntityId, tagFilters);
 
     // 4. Document Fragments & replaceChildren() for the List
     if (entries.length === 0) {
@@ -257,7 +248,7 @@ export class EntryListComponent extends WebComponent {
     return fragment;
   }
 
-  private updateHeader(container: HTMLElement, selectedEntityId: string | null, entityFilters: string[], tagFilters: string[]): void {
+  private updateHeader(container: HTMLElement, selectedEntityId: string | null, tagFilters: string[]): void {
     const hashtagFilter = URLStateManager.getHashtagFilter();
     const currentSortBy = URLStateManager.getSortBy() || 'timestamp';
     const currentSortOrder = URLStateManager.getSortOrder() || 'desc';
@@ -265,7 +256,7 @@ export class EntryListComponent extends WebComponent {
 
     // Use DocumentFragment instead of innerHTML
     const headerFragment = this.createTemplate(
-      this.getHeaderHtml(selectedEntityId, entityFilters, tagFilters, hashtagFilter, currentSortValue)
+      this.getHeaderHtml(selectedEntityId, tagFilters, hashtagFilter, currentSortValue)
     );
     container.replaceChildren(headerFragment);
 
@@ -277,7 +268,6 @@ export class EntryListComponent extends WebComponent {
 
     // Re-attach dropdown-specific logic
     this.attachSortHandler();
-    this.attachEntityFilterHandlers();
     this.attachTagFilterHandlers();
     this.attachQuickEntryHandlers();
     this.attachEntityPageMenuHandlers();
@@ -285,7 +275,6 @@ export class EntryListComponent extends WebComponent {
 
   private getHeaderHtml(
     selectedEntityId: string | null,
-    entityFilters: string[],
     tagFilters: string[],
     hashtagFilter: string | null,
     currentSortValue: string
@@ -318,32 +307,7 @@ export class EntryListComponent extends WebComponent {
       </div>
     `;
 
-    // 2. Entity Filter Dropdown (Logic from)
-    const allEntities = this.store.getEntities();
-    const availableEntities = [...allEntities].sort((a, b) => a.name.localeCompare(b.name));
-    const selectedEntityChips = entityFilters.map(entity => `
-        <span class="tag-chip-inline">${escapeHtml(entity)}</span>
-    `).join('');
-
-    const entityButtonLabel = entityFilters.length > 0 ? `<i class="ph-duotone ph-circles-four"></i>${selectedEntityChips}` : `<i class="ph-duotone ph-circles-four"></i>`;
-
-    const entityFilterDropdown = !selectedEntityId && availableEntities.length > 0 ? `
-      <div class="tag-filter-container">
-          <button class="btn-tag-filter ${entityFilters.length > 0 ? 'has-filters' : ''}" id="entity-filter-btn" title="Filter by entities">
-              ${entityButtonLabel}
-          </button>
-          <div class="tag-filter-menu" id="entity-filter-menu" style="display: none;">
-              ${availableEntities.map(entity => `
-                  <label class="tag-filter-option">
-                      <input type="checkbox" value="${escapeHtml(entity.name)}" ${entityFilters.includes(entity.name) ? 'checked' : ''}>
-                      <span>${escapeHtml(entity.name)}</span>
-                  </label>
-              `).join('')}
-          </div>
-      </div>
-    ` : '';
-
-    // 3. Tag Filter Dropdown (Logic from)
+    // 2. Tag Filter Dropdown
     const allEntries = this.store.getEntries();
     const allTags = new Set<string>();
     allEntries.forEach(entry => {
@@ -398,7 +362,6 @@ export class EntryListComponent extends WebComponent {
     return `
       <div class="header-filters-row">
         ${sortSelect}
-        ${entityFilterDropdown}
         ${tagFilterDropdown}
         ${hashtagBadge}
         ${entityMenu}
@@ -414,11 +377,6 @@ export class EntryListComponent extends WebComponent {
     if (this.sortMenuCloseHandler) {
       document.removeEventListener('click', this.sortMenuCloseHandler);
       this.sortMenuCloseHandler = null;
-    }
-
-    if (this.entityFilterCloseHandler) {
-      document.removeEventListener('click', this.entityFilterCloseHandler);
-      this.entityFilterCloseHandler = null;
     }
 
     if (this.tagFilterCloseHandler) {
@@ -963,49 +921,6 @@ export class EntryListComponent extends WebComponent {
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Unknown error';
       toast.error(`Error archiving entry: ${message}`);
-    }
-  }
-
-  private attachEntityFilterHandlers(): void {
-    // Toggle entity filter menu
-    const filterBtn = this.querySelector('#entity-filter-btn');
-    const filterMenu = this.querySelector('#entity-filter-menu') as HTMLElement;
-
-    if (filterBtn && filterMenu) {
-      filterBtn.addEventListener('click', () => {
-        const isVisible = filterMenu.style.display === 'block';
-        filterMenu.style.display = isVisible ? 'none' : 'block';
-      });
-
-      // Remove old listener if it exists
-      if (this.entityFilterCloseHandler) {
-        document.removeEventListener('click', this.entityFilterCloseHandler);
-      }
-
-      // Create and store new handler
-      this.entityFilterCloseHandler = (e: Event) => {
-        if (!filterMenu.contains(e.target as Node) && !filterBtn.contains(e.target as Node)) {
-          filterMenu.style.display = 'none';
-        }
-      };
-
-      // Close menu when clicking outside
-      document.addEventListener('click', this.entityFilterCloseHandler);
-
-      // Handle checkbox changes
-      const checkboxes = filterMenu.querySelectorAll('input[type="checkbox"]');
-      checkboxes.forEach(checkbox => {
-        checkbox.addEventListener('change', (e) => {
-          const target = e.target as HTMLInputElement;
-          const entityName = target.value;
-
-          if (target.checked) {
-            URLStateManager.addEntityFilter(entityName);
-          } else {
-            URLStateManager.removeEntityFilter(entityName);
-          }
-        });
-      });
     }
   }
 
