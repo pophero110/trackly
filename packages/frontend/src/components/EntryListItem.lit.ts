@@ -101,6 +101,11 @@ export class EntryListItem extends LitElement {
   private handleEntityChange = async (e: MouseEvent, newEntity: Entity) => {
     e.stopPropagation();
 
+    if (!this.store) {
+      console.error('Store not available');
+      return;
+    }
+
     const oldEntityId = this.entry.entityId;
     const oldEntityName = this.entry.entityName;
 
@@ -133,7 +138,13 @@ export class EntryListItem extends LitElement {
   };
 
   private handleDelete(): void {
+    if (!this.store) {
+      console.error('Store not available');
+      return;
+    }
+
     const entry = this.entry;
+    const store = this.store;
 
     toast.show({
       message: 'Entry deleted',
@@ -143,7 +154,7 @@ export class EntryListItem extends LitElement {
         label: 'Undo',
         onClick: async () => {
           try {
-            await this.store.addEntry(entry);
+            await store.addEntry(entry);
             toast.success('Entry restored');
           } catch (error) {
             const message = error instanceof Error ? error.message : 'Unknown error';
@@ -153,13 +164,18 @@ export class EntryListItem extends LitElement {
       }
     });
 
-    this.store.deleteEntry(this.entry.id).catch((error) => {
+    store.deleteEntry(this.entry.id).catch((error) => {
       const message = error instanceof Error ? error.message : 'Unknown error';
       toast.error(`Error deleting entry: ${message}`);
     });
   }
 
   private async handleArchive(): Promise<void> {
+    if (!this.store) {
+      console.error('Store not available');
+      return;
+    }
+
     try {
       await this.store.archiveEntry(this.entry.id, true);
       toast.success('Entry archived successfully');

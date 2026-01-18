@@ -85,6 +85,11 @@ export class EntryListHeader extends LitElement {
     const notes = input.value.trim();
     if (!notes) return;
 
+    if (!this.store) {
+      console.error('Store not available');
+      return;
+    }
+
     const entity = this.store.getEntities().filter(e => e.name === "Inbox")[0];
     if (!entity) return;
 
@@ -122,6 +127,8 @@ export class EntryListHeader extends LitElement {
   };
 
   private handleEntityDelete(entityId: string): void {
+    if (!this.store) return;
+
     const entity = this.store.getEntityById(entityId);
     if (!entity) return;
 
