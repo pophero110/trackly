@@ -584,6 +584,23 @@ export class EntryDetailComponent extends WebComponent {
                 entityName: newEntity.name
               });
 
+              // Manually update the entity chip without full re-render
+              const newEntityColor = getEntityColor(newEntity.name);
+              (entityChip as HTMLElement).dataset.entityId = newEntity.id;
+              (entityChip as HTMLElement).dataset.entityName = newEntity.name;
+              (entityChip as HTMLElement).style.setProperty('--entity-color', newEntityColor);
+
+              // Update the text content (preserve the dropdown arrow SVG)
+              const textNode = entityChip.childNodes[0];
+              if (textNode && textNode.nodeType === Node.TEXT_NODE) {
+                textNode.textContent = newEntity.name;
+              } else {
+                // Fallback: update innerHTML but preserve the SVG
+                const svg = entityChip.querySelector('svg');
+                entityChip.textContent = newEntity.name;
+                if (svg) entityChip.appendChild(svg);
+              }
+
               // Hide dropdown after change
               entityDropdown.style.display = 'none';
             } catch (error) {
