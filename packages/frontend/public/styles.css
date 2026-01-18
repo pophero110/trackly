@@ -381,7 +381,7 @@ entry-detail {
 .header-filters-row {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 24px;
   flex-wrap: wrap;
 }
 
@@ -514,23 +514,12 @@ entry-detail {
   transition: var(--transition);
   outline: none;
   max-width: 300px;
-  flex-wrap: wrap;
 }
 
 .btn-tag-filter:hover {
   border-color: var(--text-muted);
   color: var(--text-primary);
   background: var(--background);
-}
-
-.btn-tag-filter:focus {
-  border-color: var(--primary);
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
-}
-
-.btn-tag-filter.has-filters {
-  border-color: var(--primary);
-  background: rgba(37, 99, 235, 0.05);
 }
 
 .btn-tag-filter svg {
@@ -552,7 +541,6 @@ entry-detail {
 .tag-filter-menu {
   position: absolute;
   top: 100%;
-  right: 0;
   margin-top: 4px;
   background: var(--background);
   border: none;
@@ -563,6 +551,9 @@ entry-detail {
   overflow-y: auto;
   z-index: 1000;
   padding: 0;
+  left: 0px;
+  right: auto;
+  max-width: calc(-48px + 100vw);
 }
 
 .tag-filter-option {
@@ -2980,41 +2971,10 @@ input[type="datetime-local"] {
     position: relative;
   }
 
-  /* Show filter count badge on mobile when filters are active */
-  .btn-tag-filter.has-filters::after {
-    content: attr(data-filter-count);
-    position: absolute;
-    top: -6px;
-    right: -6px;
-    background: var(--primary);
-    color: white;
-    font-size: 0.6875rem;
-    font-weight: 600;
-    border-radius: 10px;
-    min-width: 18px;
-    height: 18px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0 4px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
-  }
-
-  /* Hide the chip spans on mobile, show icon only */
-  .btn-tag-filter .tag-chip-inline {
-    display: none;
-  }
-
   .btn-tag-filter svg {
     margin: 0;
   }
 
-  .tag-filter-menu {
-    left: 0;
-    right: auto;
-    min-width: 200px;
-    max-width: calc(100vw - 48px);
-  }
 }
 
 /* Smooth Transitions */
