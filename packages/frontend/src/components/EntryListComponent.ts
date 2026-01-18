@@ -716,8 +716,12 @@ export class EntryListComponent extends WebComponent {
         // Add entry to store (optimistic update)
         await this.store.addEntry(entry);
 
+        // Show success toast
+        toast.success('Quick entry created');
+
       } catch (error) {
         console.error('Error creating quick entry:', error);
+        toast.error('Failed to create entry');
       }
     };
 
