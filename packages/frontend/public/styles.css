@@ -1355,25 +1355,6 @@ form {
   word-break: break-word;
 }
 
-.timeline-menu-btn {
-  opacity: 1;
-  transition: opacity 0.2s ease;
-  background: transparent;
-  border: none;
-  color: var(--text-tertiary);
-  cursor: pointer;
-  padding: 4px;
-  border-radius: var(--radius-sm);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.timeline-menu-btn:hover {
-  background: var(--background-secondary);
-  color: var(--text-primary);
-}
-
 .timeline-entry-properties {
   margin-bottom: 12px;
   font-size: 0.875rem;
@@ -1486,14 +1467,6 @@ form {
     font-size: 1rem;
   }
 
-  .timeline-menu-btn {
-    opacity: 1;
-    /* Always visible on mobile */
-    min-width: 44px;
-    min-height: 44px;
-    padding: 8px;
-  }
-
   .timeline-entry-header {
     gap: 8px;
   }
@@ -1549,16 +1522,6 @@ form {
   .timeline-entry-primary {
     width: 100%;
     gap: 6px;
-  }
-
-  .timeline-menu-btn {
-    position: absolute;
-    top: 8px;
-    right: 50px;
-    min-width: 36px;
-    min-height: 36px;
-    background: var(--background-secondary);
-    border-radius: var(--radius-sm);
   }
 
   .timeline-entry-value {
@@ -2681,10 +2644,6 @@ form {
   padding: 2px 6px;
   line-height: 1;
   transition: all 0.2s;
-  opacity: 0;
-}
-
-.entry-card:hover .entry-menu-btn {
   opacity: 1;
 }
 
