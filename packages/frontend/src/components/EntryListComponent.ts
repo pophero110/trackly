@@ -553,7 +553,7 @@ export class EntryListComponent extends WebComponent {
               ${entryValue ? `<div class="timeline-entry-value">${entryValue}</div>` : ''}
               ${entityChip}
             </div>
-            <button class="entry-menu-btn timeline-menu-btn" data-entry-id="${entry.id}" data-action="menu">
+            <button class="entry-menu-btn" data-entry-id="${entry.id}" data-action="menu">
               <i class="ph ph-dots-three"></i>
             </button>
           </div>

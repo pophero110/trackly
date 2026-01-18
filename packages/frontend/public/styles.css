@@ -1512,13 +1512,6 @@ form {
     /* Disable hover transform on mobile */
   }
 
-  .timeline-entry-header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 8px;
-    margin-bottom: 10px;
-  }
-
   .timeline-entry-primary {
     width: 100%;
     gap: 6px;
