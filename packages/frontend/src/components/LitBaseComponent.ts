@@ -38,16 +38,22 @@ export abstract class LitBaseComponent extends LitElement {
         super.connectedCallback();
 
         // Get store from registry (lazily, after it's been initialized)
-        // If store isn't ready yet, component will be re-connected later
         try {
             this.store = storeRegistry.getStore();
 
             // Subscribe to store changes
             this.unsubscribe = this.store.subscribe(() => this.requestUpdate());
         } catch (e) {
-            // Store not yet initialized - component will render empty/loading state
-            // and will be updated once store is available
-            // This is expected during initial page load
+            // Store not yet initialized - register callback to retry when store is ready
+            storeRegistry.onStoreInitialized(() => {
+                try {
+                    this.store = storeRegistry.getStore();
+                    this.unsubscribe = this.store.subscribe(() => this.requestUpdate());
+                    this.requestUpdate(); // Trigger initial render with store
+                } catch (error) {
+                    console.error('Failed to get store after initialization:', error);
+                }
+            });
         }
     }
 
