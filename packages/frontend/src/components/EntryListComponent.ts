@@ -21,6 +21,7 @@ export class EntryListComponent extends WebComponent {
   private tagFilterCloseHandler: ((e: Event) => void) | null = null;
   private entityPageMenuCloseHandler: (() => void) | null = null;
   private entityChipDropdownCloseHandler: ((e: Event) => void) | null = null;
+  private entryContextMenuCloseHandler: ((e: Event) => void) | null = null;
 
   // Helper to turn HTML strings into DOM nodes efficiently
   private createTemplate(html: string): DocumentFragment {
@@ -434,6 +435,11 @@ export class EntryListComponent extends WebComponent {
     if (this.entityChipDropdownCloseHandler) {
       document.removeEventListener('click', this.entityChipDropdownCloseHandler);
       this.entityChipDropdownCloseHandler = null;
+    }
+
+    if (this.entryContextMenuCloseHandler) {
+      document.removeEventListener('click', this.entryContextMenuCloseHandler);
+      this.entryContextMenuCloseHandler = null;
     }
 
     // Clean up resize observer
@@ -884,6 +890,32 @@ export class EntryListComponent extends WebComponent {
       menu.style.left = `${left}px`;
       menu.style.top = `${top}px`;
     }
+
+    // Setup document-level click handler to close menu when clicking outside
+    this.setupEntryContextMenuCloseHandler();
+  }
+
+  private setupEntryContextMenuCloseHandler(): void {
+    // Remove old listener if it exists
+    if (this.entryContextMenuCloseHandler) {
+      document.removeEventListener('click', this.entryContextMenuCloseHandler);
+    }
+
+    // Create and store new handler
+    this.entryContextMenuCloseHandler = (e: Event) => {
+      const target = e.target as HTMLElement;
+
+      // Don't close if clicking on any menu button or menu itself
+      if (target.closest('[data-action="menu"]') || target.closest('.entry-context-menu')) {
+        return;
+      }
+
+      // Close all entry context menus
+      this.hideAllMenus();
+    };
+
+    // Add document-level click listener
+    document.addEventListener('click', this.entryContextMenuCloseHandler);
   }
 
   private hideAllMenus(): void {
