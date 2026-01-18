@@ -35,7 +35,7 @@ export class EntryListComponent extends WebComponent {
     if (!this.querySelector('.section')) {
       this.innerHTML = `
         <div class="section">
-          <div class="section-header-actions" id="header-actions"></div>
+          <div class="entry-section-header-actions" id="header-actions"></div>
           <div class="entries-grid" id="entries-container"></div>
         </div>
       `;
@@ -549,9 +549,7 @@ export class EntryListComponent extends WebComponent {
               ${entryValue ? `<div class="timeline-entry-value">${entryValue}</div>` : ''}
               ${entityChip}
             </div>
-            <button class="entry-menu-btn" data-entry-id="${entry.id}" data-action="menu">
-              <i class="ph ph-dots-three"></i>
-            </button>
+            <button class="entry-menu-btn" data-entry-id="${entry.id}" data-action="menu">⋮</button>
           </div>
           ${propertiesHtml ? `<div class="timeline-entry-properties">${propertiesHtml}</div>` : ''}
           ${notesHtml}
