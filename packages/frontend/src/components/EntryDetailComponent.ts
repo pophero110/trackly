@@ -147,6 +147,7 @@ export class EntryDetailComponent extends WebComponent {
                 <div class="entry-detail-page">
                     ${this.renderDetailHeader(entry, entity)}
                     ${this.renderDetailContent(entry, entity)}
+                    ${this.renderDetailImages(entry)}
                     ${this.renderDetailFooter(entry)}
                 </div>
             </div>
@@ -271,25 +272,27 @@ export class EntryDetailComponent extends WebComponent {
       </div>
     ` : '';
 
-    // Images
-    const imagesHtml = entry.images && entry.images.length > 0
-      ? `<div class="entry-images-detail">
+    return `
+            ${propertiesSection}
+            <div class="entry-detail-content">
+                ${notesHtml}
+            </div>
+        `;
+  }
+
+  private renderDetailImages(entry: Entry): string {
+    if (!entry.images || entry.images.length === 0) {
+      return '';
+    }
+
+    return `<div class="entry-images-detail">
             ${entry.images.map((img, index) => `
                 <div class="entry-image-wrapper">
                     <img src="${escapeHtml(img)}" alt="Entry image" class="entry-image-detail" data-image-index="${index}" style="cursor: pointer;" />
                     <button type="button" class="btn-remove-entry-image" data-image-index="${index}" title="Remove image">×</button>
                 </div>
             `).join('')}
-         </div>`
-      : '';
-
-    return `
-            ${propertiesSection}
-            <div class="entry-detail-content">
-                ${notesHtml}
-                ${imagesHtml}
-            </div>
-        `;
+         </div>`;
   }
 
   private renderDetailFooter(entry: Entry): string {
