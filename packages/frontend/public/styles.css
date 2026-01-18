@@ -1568,6 +1568,12 @@ form {
     gap: 8px;
   }
 
+  .quick-entry-input {
+    width: 100%;
+  }
+
+  ;
+
   .btn-add-entry,
   .btn-primary {
     min-height: 44px;
@@ -3355,12 +3361,6 @@ slide-panel:not(.active) .slide-panel-container {
     max-width: calc(100% - 32px);
     max-height: 95vh;
   }
-
-  .modal-header {}
-
-  .modal-title {}
-
-  .modal-body {}
 }
 
 @media (max-width: 480px) {
