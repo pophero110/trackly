@@ -376,11 +376,6 @@ entry-detail {
   flex-wrap: wrap;
 }
 
-.header-quick-entry-row {
-  display: flex;
-  width: 100%;
-}
-
 /* Quick Entry Input Group */
 .quick-entry-group {
   display: flex;
