@@ -8,7 +8,7 @@ import { EntityCreateFormComponent } from './components/EntityCreateFormComponen
 import { EntityEditFormComponent } from './components/EntityEditFormComponent.js';
 import './components/EntityListComponent.lit.js'; // Lit version (self-registering)
 import './components/EntryListComponent.lit.js'; // Lit version (self-registering)
-import { EntryDetailComponent } from './components/EntryDetailComponent.js';
+import './components/EntryDetailComponent.lit.js'; // Lit version (self-registering)
 import './components/AuthComponent.js'; // Register custom element
 import './components/TestLitComponent.js'; // Test Lit component
 import { APIClient } from './api/client.js';
@@ -339,7 +339,7 @@ class TracklyApp {
     customElements.define('entity-edit-form', EntityEditFormComponent);
     // entity-list is registered via @customElement decorator in EntityListComponent.lit.ts
     // entry-list is registered via @customElement decorator in EntryListComponent.lit.ts
-    customElements.define('entry-detail', EntryDetailComponent);
+    // entry-detail is registered via @customElement decorator in EntryDetailComponent.lit.ts
     // Note: test-lit-component is registered via @customElement decorator
   }
 
