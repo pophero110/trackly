@@ -265,12 +265,9 @@ header h1 {
 
 /* Web Components - ensure they take full height */
 entity-list,
-entry-list,
-entry-detail {
+entry-list {
   flex: 1;
   min-height: 0;
-  display: flex;
-  flex-direction: column;
 }
 
 /* Shared Layout Utilities */

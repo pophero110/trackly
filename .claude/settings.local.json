@@ -38,7 +38,8 @@
       "Bash(done)",
       "Bash(git revert:*)",
       "Bash(git stash:*)",
-      "Bash(node build.js:*)"
+      "Bash(node build.js:*)",
+      "Bash(git push:*)"
     ],
     "deny": [],
     "ask": []
