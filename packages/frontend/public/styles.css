@@ -3477,7 +3477,7 @@ entry-detail-editor blockquote p {
   }
 }
 
-.milkdown-editor {
+.milkdown {
   border: none;
   border-radius: 0;
   padding: 0;
@@ -3487,14 +3487,14 @@ entry-detail-editor blockquote p {
   overflow-y: auto;
 }
 
-.milkdown-editor:focus,
-.milkdown-editor:focus-within,
-.milkdown-editor *:focus {
+.milkdown:focus,
+.milkdown:focus-within,
+.milkdown *:focus {
   outline: none;
   border: none;
 }
 
-.milkdown-editor .milkdown {
+.milkdown {
   font-family: inherit;
   font-size: 1rem;
   line-height: 1.6;
@@ -3503,47 +3503,47 @@ entry-detail-editor blockquote p {
   max-width: none;
 }
 
-.milkdown-editor .ProseMirror {
+.milkdown .ProseMirror {
   width: 100%;
   max-width: none;
 }
 
-.milkdown-editor .milkdown h1 {
+.milkdown h1 {
   font-size: 1.5rem;
   font-weight: 600;
   margin-bottom: 0.5em;
   color: var(--text-primary);
 }
 
-.milkdown-editor .milkdown h2 {
+.milkdown h2 {
   font-size: 1.25rem;
   font-weight: 600;
   margin: 1em 0 0.5em;
   color: var(--text-primary);
 }
 
-.milkdown-editor .milkdown h3 {
+.milkdown h3 {
   font-size: 1.125rem;
   font-weight: 600;
   margin: 1em 0 0.5em;
   color: var(--text-primary);
 }
 
-.milkdown-editor .milkdown p {
+.milkdown p {
   margin: 0.5em 0;
 }
 
-.milkdown-editor .milkdown ul,
-.milkdown-editor .milkdown ol {
+.milkdown ul,
+.milkdown ol {
   padding-left: 1.5em;
   margin: 0.5em 0;
 }
 
-.milkdown-editor .milkdown li {
+.milkdown li {
   margin: 0.25em 0;
 }
 
-.milkdown-editor .milkdown code {
+.milkdown code {
   background: var(--background);
   padding: 2px 6px;
   border-radius: 4px;
@@ -3551,7 +3551,7 @@ entry-detail-editor blockquote p {
   font-size: 0.9em;
 }
 
-.milkdown-editor .milkdown pre {
+.milkdown pre {
   background: var(--background);
   padding: 12px;
   border-radius: 0;
@@ -3559,59 +3559,24 @@ entry-detail-editor blockquote p {
   margin: 1em 0;
 }
 
-.milkdown-editor .milkdown pre code {
+.milkdown pre code {
   background: transparent;
   padding: 0;
 }
 
-.editor-actions {
-  display: flex;
-  gap: 12px;
-  justify-content: flex-end;
-}
-
-.editor-actions .btn {
-  padding: 10px 20px;
-  border-radius: 0;
-  border: none;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.editor-actions .btn-primary {
-  background: var(--primary);
-  color: white;
-}
-
-.editor-actions .btn-primary:hover {
-  background: var(--primary-hover);
-}
-
-.editor-actions .btn-secondary {
-  background: var(--background);
-  color: var(--text-secondary);
-  border: none;
-}
-
-.editor-actions .btn-secondary:hover {
-  background: var(--border-light);
-  color: var(--text-primary);
-}
-
 /* Dark mode support */
 @media (prefers-color-scheme: dark) {
-  .milkdown-editor {
+  .milkdown {
     background: transparent;
     border-color: var(--border);
   }
 
-  .milkdown-editor .milkdown {
+  .milkdown {
     color: var(--text-primary);
   }
 
-  .milkdown-editor .milkdown code,
-  .milkdown-editor .milkdown pre {
+  .milkdown code,
+  .milkdown pre {
     background: var(--background);
   }
 }
