@@ -779,7 +779,8 @@ form {
     gap: 12px;
   }
 
-  .section {
+  entity-list,
+  entry-list {
     padding: 0 16px;
     gap: var(--base-size-16);
   }
@@ -2101,18 +2102,6 @@ input[type="datetime-local"] {
 @media (max-width: 480px) {
   header h1 {
     font-size: 1.25rem;
-  }
-
-  .section h2 {
-    font-size: 1.125rem;
-  }
-
-  .section-title {
-    font-size: 1.125rem;
-  }
-
-  .section-subtitle {
-    font-size: 0.8125rem;
   }
 
   form {

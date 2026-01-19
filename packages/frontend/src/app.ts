@@ -98,11 +98,11 @@ class TracklyApp {
         // Show entry list in background (or entities if that was the previous view)
         const previousView = sessionStorage.getItem('previousView') || 'entries';
         if (previousView === 'entities') {
-          if (entityGrid) entityGrid.style.display = 'block';
+          if (entityGrid) entityGrid.style.display = 'flex';
           if (entryList) entryList.style.display = 'none';
         } else {
           if (entityGrid) entityGrid.style.display = 'none';
-          if (entryList) entryList.style.display = 'block';
+          if (entryList) entryList.style.display = 'flex';
         }
         if (entryDetail) entryDetail.style.display = 'none';
 
@@ -139,7 +139,7 @@ class TracklyApp {
         // Show entry list for specific entity
         if (entityGrid) entityGrid.style.display = 'none';
         if (entryList) {
-          entryList.style.display = 'block';
+          entryList.style.display = 'flex';
 
           // Reload entries only if sort has changed
           const sortBy = URLStateManager.getSortBy() || undefined;
@@ -167,7 +167,7 @@ class TracklyApp {
       } else if (view === 'entities') {
         // Show entity grid
         if (entityGrid) {
-          entityGrid.style.display = 'block';
+          entityGrid.style.display = 'flex';
           // Force re-render when showing entity grid (Lit component)
           (entityGrid as any).requestUpdate?.();
         }
@@ -182,7 +182,7 @@ class TracklyApp {
         // All entries view (/entries)
         if (entityGrid) entityGrid.style.display = 'none';
         if (entryList) {
-          entryList.style.display = 'block';
+          entryList.style.display = 'flex';
 
           // Reload entries only if sort has changed
           const sortBy = URLStateManager.getSortBy() || undefined;
@@ -206,7 +206,7 @@ class TracklyApp {
         // Fallback - show all recent entries
         if (entityGrid) entityGrid.style.display = 'none';
         if (entryList) {
-          entryList.style.display = 'block';
+          entryList.style.display = 'flex';
 
           // Reload entries only if sort has changed
           const sortBy = URLStateManager.getSortBy() || undefined;
