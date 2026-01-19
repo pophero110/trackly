@@ -14,6 +14,170 @@
   <link rel="manifest" href="/favicon/site.webmanifest">
 
   <link rel="stylesheet" href="/styles.css">
+
+  <<style>
+    /* Header - Paper & Ink 2026 */
+    header {
+    background: transparent;
+    padding: 20px var(--base-size-24) 16px;
+    border-bottom: 1px solid var(--border-light);
+    box-shadow: var(--shadow-ambient);
+    }
+
+    .header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: var(--base-size-16);
+    }
+
+    .header-left {
+    display: flex;
+    align-items: center;
+    gap: var(--base-size-16);
+    flex: 1;
+    }
+
+    .header-text {
+    flex-shrink: 0;
+    }
+
+    .header-nav {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    }
+
+    .nav-link {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.9375rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+    text-decoration: none;
+    padding: 8px var(--base-size-16);
+    border-radius: var(--radius-sm);
+    transition: var(--transition);
+    white-space: nowrap;
+    }
+
+    .nav-link:hover {
+    color: var(--text-primary);
+    background: var(--background);
+    }
+
+    .nav-link:active {
+    transform: scale(0.98);
+    }
+
+    header h1 {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+    letter-spacing: -0.03em;
+    line-height: 1.2;
+    }
+
+    .subtitle {
+    font-size: 1rem;
+    color: var(--text-secondary);
+    font-weight: 400;
+    }
+
+    .quote {
+    font-size: 1rem;
+    color: var(--text-muted);
+    font-weight: 400;
+    font-style: italic;
+    margin-top: 6px;
+    }
+
+    .header-menu {
+    position: relative;
+    }
+
+    .btn-hamburger {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 8px;
+    background: transparent;
+    border: none;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: var(--transition);
+    }
+
+    .btn-hamburger:hover {
+    background: var(--background);
+    }
+
+    .btn-hamburger:active {
+    transform: scale(0.95);
+    }
+
+    .hamburger-line {
+    width: 20px;
+    height: 2px;
+    background: var(--text-secondary);
+    border-radius: 2px;
+    transition: var(--transition);
+    }
+
+    .btn-hamburger:hover .hamburger-line {
+    background: var(--text-primary);
+    }
+
+    /* TODO: universal dropdown menu */
+    .dropdown-menu {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    background: var(--background);
+    border: none;
+    border-radius: var(--radius-sm);
+    box-shadow: var(--shadow-lg);
+    min-width: 160px;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-8px);
+    transition: var(--transition);
+    z-index: 1000;
+    overflow: hidden;
+    }
+
+    .dropdown-menu.open {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+    }
+
+    .dropdown-item {
+    width: 100%;
+    padding: 12px var(--base-size-16);
+    font-size: 0.875rem;
+    font-weight: 500;
+    background: transparent;
+    color: var(--text-secondary);
+    border: none;
+    text-align: left;
+    cursor: pointer;
+    transition: var(--transition);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    }
+
+    .dropdown-item:hover {
+    color: var(--text-primary);
+    }
+
+    .dropdown-item:active {
+    background: var(--border);
+    }
+    </style>
 </head>
 
 <body>
@@ -41,9 +205,6 @@
         </div>
       </div>
     </header>
-
-    <!-- Test Lit Component will be added dynamically after app initialization -->
-    <!-- <div id="test-lit-container"></div> -->
 
     <!-- Main Content -->
     <entity-list></entity-list>
