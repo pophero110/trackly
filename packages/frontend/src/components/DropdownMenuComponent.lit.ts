@@ -1,4 +1,4 @@
-import { html, css, LitElement } from 'lit';
+import { html, css, LitElement, unsafeCSS } from 'lit';
 import { customElement, property, state, query } from 'lit/decorators.js';
 import { map } from 'lit/directives/map.js';
 
@@ -19,9 +19,6 @@ export interface DropdownMenuItem {
 @customElement('dropdown-menu')
 export class DropdownMenuComponent extends LitElement {
   static styles = css`
-    @import url('https://unpkg.com/@phosphor-icons/web@2.0.3/src/duotone/style.css');
-    @import url('https://unpkg.com/@phosphor-icons/web@2.0.3/src/regular/style.css');
-
     :host {
       display: contents;
     }
@@ -110,6 +107,19 @@ export class DropdownMenuComponent extends LitElement {
 
   connectedCallback(): void {
     super.connectedCallback();
+
+    // Add Phosphor icon stylesheets to shadow root
+    if (this.shadowRoot && !this.shadowRoot.querySelector('link[href*="phosphor"]')) {
+      const duotoneLink = document.createElement('link');
+      duotoneLink.rel = 'stylesheet';
+      duotoneLink.href = 'https://unpkg.com/@phosphor-icons/web@2.0.3/src/duotone/style.css';
+      this.shadowRoot.appendChild(duotoneLink);
+
+      const regularLink = document.createElement('link');
+      regularLink.rel = 'stylesheet';
+      regularLink.href = 'https://unpkg.com/@phosphor-icons/web@2.0.3/src/regular/style.css';
+      this.shadowRoot.appendChild(regularLink);
+    }
   }
 
   disconnectedCallback(): void {
