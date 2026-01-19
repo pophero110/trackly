@@ -115,6 +115,7 @@ export class DropdownMenuComponent extends LitElement {
 
   /**
    * Adjust menu position to stay within viewport
+   * Position menu toward center of screen from origin point
    */
   private adjustPosition(): void {
     if (!this.menuContainer || !this.open) return;
@@ -123,28 +124,37 @@ export class DropdownMenuComponent extends LitElement {
     const menuHeight = this.menuContainer.offsetHeight;
     const viewportWidth = window.innerWidth;
     const viewportHeight = window.innerHeight;
+    const centerX = viewportWidth / 2;
+    const centerY = viewportHeight / 2;
 
     let { x, y } = this.position;
 
-    // Adjust if menu would go off right edge
-    if (x + menuWidth > viewportWidth) {
-      x = Math.max(8, viewportWidth - menuWidth - 8);
+    // Determine which side of screen the origin is on
+    const isLeftSide = x < centerX;
+    const isTopSide = y < centerY;
+
+    // Position horizontally toward center
+    if (isLeftSide) {
+      // Origin on left side - menu extends right toward center
+      // (default behavior, x is already left edge)
+    } else {
+      // Origin on right side - menu extends left toward center
+      x = x - menuWidth;
     }
 
-    // Adjust if menu would go off left edge
-    if (x < 8) {
-      x = 8;
+    // Position vertically toward center
+    if (isTopSide) {
+      // Origin on top side - menu extends down toward center
+      // (default behavior, y is already top edge)
+    } else {
+      // Origin on bottom side - menu extends up toward center
+      y = y - menuHeight;
     }
 
-    // Adjust if menu would go off bottom edge
-    if (y + menuHeight > viewportHeight) {
-      y = Math.max(8, viewportHeight - menuHeight - 8);
-    }
-
-    // Adjust if menu would go off top edge
-    if (y < 8) {
-      y = 8;
-    }
+    // Ensure menu stays within viewport with padding
+    const padding = 8;
+    x = Math.max(padding, Math.min(x, viewportWidth - menuWidth - padding));
+    y = Math.max(padding, Math.min(y, viewportHeight - menuHeight - padding));
 
     this.menuContainer.style.left = `${x}px`;
     this.menuContainer.style.top = `${y}px`;
