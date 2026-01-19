@@ -1,5 +1,5 @@
 import { html, LitElement } from 'lit';
-import { customElement, state } from 'lit/decorators.js';
+import { customElement, state, query } from 'lit/decorators.js';
 import { map } from 'lit/directives/map.js';
 import { when } from 'lit/directives/when.js';
 import { repeat } from 'lit/directives/repeat.js';
@@ -8,6 +8,8 @@ import { EntityListController } from '../controllers/EntityListController.js';
 import { Entity } from '../models/Entity.js';
 import { escapeHtml } from '../utils/helpers.js';
 import { URLStateManager } from '../utils/urlState.js';
+import './DropdownMenuComponent.lit.js';
+import type { DropdownMenuComponent, DropdownMenuItem } from './DropdownMenuComponent.lit.js';
 
 /**
  * EntityList Lit Component for displaying entities in a grid layout
@@ -22,15 +24,41 @@ export class EntityListComponent extends LitElement {
   private listController = new EntityListController(this, this.storeController);
 
   @state()
-  private openMenuId: string | null = null;
-
-  @state()
-  private menuPosition: { x: number; y: number } = { x: 0, y: 0 };
-
-  @state()
   private sortMenuOpen: boolean = false;
 
+  @state()
+  private currentEntityId: string | null = null;
+
+  @query('dropdown-menu')
+  private dropdownMenu?: DropdownMenuComponent;
+
   private documentClickHandler: ((e: Event) => void) | null = null;
+
+  private getMenuItems(): DropdownMenuItem[] {
+    return [
+      {
+        id: 'log-entry',
+        label: 'Log',
+        icon: 'ph-duotone ph-list-plus'
+      },
+      {
+        id: 'edit',
+        label: 'Edit',
+        icon: 'ph-duotone ph-pencil-simple'
+      },
+      {
+        id: 'clone',
+        label: 'Clone',
+        icon: 'ph-duotone ph-copy'
+      },
+      {
+        id: 'delete',
+        label: 'Delete',
+        icon: 'ph-duotone ph-trash',
+        danger: true
+      }
+    ];
+  }
 
   // Disable Shadow DOM for compatibility with existing global styles
   createRenderRoot() {
@@ -51,9 +79,6 @@ export class EntityListComponent extends LitElement {
     // Click outside to close menus
     this.documentClickHandler = (e: Event) => {
       const target = e.target as HTMLElement;
-      if (!target.closest('.entity-context-menu') && !target.closest('[data-action="menu"]')) {
-        this.openMenuId = null;
-      }
       if (!target.closest('#sort-filter-btn') && !target.closest('#sort-filter-menu')) {
         this.sortMenuOpen = false;
       }
@@ -84,46 +109,33 @@ export class EntityListComponent extends LitElement {
     }
   };
 
+  private handleMenuButtonClick = (e: MouseEvent, entityId: string): void => {
+    e.stopPropagation();
+    const target = e.target as HTMLElement;
+    const menuButton = target.closest('[data-action="menu"]') as HTMLElement;
+
+    if (!this.dropdownMenu || !menuButton) return;
+
+    this.currentEntityId = entityId;
+    const rect = menuButton.getBoundingClientRect();
+    this.dropdownMenu.openAt(rect.right, rect.bottom + 4);
+  };
+
   private handleCardContextMenu = (e: MouseEvent, entityId: string): void => {
     e.preventDefault();
     e.stopPropagation();
 
-    const target = e.target as HTMLElement;
-    if (target.closest('[data-action="menu"]')) {
-      return;
-    }
+    if (!this.dropdownMenu) return;
 
-    this.toggleMenu(entityId, e);
+    this.currentEntityId = entityId;
+    this.dropdownMenu.openAt(e.clientX, e.clientY);
   };
 
-  private handleMenuButtonClick = (e: MouseEvent, entityId: string): void => {
-    e.stopPropagation();
-    this.toggleMenu(entityId, e);
-  };
+  private handleMenuAction = (e: CustomEvent): void => {
+    const { action } = e.detail;
+    const entityId = this.currentEntityId;
 
-  private toggleMenu(entityId: string, e: MouseEvent): void {
-    if (this.openMenuId === entityId) {
-      this.openMenuId = null;
-    } else {
-      this.openMenuId = entityId;
-
-      const target = e.target as HTMLElement;
-      const menuButton = target.closest('[data-action="menu"]') as HTMLElement;
-
-      if (menuButton) {
-        // Menu button click - position relative to button
-        const rect = menuButton.getBoundingClientRect();
-        this.menuPosition = { x: rect.right, y: rect.bottom + 4 };
-      } else {
-        // Right-click - position at cursor
-        this.menuPosition = { x: e.clientX, y: e.clientY };
-      }
-    }
-  }
-
-  private handleContextMenuAction = (e: MouseEvent, action: string, entityId: string): void => {
-    e.stopPropagation();
-    this.openMenuId = null;
+    if (!entityId) return;
 
     switch (action) {
       case 'delete':
@@ -139,6 +151,8 @@ export class EntityListComponent extends LitElement {
         this.handleLogEntry(entityId);
         break;
     }
+
+    this.currentEntityId = null;
   };
 
   private handleDelete(entityId: string): void {
@@ -232,32 +246,6 @@ export class EntityListComponent extends LitElement {
     )}
         </div>
       </div>
-      ${when(
-      this.openMenuId === entity.id,
-      () => html`
-          <div class="entity-context-menu"
-               id="entity-menu-${entity.id}"
-               style="display: block; position: fixed; left: ${this.menuPosition.x}px; top: ${this.menuPosition.y}px;"
-               @click=${(e: MouseEvent) => e.stopPropagation()}>
-            <div class="context-menu-item" @click=${(e: MouseEvent) => this.handleContextMenuAction(e, 'log-entry', entity.id)}>
-              <i class="ph-duotone ph-list-plus"></i>
-              <span>Log</span>
-            </div>
-            <div class="context-menu-item" @click=${(e: MouseEvent) => this.handleContextMenuAction(e, 'edit', entity.id)}>
-              <i class="ph-duotone ph-pencil-simple"></i>
-              <span>Edit</span>
-            </div>
-            <div class="context-menu-item" @click=${(e: MouseEvent) => this.handleContextMenuAction(e, 'clone', entity.id)}>
-              <i class="ph-duotone ph-copy"></i>
-              <span>Clone</span>
-            </div>
-            <div class="context-menu-item danger" @click=${(e: MouseEvent) => this.handleContextMenuAction(e, 'delete', entity.id)}>
-              <i class="ph-duotone ph-trash"></i>
-              <span>Delete</span>
-            </div>
-          </div>
-        `
-    )}
     `;
   }
 
@@ -333,6 +321,13 @@ export class EntityListComponent extends LitElement {
       (entity) => this.renderEntityCard(entity)
     )}
         </div>
+
+        <!-- Dropdown Menu -->
+        <dropdown-menu
+          .items=${this.getMenuItems()}
+          .menuId=${'entity-menu'}
+          @menu-action=${this.handleMenuAction}>
+        </dropdown-menu>
     `;
   }
 }
