@@ -116,7 +116,6 @@ export class EntryDetailComponent extends LitElement {
     const hashtags = this.detailController.getHashtags();
 
     return html`
-        <div class="entry-detail-content">
           <entry-detail-header
             .entry=${entry}
             .entity=${entity}
@@ -134,7 +133,6 @@ export class EntryDetailComponent extends LitElement {
               </entry-detail-properties>
             `
     )}
-
           <entry-detail-editor
             .notes=${this.detailController.editedNotes}
             @notes-change=${this.handleNotesChange}>
@@ -144,7 +142,6 @@ export class EntryDetailComponent extends LitElement {
             .entry=${entry}
             .hashtags=${hashtags}>
           </entry-detail-footer>
-        </div>
     `;
   }
 }
