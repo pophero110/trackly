@@ -326,7 +326,7 @@ export class EntityListComponent extends LitElement {
             Create Entity
           </button>
         </div>
-        <div class="page-grid">
+        <div class="entity-grid">
           ${repeat(
       entities,
       (entity) => entity.id,

@@ -87,6 +87,7 @@ body {
 
 .container {
   height: 100vh;
+  width: 100%;
   display: flex;
   flex-direction: column;
 }
@@ -102,8 +103,7 @@ entry-list {
   width: 100%;
 }
 
-/* Shared Layout Utilities */
-.page-grid {
+.entity-grid {
   display: grid;
   grid-template-columns: minmax(0, 75ch);
   gap: var(--base-size-16);
@@ -1212,8 +1212,6 @@ input[type="datetime-local"] {
 /* Responsive Design */
 @media (max-width: 768px) {
   .container {
-    width: 100%;
-    /* Use small viewport height to exclude browser UI */
     height: 100svh;
   }
 
