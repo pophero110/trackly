@@ -64,7 +64,7 @@ export class EntryDetailController implements ReactiveController {
     const store = this.storeController.store;
     if (!store) return;
 
-    const currentPath = URLStateManager.getCurrentPath();
+    const currentPath = window.location.pathname;
 
     // Check if we're on entry detail page
     if (!currentPath.startsWith('/entry/')) {
