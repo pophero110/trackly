@@ -42,7 +42,6 @@ export class DropdownMenuComponent extends LitElement {
 
   connectedCallback(): void {
     super.connectedCallback();
-    this.attachDocumentListener();
   }
 
   disconnectedCallback(): void {
@@ -51,20 +50,29 @@ export class DropdownMenuComponent extends LitElement {
   }
 
   private attachDocumentListener(): void {
-    this.documentClickHandler = (e: Event) => {
-      const target = e.target as HTMLElement;
-      // Close menu if clicked outside
-      if (!target.closest('.dropdown-menu-container') &&
-          !target.closest(`[data-menu-trigger="${this.menuId}"]`)) {
+    // Add listener on next tick to avoid closing immediately
+    setTimeout(() => {
+      this.documentClickHandler = (e: Event) => {
+        if (!this.open) return;
+
+        const target = e.target as HTMLElement;
+
+        // Don't close if clicking inside the dropdown menu itself
+        if (target.closest('.dropdown-menu-container') === this.menuContainer) {
+          return;
+        }
+
+        // Close menu if clicked outside
         this.close();
-      }
-    };
-    document.addEventListener('click', this.documentClickHandler);
+      };
+      document.addEventListener('click', this.documentClickHandler, true);
+    }, 0);
   }
 
   private detachDocumentListener(): void {
     if (this.documentClickHandler) {
-      document.removeEventListener('click', this.documentClickHandler);
+      document.removeEventListener('click', this.documentClickHandler, true);
+      this.documentClickHandler = undefined;
     }
   }
 
@@ -76,6 +84,9 @@ export class DropdownMenuComponent extends LitElement {
     this.open = true;
     this.requestUpdate();
 
+    // Attach click-outside listener when menu opens
+    this.attachDocumentListener();
+
     // Adjust position after render
     requestAnimationFrame(() => this.adjustPosition());
   }
@@ -86,6 +97,7 @@ export class DropdownMenuComponent extends LitElement {
   close(): void {
     if (this.open) {
       this.open = false;
+      this.detachDocumentListener();
       this.dispatchEvent(new CustomEvent('menu-close', { bubbles: true, composed: true }));
     }
   }
