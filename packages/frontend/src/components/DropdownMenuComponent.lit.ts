@@ -121,10 +121,16 @@ export class DropdownMenuComponent extends LitElement {
       this.documentClickHandler = (e: Event) => {
         if (!this.open) return;
 
-        const target = e.target as HTMLElement;
+        const target = e.target as Node;
 
         // Don't close if clicking inside the dropdown menu itself
-        if (target.closest('.dropdown-menu-container') === this.menuContainer) {
+        // Check if click target is the menuContainer or inside it
+        if (target === this.menuContainer || this.menuContainer?.contains(target)) {
+          return;
+        }
+
+        // Don't close if clicking inside the shadow root
+        if (this.shadowRoot && this.shadowRoot.contains(target)) {
           return;
         }
 
@@ -146,10 +152,16 @@ export class DropdownMenuComponent extends LitElement {
     this.documentScrollHandler = (e: Event) => {
       if (!this.open) return;
 
-      const target = e.target as HTMLElement;
+      const target = e.target as Node;
 
       // Don't close if scrolling inside the dropdown menu itself
-      if (target.closest('.dropdown-menu-container') === this.menuContainer) {
+      // Check if scroll target is the menuContainer or inside it
+      if (target === this.menuContainer || this.menuContainer?.contains(target)) {
+        return;
+      }
+
+      // Don't close if scrolling inside the shadow root
+      if (this.shadowRoot && this.shadowRoot.contains(target)) {
         return;
       }
 
