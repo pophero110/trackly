@@ -26,14 +26,14 @@
     .header-content {
       display: flex;
       justify-content: space-between;
-      align-items: flex-start;
+      align-items: center;
       gap: var(--base-size-16);
     }
 
     .header-left {
       display: flex;
       align-items: center;
-      gap: var(--base-size-16);
+      gap: var(--base-size-24);
       flex: 1;
     }
 
@@ -44,7 +44,7 @@
     .header-nav {
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: var(--base-size-16)
     }
 
     .nav-link {
@@ -55,7 +55,6 @@
       font-weight: 500;
       color: var(--text-secondary);
       text-decoration: none;
-      padding: 8px var(--base-size-16);
       border-radius: var(--radius-sm);
       transition: var(--transition);
       white-space: nowrap;
@@ -79,83 +78,8 @@
       line-height: 1.2;
     }
 
-    .subtitle {
-      font-size: 1rem;
-      color: var(--text-secondary);
-      font-weight: 400;
-    }
-
-    .quote {
-      font-size: 1rem;
-      color: var(--text-muted);
-      font-weight: 400;
-      font-style: italic;
-      margin-top: 6px;
-    }
-
-    .header-menu {
-      position: relative;
-    }
-
-    .btn-hamburger {
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-      padding: 8px;
-      background: transparent;
-      border: none;
-      border-radius: var(--radius-sm);
-      cursor: pointer;
-      transition: var(--transition);
-    }
-
-    .btn-hamburger:hover {
-      background: var(--background);
-    }
-
-    .btn-hamburger:active {
-      transform: scale(0.95);
-    }
-
-    .hamburger-line {
-      width: 20px;
-      height: 2px;
-      background: var(--text-secondary);
-      border-radius: 2px;
-      transition: var(--transition);
-    }
-
-    .btn-hamburger:hover .hamburger-line {
-      background: var(--text-primary);
-    }
-
-    /* TODO: universal dropdown menu */
-    .dropdown-menu {
-      position: absolute;
-      top: calc(100% + 8px);
-      right: 0;
-      background: var(--background);
-      border: none;
-      border-radius: var(--radius-sm);
-      box-shadow: var(--shadow-lg);
-      min-width: 160px;
-      opacity: 0;
-      visibility: hidden;
-      transform: translateY(-8px);
-      transition: var(--transition);
-      z-index: 1000;
-      overflow: hidden;
-    }
-
-    .dropdown-menu.open {
-      opacity: 1;
-      visibility: visible;
-      transform: translateY(0);
-    }
-
-    .dropdown-item {
+    #signout-btn {
       width: 100%;
-      padding: 12px var(--base-size-16);
       font-size: 0.875rem;
       font-weight: 500;
       background: transparent;
@@ -169,12 +93,27 @@
       gap: 8px;
     }
 
-    .dropdown-item:hover {
+    #signout-btn:hover {
       color: var(--text-primary);
     }
 
-    .dropdown-item:active {
-      background: var(--border);
+    /* Responsive Design */
+    @media (max-width: 768px) {
+      .container {
+        height: 100svh;
+      }
+
+      header {
+        padding: 20px var(--base-size-16) 12px;
+      }
+
+      header h1 {
+        font-size: 1.5rem;
+      }
+
+      .nav-link {
+        font-size: 0.875rem;
+      }
     }
   </style>
   <link rel="stylesheet" href="/styles.css">
@@ -193,15 +132,8 @@
             <a href="#" id="entries-link" class="nav-link"><i class="ph-duotone ph-list-bullets"></i> Entries</a>
           </nav>
         </div>
-        <div class="header-menu">
-          <button class="btn-hamburger" id="hamburger-btn" aria-label="Menu">
-            <span class="hamburger-line"></span>
-            <span class="hamburger-line"></span>
-            <span class="hamburger-line"></span>
-          </button>
-          <div class="dropdown-menu" id="dropdown-menu">
-            <button class="dropdown-item" id="signout-btn"><i class="ph-duotone ph-sign-out"></i> Sign Out</button>
-          </div>
+        <div>
+          <button id="signout-btn"><i class="ph-duotone ph-sign-out"></i> Sign Out</button>
         </div>
       </div>
     </header>

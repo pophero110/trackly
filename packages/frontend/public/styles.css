@@ -110,7 +110,7 @@ entry-list {
   justify-content: center;
 }
 
-entry-list-header {
+.entity-section-header-actions {
   display: flex;
   margin-top: var(--base-size-16);
   justify-content: space-between;
@@ -119,7 +119,7 @@ entry-list-header {
   width: 100%;
 }
 
-.entity-section-header-actions {
+entry-list-header {
   display: flex;
   margin-top: var(--base-size-16);
   justify-content: space-between;
@@ -779,12 +779,6 @@ form {
   transform: translateY(-5px);
 }
 
-/* Ensure proper layering for card elements */
-.entity-card-header,
-.entity-recent-entry {
-  position: relative;
-}
-
 .entity-card-header {
   background: transparent;
   display: flex;
@@ -850,27 +844,6 @@ form {
   background: rgba(34, 197, 94, 0.12);
   color: #16a34a;
   border: 1px solid rgba(34, 197, 94, 0.2);
-}
-
-.entity-type.note,
-.entity-type.journal {
-  background: rgba(168, 85, 247, 0.12);
-  color: #9333ea;
-  border: 1px solid rgba(168, 85, 247, 0.2);
-}
-
-.entity-type.tracking {
-  background: rgba(59, 130, 246, 0.12);
-  color: #2563eb;
-  border: 1px solid rgba(59, 130, 246, 0.2);
-}
-
-.entity-type.decision,
-.entity-type.goal,
-.entity-type.plan {
-  background: rgba(245, 158, 11, 0.12);
-  color: #d97706;
-  border: 1px solid rgba(245, 158, 11, 0.2);
 }
 
 /* Entity Stats Progress Bar - 2026 Gradient Style */
@@ -1166,38 +1139,6 @@ input[type="datetime-local"] {
   min-height: 44px;
   -webkit-appearance: none;
   appearance: none;
-}
-
-/* Responsive Design */
-@media (max-width: 768px) {
-  .container {
-    height: 100svh;
-  }
-
-  header {
-    padding: 20px var(--base-size-16) 12px;
-  }
-
-  header h1 {
-    font-size: 1.5rem;
-  }
-
-  .header-left {
-    gap: 12px;
-  }
-
-  .header-nav {
-    gap: 8px;
-  }
-
-  .nav-link {
-    font-size: 0.875rem;
-    padding: 6px 12px;
-  }
-
-  form {
-    padding: var(--base-size-16);
-  }
 }
 
 @media (max-width: 480px) {
