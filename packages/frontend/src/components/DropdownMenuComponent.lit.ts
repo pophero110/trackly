@@ -1,4 +1,4 @@
-import { html, LitElement } from 'lit';
+import { html, css, LitElement } from 'lit';
 import { customElement, property, state, query } from 'lit/decorators.js';
 import { map } from 'lit/directives/map.js';
 
@@ -18,6 +18,75 @@ export interface DropdownMenuItem {
  */
 @customElement('dropdown-menu')
 export class DropdownMenuComponent extends LitElement {
+  static styles = css`
+    :host {
+      display: contents;
+    }
+
+    .dropdown-menu-container {
+      position: fixed;
+      background: var(--background, #F9FAFB);
+      border: none;
+      border-radius: var(--radius-sm, 8px);
+      box-shadow: var(--shadow-lg, 0 20px 25px -5px rgba(0, 0, 0, 0.08));
+      padding: 0;
+      min-width: 150px;
+      z-index: 10000;
+      -webkit-user-select: none;
+      -webkit-touch-callout: none;
+      user-select: none;
+    }
+
+    .menu-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 16px;
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: var(--text-secondary, #6B7280);
+      cursor: pointer;
+      transition: all 0.2s;
+      user-select: none;
+    }
+
+    .menu-item:hover {
+      background: var(--background, #F9FAFB);
+      color: var(--text-primary, #111827);
+    }
+
+    .menu-item.danger {
+      color: #ef4444;
+    }
+
+    .menu-item.danger:hover {
+      background: #fee2e2;
+      color: #dc2626;
+    }
+
+    .entity-color {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      .dropdown-menu-container {
+        background: var(--background, #1F2937);
+      }
+
+      .menu-item {
+        color: var(--text-secondary, #D1D5DB);
+      }
+
+      .menu-item:hover {
+        background: var(--background-secondary, #374151);
+        color: var(--text-primary, #F9FAFB);
+      }
+    }
+  `;
+
   @property({ type: Array })
   items: DropdownMenuItem[] = [];
 
@@ -35,11 +104,6 @@ export class DropdownMenuComponent extends LitElement {
 
   private documentClickHandler?: (e: Event) => void;
   private documentScrollHandler?: (e: Event) => void;
-
-  // Use Light DOM for compatibility with existing global styles
-  createRenderRoot() {
-    return this;
-  }
 
   connectedCallback(): void {
     super.connectedCallback();
@@ -221,14 +285,14 @@ export class DropdownMenuComponent extends LitElement {
 
     return html`
       <div
-        class="dropdown-menu-container context-menu"
-        style="display: block; position: fixed; left: ${this.position.x}px; top: ${this.position.y}px; max-height: 400px; overflow-y: auto;"
+        class="dropdown-menu-container"
+        style="left: ${this.position.x}px; top: ${this.position.y}px; max-height: 400px; overflow-y: auto;"
         @click=${(e: MouseEvent) => e.stopPropagation()}>
         ${map(this.items, item => html`
           <div
-            class="context-menu-item ${item.danger ? 'danger' : ''} ${item.color ? 'entity-dropdown-item' : ''}"
+            class="menu-item ${item.danger ? 'danger' : ''}"
             @click=${(e: MouseEvent) => this.handleItemClick(e, item)}>
-            ${item.color ? html`<span class="entity-dropdown-color" style="background: ${item.color};"></span>` : ''}
+            ${item.color ? html`<span class="entity-color" style="background: ${item.color};"></span>` : ''}
             ${item.icon ? html`<i class="${item.icon}"></i>` : ''}
             <span>${item.label}</span>
           </div>
