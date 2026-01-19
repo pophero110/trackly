@@ -1,5 +1,5 @@
 import { html, LitElement } from 'lit';
-import { customElement, property, state } from 'lit/decorators.js';
+import { customElement, property, state, query } from 'lit/decorators.js';
 import { map } from 'lit/directives/map.js';
 import { when } from 'lit/directives/when.js';
 import { Entry } from '../models/Entry.js';
@@ -12,6 +12,8 @@ import { getEntityColor } from '../utils/entryHelpers.js';
 import { Store } from '../state/Store.js';
 import { storeRegistry } from '../state/StoreRegistry.js';
 import { toast } from '../utils/toast.js';
+import './DropdownMenuComponent.lit.js';
+import type { DropdownMenuComponent, DropdownMenuItem } from './DropdownMenuComponent.lit.js';
 
 /**
  * EntryListItem Lit Component
@@ -23,15 +25,28 @@ export class EntryListItem extends LitElement {
   entry!: Entry;
 
   @state()
-  private contextMenuOpen: boolean = false;
-
-  @state()
   private entityDropdownOpen: boolean = false;
 
-  @state()
-  private menuPosition: { x: number; y: number } = { x: 0, y: 0 };
+  @query('dropdown-menu')
+  private dropdownMenu?: DropdownMenuComponent;
 
   private store!: Store;
+
+  private get menuItems(): DropdownMenuItem[] {
+    return [
+      {
+        id: 'archive',
+        label: 'Archive',
+        icon: 'ph-duotone ph-archive'
+      },
+      {
+        id: 'delete',
+        label: 'Delete',
+        icon: 'ph-duotone ph-trash',
+        danger: true
+      }
+    ];
+  }
 
   connectedCallback(): void {
     super.connectedCallback();
@@ -60,25 +75,14 @@ export class EntryListItem extends LitElement {
     const target = e.target as HTMLElement;
     const menuButton = target.closest('[data-action="menu"]') as HTMLElement;
 
-    if (this.contextMenuOpen) {
-      this.contextMenuOpen = false;
-      return;
-    }
+    if (!this.dropdownMenu || !menuButton) return;
 
-    // Calculate menu position
-    if (menuButton) {
-      const rect = menuButton.getBoundingClientRect();
-
-      // Set initial position (will be adjusted in updated() if needed)
-      this.menuPosition = { x: rect.right, y: rect.bottom + 4 };
-    }
-
-    this.contextMenuOpen = true;
+    const rect = menuButton.getBoundingClientRect();
+    this.dropdownMenu.openAt(rect.right, rect.bottom + 4);
   };
 
-  private handleContextMenuAction = (e: MouseEvent, action: string) => {
-    e.stopPropagation();
-    this.contextMenuOpen = false;
+  private handleMenuAction = (e: CustomEvent) => {
+    const { action } = e.detail;
 
     if (action === 'archive') {
       this.handleArchive();
@@ -94,7 +98,7 @@ export class EntryListItem extends LitElement {
 
   private handleEntityChipClick = (e: MouseEvent) => {
     e.stopPropagation();
-    this.contextMenuOpen = false;
+    this.dropdownMenu?.close();
     this.entityDropdownOpen = !this.entityDropdownOpen;
   };
 
@@ -190,12 +194,6 @@ export class EntryListItem extends LitElement {
   private handleDocumentClick = (e: Event) => {
     const target = e.target as HTMLElement;
 
-    // Close context menu if clicked outside
-    if (!target.closest(`[data-entry-id="${this.entry.id}"][data-action="menu"]`) &&
-      !target.closest('.entry-context-menu')) {
-      this.contextMenuOpen = false;
-    }
-
     // Close entity dropdown if clicked outside
     if (!target.closest('.entry-chip-entity-container')) {
       this.entityDropdownOpen = false;
@@ -206,44 +204,6 @@ export class EntryListItem extends LitElement {
     document.addEventListener('click', this.handleDocumentClick);
   }
 
-  updated(changedProperties: Map<string, any>) {
-    super.updated(changedProperties);
-
-    // Adjust menu position if context menu is open
-    if (this.contextMenuOpen) {
-      const menu = this.querySelector(`#entry-menu-${this.entry.id}`) as HTMLElement;
-      if (menu) {
-        const menuWidth = menu.offsetWidth;
-        const menuHeight = menu.offsetHeight;
-        const viewportWidth = window.innerWidth;
-        const viewportHeight = window.innerHeight;
-
-        let left = this.menuPosition.x;
-        let top = this.menuPosition.y;
-
-        // Adjust menu position to align right edge with button
-        const menuButton = this.querySelector(`[data-entry-id="${this.entry.id}"][data-action="menu"]`) as HTMLElement;
-        if (menuButton) {
-          const rect = menuButton.getBoundingClientRect();
-          left = rect.right - menuWidth;
-          top = rect.bottom + 4;
-        }
-
-        // Adjust if menu would go off right edge
-        if (left + menuWidth > viewportWidth) {
-          left = Math.max(8, viewportWidth - menuWidth - 8);
-        }
-
-        // Adjust if menu would go off bottom edge
-        if (top + menuHeight > viewportHeight) {
-          top = Math.max(8, viewportHeight - menuHeight - 8);
-        }
-
-        menu.style.left = `${left}px`;
-        menu.style.top = `${top}px`;
-      }
-    }
-  }
 
   disconnectedCallback(): void {
     super.disconnectedCallback();
@@ -512,21 +472,11 @@ export class EntryListItem extends LitElement {
       </div>
 
       <!-- Context Menu -->
-      ${when(this.contextMenuOpen, () => html`
-        <div
-          class="entry-context-menu"
-          id="entry-menu-${this.entry.id}"
-          style="display: block; position: fixed; left: ${this.menuPosition.x}px; top: ${this.menuPosition.y}px;">
-          <div class="context-menu-item" @click=${(e: MouseEvent) => this.handleContextMenuAction(e, 'archive')}>
-            <i class="ph-duotone ph-archive"></i>
-            <span>Archive</span>
-          </div>
-          <div class="context-menu-item danger" @click=${(e: MouseEvent) => this.handleContextMenuAction(e, 'delete')}>
-            <i class="ph-duotone ph-trash"></i>
-            <span>Delete</span>
-          </div>
-        </div>
-      `)}
+      <dropdown-menu
+        .items=${this.menuItems}
+        .menuId=${'entry-menu-' + this.entry.id}
+        @menu-action=${this.handleMenuAction}>
+      </dropdown-menu>
     `;
   }
 }
