@@ -68,8 +68,6 @@ export class EntryListComponent extends LitElement {
           .currentSortValue=${sortValue}
           .allEntries=${allEntries}>
         </entry-list-header>
-
-        <div class="entries-grid">
           ${repeat(
       Array.from(entriesByDate.entries()),
       ([dateKey]) => dateKey,
@@ -88,7 +86,6 @@ export class EntryListComponent extends LitElement {
               </div>
             `
     )}
-        </div>
     `;
   }
 }

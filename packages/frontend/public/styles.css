@@ -397,39 +397,6 @@ form {
   overflow: visible;
 }
 
-/* Entry Detail Footer */
-.entry-detail-footer {
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  padding: var(--base-size-24);
-  border-top: var(--border-light);
-  background: var(--background);
-}
-
-.entry-footer-hashtags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  align-items: center;
-}
-
-.hashtag-tag {
-  display: inline-flex;
-  align-items: center;
-  padding: 4px 10px;
-  background: var(--background-secondary);
-  font-size: 0.875rem;
-  color: var(--text-secondary);
-  transition: var(--transition);
-}
-
-.hashtag-tag:hover {
-  background: var(--background-hover);
-  color: var(--text-primary);
-}
-
 .action-menu-buttons {
   display: flex;
   gap: 8px;
@@ -570,20 +537,8 @@ form {
   justify-content: flex-end;
 }
 
-/* Entries Grid System - Single Column */
-.entries-grid {
-  display: grid;
-  grid-template-columns: minmax(0, 75ch);
-  gap: 16px;
-  justify-content: center;
-  align-content: start;
-}
-
 /* Responsive Entries Grid */
 @media (max-width: 768px) {
-  .entries-grid {
-    gap: 12px;
-  }
 
   entity-list,
   entry-list {
@@ -594,6 +549,10 @@ form {
 
 /* Timeline - Paper & Ink "Logbook" Style */
 .timeline-date-group {
+  display: grid;
+  grid-template-columns: minmax(0, 75ch);
+  justify-content: center;
+  align-content: start;
   margin-bottom: 48px;
 }
 
