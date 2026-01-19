@@ -8,8 +8,6 @@ import { EntityListController } from '../controllers/EntityListController.js';
 import { Entity } from '../models/Entity.js';
 import { escapeHtml } from '../utils/helpers.js';
 import { URLStateManager } from '../utils/urlState.js';
-import { getEntityColor } from '../utils/entryHelpers.js';
-import { toast } from '../utils/toast.js';
 
 /**
  * EntityList Lit Component for displaying entities in a grid layout
@@ -190,7 +188,6 @@ export class EntityListComponent extends LitElement {
 
     const activePercent = total > 0 ? (active / total) * 100 : 0;
     const archivedPercent = total > 0 ? (archived / total) * 100 : 0;
-    const entityColor = getEntityColor(entity.name);
 
     return html`
       <div class="entity-card ${isSelected ? 'selected' : ''}"
@@ -207,18 +204,18 @@ export class EntityListComponent extends LitElement {
                   data-action="menu"
                   @click=${(e: MouseEvent) => this.handleMenuButtonClick(e, entity.id)}>⋮</button>
           ${when(
-            entity.categories.length > 0,
-            () => html`
+      entity.categories.length > 0,
+      () => html`
               <div class="entity-categories">
                 ${map(entity.categories, cat => html`
                   <span class="entity-category-chip">${escapeHtml(cat)}</span>
                 `)}
               </div>
             `
-          )}
+    )}
           ${when(
-            total > 0,
-            () => html`
+      total > 0,
+      () => html`
               <div class="entity-stats-bar">
                 <div class="stats-bar-container">
                   <div class="stats-bar-fill stats-bar-active" style="width: ${activePercent}%"></div>
@@ -232,12 +229,12 @@ export class EntityListComponent extends LitElement {
                 </div>
               </div>
             `
-          )}
+    )}
         </div>
       </div>
       ${when(
-        this.openMenuId === entity.id,
-        () => html`
+      this.openMenuId === entity.id,
+      () => html`
           <div class="entity-context-menu"
                id="entity-menu-${entity.id}"
                style="display: block; position: fixed; left: ${this.menuPosition.x}px; top: ${this.menuPosition.y}px;"
@@ -260,7 +257,7 @@ export class EntityListComponent extends LitElement {
             </div>
           </div>
         `
-      )}
+    )}
     `;
   }
 
@@ -268,12 +265,10 @@ export class EntityListComponent extends LitElement {
     // Check if store is available and loaded
     if (!this.storeController.store || !this.storeController.isLoaded) {
       return html`
-        <div class="section">
           <div class="loading-state">
             <div class="spinner"></div>
             <p>Loading entities...</p>
           </div>
-        </div>
       `;
     }
 
@@ -295,7 +290,6 @@ export class EntityListComponent extends LitElement {
 
     if (entities.length === 0) {
       return html`
-        <div class="section">
           <div class="entity-section-header-actions">
             <button class="btn btn-primary" @click=${this.handleCreateClick}>
               <i class="ph ph-plus"></i>
@@ -303,12 +297,10 @@ export class EntityListComponent extends LitElement {
             </button>
           </div>
           <div class="empty-state">No entities yet. Create your first entity to get started!</div>
-        </div>
       `;
     }
 
     return html`
-      <div class="section">
         <div class="entity-section-header-actions">
           <div class="tag-filter-container">
             <button class="btn-tag-filter" id="sort-filter-btn" title="Sort by"
@@ -336,12 +328,11 @@ export class EntityListComponent extends LitElement {
         </div>
         <div class="page-grid">
           ${repeat(
-            entities,
-            (entity) => entity.id,
-            (entity) => this.renderEntityCard(entity)
-          )}
+      entities,
+      (entity) => entity.id,
+      (entity) => this.renderEntityCard(entity)
+    )}
         </div>
-      </div>
     `;
   }
 }

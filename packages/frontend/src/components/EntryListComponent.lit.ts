@@ -27,12 +27,10 @@ export class EntryListComponent extends LitElement {
     // Check if store is available and loaded
     if (!this.storeController.store || !this.storeController.isLoaded) {
       return html`
-        <div class="section">
           <div class="loading-state">
             <div class="spinner"></div>
             <p>Loading entries...</p>
           </div>
-        </div>
       `;
     }
 
@@ -48,7 +46,6 @@ export class EntryListComponent extends LitElement {
     if (entries.length === 0) {
       const msg = selectedEntity ? `No entries yet for ${selectedEntity.name}.` : 'No entries yet.';
       return html`
-        <div class="section">
           <entry-list-header
             .selectedEntity=${selectedEntity}
             .tagFilters=${tagFilters}
@@ -57,7 +54,6 @@ export class EntryListComponent extends LitElement {
             .allEntries=${allEntries}>
           </entry-list-header>
           <div class="empty-state">${msg}</div>
-        </div>
       `;
     }
 
@@ -65,7 +61,6 @@ export class EntryListComponent extends LitElement {
     const entriesByDate = this.listController.groupEntriesByDate(entries);
 
     return html`
-      <div class="section">
         <entry-list-header
           .selectedEntity=${selectedEntity}
           .tagFilters=${tagFilters}
@@ -76,25 +71,24 @@ export class EntryListComponent extends LitElement {
 
         <div class="entries-grid">
           ${repeat(
-            Array.from(entriesByDate.entries()),
-            ([dateKey]) => dateKey,
-            ([dateKey, dateEntries]) => html`
+      Array.from(entriesByDate.entries()),
+      ([dateKey]) => dateKey,
+      ([dateKey, dateEntries]) => html`
               <div class="timeline-date-group">
                 <div class="timeline-date-header">${dateKey}</div>
                 <div class="timeline-entries">
                   ${repeat(
-                    dateEntries,
-                    (entry) => entry.id,
-                    (entry) => html`
+        dateEntries,
+        (entry) => entry.id,
+        (entry) => html`
                       <entry-list-item .entry=${entry}></entry-list-item>
                     `
-                  )}
+      )}
                 </div>
               </div>
             `
-          )}
+    )}
         </div>
-      </div>
     `;
   }
 }

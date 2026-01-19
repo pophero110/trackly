@@ -254,8 +254,13 @@ header h1 {
 /* Web Components - ensure they take full height */
 entity-list,
 entry-list {
-  flex: 1;
-  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--base-size-24);
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+
 }
 
 /* Shared Layout Utilities */
@@ -264,70 +269,6 @@ entry-list {
   grid-template-columns: minmax(0, 75ch);
   gap: var(--base-size-16);
   justify-content: center;
-}
-
-/* Section */
-.section {
-  display: flex;
-  flex-direction: column;
-  gap: var(--base-size-24);
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-}
-
-.section-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: var(--base-size-16);
-  gap: var(--base-size-16);
-}
-
-.section-header-title {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.section h2 {
-  font-size: 1.25rem;
-  font-weight: 600;
-  color: var(--text-primary);
-  margin: 0;
-  letter-spacing: -0.025em;
-  line-height: 1;
-}
-
-.section-header-content {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: var(--base-size-16);
-}
-
-.section-header-text {
-  flex: 1;
-}
-
-.section-title {
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: var(--text-primary);
-  margin: 0 0 4px 0;
-  letter-spacing: -0.03em;
-  line-height: 1.2;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.section-subtitle {
-  font-size: 0.875rem;
-  color: var(--text-secondary);
-  margin: 0;
-  font-weight: 400;
-  line-height: 1.4;
 }
 
 entry-list-header {
@@ -922,12 +863,6 @@ form {
   word-break: break-word;
 }
 
-.timeline-entry-properties {
-  margin-bottom: 12px;
-  font-size: 0.875rem;
-  color: var(--text-secondary);
-}
-
 .timeline-entry-notes {
   margin-top: 12px;
   font-size: 0.9375rem;
@@ -944,10 +879,6 @@ form {
 
 .timeline-entry-notes>h1 {
   margin: 0;
-}
-
-/* Timeline entry notes headings - all base size 16px */
-.timeline-entry-notes h1 {
   font-size: 1rem;
   font-weight: 600;
   color: var(--text-primary);
@@ -986,11 +917,6 @@ form {
   .timeline-date-header {
     font-size: 0.8125rem;
     padding: 0 0 10px 0;
-  }
-
-  .timeline-entry-media {
-    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-    gap: 6px;
   }
 
   .timeline-date-group {
@@ -1047,10 +973,6 @@ form {
 
   .timeline-date-group {
     margin-bottom: 24px;
-  }
-
-  .section-header-content {
-    gap: 12px;
   }
 
   .quick-entry-input {
@@ -1232,10 +1154,6 @@ form {
 .stats-label-archived {
   font-weight: 500;
   color: #6b7280;
-}
-
-.section-header-title .entity-type {
-  margin: 0;
 }
 
 /* Entity category chip on entity cards */
@@ -2156,20 +2074,6 @@ input[type="datetime-local"] {
   }
 
   .entry-timestamp {
-    font-size: 0.875rem;
-  }
-
-  .section-header-content {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 12px;
-  }
-
-  .section-title {
-    font-size: 1.25rem;
-  }
-
-  .section-subtitle {
     font-size: 0.875rem;
   }
 
