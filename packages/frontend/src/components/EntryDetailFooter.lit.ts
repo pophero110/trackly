@@ -90,7 +90,7 @@ export class EntryDetailFooter extends LitElement {
             class="footer-action-btn"
             @click=${this.triggerFileInput}
             title="Upload image">
-            <i class="ph-duotone ph-paperclip"></i>
+            <i class="ph ph-paperclip"></i>
           </button>
           <input
             type="file"
