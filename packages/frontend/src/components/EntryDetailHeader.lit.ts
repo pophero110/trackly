@@ -1,4 +1,4 @@
-import { html, LitElement } from 'lit';
+import { css, html, LitElement } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { map } from 'lit/directives/map.js';
 import { when } from 'lit/directives/when.js';
@@ -97,8 +97,6 @@ export class EntryDetailHeader extends LitElement {
     const formattedDate = formatDate(this.entry.timestamp);
 
     return html`
-      <div class="entry-detail-header-section">
-        <div class="entry-detail-header-top">
           <div class="entry-detail-entity-time">
             <div class="entry-chip-entity-container" style="position: relative;">
               <span
@@ -111,8 +109,8 @@ export class EntryDetailHeader extends LitElement {
                 </svg>
               </span>
               ${when(
-                this.entityDropdownOpen,
-                () => html`
+      this.entityDropdownOpen,
+      () => html`
                   <div class="entity-dropdown-menu" style="display: block;">
                     ${map(this.allEntities, entity => html`
                       <div
@@ -124,7 +122,7 @@ export class EntryDetailHeader extends LitElement {
                     `)}
                   </div>
                 `
-              )}
+    )}
             </div>
             <span class="entry-detail-timestamp">${formattedDate}</span>
           </div>
@@ -135,8 +133,8 @@ export class EntryDetailHeader extends LitElement {
           </div>
 
           ${when(
-            this.menuOpen,
-            () => html`
+      this.menuOpen,
+      () => html`
               <div class="entry-detail-menu" style="display: block;">
                 <div class="context-menu-item" @click=${(e: Event) => this.handleMenuAction(e, 'copy')}>
                   <i class="ph-duotone ph-copy"></i>
@@ -152,9 +150,7 @@ export class EntryDetailHeader extends LitElement {
                 </div>
               </div>
             `
-          )}
-        </div>
-      </div>
+    )}
     `;
   }
 }

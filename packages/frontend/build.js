@@ -1,6 +1,8 @@
 import * as esbuild from 'esbuild';
 
-await esbuild.build({
+const isWatch = process.argv.includes('--watch');
+
+const config = {
   entryPoints: ['src/app.ts'],
   bundle: true,
   outfile: 'public/dist/app.js',
@@ -18,6 +20,13 @@ await esbuild.build({
       useDefineForClassFields: false
     }
   }
-});
+};
 
-console.log('✓ Build complete');
+if (isWatch) {
+  const ctx = await esbuild.context(config);
+  await ctx.watch();
+  console.log('👀 Watching for changes...');
+} else {
+  await esbuild.build(config);
+  console.log('✓ Build complete');
+}

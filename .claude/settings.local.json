@@ -27,7 +27,18 @@
       "Bash(git mv:*)",
       "Bash(pnpm --filter @trackly/frontend run build:*)",
       "Bash(pnpm --filter @trackly/frontend add:*)",
-      "Bash(git restore:*)"
+      "Bash(git restore:*)",
+      "Bash(for class in \"entry-detail-container\" \"entry-detail-header-section\" \"entry-detail-header-top\" \"entry-detail-entity-time\" \"entry-detail-header-actions\" \"entry-detail-close-btn\" \"entry-detail-menu\" \"entry-detail-value\" \"entry-detail-properties-inline\" \"property-label\" \"property-separator\" \"entry-detail-editor-wrapper\" \"entry-detail-notes-editor\" \"entry-detail-footer-section\" \"entry-detail-hashtags\" \"entry-detail-hashtag\" \"entry-detail-location\")",
+      "Bash(do)",
+      "Bash(if grep -q \"\\.$class\" /Users/jiajinou/Projects/trackly/packages/frontend/public/styles.css)",
+      "Bash(then)",
+      "Bash(echo:*)",
+      "Bash(else)",
+      "Bash(fi)",
+      "Bash(done)",
+      "Bash(git revert:*)",
+      "Bash(git stash:*)",
+      "Bash(node build.js:*)"
     ],
     "deny": [],
     "ask": []

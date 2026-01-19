@@ -1,4 +1,4 @@
-import { html, LitElement } from 'lit';
+import { css, html, LitElement } from 'lit';
 import { customElement } from 'lit/decorators.js';
 import { when } from 'lit/directives/when.js';
 import { StoreController } from '../controllers/StoreController.js';
@@ -23,6 +23,13 @@ import './EntryDetailFooter.lit.js';
  */
 @customElement('entry-detail')
 export class EntryDetailComponent extends LitElement {
+  static styles = css`
+    :host {
+      display: block;
+      height: 100%;
+    }
+    `
+
   // Controllers handle all logic
   private storeController = new StoreController(this);
   private detailController = new EntryDetailController(this, this.storeController);
@@ -96,21 +103,17 @@ export class EntryDetailComponent extends LitElement {
     // Check if store is available and loaded
     if (!this.storeController.store || !this.storeController.isLoaded) {
       return html`
-        <div class="entry-detail-container">
           <div class="loading-state">
             <div class="spinner"></div>
             <p>Loading entry...</p>
           </div>
-        </div>
       `;
     }
 
     // Check if we have an entry to display
     if (!this.detailController.entry || !this.detailController.entity) {
       return html`
-        <div class="entry-detail-container">
           <div class="empty-state">Entry not found</div>
-        </div>
       `;
     }
 
@@ -120,7 +123,6 @@ export class EntryDetailComponent extends LitElement {
     const hashtags = this.detailController.getHashtags();
 
     return html`
-      <div class="entry-detail-container">
         <div class="entry-detail-content">
           <entry-detail-header
             .entry=${entry}
@@ -131,14 +133,14 @@ export class EntryDetailComponent extends LitElement {
           </entry-detail-header>
 
           ${when(
-            entry.value !== undefined || (entity.properties && entity.properties.length > 0),
-            () => html`
+      entry.value !== undefined || (entity.properties && entity.properties.length > 0),
+      () => html`
               <entry-detail-properties
                 .entry=${entry}
                 .entity=${entity}>
               </entry-detail-properties>
             `
-          )}
+    )}
 
           <entry-detail-editor
             .notes=${this.detailController.editedNotes}
@@ -150,7 +152,6 @@ export class EntryDetailComponent extends LitElement {
             .hashtags=${hashtags}>
           </entry-detail-footer>
         </div>
-      </div>
     `;
   }
 }

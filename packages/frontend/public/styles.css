@@ -265,8 +265,7 @@ header h1 {
 
 /* Web Components - ensure they take full height */
 entity-list,
-entry-list,
-entry-detail {
+entry-list {
   flex: 1;
   min-height: 0;
 }
@@ -3666,12 +3665,11 @@ slide-panel:not(.active) .slide-panel-container {
   overflow-y: hidden;
 }
 
-.entry-detail-header {
+entry-detail-header {
   flex-shrink: 0;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0 var(--base-size-24);
 }
 
 .entry-detail-actions {
@@ -3700,7 +3698,7 @@ slide-panel:not(.active) .slide-panel-container {
   transform: scale(0.95);
 }
 
-.entry-detail-header .entry-menu-btn {
+entry-detail-header entry-menu-btn {
   opacity: 1;
   flex-shrink: 0;
 }
@@ -3751,7 +3749,7 @@ slide-panel:not(.active) .slide-panel-container {
 
 .entry-detail-content {
   flex: 1;
-  padding: 0 var(--base-size-24);
+  padding: var(--base-size-24);
   overflow-y: auto;
 }
 
