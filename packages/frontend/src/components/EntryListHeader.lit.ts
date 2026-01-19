@@ -71,11 +71,14 @@ export class EntryListHeader extends LitElement {
     const target = e.target as HTMLInputElement;
     const tag = target.value;
 
-    if (target.checked) {
-      URLStateManager.addTagFilter(tag);
-    } else {
-      URLStateManager.removeTagFilter(tag);
-    }
+    // Single selection - set only this tag as the filter
+    URLStateManager.setTagFilters([tag]);
+    this.tagMenuOpen = false;
+  };
+
+  private handleClearTagFilter = () => {
+    URLStateManager.setTagFilters([]);
+    this.tagMenuOpen = false;
   };
 
   private handleQuickEntrySubmit = async (e: KeyboardEvent) => {
@@ -150,9 +153,9 @@ export class EntryListHeader extends LitElement {
     });
     const availableTags = Array.from(allTags).sort();
 
-    const selectedTagChips = this.tagFilters.map(tag =>
-      html`<span class="tag-chip-inline">#${tag}</span>`
-    );
+    // Get current tag filter (single selection)
+    const currentTag = this.tagFilters.length > 0 ? this.tagFilters[0] : null;
+    const currentTagLabel = currentTag ? `#${currentTag}` : 'All Tags';
 
     return html`
         <div class="header-filters-row">
@@ -190,23 +193,34 @@ export class EntryListHeader extends LitElement {
       () => html`
               <div class="tag-filter-container">
                 <button
-                  class="btn-tag-filter ${this.tagFilters.length > 0 ? 'has-filters' : ''}"
+                  class="btn-tag-filter"
                   id="tag-filter-btn"
                   title="Filter by tags"
                   @click=${(e: Event) => { e.stopPropagation(); this.tagMenuOpen = !this.tagMenuOpen; }}>
                   <i class="ph-duotone ph-tag"></i>
-                  ${selectedTagChips}
+                  <span>${currentTagLabel}</span>
                 </button>
                 <div
                   class="tag-filter-menu"
                   id="tag-filter-menu"
                   style="display: ${this.tagMenuOpen ? 'block' : 'none'};">
+                  <!-- "All Tags" option to clear filter -->
+                  <label class="tag-filter-option">
+                    <input
+                      type="radio"
+                      name="tag-filter-option"
+                      value=""
+                      ?checked=${!currentTag}
+                      @change=${this.handleClearTagFilter}>
+                    <span>All Tags</span>
+                  </label>
                   ${map(availableTags, tag => html`
                     <label class="tag-filter-option">
                       <input
-                        type="checkbox"
+                        type="radio"
+                        name="tag-filter-option"
                         value="${escapeHtml(tag)}"
-                        ?checked=${this.tagFilters.includes(tag)}
+                        ?checked=${currentTag === tag}
                         @change=${this.handleTagFilterChange}>
                       <span>#${escapeHtml(tag)}</span>
                     </label>
