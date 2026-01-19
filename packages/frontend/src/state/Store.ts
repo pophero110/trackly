@@ -285,13 +285,27 @@ export class Store {
             throw new Error('Entry not found');
         }
 
-        // Archive via API
-        await APIClient.archiveEntry(id, isArchived);
+        // Store original entry for rollback
+        const originalEntry = this.entries[index];
 
-        // Reload entries with current sort to ensure correct order and filtering
-        const sortBy = URLStateManager.getSortBy() || undefined;
-        const sortOrder = URLStateManager.getSortOrder() || undefined;
-        await this.reloadEntries(sortBy, sortOrder);
+        // Optimistic update: Remove from local state immediately
+        this.entries.splice(index, 1);
+        this.notify(); // Trigger immediate re-render
+
+        try {
+            // Archive via API in the background
+            await APIClient.archiveEntry(id, isArchived);
+
+            // Reload entries with current sort to ensure correct order and filtering
+            const sortBy = URLStateManager.getSortBy() || undefined;
+            const sortOrder = URLStateManager.getSortOrder() || undefined;
+            await this.reloadEntries(sortBy, sortOrder);
+        } catch (error) {
+            // If API call fails, restore the entry
+            this.entries.splice(index, 0, originalEntry);
+            this.notify();
+            throw error;
+        }
     }
 
     // Selected entity operations

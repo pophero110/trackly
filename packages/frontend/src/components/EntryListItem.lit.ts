@@ -176,9 +176,11 @@ export class EntryListItem extends LitElement {
       return;
     }
 
+    // Show success toast immediately (optimistic update)
+    toast.success('Entry archived successfully');
+
     try {
       await this.store.archiveEntry(this.entry.id, true);
-      toast.success('Entry archived successfully');
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Unknown error';
       toast.error(`Error archiving entry: ${message}`);

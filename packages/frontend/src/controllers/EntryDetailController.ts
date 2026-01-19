@@ -214,10 +214,12 @@ export class EntryDetailController implements ReactiveController {
   async archiveEntry(): Promise<void> {
     if (!this.entry || !this.storeController.store) return;
 
+    // Show success toast and navigate immediately (optimistic update)
+    toast.success('Entry archived successfully');
+    URLStateManager.goBack();
+
     try {
       await this.storeController.store.archiveEntry(this.entry.id, true);
-      toast.success('Entry archived successfully');
-      URLStateManager.goBack();
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Unknown error';
       toast.error(`Error archiving entry: ${message}`);
