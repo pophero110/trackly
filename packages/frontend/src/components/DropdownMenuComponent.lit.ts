@@ -19,6 +19,9 @@ export interface DropdownMenuItem {
 @customElement('dropdown-menu')
 export class DropdownMenuComponent extends LitElement {
   static styles = css`
+    @import url('https://unpkg.com/@phosphor-icons/web@2.0.3/src/duotone/style.css');
+    @import url('https://unpkg.com/@phosphor-icons/web@2.0.3/src/regular/style.css');
+
     :host {
       display: contents;
     }
