@@ -74,6 +74,8 @@
   margin: 0;
   padding: 0;
   box-sizing: border-box;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 body {
@@ -1362,30 +1364,6 @@ form {
   background: var(--background);
 }
 
-.entry-media-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 12px;
-}
-
-.entry-media-card {
-  background: transparent;
-  border: none;
-  border-radius: 8px;
-  overflow: hidden;
-  transition: transform 0.2s;
-}
-
-.entry-media-card:hover {
-  transform: scale(1.02);
-}
-
-.entry-media-image {
-  width: 100%;
-  height: auto;
-  display: block;
-}
-
 /* Placeholder States */
 .placeholder,
 .empty-state,
@@ -1459,43 +1437,6 @@ input[type="datetime-local"] {
   form {
     padding: var(--base-size-16);
   }
-
-  .entities-list {
-    padding: var(--base-size-16);
-  }
-
-  .entries-list {
-    padding: var(--base-size-16);
-  }
-
-  .entry-header {
-    align-items: flex-start;
-    gap: 4px;
-  }
-
-  .entry-timestamp {
-    font-size: 0.875rem;
-  }
-
-  /* Add bottom padding to entries container to prevent content from being hidden behind sticky input */
-  .entries-container {
-    padding-bottom: 80px;
-  }
-
-  .quick-entry-select {
-    min-width: 120px;
-    flex: 1;
-  }
-
-  .quick-entry-submit {
-    padding: 6px 10px;
-  }
-
-  .entity-filter-select,
-  .tag-filter-select {
-    flex: 1;
-    min-width: 100px;
-  }
 }
 
 @media (max-width: 480px) {
@@ -1513,21 +1454,6 @@ input[type="datetime-local"] {
     align-items: start;
   }
 
-  /* Add bottom padding to entries container to prevent content from being hidden behind sticky input */
-  .entries-container {
-    padding-bottom: 80px;
-  }
-
-  .quick-entry-select {
-    font-size: 0.875rem;
-    padding: 7px 10px;
-    min-width: 100px;
-  }
-
-  .quick-entry-submit {
-    padding: 5px 8px;
-  }
-
   .btn-tag-filter {
     padding: 7px 0px;
     font-size: 0.8125rem;
@@ -1538,13 +1464,6 @@ input[type="datetime-local"] {
   .btn-tag-filter svg {
     margin: 0;
   }
-
-}
-
-/* Smooth Transitions */
-* {
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
 }
 
 /* Focus Visible for Accessibility */
