@@ -15,6 +15,8 @@ import { toast } from '../utils/toast.js';
 import './DropdownMenuComponent.lit.js';
 import type { DropdownMenuComponent, DropdownMenuItem } from './DropdownMenuComponent.lit.js';
 
+type OpenDropdown = 'context-menu' | 'entity-menu' | null;
+
 /**
  * EntryListItem Lit Component
  * Displays a single entry card with all its details
@@ -23,6 +25,9 @@ import type { DropdownMenuComponent, DropdownMenuItem } from './DropdownMenuComp
 export class EntryListItem extends LitElement {
   @property({ type: Object })
   entry!: Entry;
+
+  @state()
+  private openDropdown: OpenDropdown = null;
 
   @query('dropdown-menu[data-menu-type="context"]')
   private contextMenu?: DropdownMenuComponent;
@@ -87,6 +92,12 @@ export class EntryListItem extends LitElement {
 
     if (!this.contextMenu || !menuButton) return;
 
+    // Close entity menu if open
+    if (this.openDropdown === 'entity-menu') {
+      this.entityMenu?.close();
+    }
+
+    this.openDropdown = 'context-menu';
     const rect = menuButton.getBoundingClientRect();
     this.contextMenu.openAt(rect.right, rect.bottom + 4);
   };
@@ -113,7 +124,12 @@ export class EntryListItem extends LitElement {
 
     if (!this.entityMenu || !entityChip) return;
 
-    this.contextMenu?.close();
+    // Close context menu if open
+    if (this.openDropdown === 'context-menu') {
+      this.contextMenu?.close();
+    }
+
+    this.openDropdown = 'entity-menu';
     const rect = entityChip.getBoundingClientRect();
     this.entityMenu.openAt(rect.left, rect.bottom + 4);
   };
@@ -122,6 +138,18 @@ export class EntryListItem extends LitElement {
     const { data } = e.detail;
     if (data) {
       this.handleEntityChange(data as Entity);
+    }
+  };
+
+  private handleContextMenuClose = () => {
+    if (this.openDropdown === 'context-menu') {
+      this.openDropdown = null;
+    }
+  };
+
+  private handleEntityMenuClose = () => {
+    if (this.openDropdown === 'entity-menu') {
+      this.openDropdown = null;
     }
   };
 
@@ -462,7 +490,8 @@ export class EntryListItem extends LitElement {
         data-menu-type="context"
         .items=${this.contextMenuItems}
         .menuId=${'entry-menu-' + this.entry.id}
-        @menu-action=${this.handleContextMenuAction}>
+        @menu-action=${this.handleContextMenuAction}
+        @menu-close=${this.handleContextMenuClose}>
       </dropdown-menu>
 
       <!-- Entity Selector Menu -->
@@ -470,7 +499,8 @@ export class EntryListItem extends LitElement {
         data-menu-type="entity"
         .items=${this.entityMenuItems}
         .menuId=${'entity-selector-' + this.entry.id}
-        @menu-action=${this.handleEntityMenuAction}>
+        @menu-action=${this.handleEntityMenuAction}
+        @menu-close=${this.handleEntityMenuClose}>
       </dropdown-menu>
     `;
   }
