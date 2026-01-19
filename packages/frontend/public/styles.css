@@ -299,16 +299,6 @@ entry-list {
   line-height: 1;
 }
 
-/* Stronger Section Header Design - Paper & Ink 2026 */
-.section-header-strong {
-  background: transparent;
-  border-bottom: 1px solid var(--border-light);
-  padding: 20px var(--base-size-24) 16px;
-  box-shadow: var(--shadow-ambient);
-  flex-shrink: 0;
-  /* Don't shrink header */
-}
-
 .section-header-content {
   display: flex;
   justify-content: space-between;
@@ -957,12 +947,7 @@ form {
 }
 
 /* Timeline entry notes headings - all base size 16px */
-.timeline-entry-notes h1,
-.timeline-entry-notes h2,
-.timeline-entry-notes h3,
-.timeline-entry-notes h4,
-.timeline-entry-notes h5,
-.timeline-entry-notes h6 {
+.timeline-entry-notes h1 {
   font-size: 1rem;
   font-weight: 600;
   color: var(--text-primary);
@@ -972,58 +957,11 @@ form {
   word-break: break-word;
 }
 
-/* Timeline entry notes code/pre blocks - prevent overflow */
-.timeline-entry-notes pre,
-.timeline-entry-notes code {
-  max-width: 100%;
-  overflow-x: auto;
-  word-wrap: break-word;
-  white-space: pre-wrap;
-}
-
-.timeline-entry-notes pre {
-  overflow-x: auto;
-}
-
-/* Timeline entry notes images - constrain width */
-.timeline-entry-notes img {
-  max-width: 100%;
-  height: auto;
-}
-
 .timeline-entry-tags {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
   margin-top: 12px;
-}
-
-.timeline-entry-metadata {
-  margin-top: 12px;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 0.875rem;
-  color: var(--text-secondary);
-}
-
-.timeline-entry-location i {
-  font-size: 1rem;
-}
-
-.timeline-entry-media {
-  margin-top: 16px;
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-  gap: 8px;
-}
-
-.timeline-media-image {
-  width: 100%;
-  height: 120px;
-  object-fit: cover;
-  border-radius: var(--radius-md);
-  border: 1px solid var(--border-light);
 }
 
 /* Responsive Timeline */
@@ -1053,10 +991,6 @@ form {
   .timeline-entry-media {
     grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
     gap: 6px;
-  }
-
-  .timeline-media-image {
-    height: 100px;
   }
 
   .timeline-date-group {
@@ -1111,23 +1045,8 @@ form {
     padding: 3px 8px;
   }
 
-  .timeline-entry-metadata {
-    font-size: 0.8125rem;
-    margin-top: 8px;
-  }
-
-  .timeline-entry-properties {
-    font-size: 0.8125rem;
-    margin-bottom: 8px;
-  }
-
   .timeline-date-group {
     margin-bottom: 24px;
-  }
-
-  /* Improve section header on mobile */
-  .section-header-strong {
-    padding: 12px var(--base-size-16);
   }
 
   .section-header-content {
@@ -1824,45 +1743,6 @@ form {
   color: var(--text-primary);
 }
 
-.location-display {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 10px 14px;
-  background: rgba(59, 130, 246, 0.05);
-  border: 1px solid rgba(59, 130, 246, 0.15);
-  border-radius: 8px;
-  margin-bottom: var(--base-size-16);
-  font-size: 0.875rem;
-}
-
-.location-text {
-  flex: 1;
-  color: var(--text-primary);
-}
-
-.btn-remove-location {
-  background: none;
-  border: none;
-  color: var(--text-secondary);
-  cursor: pointer;
-  font-size: 1.25rem;
-  line-height: 1;
-  padding: 0;
-  width: 20px;
-  height: 20px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 4px;
-  transition: all 0.2s;
-}
-
-.btn-remove-location:hover {
-  background: rgba(0, 0, 0, 0.05);
-  color: var(--text-primary);
-}
-
 /* Entry Meta Chips - Entity and Categories */
 .entry-meta-chips {
   display: flex;
@@ -2277,10 +2157,6 @@ input[type="datetime-local"] {
 
   .entry-timestamp {
     font-size: 0.875rem;
-  }
-
-  .section-header-strong {
-    padding: var(--base-size-16);
   }
 
   .section-header-content {
@@ -3118,11 +2994,6 @@ entry-detail-header entry-menu-btn {
   line-height: 1.4;
 }
 
-/* Primary Content (Notes) */
-.entry-primary-content {
-  padding: 0;
-}
-
 .entry-detail-section {
   background: transparent;
   border: none;
@@ -3135,27 +3006,6 @@ entry-detail-header entry-menu-btn {
   font-weight: 600;
   color: var(--text-primary);
   margin-bottom: 12px;
-}
-
-.entry-location-detail {
-  font-size: 0.9375rem;
-  color: var(--text-secondary);
-}
-
-.location-link {
-  color: var(--primary);
-  text-decoration: none;
-  transition: var(--transition);
-}
-
-.location-link:hover {
-  text-decoration: underline;
-}
-
-.entry-value-detail {
-  font-size: 1.125rem;
-  font-weight: 500;
-  color: var(--text-primary);
 }
 
 entry-detail-editor {

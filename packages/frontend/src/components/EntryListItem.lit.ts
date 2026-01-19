@@ -190,7 +190,7 @@ export class EntryListItem extends LitElement {
 
     // Close context menu if clicked outside
     if (!target.closest(`[data-entry-id="${this.entry.id}"][data-action="menu"]`) &&
-        !target.closest('.entry-context-menu')) {
+      !target.closest('.entry-context-menu')) {
       this.contextMenuOpen = false;
     }
 
@@ -457,8 +457,8 @@ export class EntryListItem extends LitElement {
                   </span>
                   <div class="entity-dropdown-menu" style="display: ${this.entityDropdownOpen ? 'block' : 'none'};">
                     ${map(allEntities, e => {
-                      const color = getEntityColor(e.name);
-                      return html`
+      const color = getEntityColor(e.name);
+      return html`
                         <div
                           class="context-menu-item entity-dropdown-item"
                           data-entity-id="${e.id}"
@@ -467,7 +467,7 @@ export class EntryListItem extends LitElement {
                           ${escapeHtml(e.name)}
                         </div>
                       `;
-                    })}
+    })}
                   </div>
                 </div>
               `)}
@@ -482,13 +482,13 @@ export class EntryListItem extends LitElement {
           </div>
 
           ${when(
-            entity && entity.properties && entity.properties.length > 0 && this.entry.propertyValues,
-            () => html`
+      entity && entity.properties && entity.properties.length > 0 && this.entry.propertyValues,
+      () => html`
               <div class="timeline-entry-properties">
                 ${this.renderPropertyValues(entity!.properties!, this.entry.propertyValues!, this.entry.propertyValueDisplays)}
               </div>
             `
-          )}
+    )}
 
           ${when(notesHtml, () => html`
             <div class="timeline-entry-notes" .innerHTML=${notesHtml}></div>
@@ -506,24 +506,6 @@ export class EntryListItem extends LitElement {
               `)}
             </div>
           `)}
-
-          ${when(
-            this.entry.latitude && this.entry.longitude,
-            () => html`
-              <div class="timeline-entry-metadata">
-                <span class="timeline-entry-location">
-                  <i class="ph ph-map-pin"></i>
-                  <a
-                    href="https://www.google.com/maps?q=${this.entry.latitude},${this.entry.longitude}"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    class="location-link">
-                    ${this.entry.locationName || `${this.entry.latitude!.toFixed(4)}, ${this.entry.longitude!.toFixed(4)}`}
-                  </a>
-                </span>
-              </div>
-            `
-          )}
         </div>
       </div>
 

@@ -19,7 +19,7 @@ import './EntryDetailFooter.lit.js';
  * - EntryDetailHeader: Entity chip, timestamp, menu
  * - EntryDetailProperties: Entry value and custom properties
  * - EntryDetailEditor: Milkdown markdown editor
- * - EntryDetailFooter: Hashtags and location
+ * - EntryDetailFooter: Hashtags
  */
 @customElement('entry-detail')
 export class EntryDetailComponent extends LitElement {

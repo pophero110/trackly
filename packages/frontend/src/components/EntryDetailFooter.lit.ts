@@ -51,19 +51,6 @@ export class EntryDetailFooter extends LitElement {
             `)}
           </div>
         `)}
-
-        ${when(hasLocation, () => html`
-          <div class="entry-detail-location">
-            <i class="ph ph-map-pin"></i>
-            <a
-              href="https://www.google.com/maps?q=${this.entry.latitude},${this.entry.longitude}"
-              target="_blank"
-              rel="noopener noreferrer"
-              class="location-link">
-              ${this.entry.locationName || `${this.entry.latitude!.toFixed(4)}, ${this.entry.longitude!.toFixed(4)}`}
-            </a>
-          </div>
-        `)}
       </div>
     `;
   }
