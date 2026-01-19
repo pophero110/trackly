@@ -10,7 +10,6 @@ import './components/EntityListComponent.lit.js'; // Lit version (self-registeri
 import './components/EntryListComponent.lit.js'; // Lit version (self-registering)
 import './components/EntryDetailComponent.lit.js'; // Lit version (self-registering)
 import './components/AuthComponent.js'; // Register custom element
-import './components/TestLitComponent.js'; // Test Lit component
 import { APIClient } from './api/client.js';
 
 /**
@@ -33,9 +32,6 @@ class TracklyApp {
 
     // Register all Web Components
     this.registerComponents();
-
-    // Add test Lit component after store is initialized
-    this.addTestComponent();
 
     // Set up view routing
     this.setupViewRouting();
@@ -340,16 +336,6 @@ class TracklyApp {
     // entity-list is registered via @customElement decorator in EntityListComponent.lit.ts
     // entry-list is registered via @customElement decorator in EntryListComponent.lit.ts
     // entry-detail is registered via @customElement decorator in EntryDetailComponent.lit.ts
-    // Note: test-lit-component is registered via @customElement decorator
-  }
-
-  private addTestComponent(): void {
-    // Add test Lit component to the page after store is initialized
-    const container = document.getElementById('test-lit-container');
-    if (container) {
-      const testComponent = document.createElement('test-lit-component');
-      container.appendChild(testComponent);
-    }
   }
 
   private setupSignOut(): void {
