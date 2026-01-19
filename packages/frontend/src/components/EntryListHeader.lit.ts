@@ -110,64 +110,6 @@ export class EntryListHeader extends LitElement {
     }
   };
 
-  private handleEntityMenuAction = (e: MouseEvent, action: string) => {
-    e.stopPropagation();
-    if (!this.selectedEntity) return;
-
-    const entityId = this.selectedEntity.id;
-    this.entityMenuOpen = false;
-
-    if (action === 'delete') {
-      this.handleEntityDelete(entityId);
-    } else if (action === 'edit') {
-      URLStateManager.openEditEntityPanel(this.selectedEntity.name);
-    } else if (action === 'clone') {
-      URLStateManager.openCloneEntityPanel(this.selectedEntity.name);
-    }
-  };
-
-  private handleEntityDelete(entityId: string): void {
-    if (!this.store) return;
-
-    const entity = this.store.getEntityById(entityId);
-    if (!entity) return;
-
-    if (!confirm(`Are you sure you want to delete "${entity.name}"? All entries associated with this entity will also be deleted.`)) {
-      return;
-    }
-
-    try {
-      this.store.deleteEntity(entityId);
-      URLStateManager.showHome();
-    } catch (error) {
-      const message = error instanceof Error ? error.message : 'Unknown error';
-      alert(`Error deleting entity: ${message}`);
-    }
-  }
-
-  private handleDocumentClick = (e: Event) => {
-    const target = e.target as HTMLElement;
-
-    // Close sort menu if clicked outside
-    if (!target.closest('#sort-filter-btn') && !target.closest('#sort-filter-menu')) {
-      this.sortMenuOpen = false;
-    }
-
-    // Close tag menu if clicked outside
-    if (!target.closest('#tag-filter-btn') && !target.closest('#tag-filter-menu')) {
-      this.tagMenuOpen = false;
-    }
-
-    // Close entity menu if clicked outside
-    if (!target.closest('#entity-page-menu-btn') && !target.closest('#entity-page-menu')) {
-      this.entityMenuOpen = false;
-    }
-  };
-
-  firstUpdated() {
-    document.addEventListener('click', this.handleDocumentClick);
-  }
-
   updated() {
     // Adjust entity menu position if open
     if (this.entityMenuOpen && this.selectedEntity) {
@@ -187,7 +129,6 @@ export class EntryListHeader extends LitElement {
 
   disconnectedCallback(): void {
     super.disconnectedCallback();
-    document.removeEventListener('click', this.handleDocumentClick);
   }
 
   render() {
@@ -270,45 +211,6 @@ export class EntryListHeader extends LitElement {
                       <span>#${escapeHtml(tag)}</span>
                     </label>
                   `)}
-                </div>
-              </div>
-            `
-    )}
-
-          <!-- Hashtag Filter Badge -->
-          ${when(
-      this.hashtagFilter,
-      () => html`
-              <span class="hashtag-filter-badge">
-                #${this.hashtagFilter}
-                <button class="clear-hashtag" @click=${this.handleClearHashtag}>×</button>
-              </span>
-            `
-    )}
-
-          <!-- Entity Page Menu -->
-          ${when(
-      this.selectedEntity,
-      () => html`
-              <button
-                class="entry-menu-btn"
-                id="entity-page-menu-btn"
-                data-entity-id="${this.selectedEntity!.id}"
-                @click=${(e: Event) => { e.stopPropagation(); this.entityMenuOpen = !this.entityMenuOpen; }}>
-                ⋮
-              </button>
-              <div
-                class="entity-context-menu"
-                id="entity-page-menu"
-                style="display: ${this.entityMenuOpen ? 'block' : 'none'};">
-                <div class="context-menu-item" @click=${(e: MouseEvent) => this.handleEntityMenuAction(e, 'edit')}>
-                  <i class="ph-duotone ph-pencil-simple"></i>Edit
-                </div>
-                <div class="context-menu-item" @click=${(e: MouseEvent) => this.handleEntityMenuAction(e, 'clone')}>
-                  <i class="ph-duotone ph-copy"></i>Clone
-                </div>
-                <div class="context-menu-item danger" @click=${(e: MouseEvent) => this.handleEntityMenuAction(e, 'delete')}>
-                  <i class="ph-duotone ph-trash"></i>Delete
                 </div>
               </div>
             `
