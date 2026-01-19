@@ -14,6 +14,7 @@ export class EntryDetailController implements ReactiveController {
   private host: ReactiveControllerHost;
   private storeController: StoreController;
   private unsubscribeUrl: (() => void) | null = null;
+  private unsubscribeStore: (() => void) | null = null;
 
   public entryId: string | null = null;
   public entry: Entry | null = null;
@@ -36,7 +37,17 @@ export class EntryDetailController implements ReactiveController {
       this.updateFromUrl();
     });
 
-    // Initialize from current URL
+    // Subscribe to store changes (to reload entry when store loads data)
+    if (this.storeController.store) {
+      this.unsubscribeStore = this.storeController.store.subscribe(() => {
+        if (this.storeController.isLoaded && this.entryId && !this.entry) {
+          // Store just loaded and we don't have entry yet - try loading it
+          this.loadEntry();
+        }
+      });
+    }
+
+    // Initialize from current URL (will retry when store loads)
     this.updateFromUrl();
 
     // Setup auto-save debouncer (saves 2 seconds after last edit)
@@ -49,6 +60,11 @@ export class EntryDetailController implements ReactiveController {
     if (this.unsubscribeUrl) {
       this.unsubscribeUrl();
       this.unsubscribeUrl = null;
+    }
+
+    if (this.unsubscribeStore) {
+      this.unsubscribeStore();
+      this.unsubscribeStore = null;
     }
 
     // Flush any pending saves before disconnect
@@ -66,8 +82,8 @@ export class EntryDetailController implements ReactiveController {
 
     const currentPath = window.location.pathname;
 
-    // Check if we're on entry detail page
-    if (!currentPath.startsWith('/entry/')) {
+    // Check if we're on entry detail page (/entries/:id)
+    if (!currentPath.startsWith('/entries/')) {
       this.entryId = null;
       this.entry = null;
       this.entity = null;
