@@ -9,6 +9,7 @@
   "scripts": {
     "dev": "turbo run dev",
     "build": "turbo run build",
+    "watch": "pnpm --filter @trackly/frontend run watch",
     "start": "pnpm --filter @trackly/backend start",
     "test": "turbo run test",
     "lint": "turbo run lint",
