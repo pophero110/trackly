@@ -8,6 +8,8 @@ export interface DropdownMenuItem {
   icon?: string; // Phosphor icon class (e.g., "ph-duotone ph-trash")
   danger?: boolean; // Red/danger styling
   separator?: boolean; // Show separator after this item
+  color?: string; // Custom color indicator (e.g., entity color)
+  data?: any; // Additional data to pass with the item
 }
 
 /**
@@ -139,9 +141,9 @@ export class DropdownMenuComponent extends LitElement {
   private handleItemClick(e: MouseEvent, item: DropdownMenuItem): void {
     e.stopPropagation();
 
-    // Dispatch custom event with item id
+    // Dispatch custom event with item id and data
     this.dispatchEvent(new CustomEvent('menu-action', {
-      detail: { action: item.id },
+      detail: { action: item.id, data: item.data },
       bubbles: true,
       composed: true
     }));
@@ -170,8 +172,9 @@ export class DropdownMenuComponent extends LitElement {
         @click=${(e: MouseEvent) => e.stopPropagation()}>
         ${map(this.items, item => html`
           <div
-            class="context-menu-item ${item.danger ? 'danger' : ''}"
+            class="context-menu-item ${item.danger ? 'danger' : ''} ${item.color ? 'entity-dropdown-item' : ''}"
             @click=${(e: MouseEvent) => this.handleItemClick(e, item)}>
+            ${item.color ? html`<span class="entity-dropdown-color" style="background: ${item.color};"></span>` : ''}
             ${item.icon ? html`<i class="${item.icon}"></i>` : ''}
             <span>${item.label}</span>
           </div>

@@ -24,15 +24,15 @@ export class EntryListItem extends LitElement {
   @property({ type: Object })
   entry!: Entry;
 
-  @state()
-  private entityDropdownOpen: boolean = false;
+  @query('dropdown-menu[data-menu-type="context"]')
+  private contextMenu?: DropdownMenuComponent;
 
-  @query('dropdown-menu')
-  private dropdownMenu?: DropdownMenuComponent;
+  @query('dropdown-menu[data-menu-type="entity"]')
+  private entityMenu?: DropdownMenuComponent;
 
   private store!: Store;
 
-  private get menuItems(): DropdownMenuItem[] {
+  private get contextMenuItems(): DropdownMenuItem[] {
     return [
       {
         id: 'archive',
@@ -46,6 +46,16 @@ export class EntryListItem extends LitElement {
         danger: true
       }
     ];
+  }
+
+  private get entityMenuItems(): DropdownMenuItem[] {
+    const allEntities = this.store?.getEntities() || [];
+    return allEntities.map(entity => ({
+      id: entity.id,
+      label: entity.name,
+      color: getEntityColor(entity.name),
+      data: entity
+    }));
   }
 
   connectedCallback(): void {
@@ -75,13 +85,13 @@ export class EntryListItem extends LitElement {
     const target = e.target as HTMLElement;
     const menuButton = target.closest('[data-action="menu"]') as HTMLElement;
 
-    if (!this.dropdownMenu || !menuButton) return;
+    if (!this.contextMenu || !menuButton) return;
 
     const rect = menuButton.getBoundingClientRect();
-    this.dropdownMenu.openAt(rect.right, rect.bottom + 4);
+    this.contextMenu.openAt(rect.right, rect.bottom + 4);
   };
 
-  private handleMenuAction = (e: CustomEvent) => {
+  private handleContextMenuAction = (e: CustomEvent) => {
     const { action } = e.detail;
 
     if (action === 'archive') {
@@ -98,13 +108,24 @@ export class EntryListItem extends LitElement {
 
   private handleEntityChipClick = (e: MouseEvent) => {
     e.stopPropagation();
-    this.dropdownMenu?.close();
-    this.entityDropdownOpen = !this.entityDropdownOpen;
+    const target = e.target as HTMLElement;
+    const entityChip = target.closest('.entry-chip-entity-container') as HTMLElement;
+
+    if (!this.entityMenu || !entityChip) return;
+
+    this.contextMenu?.close();
+    const rect = entityChip.getBoundingClientRect();
+    this.entityMenu.openAt(rect.left, rect.bottom + 4);
   };
 
-  private handleEntityChange = async (e: MouseEvent, newEntity: Entity) => {
-    e.stopPropagation();
+  private handleEntityMenuAction = (e: CustomEvent) => {
+    const { data } = e.detail;
+    if (data) {
+      this.handleEntityChange(data as Entity);
+    }
+  };
 
+  private async handleEntityChange(newEntity: Entity) {
     if (!this.store) {
       console.error('Store not available');
       return;
@@ -112,9 +133,6 @@ export class EntryListItem extends LitElement {
 
     const oldEntityId = this.entry.entityId;
     const oldEntityName = this.entry.entityName;
-
-    // Close dropdown immediately
-    this.entityDropdownOpen = false;
 
     // Optimistic update
     this.entry = {
@@ -191,24 +209,6 @@ export class EntryListItem extends LitElement {
     }
   }
 
-  private handleDocumentClick = (e: Event) => {
-    const target = e.target as HTMLElement;
-
-    // Close entity dropdown if clicked outside
-    if (!target.closest('.entry-chip-entity-container')) {
-      this.entityDropdownOpen = false;
-    }
-  };
-
-  firstUpdated() {
-    document.addEventListener('click', this.handleDocumentClick);
-  }
-
-
-  disconnectedCallback(): void {
-    super.disconnectedCallback();
-    document.removeEventListener('click', this.handleDocumentClick);
-  }
 
   private getEntityTypeIcon(type?: string): string {
     if (!type) return '●';
@@ -417,20 +417,6 @@ export class EntryListItem extends LitElement {
                       <polyline points="6 9 12 15 18 9"></polyline>
                     </svg>
                   </span>
-                  <div class="entity-dropdown-menu" style="display: ${this.entityDropdownOpen ? 'block' : 'none'};">
-                    ${map(allEntities, e => {
-      const color = getEntityColor(e.name);
-      return html`
-                        <div
-                          class="context-menu-item entity-dropdown-item"
-                          data-entity-id="${e.id}"
-                          @click=${(ev: MouseEvent) => this.handleEntityChange(ev, e)}>
-                          <span class="entity-dropdown-color" style="background: ${color};"></span>
-                          ${escapeHtml(e.name)}
-                        </div>
-                      `;
-    })}
-                  </div>
                 </div>
               `)}
             </div>
@@ -473,9 +459,18 @@ export class EntryListItem extends LitElement {
 
       <!-- Context Menu -->
       <dropdown-menu
-        .items=${this.menuItems}
+        data-menu-type="context"
+        .items=${this.contextMenuItems}
         .menuId=${'entry-menu-' + this.entry.id}
-        @menu-action=${this.handleMenuAction}>
+        @menu-action=${this.handleContextMenuAction}>
+      </dropdown-menu>
+
+      <!-- Entity Selector Menu -->
+      <dropdown-menu
+        data-menu-type="entity"
+        .items=${this.entityMenuItems}
+        .menuId=${'entity-selector-' + this.entry.id}
+        @menu-action=${this.handleEntityMenuAction}>
       </dropdown-menu>
     `;
   }
