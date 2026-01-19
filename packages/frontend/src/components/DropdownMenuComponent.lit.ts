@@ -122,12 +122,16 @@ export class DropdownMenuComponent extends LitElement {
 
     const menuWidth = this.menuContainer.offsetWidth;
     const menuHeight = this.menuContainer.offsetHeight;
+    const maxHeight = 400; // Match max-height in render
     const viewportWidth = window.innerWidth;
     const viewportHeight = window.innerHeight;
     const centerX = viewportWidth / 2;
     const centerY = viewportHeight / 2;
 
     let { x, y } = this.position;
+
+    // Use actual menu height, but cap at maxHeight
+    const effectiveHeight = Math.min(menuHeight, maxHeight);
 
     // Determine which side of screen the origin is on
     const isLeftSide = x < centerX;
@@ -148,13 +152,13 @@ export class DropdownMenuComponent extends LitElement {
       // (default behavior, y is already top edge)
     } else {
       // Origin on bottom side - menu extends up toward center
-      y = y - menuHeight;
+      y = y - effectiveHeight;
     }
 
     // Ensure menu stays within viewport with padding
     const padding = 8;
     x = Math.max(padding, Math.min(x, viewportWidth - menuWidth - padding));
-    y = Math.max(padding, Math.min(y, viewportHeight - menuHeight - padding));
+    y = Math.max(padding, Math.min(y, viewportHeight - effectiveHeight - padding));
 
     this.menuContainer.style.left = `${x}px`;
     this.menuContainer.style.top = `${y}px`;
@@ -190,7 +194,7 @@ export class DropdownMenuComponent extends LitElement {
     return html`
       <div
         class="dropdown-menu-container context-menu"
-        style="display: block; position: fixed; left: ${this.position.x}px; top: ${this.position.y}px;"
+        style="display: block; position: fixed; left: ${this.position.x}px; top: ${this.position.y}px; max-height: 400px; overflow-y: auto;"
         @click=${(e: MouseEvent) => e.stopPropagation()}>
         ${map(this.items, item => html`
           <div
