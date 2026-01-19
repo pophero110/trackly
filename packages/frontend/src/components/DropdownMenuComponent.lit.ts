@@ -34,6 +34,7 @@ export class DropdownMenuComponent extends LitElement {
   private menuContainer?: HTMLElement;
 
   private documentClickHandler?: (e: Event) => void;
+  private documentScrollHandler?: (e: Event) => void;
 
   // Use Light DOM for compatibility with existing global styles
   createRenderRoot() {
@@ -47,6 +48,7 @@ export class DropdownMenuComponent extends LitElement {
   disconnectedCallback(): void {
     super.disconnectedCallback();
     this.detachDocumentListener();
+    this.detachScrollListener();
   }
 
   private attachDocumentListener(): void {
@@ -76,6 +78,30 @@ export class DropdownMenuComponent extends LitElement {
     }
   }
 
+  private attachScrollListener(): void {
+    this.documentScrollHandler = (e: Event) => {
+      if (!this.open) return;
+
+      const target = e.target as HTMLElement;
+
+      // Don't close if scrolling inside the dropdown menu itself
+      if (target.closest('.dropdown-menu-container') === this.menuContainer) {
+        return;
+      }
+
+      // Close menu if scrolling outside
+      this.close();
+    };
+    document.addEventListener('scroll', this.documentScrollHandler, true);
+  }
+
+  private detachScrollListener(): void {
+    if (this.documentScrollHandler) {
+      document.removeEventListener('scroll', this.documentScrollHandler, true);
+      this.documentScrollHandler = undefined;
+    }
+  }
+
   /**
    * Open menu at specific position
    */
@@ -84,8 +110,9 @@ export class DropdownMenuComponent extends LitElement {
     this.open = true;
     this.requestUpdate();
 
-    // Attach click-outside listener when menu opens
+    // Attach click-outside and scroll listeners when menu opens
     this.attachDocumentListener();
+    this.attachScrollListener();
 
     // Adjust position after render
     requestAnimationFrame(() => this.adjustPosition());
@@ -98,6 +125,7 @@ export class DropdownMenuComponent extends LitElement {
     if (this.open) {
       this.open = false;
       this.detachDocumentListener();
+      this.detachScrollListener();
       this.dispatchEvent(new CustomEvent('menu-close', { bubbles: true, composed: true }));
     }
   }
