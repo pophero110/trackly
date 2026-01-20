@@ -1,5 +1,5 @@
 import { css, html, LitElement } from 'lit';
-import { customElement, property, state } from 'lit/decorators.js';
+import { customElement, property, state, query } from 'lit/decorators.js';
 import { map } from 'lit/directives/map.js';
 import { when } from 'lit/directives/when.js';
 import { Entry } from '../models/Entry.js';
@@ -7,6 +7,10 @@ import { Entity } from '../models/Entity.js';
 import { escapeHtml, formatDate } from '../utils/helpers.js';
 import { getEntityColor } from '../utils/entryHelpers.js';
 import { URLStateManager } from '../utils/urlState.js';
+import './DropdownMenuComponent.lit.js';
+import type { DropdownMenuComponent, DropdownMenuItem } from './DropdownMenuComponent.lit.js';
+
+type OpenDropdown = 'actions-menu' | 'entity-menu' | null;
 
 /**
  * EntryDetailHeader Lit Component
@@ -24,49 +28,97 @@ export class EntryDetailHeader extends LitElement {
   allEntities: Entity[] = [];
 
   @state()
-  private menuOpen: boolean = false;
+  private openDropdown: OpenDropdown = null;
 
-  @state()
-  private entityDropdownOpen: boolean = false;
+  @query('dropdown-menu[data-menu-type="actions"]')
+  private actionsMenu?: DropdownMenuComponent;
+
+  @query('dropdown-menu[data-menu-type="entity"]')
+  private entityMenu?: DropdownMenuComponent;
 
   // Disable Shadow DOM for compatibility with existing global styles
   createRenderRoot() {
     return this;
   }
 
-  connectedCallback(): void {
-    super.connectedCallback();
-    document.addEventListener('click', this.handleDocumentClick);
+  private get actionsMenuItems(): DropdownMenuItem[] {
+    return [
+      {
+        id: 'copy',
+        label: 'Copy Notes',
+        icon: 'ph-duotone ph-copy'
+      },
+      {
+        id: 'archive',
+        label: 'Archive',
+        icon: 'ph-duotone ph-archive'
+      },
+      {
+        id: 'delete',
+        label: 'Delete',
+        icon: 'ph-duotone ph-trash',
+        danger: true
+      }
+    ];
   }
 
-  disconnectedCallback(): void {
-    super.disconnectedCallback();
-    document.removeEventListener('click', this.handleDocumentClick);
+  private get entityMenuItems(): DropdownMenuItem[] {
+    return this.allEntities.map(entity => ({
+      id: entity.id,
+      label: entity.name,
+      color: getEntityColor(entity.name),
+      data: entity
+    }));
   }
 
-  private handleDocumentClick = (e: Event): void => {
+  private handleMenuButtonClick = (e: MouseEvent): void => {
+    e.stopPropagation();
     const target = e.target as HTMLElement;
-    if (!target.closest('.entry-detail-menu') && !target.closest('.entry-detail-menu-btn')) {
-      this.menuOpen = false;
+    const menuButton = target.closest('.entry-detail-menu-btn') as HTMLElement;
+
+    if (!this.actionsMenu || !menuButton) return;
+
+    // Close entity menu if open
+    if (this.openDropdown === 'entity-menu') {
+      this.entityMenu?.close();
     }
-    if (!target.closest('.entity-dropdown-menu') && !target.closest('.entry-chip-entity')) {
-      this.entityDropdownOpen = false;
+
+    this.openDropdown = 'actions-menu';
+    const rect = menuButton.getBoundingClientRect();
+    this.actionsMenu.openAt(rect.right, rect.bottom + 4);
+  };
+
+  private handleEntityChipClick = (e: MouseEvent): void => {
+    e.stopPropagation();
+    const target = e.target as HTMLElement;
+    const entityChip = target.closest('.entry-chip-entity') as HTMLElement;
+
+    if (!this.entityMenu || !entityChip) return;
+
+    // Close actions menu if open
+    if (this.openDropdown === 'actions-menu') {
+      this.actionsMenu?.close();
     }
+
+    this.openDropdown = 'entity-menu';
+    const rect = entityChip.getBoundingClientRect();
+    this.entityMenu.openAt(rect.left, rect.bottom + 4);
   };
 
-  private handleMenuToggle = (e: Event): void => {
-    e.stopPropagation();
-    this.menuOpen = !this.menuOpen;
+  private handleActionsMenuAction = (e: CustomEvent): void => {
+    const { action } = e.detail;
+
+    // Dispatch custom event for parent to handle
+    this.dispatchEvent(new CustomEvent('menu-action', {
+      detail: { action },
+      bubbles: true,
+      composed: true
+    }));
   };
 
-  private handleEntityChipClick = (e: Event): void => {
-    e.stopPropagation();
-    this.entityDropdownOpen = !this.entityDropdownOpen;
-  };
-
-  private handleEntityChange = (e: Event, entity: Entity): void => {
-    e.stopPropagation();
-    this.entityDropdownOpen = false;
+  private handleEntityMenuAction = (e: CustomEvent): void => {
+    const { data } = e.detail;
+    const entity = data as Entity;
 
     // Dispatch custom event for parent to handle
     this.dispatchEvent(new CustomEvent('entity-change', {
@@ -76,16 +128,16 @@ export class EntryDetailHeader extends LitElement {
     }));
   };
 
-  private handleMenuAction = (e: Event, action: string): void => {
-    e.stopPropagation();
-    this.menuOpen = false;
+  private handleActionsMenuClose = (): void => {
+    if (this.openDropdown === 'actions-menu') {
+      this.openDropdown = null;
+    }
+  };
 
-    // Dispatch custom event for parent to handle
-    this.dispatchEvent(new CustomEvent('menu-action', {
-      detail: { action },
-      bubbles: true,
-      composed: true
-    }));
+  private handleEntityMenuClose = (): void => {
+    if (this.openDropdown === 'entity-menu') {
+      this.openDropdown = null;
+    }
   };
 
   private handleClose = (): void => {
@@ -108,49 +160,32 @@ export class EntryDetailHeader extends LitElement {
                   <polyline points="6 9 12 15 18 9"></polyline>
                 </svg>
               </span>
-              ${when(
-      this.entityDropdownOpen,
-      () => html`
-                  <div class="entity-dropdown-menu" style="display: block;">
-                    ${map(this.allEntities, entity => html`
-                      <div
-                        class="context-menu-item entity-dropdown-item"
-                        @click=${(e: Event) => this.handleEntityChange(e, entity)}>
-                        <span class="entity-dropdown-color" style="background: ${getEntityColor(entity.name)};"></span>
-                        ${escapeHtml(entity.name)}
-                      </div>
-                    `)}
-                  </div>
-                `
-    )}
             </div>
             <span class="entry-detail-timestamp">${formattedDate}</span>
           </div>
 
           <div class="entry-detail-header-actions">
-            <button class="entry-detail-menu-btn" @click=${this.handleMenuToggle}>⋮</button>
+            <button class="entry-detail-menu-btn" @click=${this.handleMenuButtonClick}>⋮</button>
             <button class="entry-detail-close-btn" @click=${this.handleClose}>×</button>
           </div>
 
-          ${when(
-      this.menuOpen,
-      () => html`
-              <div class="entry-detail-menu" style="display: block;">
-                <div class="context-menu-item" @click=${(e: Event) => this.handleMenuAction(e, 'copy')}>
-                  <i class="ph-duotone ph-copy"></i>
-                  <span>Copy Notes</span>
-                </div>
-                <div class="context-menu-item" @click=${(e: Event) => this.handleMenuAction(e, 'archive')}>
-                  <i class="ph-duotone ph-archive"></i>
-                  <span>Archive</span>
-                </div>
-                <div class="context-menu-item danger" @click=${(e: Event) => this.handleMenuAction(e, 'delete')}>
-                  <i class="ph-duotone ph-trash"></i>
-                  <span>Delete</span>
-                </div>
-              </div>
-            `
-    )}
+          <!-- Actions Menu (Copy, Archive, Delete) -->
+          <dropdown-menu
+            data-menu-type="actions"
+            .items=${this.actionsMenuItems}
+            .menuId=${'entry-detail-actions-menu'}
+            @menu-action=${this.handleActionsMenuAction}
+            @menu-close=${this.handleActionsMenuClose}>
+          </dropdown-menu>
+
+          <!-- Entity Selector Menu -->
+          <dropdown-menu
+            data-menu-type="entity"
+            .items=${this.entityMenuItems}
+            .menuId=${'entry-detail-entity-menu'}
+            @menu-action=${this.handleEntityMenuAction}
+            @menu-close=${this.handleEntityMenuClose}>
+          </dropdown-menu>
     `;
   }
 }
