@@ -38,8 +38,7 @@ router.post('/register', validate(registerSchema), async (req, res, next): Promi
         entities: {
           create: {
             name: 'Inbox',
-            type: 'Node',
-            categories: []
+            type: 'Note'
           }
         }
       }
