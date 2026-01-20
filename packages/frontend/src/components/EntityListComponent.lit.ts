@@ -11,7 +11,6 @@ import { URLStateManager } from '../utils/urlState.js';
 import './DropdownMenuComponent.lit.js';
 import type { DropdownMenuComponent, DropdownMenuItem } from './DropdownMenuComponent.lit.js';
 import './SelectionMenuComponent.lit.js';
-import type { SelectionOption } from './SelectionMenuComponent.lit.js';
 
 /**
  * EntityList Lit Component for displaying entities in a grid layout
@@ -36,19 +35,9 @@ export class EntityListComponent extends LitElement {
   private getMenuItems(): DropdownMenuItem[] {
     return [
       {
-        id: 'log-entry',
-        label: 'Log',
-        icon: 'ph-duotone ph-list-plus'
-      },
-      {
         id: 'edit',
         label: 'Edit',
         icon: 'ph-duotone ph-pencil-simple'
-      },
-      {
-        id: 'clone',
-        label: 'Clone',
-        icon: 'ph-duotone ph-copy'
       },
       {
         id: 'delete',
@@ -136,12 +125,6 @@ export class EntityListComponent extends LitElement {
       case 'edit':
         this.handleEdit(entityId);
         break;
-      case 'clone':
-        this.handleClone(entityId);
-        break;
-      case 'log-entry':
-        this.handleLogEntry(entityId);
-        break;
     }
 
     this.currentEntityId = null;
@@ -167,18 +150,6 @@ export class EntityListComponent extends LitElement {
     const entity = this.storeController.store?.getEntityById(entityId);
     if (!entity) return;
     URLStateManager.openEditEntityPanel(entity.name);
-  }
-
-  private handleClone(entityId: string): void {
-    const entity = this.storeController.store?.getEntityById(entityId);
-    if (!entity) return;
-    URLStateManager.openCloneEntityPanel(entity.name);
-  }
-
-  private handleLogEntry(entityId: string): void {
-    const entity = this.storeController.store?.getEntityById(entityId);
-    if (!entity) return;
-    URLStateManager.openLogEntryPanel(entity.name);
   }
 
   private handleSortChange = (e: CustomEvent): void => {

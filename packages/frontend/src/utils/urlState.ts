@@ -178,16 +178,6 @@ export class URLStateManager {
   }
 
   /**
-   * Open clone entity panel
-   */
-  static openCloneEntityPanel(entityName: string): void {
-    const params = new URLSearchParams(window.location.search);
-    params.set('action', 'clone-entity');
-    params.set('clone', URLStateManager.encodeEntityName(entityName));
-    URLStateManager.updateURL(params);
-  }
-
-  /**
    * Open edit entry panel
    */
   static openEditEntryPanel(entryId: string): void {
