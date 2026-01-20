@@ -43,7 +43,7 @@ export class SlidePanel extends LitElement {
     .body {
       position: fixed;
       left: 50%;
-      transform: translateX(-50%); /* Cleaner alternative to calc margin-left */
+      margin-left: calc(-75ch / 2);
       bottom: 0;
       width: 75ch;
       height: 85vh;
@@ -89,7 +89,7 @@ export class SlidePanel extends LitElement {
         max-height: none;
         border-radius: var(--radius-md, 8px) var(--radius-md, 8px) 0 0;
         left: 0;
-        transform: none;
+        margin-left: 0;
       }
 
       .close {
