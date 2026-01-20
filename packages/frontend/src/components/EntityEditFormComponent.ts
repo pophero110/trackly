@@ -1,6 +1,6 @@
 import { WebComponent } from './WebComponent.js';
 import { Entity } from '../models/Entity.js';
-import { EntityFormData, EntityType, EntityProperty, ValueType, SelectOption } from '../types/index.js';
+import { EntityType, EntityProperty, ValueType, SelectOption } from '../types/index.js';
 import { URLStateManager } from '../utils/urlState.js';
 import { generateId } from '../utils/helpers.js';
 
@@ -8,62 +8,61 @@ import { generateId } from '../utils/helpers.js';
  * EntityEditForm Web Component for editing existing entities
  */
 export class EntityEditFormComponent extends WebComponent {
-    private entitySlug: string | null = null;
-    private entity: Entity | null = null;
-    private properties: EntityProperty[] = [];
-    private hasUnsavedChanges: boolean = false;
+  private entity: Entity | null = null;
+  private properties: EntityProperty[] = [];
+  private hasUnsavedChanges: boolean = false;
 
-    connectedCallback(): void {
-        // Don't auto-render, wait for setEditMode()
-    }
+  connectedCallback(): void {
+    // Don't auto-render, wait for setEditMode()
+  }
 
-    // For edit mode - provide entity slug
-    setEditMode(entitySlug: string): void {
-        this.entitySlug = entitySlug;
+  // For edit mode - provide entity slug
+  setEditMode(entitySlug: string): void {
+    this.entitySlug = entitySlug;
 
-        // Show loading state if data hasn't loaded yet
-        if (!this.store.getIsLoaded()) {
-            this.innerHTML = this.renderLoadingState('Loading entity...');
-            // Subscribe to store to render when data loads
-            this.unsubscribe = this.store.subscribe(() => {
-                if (this.store.getIsLoaded()) {
-                    this.initializeEntity(entitySlug);
-                    // Unsubscribe after initialization to prevent repeated calls
-                    if (this.unsubscribe) {
-                        this.unsubscribe();
-                        this.unsubscribe = null;
-                    }
-                }
-            });
-            return;
+    // Show loading state if data hasn't loaded yet
+    if (!this.store.getIsLoaded()) {
+      this.innerHTML = this.renderLoadingState('Loading entity...');
+      // Subscribe to store to render when data loads
+      this.unsubscribe = this.store.subscribe(() => {
+        if (this.store.getIsLoaded()) {
+          this.initializeEntity(entitySlug);
+          // Unsubscribe after initialization to prevent repeated calls
+          if (this.unsubscribe) {
+            this.unsubscribe();
+            this.unsubscribe = null;
+          }
         }
-
-        this.initializeEntity(entitySlug);
+      });
+      return;
     }
 
-    private initializeEntity(entitySlug: string): void {
-        // Find entity by matching slug (lowercase with hyphens)
-        const entities = this.store.getEntities();
-        const foundEntity = entities.find(e =>
-            e.name.toLowerCase().replace(/\s+/g, '-') === entitySlug.toLowerCase()
-        );
+    this.initializeEntity(entitySlug);
+  }
 
-        if (foundEntity) {
-            this.entity = foundEntity;
-            this.properties = foundEntity.properties ? [...foundEntity.properties] : [];
-            this.hasUnsavedChanges = false;
-            this.render();
-            this.attachEventListeners();
-        } else {
-            this.innerHTML = '<p>Entity not found</p>';
-        }
+  private initializeEntity(entitySlug: string): void {
+    // Find entity by matching slug (lowercase with hyphens)
+    const entities = this.store.getEntities();
+    const foundEntity = entities.find(e =>
+      e.name.toLowerCase().replace(/\s+/g, '-') === entitySlug.toLowerCase()
+    );
+
+    if (foundEntity) {
+      this.entity = foundEntity;
+      this.properties = foundEntity.properties ? [...foundEntity.properties] : [];
+      this.hasUnsavedChanges = false;
+      this.render();
+      this.attachEventListeners();
+    } else {
+      this.innerHTML = '<p>Entity not found</p>';
     }
+  }
 
-    render(): void {
-        const nameValue = this.entity ? this.entity.name : '';
-        const typeValue = this.entity ? this.entity.type : '';
+  render(): void {
+    const nameValue = this.entity ? this.entity.name : '';
+    const typeValue = this.entity ? this.entity.type : '';
 
-        this.innerHTML = `
+    this.innerHTML = `
             <form id="entity-edit-form">
                 <div class="form-group">
                     <label for="entity-name">Name *</label>
@@ -84,52 +83,32 @@ export class EntityEditFormComponent extends WebComponent {
                     </select>
                     <small style="color: var(--text-muted); font-size: 0.75rem; margin-top: 4px; display: block;">Choose based on how you want to track this entity</small>
                 </div>
-
-                <div class="form-group">
-                    <label for="category-input">Categories</label>
-                    <div id="categories-container" style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 8px;">
-                        ${this.renderCategoryChips()}
-                    </div>
-                    <div style="display: flex; gap: 8px;">
-                        <input type="text" id="category-input" placeholder="Add category..." style="flex: 1;">
-                        <button type="button" class="btn btn-secondary" id="add-category-btn">Add</button>
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label>Custom Properties</label>
-                    <div id="properties-list">
-                        ${this.renderPropertiesList()}
-                    </div>
-                    <button type="button" class="btn btn-secondary" id="add-property-btn">+ Add Property</button>
-                </div>
-
                 <button type="submit" class="btn btn-primary">Update Entity</button>
             </form>
         `;
+  }
+
+  private renderCategoryChips(): string {
+    if (!this.entity || this.entity.categories.length === 0) {
+      return '';
     }
 
-    private renderCategoryChips(): string {
-        if (!this.entity || this.entity.categories.length === 0) {
-            return '';
-        }
-
-        return this.entity.categories.map(cat => `
+    return this.entity.categories.map(cat => `
             <span class="category-chip" data-category="${cat}">
                 ${cat}
                 <button type="button" class="remove-category-btn" data-category="${cat}">×</button>
             </span>
         `).join('');
+  }
+
+  private renderPropertiesList(): string {
+    if (this.properties.length === 0) {
+      return '';
     }
 
-    private renderPropertiesList(): string {
-        if (this.properties.length === 0) {
-            return '';
-        }
+    const capitalizeFirstLetter = (str: string) => str.charAt(0).toUpperCase() + str.slice(1);
 
-        const capitalizeFirstLetter = (str: string) => str.charAt(0).toUpperCase() + str.slice(1);
-
-        return this.properties.map((prop, index) => `
+    return this.properties.map((prop, index) => `
             <div class="property-item" data-index="${index}">
                 <div class="property-info">
                     <strong>${capitalizeFirstLetter(prop.name)}</strong>
@@ -142,119 +121,119 @@ export class EntityEditFormComponent extends WebComponent {
                 </div>
             </div>
         `).join('');
+  }
+
+  protected attachEventListeners(): void {
+    const form = this.querySelector('#entity-edit-form') as HTMLFormElement;
+    const addPropertyBtn = this.querySelector('#add-property-btn') as HTMLButtonElement;
+    const addCategoryBtn = this.querySelector('#add-category-btn') as HTMLButtonElement;
+    const categoryInput = this.querySelector('#category-input') as HTMLInputElement;
+
+    if (form) {
+      form.addEventListener('submit', (e) => this.handleSubmit(e));
+
+      // Track form changes
+      form.addEventListener('input', () => {
+        this.hasUnsavedChanges = true;
+      });
+      form.addEventListener('change', () => {
+        this.hasUnsavedChanges = true;
+      });
     }
 
-    protected attachEventListeners(): void {
-        const form = this.querySelector('#entity-edit-form') as HTMLFormElement;
-        const addPropertyBtn = this.querySelector('#add-property-btn') as HTMLButtonElement;
-        const addCategoryBtn = this.querySelector('#add-category-btn') as HTMLButtonElement;
-        const categoryInput = this.querySelector('#category-input') as HTMLInputElement;
+    if (addPropertyBtn) {
+      addPropertyBtn.addEventListener('click', () => this.handleAddProperty());
+    }
 
-        if (form) {
-            form.addEventListener('submit', (e) => this.handleSubmit(e));
-
-            // Track form changes
-            form.addEventListener('input', () => {
-                this.hasUnsavedChanges = true;
-            });
-            form.addEventListener('change', () => {
-                this.hasUnsavedChanges = true;
-            });
+    // Category management
+    if (addCategoryBtn && categoryInput) {
+      addCategoryBtn.addEventListener('click', () => this.handleAddCategory());
+      categoryInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          this.handleAddCategory();
         }
+      });
+    }
 
-        if (addPropertyBtn) {
-            addPropertyBtn.addEventListener('click', () => this.handleAddProperty());
+    // Attach remove category handlers
+    this.querySelectorAll('.remove-category-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const category = (e.target as HTMLElement).dataset.category;
+        if (category) {
+          this.handleRemoveCategory(category);
         }
+      });
+    });
 
-        // Category management
-        if (addCategoryBtn && categoryInput) {
-            addCategoryBtn.addEventListener('click', () => this.handleAddCategory());
-            categoryInput.addEventListener('keydown', (e) => {
-                if (e.key === 'Enter') {
-                    e.preventDefault();
-                    this.handleAddCategory();
-                }
-            });
-        }
+    // Attach edit handlers
+    this.querySelectorAll('.btn-edit-property').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const index = parseInt((e.target as HTMLElement).dataset.index || '0');
+        this.handleEditProperty(index);
+      });
+    });
 
-        // Attach remove category handlers
-        this.querySelectorAll('.remove-category-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                const category = (e.target as HTMLElement).dataset.category;
-                if (category) {
-                    this.handleRemoveCategory(category);
-                }
-            });
+    // Attach remove handlers
+    this.querySelectorAll('.btn-remove-property').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const index = parseInt((e.target as HTMLElement).dataset.index || '0');
+        this.handleRemoveProperty(index);
+      });
+    });
+  }
+
+  private handleAddCategory(): void {
+    const categoryInput = this.querySelector('#category-input') as HTMLInputElement;
+    const category = categoryInput.value.trim();
+
+    if (category && this.entity) {
+      // Don't add duplicate categories
+      if (!this.entity.categories.includes(category)) {
+        this.entity.categories.push(category);
+        this.hasUnsavedChanges = true;
+        categoryInput.value = '';
+        this.updateCategoriesDisplay();
+      }
+    }
+  }
+
+  private handleRemoveCategory(category: string): void {
+    if (this.entity) {
+      const index = this.entity.categories.indexOf(category);
+      if (index > -1) {
+        this.entity.categories.splice(index, 1);
+        this.hasUnsavedChanges = true;
+        this.updateCategoriesDisplay();
+      }
+    }
+  }
+
+  private updateCategoriesDisplay(): void {
+    const container = this.querySelector('#categories-container');
+    if (container) {
+      container.innerHTML = this.renderCategoryChips();
+
+      // Re-attach remove handlers
+      container.querySelectorAll('.remove-category-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          const category = (e.target as HTMLElement).dataset.category;
+          if (category) {
+            this.handleRemoveCategory(category);
+          }
         });
-
-        // Attach edit handlers
-        this.querySelectorAll('.btn-edit-property').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                const index = parseInt((e.target as HTMLElement).dataset.index || '0');
-                this.handleEditProperty(index);
-            });
-        });
-
-        // Attach remove handlers
-        this.querySelectorAll('.btn-remove-property').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                const index = parseInt((e.target as HTMLElement).dataset.index || '0');
-                this.handleRemoveProperty(index);
-            });
-        });
+      });
     }
+  }
 
-    private handleAddCategory(): void {
-        const categoryInput = this.querySelector('#category-input') as HTMLInputElement;
-        const category = categoryInput.value.trim();
+  private handleAddProperty(): void {
+    // Helper function to capitalize first letter
+    const capitalizeFirstLetter = (str: string) => str.charAt(0).toUpperCase() + str.slice(1);
 
-        if (category && this.entity) {
-            // Don't add duplicate categories
-            if (!this.entity.categories.includes(category)) {
-                this.entity.categories.push(category);
-                this.hasUnsavedChanges = true;
-                categoryInput.value = '';
-                this.updateCategoriesDisplay();
-            }
-        }
-    }
-
-    private handleRemoveCategory(category: string): void {
-        if (this.entity) {
-            const index = this.entity.categories.indexOf(category);
-            if (index > -1) {
-                this.entity.categories.splice(index, 1);
-                this.hasUnsavedChanges = true;
-                this.updateCategoriesDisplay();
-            }
-        }
-    }
-
-    private updateCategoriesDisplay(): void {
-        const container = this.querySelector('#categories-container');
-        if (container) {
-            container.innerHTML = this.renderCategoryChips();
-
-            // Re-attach remove handlers
-            container.querySelectorAll('.remove-category-btn').forEach(btn => {
-                btn.addEventListener('click', (e) => {
-                    const category = (e.target as HTMLElement).dataset.category;
-                    if (category) {
-                        this.handleRemoveCategory(category);
-                    }
-                });
-            });
-        }
-    }
-
-    private handleAddProperty(): void {
-        // Helper function to capitalize first letter
-        const capitalizeFirstLetter = (str: string) => str.charAt(0).toUpperCase() + str.slice(1);
-
-        // Create a modal for adding property
-        const modal = document.createElement('div');
-        modal.className = 'property-modal';
-        modal.innerHTML = `
+    // Create a modal for adding property
+    const modal = document.createElement('div');
+    modal.className = 'property-modal';
+    modal.innerHTML = `
             <div class="modal-container">
                 <h3>Add Property</h3>
                 <form id="property-form">
@@ -297,120 +276,120 @@ export class EntityEditFormComponent extends WebComponent {
                 </form>
             </div>
         `;
-        document.body.appendChild(modal);
+    document.body.appendChild(modal);
 
-        const propertyForm = modal.querySelector('#property-form') as HTMLFormElement;
-        const cancelBtn = modal.querySelector('#cancel-property-btn') as HTMLButtonElement;
-        const propertyTypeSelect = modal.querySelector('#property-type') as HTMLSelectElement;
-        const selectOptionsGroup = modal.querySelector('#select-options-group') as HTMLElement;
-        const optionInput = modal.querySelector('#option-input') as HTMLInputElement;
-        const addOptionBtn = modal.querySelector('#add-option-btn') as HTMLButtonElement;
-        const optionsList = modal.querySelector('#options-list') as HTMLElement;
+    const propertyForm = modal.querySelector('#property-form') as HTMLFormElement;
+    const cancelBtn = modal.querySelector('#cancel-property-btn') as HTMLButtonElement;
+    const propertyTypeSelect = modal.querySelector('#property-type') as HTMLSelectElement;
+    const selectOptionsGroup = modal.querySelector('#select-options-group') as HTMLElement;
+    const optionInput = modal.querySelector('#option-input') as HTMLInputElement;
+    const addOptionBtn = modal.querySelector('#add-option-btn') as HTMLButtonElement;
+    const optionsList = modal.querySelector('#options-list') as HTMLElement;
 
-        let selectOptions: string[] = [];
+    let selectOptions: string[] = [];
 
-        // Show/hide select options based on type
-        propertyTypeSelect.addEventListener('change', () => {
-            if (propertyTypeSelect.value === 'select') {
-                selectOptionsGroup.style.display = 'block';
-            } else {
-                selectOptionsGroup.style.display = 'none';
-            }
-        });
+    // Show/hide select options based on type
+    propertyTypeSelect.addEventListener('change', () => {
+      if (propertyTypeSelect.value === 'select') {
+        selectOptionsGroup.style.display = 'block';
+      } else {
+        selectOptionsGroup.style.display = 'none';
+      }
+    });
 
-        // Add option to list
-        const renderOptions = () => {
-            if (selectOptions.length === 0) {
-                optionsList.innerHTML = '<p style="color: var(--text-muted); font-size: 0.875rem;">No options added yet.</p>';
-            } else {
-                optionsList.innerHTML = selectOptions.map((opt, idx) => `
+    // Add option to list
+    const renderOptions = () => {
+      if (selectOptions.length === 0) {
+        optionsList.innerHTML = '<p style="color: var(--text-muted); font-size: 0.875rem;">No options added yet.</p>';
+      } else {
+        optionsList.innerHTML = selectOptions.map((opt, idx) => `
                     <div style="display: flex; justify-content: space-between; align-items: center; padding: 4px 0;">
                         <span>${opt}</span>
                         <button type="button" class="btn-remove-option" data-index="${idx}" style="background: none; border: none; color: var(--danger); cursor: pointer; padding: 4px 8px;">✕</button>
                     </div>
                 `).join('');
 
-                // Attach remove handlers
-                optionsList.querySelectorAll('.btn-remove-option').forEach(btn => {
-                    btn.addEventListener('click', (e) => {
-                        const index = parseInt((e.target as HTMLElement).dataset.index || '0');
-                        selectOptions.splice(index, 1);
-                        renderOptions();
-                    });
-                });
-            }
+        // Attach remove handlers
+        optionsList.querySelectorAll('.btn-remove-option').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            const index = parseInt((e.target as HTMLElement).dataset.index || '0');
+            selectOptions.splice(index, 1);
+            renderOptions();
+          });
+        });
+      }
+    };
+
+    addOptionBtn.addEventListener('click', () => {
+      const value = optionInput.value.trim();
+      if (value && !selectOptions.includes(value)) {
+        selectOptions.push(value);
+        optionInput.value = '';
+        renderOptions();
+      }
+    });
+
+    // Allow Enter key to add option
+    optionInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        addOptionBtn.click();
+      }
+    });
+
+    const cleanup = () => {
+      document.body.removeChild(modal);
+    };
+
+    propertyForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const name = (modal.querySelector('#property-name') as HTMLInputElement).value.trim();
+      const valueType = (modal.querySelector('#property-type') as HTMLSelectElement).value as ValueType;
+      const required = (modal.querySelector('#property-required') as HTMLInputElement).checked;
+
+      // Validate select type has options
+      if (valueType === 'select' && selectOptions.length === 0) {
+        alert('Please add at least one option for the select field.');
+        return;
+      }
+
+      if (name) {
+        const newProperty: EntityProperty = {
+          id: generateId(),
+          name: capitalizeFirstLetter(name),
+          valueType,
+          required
         };
 
-        addOptionBtn.addEventListener('click', () => {
-            const value = optionInput.value.trim();
-            if (value && !selectOptions.includes(value)) {
-                selectOptions.push(value);
-                optionInput.value = '';
-                renderOptions();
-            }
-        });
+        // Add options if select type
+        if (valueType === 'select') {
+          newProperty.options = selectOptions.map(opt => ({
+            value: opt.toLowerCase().replace(/\s+/g, '-'),
+            label: opt
+          } as SelectOption));
+        }
 
-        // Allow Enter key to add option
-        optionInput.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                addOptionBtn.click();
-            }
-        });
+        this.properties.push(newProperty);
+        this.hasUnsavedChanges = true;
+        this.updatePropertiesList();
+        cleanup();
+      }
+    });
 
-        const cleanup = () => {
-            document.body.removeChild(modal);
-        };
+    cancelBtn.addEventListener('click', cleanup);
+  }
 
-        propertyForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            const name = (modal.querySelector('#property-name') as HTMLInputElement).value.trim();
-            const valueType = (modal.querySelector('#property-type') as HTMLSelectElement).value as ValueType;
-            const required = (modal.querySelector('#property-required') as HTMLInputElement).checked;
+  private handleEditProperty(index: number): void {
+    const property = this.properties[index];
+    if (!property) return;
 
-            // Validate select type has options
-            if (valueType === 'select' && selectOptions.length === 0) {
-                alert('Please add at least one option for the select field.');
-                return;
-            }
+    // Helper function to capitalize first letter
+    const capitalizeFirstLetter = (str: string) => str.charAt(0).toUpperCase() + str.slice(1);
 
-            if (name) {
-                const newProperty: EntityProperty = {
-                    id: generateId(),
-                    name: capitalizeFirstLetter(name),
-                    valueType,
-                    required
-                };
-
-                // Add options if select type
-                if (valueType === 'select') {
-                    newProperty.options = selectOptions.map(opt => ({
-                        value: opt.toLowerCase().replace(/\s+/g, '-'),
-                        label: opt
-                    } as SelectOption));
-                }
-
-                this.properties.push(newProperty);
-                this.hasUnsavedChanges = true;
-                this.updatePropertiesList();
-                cleanup();
-            }
-        });
-
-        cancelBtn.addEventListener('click', cleanup);
-    }
-
-    private handleEditProperty(index: number): void {
-        const property = this.properties[index];
-        if (!property) return;
-
-        // Helper function to capitalize first letter
-        const capitalizeFirstLetter = (str: string) => str.charAt(0).toUpperCase() + str.slice(1);
-
-        // Create a modal for editing property
-        const modal = document.createElement('div');
-        modal.className = 'property-modal';
-        modal.innerHTML = `
+    // Create a modal for editing property
+    const modal = document.createElement('div');
+    modal.className = 'property-modal';
+    modal.innerHTML = `
             <div class="modal-container">
                 <h3>Edit Property</h3>
                 <form id="property-form">
@@ -454,172 +433,170 @@ export class EntityEditFormComponent extends WebComponent {
                 </form>
             </div>
         `;
-        document.body.appendChild(modal);
+    document.body.appendChild(modal);
 
-        const propertyForm = modal.querySelector('#property-form') as HTMLFormElement;
-        const cancelBtn = modal.querySelector('#cancel-property-btn') as HTMLButtonElement;
-        const propertyTypeSelect = modal.querySelector('#property-type') as HTMLSelectElement;
-        const selectOptionsGroup = modal.querySelector('#select-options-group') as HTMLElement;
-        const optionInput = modal.querySelector('#option-input') as HTMLInputElement;
-        const addOptionBtn = modal.querySelector('#add-option-btn') as HTMLButtonElement;
-        const optionsList = modal.querySelector('#options-list') as HTMLElement;
+    const propertyForm = modal.querySelector('#property-form') as HTMLFormElement;
+    const cancelBtn = modal.querySelector('#cancel-property-btn') as HTMLButtonElement;
+    const optionInput = modal.querySelector('#option-input') as HTMLInputElement;
+    const addOptionBtn = modal.querySelector('#add-option-btn') as HTMLButtonElement;
+    const optionsList = modal.querySelector('#options-list') as HTMLElement;
 
-        // Initialize select options from existing property
-        let selectOptions: string[] = property.options ? property.options.map(opt => opt.label) : [];
+    // Initialize select options from existing property
+    let selectOptions: string[] = property.options ? property.options.map(opt => opt.label) : [];
 
-        // Add option to list
-        const renderOptions = () => {
-            if (selectOptions.length === 0) {
-                optionsList.innerHTML = '<p style="color: var(--text-muted); font-size: 0.875rem;">No options added yet.</p>';
-            } else {
-                optionsList.innerHTML = selectOptions.map((opt, idx) => `
+    // Add option to list
+    const renderOptions = () => {
+      if (selectOptions.length === 0) {
+        optionsList.innerHTML = '<p style="color: var(--text-muted); font-size: 0.875rem;">No options added yet.</p>';
+      } else {
+        optionsList.innerHTML = selectOptions.map((opt, idx) => `
                     <div style="display: flex; justify-content: space-between; align-items: center; padding: 4px 0;">
                         <span>${opt}</span>
                         <button type="button" class="btn-remove-option" data-index="${idx}" style="background: none; border: none; color: var(--danger); cursor: pointer; padding: 4px 8px;">✕</button>
                     </div>
                 `).join('');
 
-                // Attach remove handlers
-                optionsList.querySelectorAll('.btn-remove-option').forEach(btn => {
-                    btn.addEventListener('click', (e) => {
-                        const optIndex = parseInt((e.target as HTMLElement).dataset.index || '0');
-                        selectOptions.splice(optIndex, 1);
-                        renderOptions();
-                    });
-                });
-            }
-        };
-
-        // Initial render if select type
-        if (property.valueType === 'select') {
+        // Attach remove handlers
+        optionsList.querySelectorAll('.btn-remove-option').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            const optIndex = parseInt((e.target as HTMLElement).dataset.index || '0');
+            selectOptions.splice(optIndex, 1);
             renderOptions();
-        }
-
-        addOptionBtn.addEventListener('click', () => {
-            const value = optionInput.value.trim();
-            if (value && !selectOptions.includes(value)) {
-                selectOptions.push(value);
-                optionInput.value = '';
-                renderOptions();
-            }
+          });
         });
+      }
+    };
 
-        // Allow Enter key to add option
-        optionInput.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                addOptionBtn.click();
-            }
-        });
+    // Initial render if select type
+    if (property.valueType === 'select') {
+      renderOptions();
+    }
 
-        const cleanup = () => {
-            document.body.removeChild(modal);
+    addOptionBtn.addEventListener('click', () => {
+      const value = optionInput.value.trim();
+      if (value && !selectOptions.includes(value)) {
+        selectOptions.push(value);
+        optionInput.value = '';
+        renderOptions();
+      }
+    });
+
+    // Allow Enter key to add option
+    optionInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        addOptionBtn.click();
+      }
+    });
+
+    const cleanup = () => {
+      document.body.removeChild(modal);
+    };
+
+    propertyForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const name = (modal.querySelector('#property-name') as HTMLInputElement).value.trim();
+      const valueType = (modal.querySelector('#property-type') as HTMLSelectElement).value as ValueType;
+      const required = (modal.querySelector('#property-required') as HTMLInputElement).checked;
+
+      // Validate select type has options
+      if (valueType === 'select' && selectOptions.length === 0) {
+        alert('Please add at least one option for the select field.');
+        return;
+      }
+
+      if (name) {
+        // Update existing property
+        this.properties[index] = {
+          ...property,
+          name: capitalizeFirstLetter(name),
+          required
         };
 
-        propertyForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            const name = (modal.querySelector('#property-name') as HTMLInputElement).value.trim();
-            const valueType = (modal.querySelector('#property-type') as HTMLSelectElement).value as ValueType;
-            const required = (modal.querySelector('#property-required') as HTMLInputElement).checked;
+        // Update options if select type
+        if (valueType === 'select') {
+          this.properties[index].options = selectOptions.map(opt => ({
+            value: opt.toLowerCase().replace(/\s+/g, '-'),
+            label: opt
+          } as SelectOption));
+        }
 
-            // Validate select type has options
-            if (valueType === 'select' && selectOptions.length === 0) {
-                alert('Please add at least one option for the select field.');
-                return;
-            }
+        this.hasUnsavedChanges = true;
+        this.updatePropertiesList();
+        cleanup();
+      }
+    });
 
-            if (name) {
-                // Update existing property
-                this.properties[index] = {
-                    ...property,
-                    name: capitalizeFirstLetter(name),
-                    required
-                };
+    cancelBtn.addEventListener('click', cleanup);
+  }
 
-                // Update options if select type
-                if (valueType === 'select') {
-                    this.properties[index].options = selectOptions.map(opt => ({
-                        value: opt.toLowerCase().replace(/\s+/g, '-'),
-                        label: opt
-                    } as SelectOption));
-                }
+  private handleRemoveProperty(index: number): void {
+    if (confirm('Are you sure you want to remove this property?')) {
+      this.properties.splice(index, 1);
+      this.hasUnsavedChanges = true;
+      this.updatePropertiesList();
+    }
+  }
 
-                this.hasUnsavedChanges = true;
-                this.updatePropertiesList();
-                cleanup();
-            }
+  private updatePropertiesList(): void {
+    const container = this.querySelector('#properties-list');
+    if (container) {
+      container.innerHTML = this.renderPropertiesList();
+
+      // Re-attach event listeners for edit buttons
+      container.querySelectorAll('.btn-edit-property').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          const index = parseInt((e.target as HTMLElement).dataset.index || '0');
+          this.handleEditProperty(index);
         });
+      });
 
-        cancelBtn.addEventListener('click', cleanup);
+      // Re-attach event listeners for remove buttons
+      container.querySelectorAll('.btn-remove-property').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          const index = parseInt((e.target as HTMLElement).dataset.index || '0');
+          this.handleRemoveProperty(index);
+        });
+      });
     }
+  }
 
-    private handleRemoveProperty(index: number): void {
-        if (confirm('Are you sure you want to remove this property?')) {
-            this.properties.splice(index, 1);
-            this.hasUnsavedChanges = true;
-            this.updatePropertiesList();
-        }
+  public checkUnsavedChanges(): boolean {
+    if (this.hasUnsavedChanges) {
+      return confirm('You have unsaved changes. Are you sure you want to close without saving?');
     }
+    return true;
+  }
 
-    private updatePropertiesList(): void {
-        const container = this.querySelector('#properties-list');
-        if (container) {
-            container.innerHTML = this.renderPropertiesList();
+  private handleSubmit(e: Event): void {
+    e.preventDefault();
 
-            // Re-attach event listeners for edit buttons
-            container.querySelectorAll('.btn-edit-property').forEach(btn => {
-                btn.addEventListener('click', (e) => {
-                    const index = parseInt((e.target as HTMLElement).dataset.index || '0');
-                    this.handleEditProperty(index);
-                });
-            });
+    try {
+      const name = (this.querySelector('#entity-name') as HTMLInputElement).value.trim();
+      const type = (this.querySelector('#entity-type') as HTMLSelectElement).value as EntityType;
+      const categories = this.entity ? this.entity.categories : [];
 
-            // Re-attach event listeners for remove buttons
-            container.querySelectorAll('.btn-remove-property').forEach(btn => {
-                btn.addEventListener('click', (e) => {
-                    const index = parseInt((e.target as HTMLElement).dataset.index || '0');
-                    this.handleRemoveProperty(index);
-                });
-            });
-        }
+      if (this.entity) {
+        // Update existing entity
+        this.store.updateEntity(this.entity.id, {
+          name,
+          type,
+          categories,
+          properties: this.properties
+        });
+      }
+
+      // Reset unsaved changes flag
+      this.hasUnsavedChanges = false;
+
+      // Close the panel via URL
+      URLStateManager.closePanel();
+
+      // Reset form
+      (e.target as HTMLFormElement).reset();
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      alert(`Error updating entity: ${message}`);
     }
-
-    public checkUnsavedChanges(): boolean {
-        if (this.hasUnsavedChanges) {
-            return confirm('You have unsaved changes. Are you sure you want to close without saving?');
-        }
-        return true;
-    }
-
-    private handleSubmit(e: Event): void {
-        e.preventDefault();
-
-        try {
-            const name = (this.querySelector('#entity-name') as HTMLInputElement).value.trim();
-            const type = (this.querySelector('#entity-type') as HTMLSelectElement).value as EntityType;
-            const categories = this.entity ? this.entity.categories : [];
-
-            if (this.entity) {
-                // Update existing entity
-                this.store.updateEntity(this.entity.id, {
-                    name,
-                    type,
-                    categories,
-                    properties: this.properties
-                });
-            }
-
-            // Reset unsaved changes flag
-            this.hasUnsavedChanges = false;
-
-            // Close the panel via URL
-            URLStateManager.closePanel();
-
-            // Reset form
-            (e.target as HTMLFormElement).reset();
-        } catch (error) {
-            const message = error instanceof Error ? error.message : 'Unknown error';
-            alert(`Error updating entity: ${message}`);
-        }
-    }
+  }
 }

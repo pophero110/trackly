@@ -8,499 +8,485 @@ type StateChangeCallback = () => void;
 export type ActionType = 'log-entry' | 'create-entity' | 'edit-entity' | 'clone-entity' | 'edit-entry' | null;
 
 export class URLStateManager {
-    private static listeners: StateChangeCallback[] = [];
+  private static listeners: StateChangeCallback[] = [];
 
-    /**
-     * Encode entity name for URL path (lowercase, replace spaces with hyphens)
-     */
-    private static encodeEntityName(name: string): string {
-        return name.toLowerCase().replace(/\s+/g, '-');
+  /**
+   * Encode entity name for URL path (lowercase, replace spaces with hyphens)
+   */
+  private static encodeEntityName(name: string): string {
+    return name.toLowerCase().replace(/\s+/g, '-');
+  }
+
+  /**
+   * Decode entity slug to find actual entity name
+   * The encoded value is lowercase with hyphens, we need to find the matching entity
+   * Note: This requires access to the store, so it's handled in app.ts instead
+   * For now, just return the encoded value and let the caller handle the lookup
+   */
+  private static decodeEntityName(encoded: string): string {
+    // The encoded value is already the slug format (lowercase, hyphens)
+    // The caller (app.ts) will use store.getEntityByName or similar lookup
+    return encoded;
+  }
+
+  /**
+   * Parse the current pathname and return route info
+   */
+  private static parsePathname(): { view: 'home' | 'entities' | 'entries', entitySlug?: string } {
+    const path = window.location.pathname;
+
+    // Match /entities
+    if (path === '/entities') {
+      return { view: 'entities' };
     }
 
-    /**
-     * Decode entity slug to find actual entity name
-     * The encoded value is lowercase with hyphens, we need to find the matching entity
-     * Note: This requires access to the store, so it's handled in app.ts instead
-     * For now, just return the encoded value and let the caller handle the lookup
-     */
-    private static decodeEntityName(encoded: string): string {
-        // The encoded value is already the slug format (lowercase, hyphens)
-        // The caller (app.ts) will use store.getEntityByName or similar lookup
-        return encoded;
+    // Match /entries (all entries view)
+    if (path === '/entries') {
+      return { view: 'entries' };
     }
 
-    /**
-     * Parse the current pathname and return route info
-     */
-    private static parsePathname(): { view: 'home' | 'entities' | 'entries', entitySlug?: string } {
-        const path = window.location.pathname;
-
-        // Match /entities
-        if (path === '/entities') {
-            return { view: 'entities' };
-        }
-
-        // Match /entries (all entries view)
-        if (path === '/entries') {
-            return { view: 'entries' };
-        }
-
-        // Match /entities/:entitySlug/entries
-        const entriesMatch = path.match(/^\/entities\/([^/]+)\/entries$/);
-        if (entriesMatch) {
-            return { view: 'entries', entitySlug: entriesMatch[1] };
-        }
-
-        // Default to home (redirect to /entries)
-        return { view: 'home' };
+    // Match /entities/:entitySlug/entries
+    const entriesMatch = path.match(/^\/entities\/([^/]+)\/entries$/);
+    if (entriesMatch) {
+      return { view: 'entries', entitySlug: entriesMatch[1] };
     }
 
-    /**
-     * Get selected entity name from URL path
-     * Needs to match entity slug to actual entity name
-     */
-    static getSelectedEntityName(): string | null {
-        const { entitySlug } = URLStateManager.parsePathname();
-        return entitySlug || null;
+    // Default to home (redirect to /entries)
+    return { view: 'home' };
+  }
+
+  /**
+   * Get selected entity name from URL path
+   * Needs to match entity slug to actual entity name
+   */
+  static getSelectedEntityName(): string | null {
+    const { entitySlug } = URLStateManager.parsePathname();
+    return entitySlug || null;
+  }
+
+  /**
+   * Get current view from URL path
+   */
+  static getView(): 'home' | 'entities' | 'entries' {
+    const { view } = URLStateManager.parsePathname();
+    return view;
+  }
+
+  /**
+   * Get current action from URL
+   */
+  static getAction(): ActionType {
+    const params = new URLSearchParams(window.location.search);
+    const action = params.get('action');
+
+    if (action === 'log-entry' || action === 'create-entity' || action === 'edit-entity' || action === 'clone-entity' || action === 'edit-entry') {
+      return action;
+    }
+    return null;
+  }
+
+  /**
+   * Get entity name for editing from URL
+   */
+  static getEditEntityName(): string | null {
+    const params = new URLSearchParams(window.location.search);
+    const encoded = params.get('edit');
+    return encoded ? URLStateManager.decodeEntityName(encoded) : null;
+  }
+
+  static getCloneEntityName(): string | null {
+    const params = new URLSearchParams(window.location.search);
+    const encoded = params.get('clone');
+    return encoded ? URLStateManager.decodeEntityName(encoded) : null;
+  }
+
+  /**
+   * Set selected entity name in URL (deprecated - use showEntryList instead)
+   */
+  static setSelectedEntityName(entityName: string | null): void {
+    if (entityName) {
+      const slug = URLStateManager.encodeEntityName(entityName);
+      URLStateManager.updatePath(`/entities/${slug}/entries`);
+    } else {
+      URLStateManager.updatePath('/entries');
+    }
+  }
+
+  /**
+   * Set current view in URL (deprecated - use specific navigation methods)
+   */
+  static setView(view: 'home' | 'entities' | 'entries'): void {
+    if (view === 'entities') {
+      URLStateManager.updatePath('/entities');
+    } else if (view === 'entries') {
+      URLStateManager.updatePath('/entries');
+    } else if (view === 'home') {
+      URLStateManager.updatePath('/entries');
+    }
+  }
+
+  /**
+   * Navigate to entity entry list
+   */
+  static showEntryList(entityName: string): void {
+    const slug = URLStateManager.encodeEntityName(entityName);
+    const params = new URLSearchParams(window.location.search);
+    const queryString = params.toString();
+    const path = `/entities/${slug}/entries${queryString ? '?' + queryString : ''}`;
+    URLStateManager.updatePath(path);
+  }
+
+  /**
+   * Navigate back to entity grid
+   */
+  static showGrid(): void {
+    // Navigate to /entities with no query parameters (fresh state)
+    window.history.pushState(null, '', '/entities');
+    URLStateManager.notifyListeners();
+  }
+
+  static showHome(): void {
+    // Navigate to /entries with no query parameters (fresh state)
+    window.history.pushState(null, '', '/entries');
+    URLStateManager.notifyListeners();
+  }
+
+  /**
+   * Navigate to entry detail page
+   */
+  static showEntryDetail(entryId: string): void {
+    URLStateManager.updatePath(`/entries/${entryId}`);
+  }
+
+  /**
+   * Open create entity panel
+   */
+  static openCreateEntityPanel(): void {
+    const params = new URLSearchParams(window.location.search);
+    params.set('action', 'create-entity');
+    URLStateManager.updateURL(params);
+  }
+
+  /**
+   * Open edit entity panel
+   */
+  static openEditEntityPanel(entityName: string): void {
+    const params = new URLSearchParams(window.location.search);
+    params.set('action', 'edit-entity');
+    params.set('edit', URLStateManager.encodeEntityName(entityName));
+    URLStateManager.updateURL(params);
+  }
+
+  /**
+   * Open clone entity panel
+   */
+  static openCloneEntityPanel(entityName: string): void {
+    const params = new URLSearchParams(window.location.search);
+    params.set('action', 'clone-entity');
+    params.set('clone', URLStateManager.encodeEntityName(entityName));
+    URLStateManager.updateURL(params);
+  }
+
+  /**
+   * Open edit entry panel
+   */
+  static openEditEntryPanel(entryId: string): void {
+    const params = new URLSearchParams(window.location.search);
+    params.set('action', 'edit-entry');
+    params.set('entryId', entryId);
+    URLStateManager.updateURL(params);
+  }
+
+  /**
+   * Get entry ID from URL
+   */
+  static getEntryId(): string | null {
+    const params = new URLSearchParams(window.location.search);
+    return params.get('entryId');
+  }
+
+  /**
+   * Get entity name from URL query parameter (for log entry panel)
+   */
+  static getEntityParam(): string | null {
+    const params = new URLSearchParams(window.location.search);
+    const encoded = params.get('entity');
+    return encoded ? URLStateManager.decodeEntityName(encoded) : null;
+  }
+
+  /**
+   * Get hashtag filter from URL (legacy single tag support)
+   */
+  static getHashtagFilter(): string | null {
+    const params = new URLSearchParams(window.location.search);
+    return params.get('hashtag');
+  }
+
+  /**
+   * Set hashtag filter in URL (legacy single tag support)
+   */
+  static setHashtagFilter(hashtag: string | null): void {
+    const params = new URLSearchParams(window.location.search);
+
+    if (hashtag) {
+      params.set('hashtag', hashtag);
+    } else {
+      params.delete('hashtag');
     }
 
-    /**
-     * Get current view from URL path
-     */
-    static getView(): 'home' | 'entities' | 'entries' {
-        const { view } = URLStateManager.parsePathname();
-        return view;
+    URLStateManager.updateURL(params);
+  }
+
+  /**
+   * Get multiple tag filters from URL
+   * Returns array of tag names (without # symbol)
+   */
+  static getTagFilters(): string[] {
+    const params = new URLSearchParams(window.location.search);
+    const tags = params.get('tags');
+    if (tags) {
+      return tags.split(',').map(t => t.trim()).filter(t => t.length > 0);
+    }
+    return [];
+  }
+
+  /**
+   * Set multiple tag filters in URL
+   * Pass array of tag names (without # symbol)
+   */
+  static setTagFilters(tags: string[]): void {
+    const params = new URLSearchParams(window.location.search);
+
+    if (tags && tags.length > 0) {
+      params.set('tags', tags.join(','));
+    } else {
+      params.delete('tags');
     }
 
-    /**
-     * Get current action from URL
-     */
-    static getAction(): ActionType {
-        const params = new URLSearchParams(window.location.search);
-        const action = params.get('action');
+    URLStateManager.updateURL(params);
+  }
 
-        if (action === 'log-entry' || action === 'create-entity' || action === 'edit-entity' || action === 'clone-entity' || action === 'edit-entry') {
-            return action;
-        }
-        return null;
+  /**
+   * Add a tag to the current filters
+   */
+  static addTagFilter(tag: string): void {
+    const current = URLStateManager.getTagFilters();
+    if (!current.includes(tag)) {
+      URLStateManager.setTagFilters([...current, tag]);
+    }
+  }
+
+  /**
+   * Remove a tag from the current filters
+   */
+  static removeTagFilter(tag: string): void {
+    const current = URLStateManager.getTagFilters();
+    const filtered = current.filter(t => t !== tag);
+    URLStateManager.setTagFilters(filtered);
+  }
+
+  /**
+   * Clear all tag filters
+   */
+  static clearTagFilters(): void {
+    URLStateManager.setTagFilters([]);
+  }
+
+  /**
+   * Get multiple entity filters from URL
+   * Returns array of entity names
+   */
+  static getEntityFilters(): string[] {
+    const params = new URLSearchParams(window.location.search);
+    const entities = params.get('entities');
+    if (entities) {
+      return entities.split(',').map(e => e.trim()).filter(e => e.length > 0);
+    }
+    return [];
+  }
+
+  /**
+   * Set multiple entity filters in URL
+   * Pass array of entity names
+   */
+  static setEntityFilters(entities: string[]): void {
+    const params = new URLSearchParams(window.location.search);
+
+    if (entities && entities.length > 0) {
+      params.set('entities', entities.join(','));
+    } else {
+      params.delete('entities');
     }
 
-    /**
-     * Get entity name for editing from URL
-     */
-    static getEditEntityName(): string | null {
-        const params = new URLSearchParams(window.location.search);
-        const encoded = params.get('edit');
-        return encoded ? URLStateManager.decodeEntityName(encoded) : null;
+    URLStateManager.updateURL(params);
+  }
+
+  /**
+   * Add an entity to the current filters
+   */
+  static addEntityFilter(entity: string): void {
+    const current = URLStateManager.getEntityFilters();
+    if (!current.includes(entity)) {
+      URLStateManager.setEntityFilters([...current, entity]);
+    }
+  }
+
+  /**
+   * Remove an entity from the current filters
+   */
+  static removeEntityFilter(entity: string): void {
+    const current = URLStateManager.getEntityFilters();
+    const filtered = current.filter(e => e !== entity);
+    URLStateManager.setEntityFilters(filtered);
+  }
+
+  /**
+   * Clear all entity filters
+   */
+  static clearEntityFilters(): void {
+    URLStateManager.setEntityFilters([]);
+  }
+
+  /**
+   * Get sort field from URL (for entries)
+   */
+  static getSortBy(): string | null {
+    const params = new URLSearchParams(window.location.search);
+    return params.get('sortBy');
+  }
+
+  /**
+   * Get sort order from URL (for entries)
+   */
+  static getSortOrder(): 'asc' | 'desc' | null {
+    const params = new URLSearchParams(window.location.search);
+    const order = params.get('sortOrder');
+    return (order === 'asc' || order === 'desc') ? order : null;
+  }
+
+  /**
+   * Set sort parameters in URL (for entries)
+   */
+  static setSort(sortBy: string | null, sortOrder: 'asc' | 'desc' | null): void {
+    const params = new URLSearchParams(window.location.search);
+
+    if (sortBy) {
+      params.set('sortBy', sortBy);
+    } else {
+      params.delete('sortBy');
     }
 
-    static getCloneEntityName(): string | null {
-        const params = new URLSearchParams(window.location.search);
-        const encoded = params.get('clone');
-        return encoded ? URLStateManager.decodeEntityName(encoded) : null;
+    if (sortOrder) {
+      params.set('sortOrder', sortOrder);
+    } else {
+      params.delete('sortOrder');
     }
 
-    /**
-     * Set selected entity name in URL (deprecated - use showEntryList instead)
-     */
-    static setSelectedEntityName(entityName: string | null): void {
-        if (entityName) {
-            const slug = URLStateManager.encodeEntityName(entityName);
-            URLStateManager.updatePath(`/entities/${slug}/entries`);
-        } else {
-            URLStateManager.updatePath('/entries');
-        }
+    URLStateManager.updateURL(params);
+  }
+
+  /**
+   * Get entity sort field from URL
+   * Note: Uses same parameter name as entries (sortBy) since they're on different routes
+   */
+  static getEntitySortBy(): string | null {
+    const params = new URLSearchParams(window.location.search);
+    return params.get('sortBy');
+  }
+
+  /**
+   * Get entity sort order from URL
+   * Note: Uses same parameter name as entries (sortOrder) since they're on different routes
+   */
+  static getEntitySortOrder(): 'asc' | 'desc' | null {
+    const params = new URLSearchParams(window.location.search);
+    const order = params.get('sortOrder');
+    return (order === 'asc' || order === 'desc') ? order : null;
+  }
+
+  /**
+   * Set entity sort parameters in URL
+   * Note: Uses same parameter names as entries (sortBy/sortOrder) since they're on different routes
+   */
+  static setEntitySort(sortBy: string | null, sortOrder: 'asc' | 'desc' | null): void {
+    const params = new URLSearchParams(window.location.search);
+
+    if (sortBy) {
+      params.set('sortBy', sortBy);
+    } else {
+      params.delete('sortBy');
     }
 
-    /**
-     * Set current view in URL (deprecated - use specific navigation methods)
-     */
-    static setView(view: 'home' | 'entities' | 'entries'): void {
-        if (view === 'entities') {
-            URLStateManager.updatePath('/entities');
-        } else if (view === 'entries') {
-            URLStateManager.updatePath('/entries');
-        } else if (view === 'home') {
-            URLStateManager.updatePath('/entries');
-        }
+    if (sortOrder) {
+      params.set('sortOrder', sortOrder);
+    } else {
+      params.delete('sortOrder');
     }
 
-    /**
-     * Navigate to entity entry list
-     */
-    static showEntryList(entityName: string): void {
-        const slug = URLStateManager.encodeEntityName(entityName);
-        const params = new URLSearchParams(window.location.search);
-        const queryString = params.toString();
-        const path = `/entities/${slug}/entries${queryString ? '?' + queryString : ''}`;
-        URLStateManager.updatePath(path);
-    }
+    URLStateManager.updateURL(params);
+  }
 
-    /**
-     * Navigate back to entity grid
-     */
-    static showGrid(): void {
-        // Navigate to /entities with no query parameters (fresh state)
-        window.history.pushState(null, '', '/entities');
-        URLStateManager.notifyListeners();
-    }
+  /**
+   * Close panel
+   */
+  static closePanel(): void {
+    const params = new URLSearchParams(window.location.search);
+    params.delete('action');
+    params.delete('edit');
+    params.delete('entryId');
+    URLStateManager.updateURL(params);
+  }
 
-    static showHome(): void {
-        // Navigate to /entries with no query parameters (fresh state)
-        window.history.pushState(null, '', '/entries');
-        URLStateManager.notifyListeners();
-    }
+  /**
+   * Update URL path and notify listeners
+   */
+  private static updatePath(path: string): void {
+    window.history.pushState(null, '', path);
+    URLStateManager.notifyListeners();
+  }
 
-    /**
-     * Navigate to entry detail page
-     */
-    static showEntryDetail(entryId: string): void {
-        URLStateManager.updatePath(`/entries/${entryId}`);
-    }
+  /**
+   * Update URL query parameters and notify listeners
+   */
+  private static updateURL(params: URLSearchParams): void {
+    const newURL = params.toString()
+      ? `${window.location.pathname}?${params.toString()}`
+      : window.location.pathname;
 
-    /**
-     * Open log entry panel
-     */
-    static openLogEntryPanel(entityName?: string): void {
-        const params = new URLSearchParams(window.location.search);
-        params.set('action', 'log-entry');
+    window.history.pushState(null, '', newURL);
+    URLStateManager.notifyListeners();
+  }
 
-        if (entityName) {
-            params.set('entity', URLStateManager.encodeEntityName(entityName));
-        }
+  /**
+   * Subscribe to URL state changes
+   */
+  static subscribe(callback: StateChangeCallback): () => void {
+    URLStateManager.listeners.push(callback);
 
-        URLStateManager.updateURL(params);
-    }
+    // Return unsubscribe function
+    return () => {
+      URLStateManager.listeners = URLStateManager.listeners.filter(
+        (listener) => listener !== callback
+      );
+    };
+  }
 
-    /**
-     * Open create entity panel
-     */
-    static openCreateEntityPanel(): void {
-        const params = new URLSearchParams(window.location.search);
-        params.set('action', 'create-entity');
-        URLStateManager.updateURL(params);
-    }
+  /**
+   * Notify all listeners of state change
+   */
+  private static notifyListeners(): void {
+    URLStateManager.listeners.forEach((callback) => {
+      callback();
+    });
+  }
 
-    /**
-     * Open edit entity panel
-     */
-    static openEditEntityPanel(entityName: string): void {
-        const params = new URLSearchParams(window.location.search);
-        params.set('action', 'edit-entity');
-        params.set('edit', URLStateManager.encodeEntityName(entityName));
-        URLStateManager.updateURL(params);
-    }
-
-    /**
-     * Open clone entity panel
-     */
-    static openCloneEntityPanel(entityName: string): void {
-        const params = new URLSearchParams(window.location.search);
-        params.set('action', 'clone-entity');
-        params.set('clone', URLStateManager.encodeEntityName(entityName));
-        URLStateManager.updateURL(params);
-    }
-
-    /**
-     * Open edit entry panel
-     */
-    static openEditEntryPanel(entryId: string): void {
-        const params = new URLSearchParams(window.location.search);
-        params.set('action', 'edit-entry');
-        params.set('entryId', entryId);
-        URLStateManager.updateURL(params);
-    }
-
-    /**
-     * Get entry ID from URL
-     */
-    static getEntryId(): string | null {
-        const params = new URLSearchParams(window.location.search);
-        return params.get('entryId');
-    }
-
-    /**
-     * Get entity name from URL query parameter (for log entry panel)
-     */
-    static getEntityParam(): string | null {
-        const params = new URLSearchParams(window.location.search);
-        const encoded = params.get('entity');
-        return encoded ? URLStateManager.decodeEntityName(encoded) : null;
-    }
-
-    /**
-     * Get hashtag filter from URL (legacy single tag support)
-     */
-    static getHashtagFilter(): string | null {
-        const params = new URLSearchParams(window.location.search);
-        return params.get('hashtag');
-    }
-
-    /**
-     * Set hashtag filter in URL (legacy single tag support)
-     */
-    static setHashtagFilter(hashtag: string | null): void {
-        const params = new URLSearchParams(window.location.search);
-
-        if (hashtag) {
-            params.set('hashtag', hashtag);
-        } else {
-            params.delete('hashtag');
-        }
-
-        URLStateManager.updateURL(params);
-    }
-
-    /**
-     * Get multiple tag filters from URL
-     * Returns array of tag names (without # symbol)
-     */
-    static getTagFilters(): string[] {
-        const params = new URLSearchParams(window.location.search);
-        const tags = params.get('tags');
-        if (tags) {
-            return tags.split(',').map(t => t.trim()).filter(t => t.length > 0);
-        }
-        return [];
-    }
-
-    /**
-     * Set multiple tag filters in URL
-     * Pass array of tag names (without # symbol)
-     */
-    static setTagFilters(tags: string[]): void {
-        const params = new URLSearchParams(window.location.search);
-
-        if (tags && tags.length > 0) {
-            params.set('tags', tags.join(','));
-        } else {
-            params.delete('tags');
-        }
-
-        URLStateManager.updateURL(params);
-    }
-
-    /**
-     * Add a tag to the current filters
-     */
-    static addTagFilter(tag: string): void {
-        const current = URLStateManager.getTagFilters();
-        if (!current.includes(tag)) {
-            URLStateManager.setTagFilters([...current, tag]);
-        }
-    }
-
-    /**
-     * Remove a tag from the current filters
-     */
-    static removeTagFilter(tag: string): void {
-        const current = URLStateManager.getTagFilters();
-        const filtered = current.filter(t => t !== tag);
-        URLStateManager.setTagFilters(filtered);
-    }
-
-    /**
-     * Clear all tag filters
-     */
-    static clearTagFilters(): void {
-        URLStateManager.setTagFilters([]);
-    }
-
-    /**
-     * Get multiple entity filters from URL
-     * Returns array of entity names
-     */
-    static getEntityFilters(): string[] {
-        const params = new URLSearchParams(window.location.search);
-        const entities = params.get('entities');
-        if (entities) {
-            return entities.split(',').map(e => e.trim()).filter(e => e.length > 0);
-        }
-        return [];
-    }
-
-    /**
-     * Set multiple entity filters in URL
-     * Pass array of entity names
-     */
-    static setEntityFilters(entities: string[]): void {
-        const params = new URLSearchParams(window.location.search);
-
-        if (entities && entities.length > 0) {
-            params.set('entities', entities.join(','));
-        } else {
-            params.delete('entities');
-        }
-
-        URLStateManager.updateURL(params);
-    }
-
-    /**
-     * Add an entity to the current filters
-     */
-    static addEntityFilter(entity: string): void {
-        const current = URLStateManager.getEntityFilters();
-        if (!current.includes(entity)) {
-            URLStateManager.setEntityFilters([...current, entity]);
-        }
-    }
-
-    /**
-     * Remove an entity from the current filters
-     */
-    static removeEntityFilter(entity: string): void {
-        const current = URLStateManager.getEntityFilters();
-        const filtered = current.filter(e => e !== entity);
-        URLStateManager.setEntityFilters(filtered);
-    }
-
-    /**
-     * Clear all entity filters
-     */
-    static clearEntityFilters(): void {
-        URLStateManager.setEntityFilters([]);
-    }
-
-    /**
-     * Get sort field from URL (for entries)
-     */
-    static getSortBy(): string | null {
-        const params = new URLSearchParams(window.location.search);
-        return params.get('sortBy');
-    }
-
-    /**
-     * Get sort order from URL (for entries)
-     */
-    static getSortOrder(): 'asc' | 'desc' | null {
-        const params = new URLSearchParams(window.location.search);
-        const order = params.get('sortOrder');
-        return (order === 'asc' || order === 'desc') ? order : null;
-    }
-
-    /**
-     * Set sort parameters in URL (for entries)
-     */
-    static setSort(sortBy: string | null, sortOrder: 'asc' | 'desc' | null): void {
-        const params = new URLSearchParams(window.location.search);
-
-        if (sortBy) {
-            params.set('sortBy', sortBy);
-        } else {
-            params.delete('sortBy');
-        }
-
-        if (sortOrder) {
-            params.set('sortOrder', sortOrder);
-        } else {
-            params.delete('sortOrder');
-        }
-
-        URLStateManager.updateURL(params);
-    }
-
-    /**
-     * Get entity sort field from URL
-     * Note: Uses same parameter name as entries (sortBy) since they're on different routes
-     */
-    static getEntitySortBy(): string | null {
-        const params = new URLSearchParams(window.location.search);
-        return params.get('sortBy');
-    }
-
-    /**
-     * Get entity sort order from URL
-     * Note: Uses same parameter name as entries (sortOrder) since they're on different routes
-     */
-    static getEntitySortOrder(): 'asc' | 'desc' | null {
-        const params = new URLSearchParams(window.location.search);
-        const order = params.get('sortOrder');
-        return (order === 'asc' || order === 'desc') ? order : null;
-    }
-
-    /**
-     * Set entity sort parameters in URL
-     * Note: Uses same parameter names as entries (sortBy/sortOrder) since they're on different routes
-     */
-    static setEntitySort(sortBy: string | null, sortOrder: 'asc' | 'desc' | null): void {
-        const params = new URLSearchParams(window.location.search);
-
-        if (sortBy) {
-            params.set('sortBy', sortBy);
-        } else {
-            params.delete('sortBy');
-        }
-
-        if (sortOrder) {
-            params.set('sortOrder', sortOrder);
-        } else {
-            params.delete('sortOrder');
-        }
-
-        URLStateManager.updateURL(params);
-    }
-
-    /**
-     * Close panel
-     */
-    static closePanel(): void {
-        const params = new URLSearchParams(window.location.search);
-        params.delete('action');
-        params.delete('edit');
-        params.delete('entryId');
-        URLStateManager.updateURL(params);
-    }
-
-    /**
-     * Update URL path and notify listeners
-     */
-    private static updatePath(path: string): void {
-        window.history.pushState(null, '', path);
-        URLStateManager.notifyListeners();
-    }
-
-    /**
-     * Update URL query parameters and notify listeners
-     */
-    private static updateURL(params: URLSearchParams): void {
-        const newURL = params.toString()
-            ? `${window.location.pathname}?${params.toString()}`
-            : window.location.pathname;
-
-        window.history.pushState(null, '', newURL);
-        URLStateManager.notifyListeners();
-    }
-
-    /**
-     * Subscribe to URL state changes
-     */
-    static subscribe(callback: StateChangeCallback): () => void {
-        URLStateManager.listeners.push(callback);
-
-        // Return unsubscribe function
-        return () => {
-            URLStateManager.listeners = URLStateManager.listeners.filter(
-                (listener) => listener !== callback
-            );
-        };
-    }
-
-    /**
-     * Notify all listeners of state change
-     */
-    private static notifyListeners(): void {
-        URLStateManager.listeners.forEach((callback) => {
-            callback();
-        });
-    }
-
-    /**
-     * Initialize URL state manager
-     */
-    static init(): void {
-        // Listen for browser back/forward navigation
-        window.addEventListener('popstate', () => {
-            URLStateManager.notifyListeners();
-        });
-    }
+  /**
+   * Initialize URL state manager
+   */
+  static init(): void {
+    // Listen for browser back/forward navigation
+    window.addEventListener('popstate', () => {
+      URLStateManager.notifyListeners();
+    });
+  }
 }
