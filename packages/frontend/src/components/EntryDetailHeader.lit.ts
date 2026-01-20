@@ -1,7 +1,5 @@
 import { css, html, LitElement } from 'lit';
 import { customElement, property, state, query } from 'lit/decorators.js';
-import { map } from 'lit/directives/map.js';
-import { when } from 'lit/directives/when.js';
 import { Entry } from '../models/Entry.js';
 import { Entity } from '../models/Entity.js';
 import { escapeHtml, formatDate } from '../utils/helpers.js';
@@ -169,23 +167,23 @@ export class EntryDetailHeader extends LitElement {
             <button class="entry-detail-close-btn" @click=${this.handleClose}>×</button>
           </div>
 
-          <!-- Actions Menu (Copy, Archive, Delete) -->
-          <dropdown-menu
-            data-menu-type="actions"
-            .items=${this.actionsMenuItems}
-            .menuId=${'entry-detail-actions-menu'}
-            @menu-action=${this.handleActionsMenuAction}
-            @menu-close=${this.handleActionsMenuClose}>
-          </dropdown-menu>
+      <!-- Actions Menu (Copy, Archive, Delete) -->
+      <dropdown-menu
+        data-menu-type="actions"
+        .items=${this.actionsMenuItems}
+        .menuId=${'entry-detail-actions-menu'}
+        @menu-action=${this.handleActionsMenuAction}
+        @menu-close=${this.handleActionsMenuClose}>
+      </dropdown-menu>
 
-          <!-- Entity Selector Menu -->
-          <dropdown-menu
-            data-menu-type="entity"
-            .items=${this.entityMenuItems}
-            .menuId=${'entry-detail-entity-menu'}
-            @menu-action=${this.handleEntityMenuAction}
-            @menu-close=${this.handleEntityMenuClose}>
-          </dropdown-menu>
+      <!-- Entity Selector Menu -->
+      <dropdown-menu
+        data-menu-type="entity"
+        .items=${this.entityMenuItems}
+        .menuId=${'entry-detail-entity-menu'}
+        @menu-action=${this.handleEntityMenuAction}
+        @menu-close=${this.handleEntityMenuClose}>
+      </dropdown-menu>
     `;
   }
 }
