@@ -71,6 +71,7 @@ export class EntityCreateFormComponent extends WebComponent {
                     <small style="color: var(--text-muted); font-size: 0.75rem; margin-top: 4px; display: block;">Choose based on how you want to track this entity</small>
                 </div>
 
+                <!-- Custom Properties - commented out for now
                 <div class="form-group">
                     <label>Custom Properties</label>
                     <div id="properties-list">
@@ -78,6 +79,7 @@ export class EntityCreateFormComponent extends WebComponent {
                     </div>
                     <button type="button" class="btn btn-secondary" id="add-property-btn">+ Add Property</button>
                 </div>
+                -->
 
                 <button type="submit" class="btn btn-primary">Create Entity</button>
             </form>
@@ -105,7 +107,6 @@ export class EntityCreateFormComponent extends WebComponent {
 
     protected attachEventListeners(): void {
         const form = this.querySelector('#entity-create-form') as HTMLFormElement;
-        const addPropertyBtn = this.querySelector('#add-property-btn') as HTMLButtonElement;
 
         if (form) {
             form.addEventListener('submit', (e) => this.handleSubmit(e));
@@ -119,17 +120,17 @@ export class EntityCreateFormComponent extends WebComponent {
             });
         }
 
-        if (addPropertyBtn) {
-            addPropertyBtn.addEventListener('click', () => this.handleAddProperty());
-        }
-
-        // Attach remove handlers for properties
-        this.querySelectorAll('.btn-remove-property').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                const index = parseInt((e.target as HTMLElement).dataset.index || '0');
-                this.handleRemoveProperty(index);
-            });
-        });
+        // Custom Properties - commented out for now
+        // const addPropertyBtn = this.querySelector('#add-property-btn') as HTMLButtonElement;
+        // if (addPropertyBtn) {
+        //     addPropertyBtn.addEventListener('click', () => this.handleAddProperty());
+        // }
+        // this.querySelectorAll('.btn-remove-property').forEach(btn => {
+        //     btn.addEventListener('click', (e) => {
+        //         const index = parseInt((e.target as HTMLElement).dataset.index || '0');
+        //         this.handleRemoveProperty(index);
+        //     });
+        // });
     }
 
     private handleAddProperty(): void {
@@ -326,7 +327,7 @@ export class EntityCreateFormComponent extends WebComponent {
 
             // Create new entity
             const entity = Entity.fromFormData(formData);
-            entity.properties = this.properties;
+            // entity.properties = this.properties; // Custom Properties - commented out for now
             await this.store.addEntity(entity);
 
             // Reset unsaved changes flag
