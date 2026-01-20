@@ -8,8 +8,17 @@ export class AuthComponent extends HTMLElement {
   private isLoginMode = true;
 
   connectedCallback(): void {
+    this.initTheme();
     this.render();
     this.attachEventListeners();
+  }
+
+  private initTheme(): void {
+    // Apply saved theme preference on auth page
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme) {
+      document.documentElement.setAttribute('data-theme', savedTheme);
+    }
   }
 
   private render(): void {
