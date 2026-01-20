@@ -1499,9 +1499,11 @@ slide-panel:not(.active) .slide-panel-container {
 }
 
 entry-detail {
-  display: block;
+  display: flex;
   height: 100%;
-  padding: var(--base-size-24)
+  padding: var(--base-size-24);
+  flex-direction: column;
+  gap: var(--base-size-16);
 }
 
 entry-detail-header {
@@ -1509,26 +1511,6 @@ entry-detail-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-}
-
-.btn-icon {
-  background: none;
-  border: none;
-  color: var(--text-secondary);
-  cursor: pointer;
-  padding: 8px;
-  transition: var(--transition);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.btn-icon:hover {
-  color: var(--text-primary);
-}
-
-.btn-icon:active {
-  transform: scale(0.95);
 }
 
 entry-detail-header entry-menu-btn {
@@ -1549,77 +1531,8 @@ entry-detail-header entry-menu-btn {
 }
 
 entry-detail-editor {
-  font-size: 1rem;
-  color: var(--text-primary);
-  line-height: 1.7;
-  max-width: 70ch;
-}
-
-entry-detail-editor p {
-  margin-bottom: var(--base-size-16);
-}
-
-entry-detail-editor p:last-child {
-  margin-bottom: 0;
-}
-
-/* Enhanced Markdown Styles */
-entry-detail-editor code {
-  background: rgba(0, 0, 0, 0.05);
-  padding: 2px 6px;
-  border-radius: 3px;
-  font-size: 0.9em;
-  font-family: 'Monaco', 'Menlo', 'Courier New', monospace;
-}
-
-entry-detail-editor a {
-  color: var(--primary);
-  text-decoration: none;
-  border-bottom: 1px solid transparent;
-  transition: border-color 0.2s;
-}
-
-entry-detail-editor a:hover {
-  border-bottom-color: var(--primary);
-}
-
-entry-detail-editor ul,
-entry-detail-editor ol {
-  margin-bottom: var(--base-size-16);
-  padding-left: var(--base-size-24);
-}
-
-entry-detail-editor>*:first-child {
-  margin-top: 0;
-}
-
-entry-detail-editor h1,
-entry-detail-editor h2,
-entry-detail-editor h3 {
-  margin-bottom: var(--base-size-16);
-  font-weight: 600;
-  margin-top: var(--base-size-24);
-}
-
-entry-detail-editor h1 {
-  font-size: 1.3em;
-}
-
-entry-detail-editor h2 {
-  font-size: 1.1em;
-}
-
-entry-detail-editor blockquote {
-  margin: var(--base-size-16) 0;
-  padding: 12px 20px;
-  border-left: 4px solid var(--primary);
-  background: var(--surface);
-  color: var(--text-secondary);
-  font-style: italic;
-}
-
-entry-detail-editor blockquote p {
-  margin: 0;
+  display: flex;
+  flex: 1;
 }
 
 /* ================================
@@ -1787,8 +1700,14 @@ entry-detail-editor blockquote p {
   padding: 0;
   background: transparent;
   min-height: 300px;
-  max-height: 60vh;
+  max-height: 70vh;
   overflow-y: auto;
+  flex: 1;
+  width: 100%;
+  max-width: none;
+  font-size: 1rem;
+  line-height: 1.6;
+  color: var(--text-primary);
 }
 
 .milkdown:focus,
@@ -1796,15 +1715,6 @@ entry-detail-editor blockquote p {
 .milkdown *:focus {
   outline: none;
   border: none;
-}
-
-.milkdown {
-  font-family: inherit;
-  font-size: 1rem;
-  line-height: 1.6;
-  color: var(--text-primary);
-  width: 100%;
-  max-width: none;
 }
 
 .milkdown .ProseMirror {

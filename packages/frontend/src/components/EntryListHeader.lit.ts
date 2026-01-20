@@ -1,14 +1,15 @@
 import { html, LitElement } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
-import { map } from 'lit/directives/map.js';
 import { when } from 'lit/directives/when.js';
-import { escapeHtml, extractHashtags } from '../utils/helpers.js';
+import { extractHashtags } from '../utils/helpers.js';
 import { URLStateManager } from '../utils/urlState.js';
 import { Entity } from '../models/Entity.js';
 import { Entry } from '../models/Entry.js';
 import { Store } from '../state/Store.js';
 import { storeRegistry } from '../state/StoreRegistry.js';
 import { toast } from '../utils/toast.js';
+import './SelectionMenuComponent.lit.js';
+import type { SelectionOption } from './SelectionMenuComponent.lit.js';
 
 /**
  * EntryListHeader Lit Component
@@ -30,12 +31,6 @@ export class EntryListHeader extends LitElement {
 
   @property({ type: Array })
   allEntries: Entry[] = [];
-
-  @state()
-  private sortMenuOpen: boolean = false;
-
-  @state()
-  private tagMenuOpen: boolean = false;
 
   @state()
   private entityMenuOpen: boolean = false;
@@ -60,25 +55,19 @@ export class EntryListHeader extends LitElement {
     URLStateManager.setHashtagFilter(null);
   };
 
-  private handleSortChange = (e: Event) => {
-    const value = (e.target as HTMLInputElement).value;
+  private handleSortChange = (e: CustomEvent) => {
+    const { value } = e.detail;
     const [sortBy, sortOrder] = value.split('-') as [string, 'asc' | 'desc'];
     URLStateManager.setSort(sortBy, sortOrder);
-    this.sortMenuOpen = false;
   };
 
-  private handleTagFilterChange = (e: Event) => {
-    const target = e.target as HTMLInputElement;
-    const tag = target.value;
-
-    // Single selection - set only this tag as the filter
-    URLStateManager.setTagFilters([tag]);
-    this.tagMenuOpen = false;
-  };
-
-  private handleClearTagFilter = () => {
-    URLStateManager.setTagFilters([]);
-    this.tagMenuOpen = false;
+  private handleTagFilterChange = (e: CustomEvent) => {
+    const { value } = e.detail;
+    if (value) {
+      URLStateManager.setTagFilters([value]);
+    } else {
+      URLStateManager.setTagFilters([]);
+    }
   };
 
   private handleQuickEntrySubmit = async (e: KeyboardEvent) => {
@@ -136,7 +125,7 @@ export class EntryListHeader extends LitElement {
 
   render() {
     // Sort options
-    const sortOptions = [
+    const sortOptions: SelectionOption[] = [
       { value: 'timestamp-desc', label: 'Newest First' },
       { value: 'timestamp-asc', label: 'Oldest First' },
       { value: 'createdAt-desc', label: 'Recently Created' },
@@ -144,7 +133,6 @@ export class EntryListHeader extends LitElement {
       { value: 'entityName-asc', label: 'Entity (A-Z)' },
       { value: 'entityName-desc', label: 'Entity (Z-A)' }
     ];
-    const currentSortLabel = sortOptions.find(opt => opt.value === this.currentSortValue)?.label || 'Newest First';
 
     // Extract all available tags
     const allTags = new Set<string>();
@@ -153,80 +141,38 @@ export class EntryListHeader extends LitElement {
     });
     const availableTags = Array.from(allTags).sort();
 
+    // Tag filter options
+    const tagOptions: SelectionOption[] = availableTags.map(tag => ({
+      value: tag,
+      label: `#${tag}`
+    }));
+
     // Get current tag filter (single selection)
-    const currentTag = this.tagFilters.length > 0 ? this.tagFilters[0] : null;
-    const currentTagLabel = currentTag ? `#${currentTag}` : 'All Tags';
+    const currentTag = this.tagFilters.length > 0 ? this.tagFilters[0] : '';
 
     return html`
         <div class="header-filters-row">
           <!-- Sort Dropdown -->
-          <div class="tag-filter-container">
-            <button
-              class="btn-tag-filter"
-              id="sort-filter-btn"
-              title="Sort by"
-              @click=${(e: Event) => { e.stopPropagation(); this.sortMenuOpen = !this.sortMenuOpen; }}>
-              <i class="ph-duotone ph-sort-ascending"></i>
-              <span>${currentSortLabel}</span>
-            </button>
-            <div
-              class="tag-filter-menu"
-              id="sort-filter-menu"
-              style="display: ${this.sortMenuOpen ? 'block' : 'none'};">
-              ${map(sortOptions, opt => html`
-                <label class="tag-filter-option">
-                  <input
-                    type="radio"
-                    name="sort-option"
-                    value="${opt.value}"
-                    ?checked=${opt.value === this.currentSortValue}
-                    @change=${this.handleSortChange}>
-                  <span>${escapeHtml(opt.label)}</span>
-                </label>
-              `)}
-            </div>
-          </div>
+          <selection-menu
+            .options=${sortOptions}
+            .selectedValue=${this.currentSortValue}
+            .icon=${'ph-duotone ph-sort-ascending'}
+            .title=${'Sort by'}
+            @selection-change=${this.handleSortChange}>
+          </selection-menu>
 
           <!-- Tag Filter Dropdown -->
           ${when(
-      availableTags.length > 0,
+      tagOptions.length > 0,
       () => html`
-              <div class="tag-filter-container">
-                <button
-                  class="btn-tag-filter"
-                  id="tag-filter-btn"
-                  title="Filter by tags"
-                  @click=${(e: Event) => { e.stopPropagation(); this.tagMenuOpen = !this.tagMenuOpen; }}>
-                  <i class="ph-duotone ph-tag"></i>
-                  <span>${currentTagLabel}</span>
-                </button>
-                <div
-                  class="tag-filter-menu"
-                  id="tag-filter-menu"
-                  style="display: ${this.tagMenuOpen ? 'block' : 'none'};">
-                  <!-- "All Tags" option to clear filter -->
-                  <label class="tag-filter-option">
-                    <input
-                      type="radio"
-                      name="tag-filter-option"
-                      value=""
-                      ?checked=${!currentTag}
-                      @change=${this.handleClearTagFilter}>
-                    <span>All Tags</span>
-                  </label>
-                  ${map(availableTags, tag => html`
-                    <label class="tag-filter-option">
-                      <input
-                        type="radio"
-                        name="tag-filter-option"
-                        value="${escapeHtml(tag)}"
-                        ?checked=${currentTag === tag}
-                        @change=${this.handleTagFilterChange}>
-                      <span>#${escapeHtml(tag)}</span>
-                    </label>
-                  `)}
-                </div>
-              </div>
+              <selection-menu
+                .options=${tagOptions}
+                .selectedValue=${currentTag}
+                .icon=${'ph-duotone ph-tag'}
+                .title=${'Filter by tags'}
+                .clearOptionLabel=${'All Tags'}
+                @selection-change=${this.handleTagFilterChange}>
+              </selection-menu>
             `
     )}
         </div>

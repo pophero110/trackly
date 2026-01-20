@@ -10,6 +10,8 @@ import { escapeHtml } from '../utils/helpers.js';
 import { URLStateManager } from '../utils/urlState.js';
 import './DropdownMenuComponent.lit.js';
 import type { DropdownMenuComponent, DropdownMenuItem } from './DropdownMenuComponent.lit.js';
+import './SelectionMenuComponent.lit.js';
+import type { SelectionOption } from './SelectionMenuComponent.lit.js';
 
 /**
  * EntityList Lit Component for displaying entities in a grid layout
@@ -22,9 +24,6 @@ export class EntityListComponent extends LitElement {
   // Controllers handle store and business logic
   private storeController = new StoreController(this);
   private listController = new EntityListController(this, this.storeController);
-
-  @state()
-  private sortMenuOpen: boolean = false;
 
   @state()
   private currentEntityId: string | null = null;
@@ -76,14 +75,7 @@ export class EntityListComponent extends LitElement {
   }
 
   private attachDocumentListeners(): void {
-    // Click outside to close menus
-    this.documentClickHandler = (e: Event) => {
-      const target = e.target as HTMLElement;
-      if (!target.closest('#sort-filter-btn') && !target.closest('#sort-filter-menu')) {
-        this.sortMenuOpen = false;
-      }
-    };
-    document.addEventListener('click', this.documentClickHandler);
+    // No longer needed - SelectionMenuComponent handles its own click-outside
   }
 
   private removeDocumentListeners(): void {
@@ -189,11 +181,10 @@ export class EntityListComponent extends LitElement {
     URLStateManager.openLogEntryPanel(entity.name);
   }
 
-  private handleSortChange = (e: Event): void => {
-    const value = (e.target as HTMLInputElement).value;
+  private handleSortChange = (e: CustomEvent): void => {
+    const { value } = e.detail;
     const [sortBy, sortOrder] = value.split('-') as [string, 'asc' | 'desc'];
     URLStateManager.setEntitySort(sortBy, sortOrder);
-    this.sortMenuOpen = false;
   };
 
   private renderEntityCard(entity: Entity) {
@@ -274,8 +265,6 @@ export class EntityListComponent extends LitElement {
       { value: 'type-asc', label: 'Type' }
     ];
 
-    const currentSortLabel = sortOptions.find(opt => opt.value === sortValue)?.label || 'Most Entries';
-
     if (entities.length === 0) {
       return html`
           <div class="entity-section-header-actions">
@@ -290,25 +279,13 @@ export class EntityListComponent extends LitElement {
 
     return html`
         <div class="entity-section-header-actions">
-          <div class="tag-filter-container">
-            <button class="btn-tag-filter" id="sort-filter-btn" title="Sort by"
-                    @click=${(e: Event) => { e.stopPropagation(); this.sortMenuOpen = !this.sortMenuOpen; }}>
-              <i class="ph-duotone ph-sort-ascending"></i>
-              <span>${currentSortLabel}</span>
-            </button>
-            <div class="tag-filter-menu" id="sort-filter-menu" style="display: ${this.sortMenuOpen ? 'block' : 'none'};">
-              ${map(sortOptions, opt => html`
-                <label class="tag-filter-option">
-                  <input type="radio"
-                         name="entity-sort-option"
-                         value="${opt.value}"
-                         ?checked=${opt.value === sortValue}
-                         @change=${this.handleSortChange}>
-                  <span>${escapeHtml(opt.label)}</span>
-                </label>
-              `)}
-            </div>
-          </div>
+          <selection-menu
+            .options=${sortOptions}
+            .selectedValue=${sortValue}
+            .icon=${'ph-duotone ph-sort-ascending'}
+            .title=${'Sort by'}
+            @selection-change=${this.handleSortChange}>
+          </selection-menu>
           <button class="btn-primary" @click=${this.handleCreateClick}>
             <i class="ph ph-plus"></i>
             Create Entity

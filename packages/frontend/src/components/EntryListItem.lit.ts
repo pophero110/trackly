@@ -413,7 +413,6 @@ export class EntryListItem extends LitElement {
 
     // Entity chip with dropdown
     const entityColor = entity ? getEntityColor(entity.name) : '';
-    const allEntities = this.store?.getEntities() || [];
 
     // Extract hashtags
     const hashtags = this.entry.notes ? extractHashtags(this.entry.notes) : [];
@@ -422,7 +421,6 @@ export class EntryListItem extends LitElement {
     const notesHtml = this.entry.notes ? parseMarkdown(this.entry.notes) : '';
 
     return html`
-      <div class="timeline-entry" data-entry-id="${this.entry.id}">
         <div class="timeline-entry-card" @click=${this.handleCardClick}>
           <div class="timeline-entry-header">
             <div class="timeline-entry-primary">
@@ -483,7 +481,6 @@ export class EntryListItem extends LitElement {
             </div>
           `)}
         </div>
-      </div>
 
       <!-- Context Menu -->
       <dropdown-menu
