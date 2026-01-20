@@ -3,6 +3,7 @@ import { Entity } from '../models/Entity.js';
 import { EntityFormData, EntityType, EntityProperty, ValueType, SelectOption } from '../types/index.js';
 import { URLStateManager } from '../utils/urlState.js';
 import { generateId } from '../utils/helpers.js';
+import { toast } from '../utils/toast.js';
 
 /**
  * EntityCreateForm Web Component for creating new entities
@@ -402,7 +403,7 @@ export class EntityCreateFormComponent extends WebComponent {
         return true;
     }
 
-    private handleSubmit(e: Event): void {
+    private async handleSubmit(e: Event): Promise<void> {
         e.preventDefault();
 
         try {
@@ -418,7 +419,7 @@ export class EntityCreateFormComponent extends WebComponent {
             // Create new entity
             const entity = Entity.fromFormData(formData);
             entity.properties = this.properties;
-            this.store.addEntity(entity);
+            await this.store.addEntity(entity);
 
             // Reset unsaved changes flag
             this.hasUnsavedChanges = false;
@@ -430,7 +431,7 @@ export class EntityCreateFormComponent extends WebComponent {
             (e.target as HTMLFormElement).reset();
         } catch (error) {
             const message = error instanceof Error ? error.message : 'Unknown error';
-            alert(`Error creating entity: ${message}`);
+            toast.error(message);
         }
     }
 }
