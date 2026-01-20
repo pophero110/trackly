@@ -1362,16 +1362,6 @@ entry-detail-header {
   align-items: center;
 }
 
-entry-detail-header entry-menu-btn {
-  opacity: 1;
-  flex-shrink: 0;
-}
-
-.entry-menu-btn {
-  opacity: 1;
-  flex-shrink: 0;
-}
-
 .entry-detail-timestamp {
   font-size: 0.8125rem;
   color: var(--text-muted);
