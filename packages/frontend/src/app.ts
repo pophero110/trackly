@@ -37,6 +37,9 @@ class TracklyApp {
     // Set up view routing
     this.setupViewRouting();
 
+    // Set up theme toggle
+    this.setupThemeToggle();
+
     // Set up sign-out button
     this.setupSignOut();
 
@@ -331,6 +334,51 @@ class TracklyApp {
     // entity-list is registered via @customElement decorator in EntityListComponent.lit.ts
     // entry-list is registered via @customElement decorator in EntryListComponent.lit.ts
     // entry-detail is registered via @customElement decorator in EntryDetailComponent.lit.ts
+  }
+
+  private setupThemeToggle(): void {
+    const themeToggleBtn = document.getElementById('theme-toggle-btn');
+    if (!themeToggleBtn) return;
+
+    const updateIcon = (isDark: boolean) => {
+      const icon = themeToggleBtn.querySelector('i');
+      if (icon) {
+        icon.className = isDark ? 'ph-duotone ph-moon' : 'ph-duotone ph-sun';
+      }
+    };
+
+    const getEffectiveTheme = (): 'light' | 'dark' => {
+      const savedTheme = localStorage.getItem('theme');
+      if (savedTheme === 'light' || savedTheme === 'dark') {
+        return savedTheme;
+      }
+      return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    };
+
+    // Initialize theme from localStorage or system preference
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme) {
+      document.documentElement.setAttribute('data-theme', savedTheme);
+    }
+    updateIcon(getEffectiveTheme() === 'dark');
+
+    // Toggle theme on click
+    themeToggleBtn.addEventListener('click', () => {
+      const currentTheme = getEffectiveTheme();
+      const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+
+      document.documentElement.setAttribute('data-theme', newTheme);
+      localStorage.setItem('theme', newTheme);
+      updateIcon(newTheme === 'dark');
+    });
+
+    // Listen for system preference changes
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+      // Only update if no manual preference is set
+      if (!localStorage.getItem('theme')) {
+        updateIcon(e.matches);
+      }
+    });
   }
 
   private setupSignOut(): void {

@@ -47,8 +47,9 @@
 }
 
 /* Dark Mode - Ink & Paper 2026 Palette */
+/* Support both system preference and manual toggle */
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-theme="light"]) {
     /* Inverted Paper & Ink for Dark Mode */
     --primary: #60A5FA;
     --primary-hover: #3B82F6;
@@ -68,6 +69,26 @@
     --shadow-glass: 0 8px 32px rgba(0, 0, 0, 0.4);
     --shadow-glass-hover: 0 12px 40px rgba(0, 0, 0, 0.6);
   }
+}
+
+/* Manual dark mode override */
+:root[data-theme="dark"] {
+  --primary: #60A5FA;
+  --primary-hover: #3B82F6;
+  --success: #34D399;
+  --text-primary: #F9FAFB;
+  --text-secondary: #D1D5DB;
+  --text-muted: #9CA3AF;
+  --border: #374151;
+  --border-light: #2D3748;
+  --background: #111827;
+  --card-background: #1F2937;
+
+  --shadow-ambient: 0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -1px rgba(0, 0, 0, 0.3);
+  --shadow-hover: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
+  --shadow-elevated: 0 20px 25px -5px rgba(0, 0, 0, 0.6);
+  --shadow-glass: 0 8px 32px rgba(0, 0, 0, 0.4);
+  --shadow-glass-hover: 0 12px 40px rgba(0, 0, 0, 0.6);
 }
 
 * {
@@ -1465,13 +1486,21 @@ entry-detail-editor {
 }
 
 @media (prefers-color-scheme: dark) {
-  .toast-action:hover {
+  :root:not([data-theme="light"]) .toast-action:hover {
     background: rgba(255, 255, 255, 0.1);
   }
 
-  .toast-action:active {
+  :root:not([data-theme="light"]) .toast-action:active {
     background: rgba(255, 255, 255, 0.15);
   }
+}
+
+:root[data-theme="dark"] .toast-action:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+:root[data-theme="dark"] .toast-action:active {
+  background: rgba(255, 255, 255, 0.15);
 }
 
 /* Toast type styles */
@@ -1513,11 +1542,17 @@ entry-detail-editor {
 
 /* Dark mode */
 @media (prefers-color-scheme: dark) {
-  .toast {
+  :root:not([data-theme="light"]) .toast {
     background: transparent;
     border: none;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
   }
+}
+
+:root[data-theme="dark"] .toast {
+  background: transparent;
+  border: none;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
 
 /* Mobile responsiveness */
@@ -1620,17 +1655,25 @@ entry-detail-editor {
 
 /* Dark mode support */
 @media (prefers-color-scheme: dark) {
-  .milkdown {
+  :root:not([data-theme="light"]) .milkdown {
     background: transparent;
     border-color: var(--border);
-  }
-
-  .milkdown {
     color: var(--text-primary);
   }
 
-  .milkdown code,
-  .milkdown pre {
+  :root:not([data-theme="light"]) .milkdown code,
+  :root:not([data-theme="light"]) .milkdown pre {
     background: var(--background);
   }
+}
+
+:root[data-theme="dark"] .milkdown {
+  background: transparent;
+  border-color: var(--border);
+  color: var(--text-primary);
+}
+
+:root[data-theme="dark"] .milkdown code,
+:root[data-theme="dark"] .milkdown pre {
+  background: var(--background);
 }

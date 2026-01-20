@@ -80,23 +80,32 @@
       line-height: 1.2;
     }
 
-    #signout-btn {
-      width: 100%;
-      font-size: 0.875rem;
-      font-weight: 500;
-      background: transparent;
-      color: var(--text-secondary);
-      border: none;
-      text-align: left;
-      cursor: pointer;
-      transition: var(--transition);
+    .header-actions {
       display: flex;
       align-items: center;
       gap: 8px;
     }
 
-    #signout-btn:hover {
+    #signout-btn,
+    #theme-toggle-btn {
+      font-size: 1.25rem;
+      font-weight: 500;
+      background: transparent;
+      color: var(--text-secondary);
+      border: none;
+      cursor: pointer;
+      transition: var(--transition);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 8px;
+      border-radius: var(--radius-sm);
+    }
+
+    #signout-btn:hover,
+    #theme-toggle-btn:hover {
       color: var(--text-primary);
+      background: var(--background);
     }
 
     /* Responsive Design */
@@ -134,7 +143,8 @@
             <a href="#" id="entries-link" class="nav-link"><i class="ph-duotone ph-list-bullets"></i> Entries</a>
           </nav>
         </div>
-        <div>
+        <div class="header-actions">
+          <button id="theme-toggle-btn"><i class="ph-duotone ph-sun"></i></button>
           <button id="signout-btn"><i class="ph-duotone ph-sign-out"></i></button>
         </div>
       </div>
