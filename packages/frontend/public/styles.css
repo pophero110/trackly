@@ -1255,6 +1255,9 @@ slide-panel.active .slide-panel-container {
 }
 
 .slide-panel-close {
+  position: absolute;
+  top: var(--base-size-16);
+  right: var(--base-size-16);
   background: transparent;
   border: none;
   color: var(--text-secondary);
@@ -1268,6 +1271,7 @@ slide-panel.active .slide-panel-container {
   justify-content: center;
   width: 40px;
   height: 40px;
+  z-index: 10;
 }
 
 .slide-panel-close:hover {
