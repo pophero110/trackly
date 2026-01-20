@@ -105,7 +105,7 @@ export class SlidePanel extends LitElement {
   private openPanel(): void {
     this.isActive = true;
     this.classList.add('active');
-    document.body.style.overflow = 'hidden'; // Prevent background scroll
+    document.body.style.overflowY = 'hidden'; // Prevent background scroll
 
     // Wait for next frame to ensure panelBody is rendered
     requestAnimationFrame(() => {
@@ -124,6 +124,8 @@ export class SlidePanel extends LitElement {
     // Remove active class to trigger slide-out animation
     this.isActive = false;
     this.classList.remove('active');
+    document.body.style.overflowY = 'scroll'; // Prevent background scroll
+
 
     // Wait for animation to complete
     const handleAnimationEnd = () => {
@@ -158,9 +160,7 @@ export class SlidePanel extends LitElement {
           <i class="ph ph-x"></i>
         </button>
       </div>
-      <div class="slide-panel-container">
-        <div class="slide-panel-body"></div>
-      </div>
+      <div class="slide-panel-body"></div>
     `;
   }
 }
