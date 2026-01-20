@@ -4,7 +4,6 @@ import { map } from 'lit/directives/map.js';
 import { when } from 'lit/directives/when.js';
 import { Entry } from '../models/Entry.js';
 import { Entity } from '../models/Entity.js';
-import { EntityProperty } from '../types/index.js';
 import { escapeHtml, extractHashtags } from '../utils/helpers.js';
 import { parseMarkdown } from '../utils/markdown.js';
 import { URLStateManager } from '../utils/urlState.js';
@@ -346,62 +345,6 @@ export class EntryListItem extends LitElement {
     return escapeHtml(valueStr);
   }
 
-  private formatPropertyValue(value: string | number | boolean, valueType: string, displayValue?: string): string {
-    const valueStr = String(value);
-
-    if (valueType === 'checkbox') {
-      return value === true || value === 'true' ? '✓' : '✗';
-    }
-
-    if (valueType === 'url') {
-      const linkText = displayValue || valueStr;
-      return `<a href="${escapeHtml(valueStr)}" target="_blank" rel="noopener noreferrer">${escapeHtml(linkText)}</a>`;
-    }
-
-    if (valueType === 'duration') {
-      return `${valueStr}min`;
-    }
-
-    if (valueType === 'rating') {
-      return `${valueStr}/5`;
-    }
-
-    if (valueType === 'date' || valueType === 'time') {
-      return escapeHtml(valueStr);
-    }
-
-    return escapeHtml(valueStr);
-  }
-
-  private renderPropertyValues(properties: EntityProperty[], propertyValues: Record<string, string | number | boolean>, propertyValueDisplays?: Record<string, string>) {
-    const capitalizeFirstLetter = (str: string) => str.charAt(0).toUpperCase() + str.slice(1);
-
-    const propertyItems = properties
-      .filter(prop => propertyValues[prop.id] !== undefined && propertyValues[prop.id] !== '')
-      .map(prop => {
-        const value = propertyValues[prop.id];
-        const displayValue = propertyValueDisplays?.[prop.id];
-        const formattedValue = this.formatPropertyValue(value, prop.valueType, displayValue);
-
-        // For URL properties, show just the link without the property name
-        if (prop.valueType === 'url') {
-          return html`<span class="property-tag" .innerHTML=${formattedValue}></span>`;
-        }
-        return html`<span class="property-tag">${escapeHtml(capitalizeFirstLetter(prop.name))}: <span .innerHTML=${formattedValue}></span></span>`;
-      });
-
-    if (propertyItems.length === 0) return html``;
-
-    return html`
-      <div class="entry-properties">
-        ${propertyItems.map((item, index) => html`
-          ${item}
-          ${index < propertyItems.length - 1 ? html`<span class="property-separator">•</span>` : ''}
-        `)}
-      </div>
-    `;
-  }
-
   render() {
     const entity = this.store?.getEntityById(this.entry.entityId);
     const typeIcon = this.getEntityTypeIcon(entity?.type);
@@ -454,15 +397,6 @@ export class EntryListItem extends LitElement {
               ⋮
             </button>
           </div>
-
-          ${when(
-      entity && entity.properties && entity.properties.length > 0 && this.entry.propertyValues,
-      () => html`
-              <div class="timeline-entry-properties">
-                ${this.renderPropertyValues(entity!.properties!, this.entry.propertyValues!, this.entry.propertyValueDisplays)}
-              </div>
-            `
-    )}
 
           ${when(notesHtml, () => html`
             <div class="timeline-entry-notes" .innerHTML=${notesHtml}></div>
