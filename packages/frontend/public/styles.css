@@ -301,14 +301,6 @@ entry-list-header {
 }
 
 /* Forms - Card Style */
-form {
-  background: transparent;
-  border-radius: 0;
-  box-shadow: var(--shadow);
-  border: none;
-  overflow: visible;
-}
-
 .form-group {
   margin-bottom: var(--base-size-16);
 }

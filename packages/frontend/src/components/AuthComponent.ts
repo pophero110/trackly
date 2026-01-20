@@ -44,18 +44,6 @@ export class AuthComponent extends HTMLElement {
           </div>
 
           <form class="auth-form" data-action="submit-auth">
-            ${!this.isLoginMode ? `
-              <div class="form-group">
-                <label for="name">Name (optional)</label>
-                <input
-                  type="text"
-                  id="name"
-                  name="name"
-                  autocomplete="name"
-                />
-              </div>
-            ` : ''}
-
             <div class="form-group">
               <label for="email">Email</label>
               <input
