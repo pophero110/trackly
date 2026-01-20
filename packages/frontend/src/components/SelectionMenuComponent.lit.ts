@@ -72,8 +72,24 @@ export class SelectionMenuComponent extends LitElement {
 
   private handleToggleMenu = (e: Event) => {
     e.stopPropagation();
+    const wasOpen = this.menuOpen;
     this.menuOpen = !this.menuOpen;
+
+    // Dispatch event when menu opens
+    if (this.menuOpen && !wasOpen) {
+      this.dispatchEvent(new CustomEvent('menu-open', {
+        bubbles: true,
+        composed: true
+      }));
+    }
   };
+
+  /**
+   * Public method to close the menu from parent component
+   */
+  public close(): void {
+    this.menuOpen = false;
+  }
 
   private handleOptionChange = (e: Event) => {
     const target = e.target as HTMLInputElement;

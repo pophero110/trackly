@@ -1,5 +1,5 @@
 import { html, LitElement } from 'lit';
-import { customElement, property, state } from 'lit/decorators.js';
+import { customElement, property, state, query } from 'lit/decorators.js';
 import { when } from 'lit/directives/when.js';
 import { extractHashtags } from '../utils/helpers.js';
 import { URLStateManager } from '../utils/urlState.js';
@@ -9,7 +9,10 @@ import { Store } from '../state/Store.js';
 import { storeRegistry } from '../state/StoreRegistry.js';
 import { toast } from '../utils/toast.js';
 import './SelectionMenuComponent.lit.js';
+import type { SelectionMenuComponent } from './SelectionMenuComponent.lit.js';
 import type { SelectionOption } from './SelectionMenuComponent.lit.js';
+
+type OpenSelectionMenu = 'sort' | 'tag-filter' | null;
 
 /**
  * EntryListHeader Lit Component
@@ -33,7 +36,13 @@ export class EntryListHeader extends LitElement {
   allEntries: Entry[] = [];
 
   @state()
-  private entityMenuOpen: boolean = false;
+  private openSelectionMenu: OpenSelectionMenu = null;
+
+  @query('selection-menu[data-menu-type="sort"]')
+  private sortMenu?: SelectionMenuComponent;
+
+  @query('selection-menu[data-menu-type="tag-filter"]')
+  private tagFilterMenu?: SelectionMenuComponent;
 
   private store!: Store;
 
@@ -102,22 +111,21 @@ export class EntryListHeader extends LitElement {
     }
   };
 
-  updated() {
-    // Adjust entity menu position if open
-    if (this.entityMenuOpen && this.selectedEntity) {
-      const menu = this.querySelector('#entity-page-menu') as HTMLElement;
-      const menuButton = this.querySelector('#entity-page-menu-btn') as HTMLElement;
-
-      if (menu && menuButton) {
-        const rect = menuButton.getBoundingClientRect();
-        const menuWidth = menu.offsetWidth;
-
-        menu.style.position = 'fixed';
-        menu.style.left = `${rect.right - menuWidth}px`;
-        menu.style.top = `${rect.bottom + 4}px`;
-      }
+  private handleSortMenuOpen = () => {
+    // Close tag filter menu if open
+    if (this.openSelectionMenu === 'tag-filter') {
+      this.tagFilterMenu?.close();
     }
-  }
+    this.openSelectionMenu = 'sort';
+  };
+
+  private handleTagFilterMenuOpen = () => {
+    // Close sort menu if open
+    if (this.openSelectionMenu === 'sort') {
+      this.sortMenu?.close();
+    }
+    this.openSelectionMenu = 'tag-filter';
+  };
 
   disconnectedCallback(): void {
     super.disconnectedCallback();
@@ -154,11 +162,13 @@ export class EntryListHeader extends LitElement {
         <div class="header-filters-row">
           <!-- Sort Dropdown -->
           <selection-menu
+            data-menu-type="sort"
             .options=${sortOptions}
             .selectedValue=${this.currentSortValue}
             .icon=${'ph-duotone ph-sort-ascending'}
             .title=${'Sort by'}
-            @selection-change=${this.handleSortChange}>
+            @selection-change=${this.handleSortChange}
+            @menu-open=${this.handleSortMenuOpen}>
           </selection-menu>
 
           <!-- Tag Filter Dropdown -->
@@ -166,12 +176,14 @@ export class EntryListHeader extends LitElement {
       tagOptions.length > 0,
       () => html`
               <selection-menu
+                data-menu-type="tag-filter"
                 .options=${tagOptions}
                 .selectedValue=${currentTag}
                 .icon=${'ph-duotone ph-tag'}
                 .title=${'Filter by tags'}
                 .clearOptionLabel=${'All Tags'}
-                @selection-change=${this.handleTagFilterChange}>
+                @selection-change=${this.handleTagFilterChange}
+                @menu-open=${this.handleTagFilterMenuOpen}>
               </selection-menu>
             `
     )}
