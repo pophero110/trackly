@@ -1,7 +1,6 @@
-import { html, LitElement } from 'lit';
-import { customElement, state, query } from 'lit/decorators.js';
+import { css, html, LitElement } from 'lit';
+import { customElement, state } from 'lit/decorators.js';
 import { URLStateManager } from '../utils/urlState.js';
-import type { EntryDetailComponent } from './EntryDetailComponent.js';
 
 /**
  * SlidePanel component for displaying entry details in a right-to-left sliding panel
@@ -11,30 +10,103 @@ import type { EntryDetailComponent } from './EntryDetailComponent.js';
  */
 @customElement('slide-panel')
 export class SlidePanel extends LitElement {
+  static styles = css`
+    :host {
+      display: none;
+      visibility: hidden;
+      pointer-events: none;
+    }
+
+    :host([active]) {
+      display: block;
+      visibility: visible;
+      pointer-events: auto;
+    }
+
+    .backdrop {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.4);
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+      z-index: 999;
+      display: none;
+    }
+
+    :host([active]) .backdrop {
+      display: block;
+    }
+
+    .body {
+      position: fixed;
+      left: 50%;
+      transform: translateX(-50%); /* Cleaner alternative to calc margin-left */
+      bottom: 0;
+      width: 75ch;
+      height: 85vh;
+      max-height: 800px;
+      background: var(--background, #ffffff);
+      box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.15);
+      border-radius: var(--radius-lg, 12px) var(--radius-lg, 12px) 0 0;
+      z-index: 1000;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .close {
+      position: absolute;
+      top: var(--base-size-16, 16px);
+      right: var(--base-size-16, 16px);
+      background: transparent;
+      border: none;
+      color: var(--text-secondary, #666);
+      cursor: pointer;
+      font-size: 1.5rem;
+      padding: 8px;
+      border-radius: var(--radius-sm, 4px);
+      transition: var(--transition, 0.2s ease);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 40px;
+      height: 40px;
+      z-index: 10;
+    }
+
+    .close:hover {
+      background: var(--background-secondary, #f0f0f0);
+      color: var(--text-primary, #000);
+    }
+
+    /* Mobile adjustments */
+    @media (max-width: 768px) {
+      .body {
+        width: 100%;
+        height: 90vh;
+        max-height: none;
+        border-radius: var(--radius-md, 8px) var(--radius-md, 8px) 0 0;
+        left: 0;
+        transform: none;
+      }
+
+      .close {
+        width: 44px;
+        height: 44px;
+      }
+    }
+  `;
+
   @state()
   private currentEntryId: string | null = null;
 
   @state()
   private isActive: boolean = false;
 
-  @query('.slide-panel-backdrop')
-  private backdrop?: HTMLElement;
-
-  @query('.slide-panel-container')
-  private container?: HTMLElement;
-
-  @query('.slide-panel-body')
-  private panelBody?: HTMLElement;
-
   private unsubscribeUrl: (() => void) | null = null;
   private keydownHandler: ((e: KeyboardEvent) => void) | null = null;
-
-  /**
-   * Disable Shadow DOM to maintain compatibility with existing global styles
-   */
-  createRenderRoot() {
-    return this; // Render in light DOM (no shadow root)
-  }
 
   connectedCallback(): void {
     super.connectedCallback();
@@ -105,40 +177,14 @@ export class SlidePanel extends LitElement {
   private openPanel(): void {
     this.isActive = true;
     this.classList.add('active');
-    document.body.style.overflowY = 'hidden'; // Prevent background scroll
-
-    // Wait for next frame to ensure panelBody is rendered
-    requestAnimationFrame(() => {
-      if (this.panelBody) {
-        // Clear previous content
-        this.panelBody.innerHTML = '';
-
-        // Create new EntryDetailComponent using DOM API (custom elements must be created this way)
-        const detailComponent = document.createElement('entry-detail') as EntryDetailComponent;
-        this.panelBody.appendChild(detailComponent);
-      }
-    });
+    document.body.style.overflow = 'hidden'; // Prevent background scroll
   }
 
   private closePanel(): void {
     // Remove active class to trigger slide-out animation
     this.isActive = false;
     this.classList.remove('active');
-    document.body.style.overflowY = 'scroll'; // Prevent background scroll
-
-
-    // Wait for animation to complete
-    const handleAnimationEnd = () => {
-      this.container?.removeEventListener('animationend', handleAnimationEnd);
-
-      document.body.style.overflow = ''; // Restore scroll
-
-      if (this.panelBody) {
-        this.panelBody.innerHTML = ''; // Clear content to disconnect child components
-      }
-    };
-
-    this.container?.addEventListener('animationend', handleAnimationEnd);
+    document.body.style.overflow = ''; // Restore scroll
   }
 
   private navigateBack(): void {
@@ -153,14 +199,24 @@ export class SlidePanel extends LitElement {
     this.navigateBack();
   };
 
+  // IMPORTANT: Sync the internal state to the HTML attribute
+  // so that :host([active]) in your CSS actually finds it.
+  updated(changedProperties) {
+    if (changedProperties.has('isActive')) {
+      if (this.isActive) {
+        this.setAttribute('active', '');
+      } else {
+        this.removeAttribute('active');
+      }
+    }
+  }
+
   render() {
     return html`
-      <div class="slide-panel-backdrop" @click=${this.handleBackdropClick}>
-        <button class="slide-panel-close" aria-label="Close" @click=${this.handleCloseClick}>
-          <i class="ph ph-x"></i>
-        </button>
+      <div class="backdrop" @click=${this.handleBackdropClick}></div>
+      <div class="body">
+        <slot></slot>
       </div>
-      <div class="slide-panel-body"></div>
     `;
   }
 }

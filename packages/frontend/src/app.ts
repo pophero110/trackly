@@ -51,7 +51,6 @@ class TracklyApp {
   private setupViewRouting(): void {
     const entityGrid = document.querySelector('entity-list') as HTMLElement;
     const entryList = document.querySelector('entry-list') as HTMLElement;
-    const entryDetail = document.querySelector('entry-detail') as HTMLElement;
     const panel = document.querySelector('modal-panel') as any;
 
     // Track last loaded sort to prevent infinite reload loop
@@ -101,7 +100,6 @@ class TracklyApp {
           if (entityGrid) entityGrid.style.display = 'none';
           if (entryList) entryList.style.display = 'flex';
         }
-        if (entryDetail) entryDetail.style.display = 'none';
 
         // Update page title
         if (this.store.getIsLoaded()) {
@@ -117,10 +115,6 @@ class TracklyApp {
         this.updatePanelState(actionType, panel);
         return;
       }
-
-      // Hide entry detail for other views
-      // SlidePanel closes automatically when not on /entries/:id
-      if (entryDetail) entryDetail.style.display = 'none';
 
       // Look up entity by slug (case-insensitive match)
       let entity = null;
