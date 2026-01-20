@@ -195,10 +195,6 @@ export class SlidePanel extends LitElement {
     this.navigateBack();
   };
 
-  private handleCloseClick = (): void => {
-    this.navigateBack();
-  };
-
   // IMPORTANT: Sync the internal state to the HTML attribute
   // so that :host([active]) in your CSS actually finds it.
   updated(changedProperties) {
