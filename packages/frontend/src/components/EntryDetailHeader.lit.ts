@@ -72,7 +72,7 @@ export class EntryDetailHeader extends LitElement {
   private handleMenuButtonClick = (e: MouseEvent): void => {
     e.stopPropagation();
     const target = e.target as HTMLElement;
-    const menuButton = target.closest('.entry-detail-menu-btn') as HTMLElement;
+    const menuButton = target.closest('.entry-menu-btn') as HTMLElement;
 
     if (!this.actionsMenu || !menuButton) return;
 
@@ -162,10 +162,7 @@ export class EntryDetailHeader extends LitElement {
             <span class="entry-detail-timestamp">${formattedDate}</span>
           </div>
 
-          <div class="entry-detail-header-actions">
-            <button class="entry-detail-menu-btn" @click=${this.handleMenuButtonClick}>⋮</button>
-            <button class="entry-detail-close-btn" @click=${this.handleClose}>×</button>
-          </div>
+          <button class="entry-menu-btn" @click=${this.handleMenuButtonClick}>⋮</button>
 
       <!-- Actions Menu (Copy, Archive, Delete) -->
       <dropdown-menu

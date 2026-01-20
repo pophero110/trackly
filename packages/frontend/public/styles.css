@@ -1225,7 +1225,8 @@ slide-panel.active .slide-panel-backdrop {
 .slide-panel-container {
   position: fixed;
   left: 50%;
-  transform: translateX(-50%) translateY(100%);
+  margin-left: calc(-75ch / 2);
+  transform: translateY(100%);
   bottom: 0;
   width: 75ch;
   height: 85vh;
@@ -1236,9 +1237,6 @@ slide-panel.active .slide-panel-backdrop {
   z-index: 1000;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
-  will-change: transform;
-  backface-visibility: hidden;
 }
 
 slide-panel.active .slide-panel-container {
@@ -1288,24 +1286,24 @@ slide-panel.active .slide-panel-container {
 /* Slide panel animations */
 @keyframes slideInFromBottom {
   from {
-    /* Keep horizontal center, start below screen */
-    transform: translateX(-50%) translateY(100%);
+    /* Start below screen */
+    transform: translateY(100%);
   }
 
   to {
-    /* Keep horizontal center, end at original position */
-    transform: translateX(-50%) translateY(0);
+    /* End at original position */
+    transform: translateY(0);
   }
 }
 
 @keyframes slideOutToBottom {
   from {
-    transform: translateX(-50%) translateY(0);
+    transform: translateY(0);
     opacity: 1;
   }
 
   to {
-    transform: translateX(-50%) translateY(100%);
+    transform: translateY(100%);
     opacity: 1;
   }
 }

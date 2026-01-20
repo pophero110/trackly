@@ -153,11 +153,12 @@ export class SlidePanel extends LitElement {
 
   render() {
     return html`
-      <div class="slide-panel-backdrop" @click=${this.handleBackdropClick}></div>
+      <div class="slide-panel-backdrop" @click=${this.handleBackdropClick}>
+        <button class="slide-panel-close" aria-label="Close" @click=${this.handleCloseClick}>
+          <i class="ph ph-x"></i>
+        </button>
+      </div>
       <div class="slide-panel-container">
-          <button class="slide-panel-close" aria-label="Close" @click=${this.handleCloseClick}>
-            <i class="ph ph-x"></i>
-          </button>
         <div class="slide-panel-body"></div>
       </div>
     `;
