@@ -90,11 +90,11 @@ export class DropdownMenuComponent extends LitElement {
   @property({ type: Array })
   items: DropdownMenuItem[] = [];
 
-  @property({ type: Boolean })
-  open: boolean = false;
+  @state()
+  private open: boolean = false;
 
-  @property({ type: Object })
-  position: { x: number; y: number } = { x: 0, y: 0 };
+  @state()
+  private position: { x: number; y: number } = { x: 0, y: 0 };
 
   @property({ type: String })
   menuId: string = '';
