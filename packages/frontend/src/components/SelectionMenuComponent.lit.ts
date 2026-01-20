@@ -59,7 +59,7 @@ export class SelectionMenuComponent extends LitElement {
       const target = e.target as HTMLElement;
       // Close menu if clicked outside
       if (!target.closest('.tag-filter-container') ||
-          !this.contains(target.closest('.tag-filter-container') as Node)) {
+        !this.contains(target.closest('.tag-filter-container') as Node)) {
         this.menuOpen = false;
       }
     };
@@ -92,7 +92,7 @@ export class SelectionMenuComponent extends LitElement {
       }
 
       // Close menu if scrolling outside
-      this.menuOpen = false;
+      this.close();
     };
     document.addEventListener('scroll', this.documentScrollHandler, true);
   }
@@ -123,6 +123,10 @@ export class SelectionMenuComponent extends LitElement {
    */
   public close(): void {
     this.menuOpen = false;
+    const menuContainer = this.querySelector('.tag-filter-menu') as HTMLElement;
+    if (menuContainer) {
+      menuContainer.scrollTop = 0;
+    }
   }
 
   private handleOptionChange = (e: Event) => {
