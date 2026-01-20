@@ -1551,7 +1551,8 @@ entry-detail-editor {
   min-height: 300px;
   max-height: 70vh;
   overflow-y: auto;
-  overflow-x: hidden;
+  overflow-wrap: break-word;
+  word-wrap: break-word;
   flex: 1;
   width: 100%;
   max-width: none;
