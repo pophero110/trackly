@@ -35,6 +35,7 @@ export class SelectionMenuComponent extends LitElement {
   private menuOpen: boolean = false;
 
   private documentClickHandler?: (e: Event) => void;
+  private documentScrollHandler?: (e: Event) => void;
 
   // Disable Shadow DOM for compatibility with existing global styles
   createRenderRoot() {
@@ -44,11 +45,13 @@ export class SelectionMenuComponent extends LitElement {
   connectedCallback(): void {
     super.connectedCallback();
     this.attachDocumentListener();
+    this.attachScrollListener();
   }
 
   disconnectedCallback(): void {
     super.disconnectedCallback();
     this.detachDocumentListener();
+    this.detachScrollListener();
   }
 
   private attachDocumentListener(): void {
@@ -67,6 +70,37 @@ export class SelectionMenuComponent extends LitElement {
     if (this.documentClickHandler) {
       document.removeEventListener('click', this.documentClickHandler);
       this.documentClickHandler = undefined;
+    }
+  }
+
+  private attachScrollListener(): void {
+    this.documentScrollHandler = (e: Event) => {
+      if (!this.menuOpen) return;
+
+      const target = e.target as Node;
+      const menuContainer = this.querySelector('.tag-filter-menu') as HTMLElement;
+
+      // Don't close if scrolling inside the menu itself
+      if (target === menuContainer || menuContainer?.contains(target)) {
+        return;
+      }
+
+      // Don't close if scrolling inside the tag-filter-container
+      const container = this.querySelector('.tag-filter-container') as HTMLElement;
+      if (target === container || container?.contains(target)) {
+        return;
+      }
+
+      // Close menu if scrolling outside
+      this.menuOpen = false;
+    };
+    document.addEventListener('scroll', this.documentScrollHandler, true);
+  }
+
+  private detachScrollListener(): void {
+    if (this.documentScrollHandler) {
+      document.removeEventListener('scroll', this.documentScrollHandler, true);
+      this.documentScrollHandler = undefined;
     }
   }
 
