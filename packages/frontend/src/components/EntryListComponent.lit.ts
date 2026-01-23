@@ -18,10 +18,7 @@ export class EntryListComponent extends LitElement {
   // Use selector to avoid re-renders when unrelated store data changes
   private storeController = new StoreController(this, {
     selector: (store) => ({
-      isLoaded: store.getIsLoaded(),
-      selectedEntityId: store.getSelectedEntityId(),
-      // Track entry IDs to detect additions/removals/reordering
-      entryIds: store.getEntries().map(e => e.id).join(','),
+      isLoaded: store.getIsLoaded()
     })
   });
   private listController = new EntryListController(this, this.storeController);
@@ -46,7 +43,6 @@ export class EntryListComponent extends LitElement {
     const entries = this.listController.getFilteredEntries();
     const selectedEntity = this.listController.getSelectedEntity();
     const tagFilters = this.listController.getTagFilters();
-    const hashtagFilter = this.listController.getHashtagFilter();
     const { sortValue } = this.listController.getSortConfig();
     const allEntries = this.listController.getAllEntries();
 
@@ -57,7 +53,6 @@ export class EntryListComponent extends LitElement {
           <entry-list-header
             .selectedEntity=${selectedEntity}
             .tagFilters=${tagFilters}
-            .hashtagFilter=${hashtagFilter}
             .currentSortValue=${sortValue}
             .allEntries=${allEntries}>
           </entry-list-header>
@@ -72,7 +67,6 @@ export class EntryListComponent extends LitElement {
         <entry-list-header
           .selectedEntity=${selectedEntity}
           .tagFilters=${tagFilters}
-          .hashtagFilter=${hashtagFilter}
           .currentSortValue=${sortValue}
           .allEntries=${allEntries}>
         </entry-list-header>
