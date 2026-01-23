@@ -221,13 +221,10 @@ export class Store {
         // Update via API in the background
         await APIClient.updateEntry(id, updates, { keepalive: options?.keepalive ?? false });
 
-        // Skip reload for silent updates (auto-save)
-        // The optimistic update is already applied, no need to reload from backend
-        if (!options?.silent) {
-          // Reload entries with current sort to ensure correct order
-          const sortBy = URLStateManager.getSortBy() || undefined;
-          const sortOrder = URLStateManager.getSortOrder() || undefined;
-          await this.reloadEntries(sortBy, sortOrder);
+        // If timestamp changed, re-sort locally (no API call needed)
+        if (updates.timestamp) {
+          this.sortEntriesLocally();
+          this.notify();
         }
       } catch (error) {
         // If API call fails, rollback to original entry
@@ -236,15 +233,8 @@ export class Store {
         throw error;
       }
     } else {
-      // Entry not in local state, just call API and reload
+      // Entry not in local state, just call API
       await APIClient.updateEntry(id, updates, { keepalive: options?.keepalive ?? false });
-
-      // Skip reload for silent updates
-      if (!options?.silent) {
-        const sortBy = URLStateManager.getSortBy() || undefined;
-        const sortOrder = URLStateManager.getSortOrder() || undefined;
-        await this.reloadEntries(sortBy, sortOrder);
-      }
     }
   }
 
@@ -265,11 +255,7 @@ export class Store {
     try {
       // Delete via API in the background
       await APIClient.deleteEntry(id);
-
-      // Reload entries with current sort to ensure correct order
-      const sortBy = URLStateManager.getSortBy() || undefined;
-      const sortOrder = URLStateManager.getSortOrder() || undefined;
-      await this.reloadEntries(sortBy, sortOrder);
+      // Entry already removed from local state, no reload needed
     } catch (error) {
       // If API call fails, restore the entry
       this.entries.splice(index, 0, originalEntry);
@@ -294,11 +280,7 @@ export class Store {
     try {
       // Archive via API in the background
       await APIClient.archiveEntry(id, isArchived);
-
-      // Reload entries with current sort to ensure correct order and filtering
-      const sortBy = URLStateManager.getSortBy() || undefined;
-      const sortOrder = URLStateManager.getSortOrder() || undefined;
-      await this.reloadEntries(sortBy, sortOrder);
+      // Entry already removed from local state, no reload needed
     } catch (error) {
       // If API call fails, restore the entry
       this.entries.splice(index, 0, originalEntry);
