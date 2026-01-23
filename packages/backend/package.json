@@ -12,7 +12,8 @@
     "db:push": "prisma db push",
     "db:seed": "tsx prisma/seed.ts",
     "db:studio": "prisma studio",
-    "db:generate": "prisma generate"
+    "db:generate": "prisma generate",
+    "db:migrate-titles": "tsx scripts/migrate-titles.ts"
   },
   "dependencies": {
     "@trackly/shared": "workspace:*",
