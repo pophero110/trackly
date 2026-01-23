@@ -47,7 +47,7 @@ model Entry {
   id                    String   @id @default(cuid())
   entityId              String
   entityName            String   // Denormalized for faster queries
-  title                 String   // Mandatory title for the entry
+  title                 String   @default("") // Mandatory title for the entry
   timestamp             DateTime
   value                 String?
   valueDisplay          String?
