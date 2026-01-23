@@ -205,14 +205,6 @@ export class URLStateManager {
   }
 
   /**
-   * Get hashtag filter from URL (legacy single tag support)
-   */
-  static getHashtagFilter(): string | null {
-    const params = new URLSearchParams(window.location.search);
-    return params.get('hashtag');
-  }
-
-  /**
    * Set hashtag filter in URL (legacy single tag support)
    */
   static setHashtagFilter(hashtag: string | null): void {

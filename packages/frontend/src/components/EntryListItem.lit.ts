@@ -416,6 +416,8 @@ export class EntryListItem extends LitElement {
           `)}
         </div>
 
+
+      <!-- TODO: use Event Delegation and move these dropdownMenu to EntryListComponent instead of creting dropdown menu per item-->
       <!-- Context Menu -->
       <dropdown-menu
         data-menu-type="context"

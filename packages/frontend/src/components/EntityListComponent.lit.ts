@@ -55,16 +55,11 @@ export class EntityListComponent extends LitElement {
 
   connectedCallback(): void {
     super.connectedCallback();
-    this.attachDocumentListeners();
   }
 
   disconnectedCallback(): void {
     super.disconnectedCallback();
     this.removeDocumentListeners();
-  }
-
-  private attachDocumentListeners(): void {
-    // No longer needed - SelectionMenuComponent handles its own click-outside
   }
 
   private removeDocumentListeners(): void {
@@ -167,6 +162,8 @@ export class EntityListComponent extends LitElement {
 
     return html`
       <div class="entity-card ${isSelected ? 'selected' : ''}"
+           role="button"
+           tabindex="0"
            data-entity-id="${entity.id}"
            @click=${(e: MouseEvent) => this.handleCardClick(e, entity.id)}
            @contextmenu=${(e: MouseEvent) => this.handleCardContextMenu(e, entity.id)}>
