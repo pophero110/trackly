@@ -179,10 +179,9 @@ export class Store {
         this.entries[index] = new Entry(createdEntry);
       }
 
-      // Reload to ensure correct sort order
-      const sortBy = URLStateManager.getSortBy() || undefined;
-      const sortOrder = URLStateManager.getSortOrder() || undefined;
-      await this.reloadEntries(sortBy, sortOrder);
+      // Sort locally instead of reloading from API
+      this.sortEntriesLocally();
+      this.notify();
     } catch (error) {
       // If API call fails, remove the optimistic entry
       const index = this.entries.findIndex(e => e.id === tempId);
@@ -316,6 +315,37 @@ export class Store {
   setSelectedEntityId(entityId: string | null): void {
     this.selectedEntityId = entityId;
     this.notify();
+  }
+
+  // Sort entries locally based on current URL sort parameters
+  private sortEntriesLocally(): void {
+    const sortBy = URLStateManager.getSortBy() || 'timestamp';
+    const sortOrder = URLStateManager.getSortOrder() || 'desc';
+
+    this.entries.sort((a, b) => {
+      let aVal: string | number;
+      let bVal: string | number;
+
+      switch (sortBy) {
+        case 'createdAt':
+          aVal = new Date(a.createdAt || a.timestamp).getTime();
+          bVal = new Date(b.createdAt || b.timestamp).getTime();
+          break;
+        case 'entityName':
+          aVal = a.entityName?.toLowerCase() || '';
+          bVal = b.entityName?.toLowerCase() || '';
+          break;
+        case 'timestamp':
+        default:
+          aVal = new Date(a.timestamp).getTime();
+          bVal = new Date(b.timestamp).getTime();
+          break;
+      }
+
+      if (aVal < bVal) return sortOrder === 'asc' ? -1 : 1;
+      if (aVal > bVal) return sortOrder === 'asc' ? 1 : -1;
+      return 0;
+    });
   }
 
   // Reload entries with sort parameters
