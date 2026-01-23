@@ -299,6 +299,12 @@ export class Store {
     this.notify();
   }
 
+  // Sort entries locally and notify (public API for sort changes without API call)
+  sortEntries(): void {
+    this.sortEntriesLocally();
+    this.notify();
+  }
+
   // Sort entries locally based on current URL sort parameters
   private sortEntriesLocally(): void {
     const sortBy = URLStateManager.getSortBy() || 'timestamp';

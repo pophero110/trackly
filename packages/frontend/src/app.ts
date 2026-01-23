@@ -135,16 +135,13 @@ class TracklyApp {
         if (entryList) {
           entryList.style.display = 'flex';
 
-          // Reload entries only if sort has changed
+          // Sort entries locally if sort has changed (no API call)
           const sortBy = URLStateManager.getSortBy() || undefined;
           const sortOrder = URLStateManager.getSortOrder() || undefined;
           if (sortBy !== lastSortBy || sortOrder !== lastSortOrder) {
             lastSortBy = sortBy;
             lastSortOrder = sortOrder;
-            this.store.reloadEntries(sortBy, sortOrder);
-          } else {
-            // Just re-render with existing data (Lit component)
-            (entryList as any).requestUpdate?.();
+            this.store.sortEntries();
           }
         }
 
@@ -178,16 +175,13 @@ class TracklyApp {
         if (entryList) {
           entryList.style.display = 'flex';
 
-          // Reload entries only if sort has changed
+          // Sort entries locally if sort has changed (no API call)
           const sortBy = URLStateManager.getSortBy() || undefined;
           const sortOrder = URLStateManager.getSortOrder() || undefined;
           if (sortBy !== lastSortBy || sortOrder !== lastSortOrder) {
             lastSortBy = sortBy;
             lastSortOrder = sortOrder;
-            this.store.reloadEntries(sortBy, sortOrder);
-          } else {
-            // Just re-render with existing data (Lit component)
-            (entryList as any).requestUpdate?.();
+            this.store.sortEntries();
           }
         }
         if (this.store.getSelectedEntityId() !== null) {
@@ -202,16 +196,13 @@ class TracklyApp {
         if (entryList) {
           entryList.style.display = 'flex';
 
-          // Reload entries only if sort has changed
+          // Sort entries locally if sort has changed (no API call)
           const sortBy = URLStateManager.getSortBy() || undefined;
           const sortOrder = URLStateManager.getSortOrder() || undefined;
           if (sortBy !== lastSortBy || sortOrder !== lastSortOrder) {
             lastSortBy = sortBy;
             lastSortOrder = sortOrder;
-            this.store.reloadEntries(sortBy, sortOrder);
-          } else {
-            // Just re-render with existing data (Lit component)
-            (entryList as any).requestUpdate?.();
+            this.store.sortEntries();
           }
         }
         if (this.store.getSelectedEntityId() !== null) {
