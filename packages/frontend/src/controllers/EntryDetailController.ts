@@ -157,7 +157,7 @@ export class EntryDetailController implements ReactiveController {
     const notesToSave = this.editedNotes;
 
     try {
-      await store.updateEntry(entryId, { notes: notesToSave }, { keepalive: options?.keepalive });
+      await store.updateEntry(entryId, { notes: notesToSave }, { keepalive: options?.keepalive, silent: options?.silent });
 
       if (!options?.silent) {
         console.log('[AutoSave] Saved successfully');
