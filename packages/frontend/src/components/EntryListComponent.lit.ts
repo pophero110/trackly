@@ -18,7 +18,10 @@ export class EntryListComponent extends LitElement {
   // Use selector to avoid re-renders when unrelated store data changes
   private storeController = new StoreController(this, {
     selector: (store) => ({
-      isLoaded: store.getIsLoaded()
+      isLoaded: store.getIsLoaded(),
+      selectedEntityId: store.getSelectedEntityId(),
+      // Track entry IDs in order to detect add/remove/sort changes
+      entryIds: store.getEntries().map(e => e.id).join(','),
     })
   });
   private listController = new EntryListController(this, this.storeController);
