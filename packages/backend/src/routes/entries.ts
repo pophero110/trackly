@@ -51,6 +51,7 @@ router.get('/', async (req: AuthRequest, res, next): Promise<void> => {
       id: entry.id,
       entityId: entry.entityId,
       entityName: entry.entityName,
+      title: entry.title,
       timestamp: entry.timestamp.toISOString(),
       value: entry.value || undefined,
       valueDisplay: entry.valueDisplay || undefined,
@@ -97,6 +98,7 @@ router.get('/:id', async (req: AuthRequest, res, next): Promise<void> => {
       id: entry.id,
       entityId: entry.entityId,
       entityName: entry.entityName,
+      title: entry.title,
       timestamp: entry.timestamp.toISOString(),
       value: entry.value || undefined,
       valueDisplay: entry.valueDisplay || undefined,
@@ -128,7 +130,7 @@ router.get('/:id', async (req: AuthRequest, res, next): Promise<void> => {
 router.post('/', validate(createEntrySchema), async (req: AuthRequest, res, next): Promise<void> => {
   try {
     const userId = req.user!.id;
-    const { entityId, timestamp, value, valueDisplay, notes, images, links, linkTitles, entryReferences, propertyValues, propertyValueDisplays, latitude, longitude, locationName } = req.body;
+    const { entityId, title, timestamp, value, valueDisplay, notes, images, links, linkTitles, entryReferences, propertyValues, propertyValueDisplays, latitude, longitude, locationName } = req.body;
 
     // Verify entity exists and belongs to user
     const entity = await prisma.entity.findFirst({
@@ -145,6 +147,7 @@ router.post('/', validate(createEntrySchema), async (req: AuthRequest, res, next
       data: {
         entityId,
         entityName: entity.name,
+        title,
         timestamp: new Date(timestamp),
         value: value?.toString() || null,
         valueDisplay: valueDisplay || null,
@@ -166,6 +169,7 @@ router.post('/', validate(createEntrySchema), async (req: AuthRequest, res, next
       id: entry.id,
       entityId: entry.entityId,
       entityName: entry.entityName,
+      title: entry.title,
       timestamp: entry.timestamp.toISOString(),
       value: entry.value || undefined,
       valueDisplay: entry.valueDisplay || undefined,
@@ -225,6 +229,7 @@ router.put('/:id', validate(updateEntrySchema), async (req: AuthRequest, res, ne
     const updateData: any = {};
     if (req.body.entityId !== undefined) updateData.entityId = req.body.entityId;
     if (req.body.entityName !== undefined) updateData.entityName = req.body.entityName;
+    if (req.body.title !== undefined) updateData.title = req.body.title;
     if (req.body.timestamp) updateData.timestamp = new Date(req.body.timestamp);
     if (req.body.value !== undefined) updateData.value = req.body.value?.toString() || null;
     if (req.body.valueDisplay !== undefined) updateData.valueDisplay = req.body.valueDisplay || null;
@@ -249,6 +254,7 @@ router.put('/:id', validate(updateEntrySchema), async (req: AuthRequest, res, ne
       id: entry.id,
       entityId: entry.entityId,
       entityName: entry.entityName,
+      title: entry.title,
       timestamp: entry.timestamp.toISOString(),
       value: entry.value || undefined,
       valueDisplay: entry.valueDisplay || undefined,
@@ -303,6 +309,7 @@ router.patch('/:id/archive', async (req: AuthRequest, res, next): Promise<void> 
       id: entry.id,
       entityId: entry.entityId,
       entityName: entry.entityName,
+      title: entry.title,
       timestamp: entry.timestamp.toISOString(),
       value: entry.value || undefined,
       valueDisplay: entry.valueDisplay || undefined,

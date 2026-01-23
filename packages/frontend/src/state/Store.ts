@@ -166,6 +166,7 @@ export class Store {
       const createdEntry = await APIClient.createEntry({
         entityId: entry.entityId,
         entityName: entry.entityName,
+        title: entry.title,
         timestamp: entry.timestamp,
         value: entry.value,
         valueDisplay: entry.valueDisplay,

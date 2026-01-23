@@ -98,8 +98,9 @@ export class EntryListHeader extends LitElement {
       const entry = new Entry({
         entityId: entity.id,
         entityName: entity.name,
+        title: notes,
         timestamp: new Date().toISOString(),
-        notes: `# ${notes}`
+        notes: ''
       });
 
       input.value = '';

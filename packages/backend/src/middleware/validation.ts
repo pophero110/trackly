@@ -59,6 +59,7 @@ export const updateEntitySchema = z.object({
 // Entry validation schemas
 export const createEntrySchema = z.object({
   entityId: z.string().min(1, 'Entity ID is required'),
+  title: z.string().min(1, 'Title is required'),
   timestamp: z.string().datetime('Invalid timestamp'),
   value: z.union([z.string(), z.number(), z.boolean()]).optional(),
   valueDisplay: z.string().optional(),
@@ -77,6 +78,7 @@ export const createEntrySchema = z.object({
 export const updateEntrySchema = z.object({
   entityId: z.string().optional(),
   entityName: z.string().optional(),
+  title: z.string().min(1, 'Title cannot be blank').optional(),
   timestamp: z.string().datetime().optional(),
   value: z.union([z.string(), z.number(), z.boolean()]).optional(),
   valueDisplay: z.string().optional(),

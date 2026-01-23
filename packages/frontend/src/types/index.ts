@@ -63,6 +63,7 @@ export interface IEntry {
   id: string;
   entityId: string;
   entityName: string;
+  title: string;  // Mandatory title for the entry
   timestamp: string;
   value?: string | number | boolean;
   valueDisplay?: string;  // For storing fetched titles or display text
@@ -85,6 +86,7 @@ export interface EntityFormData {
 }
 
 export interface EntryFormData {
+  title: string;
   timestamp: string;
   value?: string | number | boolean;
   valueDisplay?: string;
