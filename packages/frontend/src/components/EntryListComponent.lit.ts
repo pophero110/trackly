@@ -15,7 +15,15 @@ import './EntryListItem.lit.js';
 @customElement('entry-list')
 export class EntryListComponent extends LitElement {
   // Controllers handle all logic
-  private storeController = new StoreController(this);
+  // Use selector to avoid re-renders when unrelated store data changes
+  private storeController = new StoreController(this, {
+    selector: (store) => ({
+      isLoaded: store.getIsLoaded(),
+      selectedEntityId: store.getSelectedEntityId(),
+      // Track entry IDs to detect additions/removals/reordering
+      entryIds: store.getEntries().map(e => e.id).join(','),
+    })
+  });
   private listController = new EntryListController(this, this.storeController);
 
   // Disable Shadow DOM for compatibility with existing global styles
