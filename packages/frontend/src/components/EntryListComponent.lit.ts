@@ -20,8 +20,8 @@ export class EntryListComponent extends LitElement {
     selector: (store) => ({
       isLoaded: store.getIsLoaded(),
       selectedEntityId: store.getSelectedEntityId(),
-      // Track entry IDs in order to detect add/remove/sort changes
-      entryIds: store.getEntries().map(e => e.id).join(','),
+      // Track entry version to detect any entry mutations
+      entryVersion: store.getEntryVersion(),
     })
   });
   private listController = new EntryListController(this, this.storeController);

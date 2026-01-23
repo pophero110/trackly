@@ -13,6 +13,7 @@ export class Store {
   private listeners: StoreListener[];
   private selectedEntityId: string | null;
   private isLoaded: boolean;
+  private entryVersion: number;
 
   constructor() {
     this.entities = [];
@@ -20,6 +21,7 @@ export class Store {
     this.listeners = [];
     this.selectedEntityId = null;
     this.isLoaded = false;
+    this.entryVersion = 0;
 
     // Load data with initial sort from URL if present
     const sortBy = URLStateManager.getSortBy() || undefined;
@@ -38,7 +40,7 @@ export class Store {
       this.entities = entitiesData.map(data => new Entity(data));
       this.entries = entriesData.map(data => new Entry(data));
       this.isLoaded = true;
-      this.notify();
+      this.notifyEntryChange();
     } catch (error) {
       console.error('Error loading data:', error);
       // If we get a 401, the API client will handle redirect to login
@@ -56,6 +58,12 @@ export class Store {
   // Notify all listeners of state change
   private notify(): void {
     this.listeners.forEach(listener => listener());
+  }
+
+  // Increment entry version and notify (for entry mutations)
+  private notifyEntryChange(): void {
+    this.entryVersion++;
+    this.notify();
   }
 
   // Entity operations
@@ -151,7 +159,7 @@ export class Store {
     const tempId = `temp-${Date.now()}`;
     const optimisticEntry = new Entry({ ...entry, id: tempId });
     this.entries.unshift(optimisticEntry); // Add to beginning
-    this.notify(); // Trigger immediate re-render
+    this.notifyEntryChange(); // Trigger immediate re-render
 
     try {
       // Create entry via API in the background
@@ -181,13 +189,13 @@ export class Store {
 
       // Sort locally instead of reloading from API
       this.sortEntriesLocally();
-      this.notify();
+      this.notifyEntryChange();
     } catch (error) {
       // If API call fails, remove the optimistic entry
       const index = this.entries.findIndex(e => e.id === tempId);
       if (index !== -1) {
         this.entries.splice(index, 1);
-        this.notify();
+        this.notifyEntryChange();
       }
       throw error; // Re-throw so the form can handle the error
     }
@@ -215,7 +223,7 @@ export class Store {
 
       // Always notify subscribers of the optimistic update
       // This ensures all components (like EntryList) re-render with the new data
-      this.notify();
+      this.notifyEntryChange();
 
       try {
         // Update via API in the background
@@ -224,12 +232,12 @@ export class Store {
         // If timestamp changed, re-sort locally (no API call needed)
         if (updates.timestamp) {
           this.sortEntriesLocally();
-          this.notify();
+          this.notifyEntryChange();
         }
       } catch (error) {
         // If API call fails, rollback to original entry
         this.entries[index] = originalEntry;
-        this.notify();
+        this.notifyEntryChange();
         throw error;
       }
     } else {
@@ -250,7 +258,7 @@ export class Store {
 
     // Remove from local state
     this.entries.splice(index, 1);
-    this.notify(); // Trigger immediate re-render
+    this.notifyEntryChange(); // Trigger immediate re-render
 
     try {
       // Delete via API in the background
@@ -259,7 +267,7 @@ export class Store {
     } catch (error) {
       // If API call fails, restore the entry
       this.entries.splice(index, 0, originalEntry);
-      this.notify();
+      this.notifyEntryChange();
       throw error;
     }
   }
@@ -275,7 +283,7 @@ export class Store {
 
     // Optimistic update: Remove from local state immediately
     this.entries.splice(index, 1);
-    this.notify(); // Trigger immediate re-render
+    this.notifyEntryChange(); // Trigger immediate re-render
 
     try {
       // Archive via API in the background
@@ -284,7 +292,7 @@ export class Store {
     } catch (error) {
       // If API call fails, restore the entry
       this.entries.splice(index, 0, originalEntry);
-      this.notify();
+      this.notifyEntryChange();
       throw error;
     }
   }
@@ -302,7 +310,7 @@ export class Store {
   // Sort entries locally and notify (public API for sort changes without API call)
   sortEntries(): void {
     this.sortEntriesLocally();
-    this.notify();
+    this.notifyEntryChange();
   }
 
   // Sort entries locally based on current URL sort parameters
@@ -341,7 +349,7 @@ export class Store {
     try {
       const entriesData = await APIClient.getEntries({ sortBy, sortOrder, includeArchived: true });
       this.entries = entriesData.map(data => new Entry(data));
-      this.notify();
+      this.notifyEntryChange();
     } catch (error) {
       console.error('Error reloading entries:', error);
     }
@@ -358,5 +366,10 @@ export class Store {
 
   getSortOrder(): string {
     return URLStateManager.getSortOrder() || "";
+  }
+
+  // Version counter that increments on every entry mutation
+  getEntryVersion(): number {
+    return this.entryVersion;
   }
 }
