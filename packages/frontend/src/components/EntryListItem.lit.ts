@@ -5,7 +5,6 @@ import { when } from 'lit/directives/when.js';
 import { Entry } from '../models/Entry.js';
 import { Entity } from '../models/Entity.js';
 import { escapeHtml, extractHashtags } from '../utils/helpers.js';
-import { parseMarkdown } from '../utils/markdown.js';
 import { URLStateManager } from '../utils/urlState.js';
 import { getEntityColor } from '../utils/entryHelpers.js';
 import { Store } from '../state/Store.js';
@@ -236,143 +235,19 @@ export class EntryListItem extends LitElement {
     }
   }
 
-
-  private getEntityTypeIcon(type?: string): string {
-    if (!type) return '●';
-
-    const icons: Record<string, string> = {
-      'Habit': '🎯',
-      'Task': '✓',
-      'Event': '📅',
-      'Note': '📝',
-      'Expense': '💰',
-      'Mood': '😊',
-      'Exercise': '💪',
-      'Meal': '🍽️',
-      'Sleep': '😴',
-      'Reading': '📚',
-      'Movie': '🎬',
-      'Goal': '🎯',
-      'Journal': '📔',
-      'Idea': '💡',
-      'Link': '🔗'
-    };
-
-    return icons[type] || '●';
-  }
-
-  private formatValue(value: string | number | boolean, displayValue?: string, valueType?: string): string {
-    const valueStr = String(value);
-
-    // Check if it's a URL
-    if (valueStr.startsWith('http://') || valueStr.startsWith('https://')) {
-      // Image
-      if (valueStr.match(/\.(jpg|jpeg|png|gif|webp|svg)(\?|$)/i)) {
-        return `<img src="${escapeHtml(valueStr)}" alt="Entry image" style="max-width: 100%; border-radius: 4px; margin-top: 4px;">`;
-      }
-      // Audio
-      if (valueStr.match(/\.(mp3|wav|ogg|m4a)(\?|$)/i)) {
-        return `<audio controls style="width: 100%; margin-top: 4px;"><source src="${escapeHtml(valueStr)}"></audio>`;
-      }
-      // Video
-      if (valueStr.match(/\.(mp4|webm|ogv)(\?|$)/i)) {
-        return `<video controls style="max-width: 100%; border-radius: 4px; margin-top: 4px;"><source src="${escapeHtml(valueStr)}"></video>`;
-      }
-      // Hyperlink
-      const linkText = displayValue || valueStr;
-      return `<a href="${escapeHtml(valueStr)}" target="_blank" rel="noopener noreferrer" style="color: var(--primary); text-decoration: underline;">${escapeHtml(linkText)}</a>`;
-    }
-
-    // Check if value contains [[title::url]] format
-    if (valueStr.includes('[[') && valueStr.includes('::')) {
-      return parseMarkdown(valueStr);
-    }
-
-    // Status badges
-    const statusValues = ['todo', 'in-progress', 'done', 'yes', 'no', 'pending', 'not-started', 'completed', 'draft', 'active', 'on-hold'];
-    if (statusValues.includes(valueStr)) {
-      const displayMap: Record<string, string> = {
-        'in-progress': 'In Progress',
-        'todo': 'To Do',
-        'done': 'Done',
-        'yes': 'Yes',
-        'no': 'No',
-        'pending': 'Pending',
-        'not-started': 'Not Started',
-        'completed': 'Completed',
-        'draft': 'Draft',
-        'active': 'Active',
-        'on-hold': 'On Hold'
-      };
-      const displayText = displayMap[valueStr] || valueStr;
-      return `<span class="status-badge ${valueStr}">${displayText}</span>`;
-    }
-
-    // Boolean/checkbox
-    if (valueStr === 'true' || valueStr === 'false') {
-      return valueStr === 'true' ? '✓ Yes' : '✗ No';
-    }
-
-    // Color value
-    if (valueStr.match(/^#[0-9A-Fa-f]{6}$/)) {
-      return `<div style="display: inline-flex; align-items: center; gap: 8px;"><div style="width: 24px; height: 24px; background: ${valueStr}; border: 1px solid #ccc; border-radius: 4px;"></div><span>${valueStr}</span></div>`;
-    }
-
-    // Date/time value
-    if (valueStr.match(/^\d{4}-\d{2}-\d{2}(T\d{2}:\d{2})?/)) {
-      try {
-        const date = new Date(valueStr);
-        if (!isNaN(date.getTime())) {
-          return date.toLocaleString();
-        }
-      } catch {
-        // Not a valid date
-      }
-    }
-
-    // Add units for numeric value types
-    if (valueType) {
-      const numValue = Number(valueStr);
-      if (!isNaN(numValue)) {
-        if (valueType === 'duration') {
-          return `${valueStr} minutes`;
-        } else if (valueType === 'rating') {
-          return `${valueStr}/5`;
-        }
-      }
-    }
-
-    return escapeHtml(valueStr);
-  }
-
   render() {
     const entity = this.store?.getEntityById(this.entry.entityId);
-    const typeIcon = this.getEntityTypeIcon(entity?.type);
-
-    // Entry value
-    const entryValue = this.entry.value !== undefined
-      ? this.formatValue(this.entry.value, this.entry.valueDisplay, entity?.valueType)
-      : '';
 
     // Entity chip with dropdown
     const entityColor = entity ? getEntityColor(entity.name) : '';
 
-    // Extract hashtags
-    const hashtags = this.entry.notes ? extractHashtags(this.entry.notes) : [];
-
-    // Notes
-    const notesHtml = this.entry.notes ? parseMarkdown(this.entry.notes) : '';
+    // Extract hashtags from notes
+    const tags = this.entry.notes ? extractHashtags(this.entry.notes) : [];
 
     return html`
         <div class="timeline-entry-card" @click=${this.handleCardClick}>
           <div class="timeline-entry-header">
             <div class="timeline-entry-primary">
-              ${when(typeIcon && entryValue, () => html`
-                <span class="timeline-entry-icon">${typeIcon}</span>
-              `)}
-              ${when(entryValue, () => html`
-                <div class="timeline-entry-value" .innerHTML=${entryValue}></div>
-              `)}
               ${when(entity, () => html`
                 <div class="entry-chip-entity-container" style="position: relative;" data-entry-id="${this.entry.id}">
                   <span
@@ -398,13 +273,13 @@ export class EntryListItem extends LitElement {
             </button>
           </div>
 
-          ${when(notesHtml, () => html`
-            <div class="timeline-entry-notes" .innerHTML=${notesHtml}></div>
+          ${when(this.entry.title, () => html`
+            <div class="timeline-entry-title">${escapeHtml(this.entry.title)}</div>
           `)}
 
-          ${when(hashtags.length > 0, () => html`
+          ${when(tags.length > 0, () => html`
             <div class="timeline-entry-tags">
-              ${map(hashtags, tag => html`
+              ${map(tags, tag => html`
                 <span
                   class="entry-chip entry-chip-tag"
                   data-tag="${escapeHtml(tag)}"
