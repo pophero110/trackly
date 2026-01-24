@@ -3,6 +3,7 @@ import { commonmark } from '@milkdown/preset-commonmark';
 import { nord } from '@milkdown/theme-nord';
 import { listener, listenerCtx } from '@milkdown/plugin-listener';
 import { clipboard } from '@milkdown/plugin-clipboard';
+import { history } from '@milkdown/plugin-history';
 
 /**
  * Initialize Milkdown editor
@@ -27,6 +28,7 @@ export async function createMilkdownEditor(
     .use(commonmark)
     .use(clipboard)
     .use(listener)
+    .use(history)
     .create();
 
   return editor;

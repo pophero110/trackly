@@ -69,6 +69,9 @@ importers:
       '@milkdown/plugin-clipboard':
         specifier: ^7.18.0
         version: 7.18.0
+      '@milkdown/plugin-history':
+        specifier: ^7.18.0
+        version: 7.18.0
       '@milkdown/plugin-listener':
         specifier: ^7.18.0
         version: 7.18.0
@@ -406,6 +409,17 @@ packages:
 
   /@milkdown/plugin-clipboard@7.18.0:
     resolution: {integrity: sha512-Gnp+GqkoLS1pKG9S2QfdvZQjfoJosQek5Yv5zOIj5X388yfVlguKNtCwnDCJKVEVws9e8PnhfPBmzr06713dZw==}
+    dependencies:
+      '@milkdown/core': 7.18.0
+      '@milkdown/ctx': 7.18.0
+      '@milkdown/prose': 7.18.0
+      '@milkdown/utils': 7.18.0
+    transitivePeerDependencies:
+      - supports-color
+    dev: false
+
+  /@milkdown/plugin-history@7.18.0:
+    resolution: {integrity: sha512-hWM3rpad/THy267dXgEWRu9Arf+3j2KE8UN3jhqsUvVLZZ2ZetaPc2imHowJaLR8PwCb649+1RxL+IKrXizNKQ==}
     dependencies:
       '@milkdown/core': 7.18.0
       '@milkdown/ctx': 7.18.0
@@ -1036,8 +1050,8 @@ packages:
     resolution: {integrity: sha512-ZQBvi1DcpJ4GDqanjucZ2Hj3wEO5pZDS89BWbkcrvdxksJorwUDDZamX9ldFkp9aw2lmBDLgkObEA4DWNJ9FYQ==}
     dev: true
 
-  /cors@2.8.5:
-    resolution: {integrity: sha512-KIHbLJqu73RGr/hnbrO9uBeixNGuvSQjul/jdFvS/KFSIH1hWVd1ng7zOHx+YrEfInLG7q4n6GHQ9cDtxv/P6g==}
+  /cors@2.8.6:
+    resolution: {integrity: sha512-tJtZBBHA6vjIAaF6EnIaq6laBBP9aq/Y3ouVJjEfoHbRBcHBAHYcMh/w8LDrk2PvIMMq8gmopa5D4V8RmbrxGw==}
     engines: {node: '>= 0.10'}
     dependencies:
       object-assign: 4.1.1
@@ -1846,7 +1860,7 @@ packages:
       chokidar: 2.1.8
       colors: 1.4.0
       connect: 3.7.0
-      cors: 2.8.5
+      cors: 2.8.6
       event-stream: 3.3.4
       faye-websocket: 0.11.4
       http-auth: 3.1.3
