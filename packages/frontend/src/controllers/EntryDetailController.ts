@@ -77,9 +77,6 @@ export class EntryDetailController implements ReactiveController {
    * Update controller state from URL
    */
   private updateFromUrl(): void {
-    const store = this.storeController.store;
-    if (!store) return;
-
     const currentPath = window.location.pathname;
 
     // Check if we're on entry detail page (/entries/:id)
@@ -91,7 +88,7 @@ export class EntryDetailController implements ReactiveController {
       return;
     }
 
-    // Extract entry ID from URL
+    // Extract entry ID from URL (do this even if store isn't ready)
     const pathSegments = currentPath.split('/').filter(Boolean);
     const newEntryId = pathSegments[1] || null;
 
@@ -102,7 +99,11 @@ export class EntryDetailController implements ReactiveController {
       }
 
       this.entryId = newEntryId;
-      this.loadEntry();
+
+      // Only try to load if store is available
+      if (this.storeController.store) {
+        this.loadEntry();
+      }
     }
   }
 
