@@ -66,6 +66,11 @@ export class EntryDetailComponent extends LitElement {
     }
   };
 
+  private handleTitleChange = (e: InputEvent): void => {
+    const input = e.target as HTMLInputElement;
+    this.detailController.updateTitle(input.value);
+  };
+
   private handleNotesChange = (e: CustomEvent): void => {
     const { notes } = e.detail;
     this.detailController.updateNotes(notes);
@@ -127,7 +132,11 @@ export class EntryDetailComponent extends LitElement {
             @menu-action=${this.handleMenuAction}>
           </entry-detail-header>
 
-          <input class="entry-detail-title" value=${entry.title}></input>
+          <input
+            class="entry-detail-title"
+            .value=${this.detailController.editedTitle}
+            @input=${this.handleTitleChange}
+            placeholder="Entry title">
 
           ${when(
       entry.value !== undefined || (entity.properties && entity.properties.length > 0),

@@ -19,6 +19,7 @@ export class EntryDetailController implements ReactiveController {
   public entryId: string | null = null;
   public entry: Entry | null = null;
   public entity: Entity | null = null;
+  public editedTitle: string = '';
   public editedNotes: string = '';
   public hasUnsavedChanges: boolean = false;
 
@@ -142,6 +143,7 @@ export class EntryDetailController implements ReactiveController {
     this.entry = store.getEntryById(this.entryId);
     if (this.entry) {
       this.entity = store.getEntityById(this.entry.entityId);
+      this.editedTitle = this.entry.title || '';
       this.editedNotes = this.entry.notes || '';
       this.hasUnsavedChanges = false;
     }
@@ -150,16 +152,42 @@ export class EntryDetailController implements ReactiveController {
   }
 
   /**
-   * Update entry notes (called during editing)
+   * Update entry title (called during editing)
    */
-  updateNotes(notes: string): void {
-    this.editedNotes = notes;
-    this.hasUnsavedChanges = this.entry ? this.editedNotes !== this.entry.notes : false;
+  updateTitle(title: string): void {
+    this.editedTitle = title;
+    this.checkUnsavedChanges();
 
     // Trigger debounced auto-save
     if (this.hasUnsavedChanges && this.entryId) {
       this.debouncedBackendSave?.(this.entryId);
     }
+  }
+
+  /**
+   * Update entry notes (called during editing)
+   */
+  updateNotes(notes: string): void {
+    this.editedNotes = notes;
+    this.checkUnsavedChanges();
+
+    // Trigger debounced auto-save
+    if (this.hasUnsavedChanges && this.entryId) {
+      this.debouncedBackendSave?.(this.entryId);
+    }
+  }
+
+  /**
+   * Check if there are unsaved changes
+   */
+  private checkUnsavedChanges(): void {
+    if (!this.entry) {
+      this.hasUnsavedChanges = false;
+      return;
+    }
+    this.hasUnsavedChanges =
+      this.editedTitle !== (this.entry.title || '') ||
+      this.editedNotes !== (this.entry.notes || '');
   }
 
   /**
@@ -175,10 +203,11 @@ export class EntryDetailController implements ReactiveController {
       return;
     }
 
+    const titleToSave = this.editedTitle;
     const notesToSave = this.editedNotes;
 
     try {
-      await store.updateEntry(entryId, { notes: notesToSave }, { keepalive: options?.keepalive, silent: options?.silent });
+      await store.updateEntry(entryId, { title: titleToSave, notes: notesToSave }, { keepalive: options?.keepalive, silent: options?.silent });
 
       if (!options?.silent) {
         console.log('[AutoSave] Saved successfully');
