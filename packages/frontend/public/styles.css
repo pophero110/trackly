@@ -1371,7 +1371,6 @@ entry-detail {
 .entry-detail-title {
   display: block;
   border: none;
-  border-bottom: 1px solid lightslategray;
   width: 100%;
   font-size: 1.5rem;
   font-weight: 600;
