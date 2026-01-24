@@ -5,6 +5,7 @@ import { AppTabs } from './components/AppTabs.js';
 import './components/ModalPanel.lit.js'; // Lit version (self-registering)
 import './components/SlidePanel.lit.js'; // Lit version (self-registering)
 import './components/ToastComponent.lit.js'; // Lit version (self-registering)
+import './components/SearchModal.lit.js'; // Search modal (Cmd+K)
 import { EntityCreateFormComponent } from './components/EntityCreateFormComponent.js';
 import { EntityEditFormComponent } from './components/EntityEditFormComponent.js';
 import './components/EntityListComponent.lit.js'; // Lit version (self-registering)
