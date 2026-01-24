@@ -1380,9 +1380,9 @@ entry-detail {
   background: none;
   resize: none;
   overflow: hidden;
-  overflow-x: auto;
   font-family: inherit;
-  white-space: nowrap;
+  word-break: break-word;
+  field-sizing: content;
 }
 
 .entry-detail-title:focus-visible {
