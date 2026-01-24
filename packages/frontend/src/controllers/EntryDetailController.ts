@@ -107,6 +107,26 @@ export class EntryDetailController implements ReactiveController {
   }
 
   /**
+   * Ensure the entry is loaded when store becomes available
+   * Call this from render to handle late store initialization
+   */
+  ensureLoaded(): void {
+    // Try to set up store subscription if not already done
+    if (!this.unsubscribeStore && this.storeController.store) {
+      this.unsubscribeStore = this.storeController.store.subscribe(() => {
+        if (this.storeController.isLoaded && this.entryId && !this.entry) {
+          this.loadEntry();
+        }
+      });
+    }
+
+    // Try to load entry if we have the ID but not the entry
+    if (this.storeController.isLoaded && this.entryId && !this.entry) {
+      this.loadEntry();
+    }
+  }
+
+  /**
    * Load entry data from store
    */
   private loadEntry(): void {

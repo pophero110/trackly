@@ -93,6 +93,9 @@ export class EntryDetailComponent extends LitElement {
   };
 
   render() {
+    // Ensure entry is loaded when store becomes available (handles page refresh)
+    this.detailController.ensureLoaded();
+
     // Check if store is available and loaded
     if (!this.storeController.store || !this.storeController.isLoaded) {
       return html`
@@ -123,6 +126,8 @@ export class EntryDetailComponent extends LitElement {
             @entity-change=${this.handleEntityChange}
             @menu-action=${this.handleMenuAction}>
           </entry-detail-header>
+
+          <input class="entry-detail-title" value=${entry.title}></input>
 
           ${when(
       entry.value !== undefined || (entity.properties && entity.properties.length > 0),

@@ -77,7 +77,7 @@ export class EntryListItem extends LitElement {
 
   private handleCardClick = (e: MouseEvent) => {
     const target = e.target as HTMLElement;
-    if (target.closest('[data-action="menu"], a, .entry-chip-tag, .entry-chip-entity-container')) {
+    if (target.closest('[data-action="menu"], a, .timeline-entry-tag, .entry-chip-entity-container')) {
       return;
     }
     URLStateManager.showEntryDetail(this.entry.id);
@@ -281,7 +281,7 @@ export class EntryListItem extends LitElement {
             <div class="timeline-entry-tags">
               ${map(tags, tag => html`
                 <span
-                  class="entry-chip entry-chip-tag"
+                  class="timeline-entry-tag"
                   data-tag="${escapeHtml(tag)}"
                   @click=${(e: MouseEvent) => this.handleTagClick(e, tag)}>
                   #${escapeHtml(tag)}
