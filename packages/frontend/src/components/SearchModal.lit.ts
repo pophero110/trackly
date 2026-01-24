@@ -43,7 +43,6 @@ export class SearchModal extends LitElement {
       align-items: center;
       padding: 16px;
       border-bottom: 1px solid var(--border, #e0e0e0);
-      gap: 12px;
     }
 
     .search-modal-icon {
@@ -165,6 +164,8 @@ export class SearchModal extends LitElement {
   connectedCallback(): void {
     super.connectedCallback();
     document.addEventListener('keydown', this.handleGlobalKeydown);
+    window.addEventListener('popstate', this.handlePopState);
+
     try {
       this.store = storeRegistry.getStore();
     } catch {
@@ -172,11 +173,41 @@ export class SearchModal extends LitElement {
         this.store = storeRegistry.getStore();
       });
     }
+
+    // Check if we should open based on current URL
+    this.checkUrlAndOpen();
   }
 
   disconnectedCallback(): void {
     super.disconnectedCallback();
     document.removeEventListener('keydown', this.handleGlobalKeydown);
+    window.removeEventListener('popstate', this.handlePopState);
+  }
+
+  private handlePopState = (): void => {
+    this.checkUrlAndOpen();
+  };
+
+  private checkUrlAndOpen(): void {
+    if (window.location.pathname === '/entries/search') {
+      if (!this.isOpen) {
+        this.isOpen = true;
+        this.searchQuery = '';
+        this.results = [];
+        this.selectedIndex = 0;
+        document.body.style.overflow = 'hidden';
+        this.updateComplete.then(() => {
+          this.searchInput?.focus();
+        });
+      }
+    } else {
+      if (this.isOpen) {
+        this.isOpen = false;
+        this.searchQuery = '';
+        this.results = [];
+        document.body.style.overflow = '';
+      }
+    }
   }
 
   private handleGlobalKeydown = (e: KeyboardEvent): void => {
@@ -244,12 +275,22 @@ export class SearchModal extends LitElement {
     }
   };
 
+  private previousUrl: string = '';
+
   open(): void {
+    if (this.isOpen) return;
+
+    // Store current URL before opening
+    this.previousUrl = window.location.pathname + window.location.search;
+
     this.isOpen = true;
     this.searchQuery = '';
     this.results = [];
     this.selectedIndex = 0;
     document.body.style.overflow = 'hidden';
+
+    // Update URL to /entries/search
+    window.history.pushState({}, '', '/entries/search');
 
     // Focus input after render
     this.updateComplete.then(() => {
@@ -258,10 +299,19 @@ export class SearchModal extends LitElement {
   }
 
   close(): void {
+    if (!this.isOpen) return;
+
     this.isOpen = false;
     this.searchQuery = '';
     this.results = [];
     document.body.style.overflow = '';
+
+    // Restore previous URL
+    if (this.previousUrl && this.previousUrl !== '/entries/search') {
+      window.history.pushState({}, '', this.previousUrl);
+    } else {
+      window.history.pushState({}, '', '/entries');
+    }
   }
 
   private highlightMatch(text: string, query: string): string {
@@ -297,11 +347,11 @@ export class SearchModal extends LitElement {
           ${this.results.length > 0 ? html`
             <div class="search-modal-results">
               ${repeat(
-                this.results,
-                (entry) => entry.id,
-                (entry, index) => {
-                  const entity = this.store?.getEntityById(entry.entityId);
-                  return html`
+      this.results,
+      (entry) => entry.id,
+      (entry, index) => {
+        const entity = this.store?.getEntityById(entry.entityId);
+        return html`
                     <div
                       class="search-result-item ${index === this.selectedIndex ? 'selected' : ''}"
                       @click=${() => this.selectResult(entry)}
@@ -320,8 +370,8 @@ export class SearchModal extends LitElement {
                       </div>
                     </div>
                   `;
-                }
-              )}
+      }
+    )}
             </div>
           ` : this.searchQuery.trim() ? html`
             <div class="search-modal-empty">
