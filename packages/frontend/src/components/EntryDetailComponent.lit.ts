@@ -133,11 +133,12 @@ export class EntryDetailComponent extends LitElement {
           </entry-detail-header>
 
           <div class="entry-detail-title-container">
-            <input
+            <textarea
               class="entry-detail-title"
               .value=${this.detailController.editedTitle}
               @input=${this.handleTitleChange}
-              placeholder="Entry title">
+              placeholder="Entry title"
+              rows="1"></textarea>
           </div>
 
           ${when(
