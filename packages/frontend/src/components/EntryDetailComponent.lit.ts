@@ -132,11 +132,13 @@ export class EntryDetailComponent extends LitElement {
             @menu-action=${this.handleMenuAction}>
           </entry-detail-header>
 
-          <input
-            class="entry-detail-title"
-            .value=${this.detailController.editedTitle}
-            @input=${this.handleTitleChange}
-            placeholder="Entry title">
+          <div class="entry-detail-title-container">
+            <input
+              class="entry-detail-title"
+              .value=${this.detailController.editedTitle}
+              @input=${this.handleTitleChange}
+              placeholder="Entry title">
+          </div>
 
           ${when(
       entry.value !== undefined || (entity.properties && entity.properties.length > 0),
