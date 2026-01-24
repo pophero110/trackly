@@ -39,7 +39,12 @@
       "Bash(git revert:*)",
       "Bash(git stash:*)",
       "Bash(node build.js:*)",
-      "Bash(git push:*)"
+      "Bash(git push:*)",
+      "Bash(npm run check:frontend:*)",
+      "Bash(npm run:*)",
+      "Bash(npm search:*)",
+      "Bash(npm view:*)",
+      "WebSearch"
     ],
     "deny": [],
     "ask": []

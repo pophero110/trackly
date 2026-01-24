@@ -199,7 +199,8 @@ export class EntryListHeader extends LitElement {
           <!-- Search Button -->
           <button class="search-btn" @click=${this.handleSearchClick} title="Search">
             <i class="ph-duotone ph-magnifying-glass"></i>
-            <kbd>CMD+K</kbd>
+            <span class="btn-label">Search</span>
+            <kbd class="shortcut">⌘K</kbd>
           </button>
         </div>
 

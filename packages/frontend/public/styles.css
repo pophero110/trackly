@@ -160,7 +160,7 @@ entry-list-header {
   display: flex;
   align-items: center;
   gap: 6px;
-  padding: 6px 10px;
+  padding: 6px 0;
   border: none;
   background: transparent;
   color: var(--text-secondary);
@@ -179,9 +179,19 @@ entry-list-header {
 }
 
 .search-btn kbd {
+  background: var(--background, #f5f5f5);
+  border: 1px solid var(--border, #e0e0e0);
+  border-radius: 4px;
+  padding: 2px 6px;
   font-size: 0.75rem;
+  color: var(--text-secondary, #666);
   font-family: inherit;
-  color: var(--text-tertiary);
+}
+
+@media(max-width:480px) {
+  .search-btn kbd {
+    display: none;
+  }
 }
 
 .quick-entry-input {
