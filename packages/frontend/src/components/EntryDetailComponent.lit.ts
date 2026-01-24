@@ -67,8 +67,15 @@ export class EntryDetailComponent extends LitElement {
   };
 
   private handleTitleChange = (e: InputEvent): void => {
-    const input = e.target as HTMLInputElement;
-    this.detailController.updateTitle(input.value);
+    const input = e.target as HTMLTextAreaElement;
+    // Remove any newlines that might be pasted
+    this.detailController.updateTitle(input.value.replace(/\n/g, ''));
+  };
+
+  private handleTitleKeydown = (e: KeyboardEvent): void => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+    }
   };
 
   private handleNotesChange = (e: CustomEvent): void => {
@@ -132,14 +139,13 @@ export class EntryDetailComponent extends LitElement {
             @menu-action=${this.handleMenuAction}>
           </entry-detail-header>
 
-          <div class="entry-detail-title-container">
-            <textarea
-              class="entry-detail-title"
-              .value=${this.detailController.editedTitle}
-              @input=${this.handleTitleChange}
-              placeholder="Entry title"
-              rows="1"></textarea>
-          </div>
+          <textarea
+            class="entry-detail-title"
+            .value=${this.detailController.editedTitle}
+            @input=${this.handleTitleChange}
+            @keydown=${this.handleTitleKeydown}
+            placeholder="Entry title"
+            rows="1"></textarea>
 
           ${when(
       entry.value !== undefined || (entity.properties && entity.properties.length > 0),
