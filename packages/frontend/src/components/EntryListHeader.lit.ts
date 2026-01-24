@@ -128,6 +128,13 @@ export class EntryListHeader extends LitElement {
     this.openSelectionMenu = 'tag-filter';
   };
 
+  private handleSearchClick = () => {
+    const searchModal = document.querySelector('search-modal') as any;
+    if (searchModal?.open) {
+      searchModal.open();
+    }
+  };
+
   disconnectedCallback(): void {
     super.disconnectedCallback();
   }
@@ -188,6 +195,11 @@ export class EntryListHeader extends LitElement {
               </selection-menu>
             `
     )}
+
+          <!-- Search Button -->
+          <button class="search-btn" @click=${this.handleSearchClick} title="Search (Cmd+K)">
+            <i class="ph-duotone ph-magnifying-glass"></i>
+          </button>
         </div>
 
         <!-- Quick Entry Input -->

@@ -156,6 +156,28 @@ entry-list-header {
   flex-wrap: wrap;
 }
 
+.search-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px;
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+  transition: var(--transition);
+}
+
+.search-btn:hover {
+  color: var(--text-primary);
+  background: var(--background);
+}
+
+.search-btn i {
+  font-size: 1.25rem;
+}
+
 .quick-entry-input {
   font-size: 1rem;
   padding: 8px 12px;
