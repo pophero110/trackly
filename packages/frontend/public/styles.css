@@ -159,9 +159,9 @@ entry-list-header {
 .search-btn {
   display: flex;
   align-items: center;
-  justify-content: center;
-  padding: 8px;
-  border: none;
+  gap: 6px;
+  padding: 6px 10px;
+  border: 1px solid var(--border);
   background: transparent;
   color: var(--text-secondary);
   cursor: pointer;
@@ -175,7 +175,13 @@ entry-list-header {
 }
 
 .search-btn i {
-  font-size: 1.25rem;
+  font-size: 1rem;
+}
+
+.search-btn kbd {
+  font-size: 0.75rem;
+  font-family: inherit;
+  color: var(--text-tertiary);
 }
 
 .quick-entry-input {
