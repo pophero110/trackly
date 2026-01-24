@@ -1,4 +1,4 @@
-import { html, LitElement } from 'lit';
+import { html, css, LitElement } from 'lit';
 import { customElement, state, query } from 'lit/decorators.js';
 import { repeat } from 'lit/directives/repeat.js';
 import { unsafeHTML } from 'lit/directives/unsafe-html.js';
@@ -14,6 +14,137 @@ import { escapeHtml } from '../utils/helpers.js';
  */
 @customElement('search-modal')
 export class SearchModal extends LitElement {
+  static styles = css`
+    .search-modal-backdrop {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.5);
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      padding-top: 15vh;
+      z-index: 1000;
+    }
+
+    .search-modal-container {
+      background: var(--surface, #fff);
+      border-radius: 12px;
+      width: 100%;
+      max-width: 600px;
+      box-shadow: 0 16px 70px rgba(0, 0, 0, 0.2);
+      overflow: hidden;
+    }
+
+    .search-modal-input-wrapper {
+      display: flex;
+      align-items: center;
+      padding: 16px;
+      border-bottom: 1px solid var(--border, #e0e0e0);
+      gap: 12px;
+    }
+
+    .search-modal-icon {
+      font-size: 1.25rem;
+      color: var(--text-secondary, #666);
+    }
+
+    .search-input {
+      flex: 1;
+      border: none;
+      background: transparent;
+      font-size: 1.125rem;
+      color: var(--text-primary, #333);
+      outline: none;
+    }
+
+    .search-input::placeholder {
+      color: var(--text-tertiary, #999);
+    }
+
+    .search-modal-kbd {
+      background: var(--background, #f5f5f5);
+      border: 1px solid var(--border, #e0e0e0);
+      border-radius: 4px;
+      padding: 2px 6px;
+      font-size: 0.75rem;
+      color: var(--text-secondary, #666);
+      font-family: inherit;
+    }
+
+    .search-modal-results {
+      max-height: 400px;
+      overflow-y: auto;
+    }
+
+    .search-result-item {
+      padding: 12px 16px;
+      cursor: pointer;
+      border-bottom: 1px solid var(--border, #e0e0e0);
+    }
+
+    .search-result-item:last-child {
+      border-bottom: none;
+    }
+
+    .search-result-item:hover,
+    .search-result-item.selected {
+      background: var(--background, #f5f5f5);
+    }
+
+    .search-result-title {
+      font-weight: 500;
+      color: var(--text-primary, #333);
+      margin-bottom: 4px;
+    }
+
+    .search-result-title mark {
+      background: var(--accent-subtle, #e3f2fd);
+      color: var(--accent, #1976d2);
+      padding: 0 2px;
+      border-radius: 2px;
+    }
+
+    .search-result-meta {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.875rem;
+      color: var(--text-secondary, #666);
+    }
+
+    .search-result-entity {
+      background: var(--accent-subtle, #e3f2fd);
+      color: var(--accent, #1976d2);
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 0.75rem;
+    }
+
+    .search-result-preview {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      flex: 1;
+    }
+
+    .search-result-preview mark {
+      background: var(--accent-subtle, #e3f2fd);
+      color: var(--accent, #1976d2);
+      padding: 0 2px;
+      border-radius: 2px;
+    }
+
+    .search-modal-empty,
+    .search-modal-hint {
+      padding: 24px;
+      text-align: center;
+      color: var(--text-secondary, #666);
+    }
+  `;
+
   @state()
   private isOpen: boolean = false;
 
@@ -30,10 +161,6 @@ export class SearchModal extends LitElement {
   private searchInput?: HTMLInputElement;
 
   private store: Store | null = null;
-
-  createRenderRoot() {
-    return this;
-  }
 
   connectedCallback(): void {
     super.connectedCallback();
