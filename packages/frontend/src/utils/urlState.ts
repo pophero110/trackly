@@ -420,6 +420,32 @@ export class URLStateManager {
   }
 
   /**
+   * Check if search modal should be open
+   */
+  static isSearchOpen(): boolean {
+    const params = new URLSearchParams(window.location.search);
+    return params.get('search') === 'true';
+  }
+
+  /**
+   * Open search modal
+   */
+  static openSearch(): void {
+    const params = new URLSearchParams(window.location.search);
+    params.set('search', 'true');
+    URLStateManager.updateURL(params);
+  }
+
+  /**
+   * Close search modal
+   */
+  static closeSearch(): void {
+    const params = new URLSearchParams(window.location.search);
+    params.delete('search');
+    URLStateManager.updateURL(params);
+  }
+
+  /**
    * Update URL path and notify listeners
    */
   private static updatePath(path: string): void {

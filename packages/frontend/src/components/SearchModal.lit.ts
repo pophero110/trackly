@@ -161,10 +161,11 @@ export class SearchModal extends LitElement {
 
   private store: Store | null = null;
 
+  private unsubscribeUrl: (() => void) | null = null;
+
   connectedCallback(): void {
     super.connectedCallback();
     document.addEventListener('keydown', this.handleGlobalKeydown);
-    window.addEventListener('popstate', this.handlePopState);
 
     try {
       this.store = storeRegistry.getStore();
@@ -174,39 +175,41 @@ export class SearchModal extends LitElement {
       });
     }
 
+    // Subscribe to URL changes
+    this.unsubscribeUrl = URLStateManager.subscribe(() => {
+      this.syncWithUrl();
+    });
+
     // Check if we should open based on current URL
-    this.checkUrlAndOpen();
+    this.syncWithUrl();
   }
 
   disconnectedCallback(): void {
     super.disconnectedCallback();
     document.removeEventListener('keydown', this.handleGlobalKeydown);
-    window.removeEventListener('popstate', this.handlePopState);
+    if (this.unsubscribeUrl) {
+      this.unsubscribeUrl();
+      this.unsubscribeUrl = null;
+    }
   }
 
-  private handlePopState = (): void => {
-    this.checkUrlAndOpen();
-  };
+  private syncWithUrl(): void {
+    const shouldBeOpen = URLStateManager.isSearchOpen();
 
-  private checkUrlAndOpen(): void {
-    if (window.location.pathname === '/entries/search') {
-      if (!this.isOpen) {
-        this.isOpen = true;
-        this.searchQuery = '';
-        this.results = [];
-        this.selectedIndex = 0;
-        document.body.style.overflow = 'hidden';
-        this.updateComplete.then(() => {
-          this.searchInput?.focus();
-        });
-      }
-    } else {
-      if (this.isOpen) {
-        this.isOpen = false;
-        this.searchQuery = '';
-        this.results = [];
-        document.body.style.overflow = '';
-      }
+    if (shouldBeOpen && !this.isOpen) {
+      this.isOpen = true;
+      this.searchQuery = '';
+      this.results = [];
+      this.selectedIndex = 0;
+      document.body.style.overflow = 'hidden';
+      this.updateComplete.then(() => {
+        this.searchInput?.focus();
+      });
+    } else if (!shouldBeOpen && this.isOpen) {
+      this.isOpen = false;
+      this.searchQuery = '';
+      this.results = [];
+      document.body.style.overflow = '';
     }
   }
 
@@ -275,43 +278,14 @@ export class SearchModal extends LitElement {
     }
   };
 
-  private previousUrl: string = '';
-
   open(): void {
     if (this.isOpen) return;
-
-    // Store current URL before opening
-    this.previousUrl = window.location.pathname + window.location.search;
-
-    this.isOpen = true;
-    this.searchQuery = '';
-    this.results = [];
-    this.selectedIndex = 0;
-    document.body.style.overflow = 'hidden';
-
-    // Update URL to /entries/search
-    window.history.pushState({}, '', '/entries/search');
-
-    // Focus input after render
-    this.updateComplete.then(() => {
-      this.searchInput?.focus();
-    });
+    URLStateManager.openSearch();
   }
 
   close(): void {
     if (!this.isOpen) return;
-
-    this.isOpen = false;
-    this.searchQuery = '';
-    this.results = [];
-    document.body.style.overflow = '';
-
-    // Restore previous URL
-    if (this.previousUrl && this.previousUrl !== '/entries/search') {
-      window.history.pushState({}, '', this.previousUrl);
-    } else {
-      window.history.pushState({}, '', '/entries');
-    }
+    URLStateManager.closeSearch();
   }
 
   private highlightMatch(text: string, query: string): string {
