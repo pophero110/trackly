@@ -3,6 +3,7 @@ import { customElement } from 'lit/decorators.js';
 import { repeat } from 'lit/directives/repeat.js';
 import { StoreController } from '../controllers/StoreController.js';
 import { EntryListController } from '../controllers/EntryListController.js';
+import { URLStateManager } from '../utils/urlState.js';
 import './EntryListHeader.lit.js';
 import './EntryListItem.lit.js';
 
@@ -25,10 +26,27 @@ export class EntryListComponent extends LitElement {
     })
   });
   private listController = new EntryListController(this, this.storeController);
+  private unsubscribeUrl: (() => void) | null = null;
 
   // Disable Shadow DOM for compatibility with existing global styles
   createRenderRoot() {
     return this;
+  }
+
+  connectedCallback() {
+    super.connectedCallback();
+    // Subscribe to URL changes for tag filter updates
+    this.unsubscribeUrl = URLStateManager.subscribe(() => {
+      this.requestUpdate();
+    });
+  }
+
+  disconnectedCallback() {
+    super.disconnectedCallback();
+    if (this.unsubscribeUrl) {
+      this.unsubscribeUrl();
+      this.unsubscribeUrl = null;
+    }
   }
 
   render() {
