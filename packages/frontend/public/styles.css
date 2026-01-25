@@ -1453,7 +1453,10 @@ entry-detail {
   overflow: hidden;
   font-family: inherit;
   word-break: break-word;
+  /* The magic property */
   field-sizing: content;
+  /* Ensures it starts as exactly one line */
+  min-height: 1lh;
 }
 
 .entry-detail-title:focus-visible {
