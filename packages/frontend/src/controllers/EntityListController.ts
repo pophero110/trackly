@@ -29,7 +29,7 @@ export class EntityListController implements ReactiveController {
    * Get current sort configuration
    */
   getSortConfig(): { sortBy: string; sortOrder: 'asc' | 'desc'; sortValue: string } {
-    const sortBy = URLStateManager.getEntitySortBy() || 'entries';
+    const sortBy = URLStateManager.getEntitySortBy() || 'created';
     const sortOrder = URLStateManager.getEntitySortOrder() || 'desc';
     const sortValue = `${sortBy}-${sortOrder}`;
 
@@ -88,24 +88,6 @@ export class EntityListController implements ReactiveController {
         sorted.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
         return sorted;
     }
-  }
-
-  /**
-   * Get entry count for an entity
-   */
-  getEntityEntryCount(entityId: string): { active: number; archived: number; total: number } {
-    const store = this.storeController.store;
-    if (!store) return { active: 0, archived: 0, total: 0 };
-
-    const entries = store.getEntriesByEntityId(entityId, true);
-    const activeEntries = entries.filter(e => !e.isArchived);
-    const archivedEntries = entries.filter(e => e.isArchived);
-
-    return {
-      active: activeEntries.length,
-      archived: archivedEntries.length,
-      total: entries.length
-    };
   }
 
   /**

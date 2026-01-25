@@ -2,6 +2,7 @@ import { html, LitElement } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { map } from 'lit/directives/map.js';
 import { when } from 'lit/directives/when.js';
+import { live } from 'lit/directives/live.js';
 
 export interface SelectionOption {
   value: string;
@@ -179,7 +180,7 @@ export class SelectionMenuComponent extends LitElement {
                 type="radio"
                 name="${radioGroupName}"
                 value=""
-                ?checked=${!this.selectedValue}
+                .checked=${live(!this.selectedValue)}
                 @change=${this.handleClearSelection}>
               <span>${this.clearOptionLabel}</span>
             </label>
@@ -190,7 +191,7 @@ export class SelectionMenuComponent extends LitElement {
                 type="radio"
                 name="${radioGroupName}"
                 value="${opt.value}"
-                ?checked=${opt.value === this.selectedValue}
+                .checked=${live(opt.value === this.selectedValue)}
                 @change=${this.handleOptionChange}>
               <span>${opt.label}</span>
             </label>

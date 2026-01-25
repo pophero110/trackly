@@ -1,7 +1,5 @@
 import { html, LitElement } from 'lit';
 import { customElement, state, query } from 'lit/decorators.js';
-import { map } from 'lit/directives/map.js';
-import { when } from 'lit/directives/when.js';
 import { repeat } from 'lit/directives/repeat.js';
 import { StoreController } from '../controllers/StoreController.js';
 import { EntityListController } from '../controllers/EntityListController.js';
@@ -153,11 +151,7 @@ export class EntityListComponent extends LitElement {
   };
 
   private renderEntityCard(entity: Entity) {
-    const { active, archived, total } = this.listController.getEntityEntryCount(entity.id);
     const isSelected = this.listController.isEntitySelected(entity.id);
-
-    const activePercent = total > 0 ? (active / total) * 100 : 0;
-    const archivedPercent = total > 0 ? (archived / total) * 100 : 0;
 
     return html`
       <div class="entity-card ${isSelected ? 'selected' : ''}"
@@ -175,33 +169,6 @@ export class EntityListComponent extends LitElement {
                   data-entity-id="${entity.id}"
                   data-action="menu"
                   @click=${(e: MouseEvent) => this.handleMenuButtonClick(e, entity.id)}>⋮</button>
-          ${when(
-      entity.categories.length > 0,
-      () => html`
-              <div class="entity-categories">
-                ${map(entity.categories, cat => html`
-                  <span class="entity-category-chip">${cat}</span>
-                `)}
-              </div>
-            `
-    )}
-          ${when(
-      total > 0,
-      () => html`
-              <div class="entity-stats-bar">
-                <div class="stats-bar-container">
-                  <div class="stats-bar-fill stats-bar-active" style="width: ${activePercent}%"></div>
-                  <div class="stats-bar-fill stats-bar-archived" style="width: ${archivedPercent}%"></div>
-                </div>
-                <div class="stats-bar-labels">
-                  <span class="stats-label-active">${active} active</span>
-                  ${when(archived > 0, () => html`
-                    <span class="stats-label-archived">${archived} archived</span>
-                  `)}
-                </div>
-              </div>
-            `
-    )}
         </div>
       </div>
     `;
@@ -226,10 +193,7 @@ export class EntityListComponent extends LitElement {
       { value: 'created-desc', label: 'Newest First' },
       { value: 'created-asc', label: 'Oldest First' },
       { value: 'name-asc', label: 'Name (A-Z)' },
-      { value: 'name-desc', label: 'Name (Z-A)' },
-      { value: 'entries-desc', label: 'Most Entries' },
-      { value: 'entries-asc', label: 'Least Entries' },
-      { value: 'type-asc', label: 'Type' }
+      { value: 'name-desc', label: 'Name (Z-A)' }
     ];
 
     if (entities.length === 0) {

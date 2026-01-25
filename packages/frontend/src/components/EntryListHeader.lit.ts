@@ -83,10 +83,6 @@ export class EntryListHeader extends LitElement {
     return this;
   }
 
-  private handleClearHashtag = () => {
-    URLStateManager.setHashtagFilter(null);
-  };
-
   private handleSortChange = (e: CustomEvent) => {
     const { value } = e.detail;
     const [sortBy, sortOrder] = value.split('-') as [string, 'asc' | 'desc'];
@@ -158,19 +154,13 @@ export class EntryListHeader extends LitElement {
     }
   };
 
-  disconnectedCallback(): void {
-    super.disconnectedCallback();
-  }
-
   render() {
     // Sort options
     const sortOptions: SelectionOption[] = [
       { value: 'timestamp-desc', label: 'Newest First' },
       { value: 'timestamp-asc', label: 'Oldest First' },
       { value: 'createdAt-desc', label: 'Recently Created' },
-      { value: 'createdAt-asc', label: 'Oldest Created' },
-      { value: 'entityName-asc', label: 'Entity (A-Z)' },
-      { value: 'entityName-desc', label: 'Entity (Z-A)' }
+      { value: 'createdAt-asc', label: 'Oldest Created' }
     ];
 
     // Extract all available tags
@@ -233,7 +223,7 @@ export class EntryListHeader extends LitElement {
             type="text"
             class="quick-entry-input"
             id="quick-entry-input"
-            placeholder="Add a quick note..."
+            placeholder="Add a quick entry"
             autocomplete="off"
             @keypress=${this.handleQuickEntrySubmit}
           />
