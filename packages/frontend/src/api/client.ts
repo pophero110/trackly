@@ -1,4 +1,4 @@
-import type { IEntity, IEntry, AuthResponse } from '@trackly/shared';
+import type { IEntity, IEntry, AuthResponse, PaginatedEntriesResponse } from '@trackly/shared';
 
 /**
  * API configuration
@@ -125,15 +125,21 @@ export class APIClient {
     sortBy?: string;
     sortOrder?: 'asc' | 'desc';
     includeArchived?: boolean;
-  }): Promise<IEntry[]> {
+    limit?: number;
+    after?: string;
+    afterId?: string;
+  }): Promise<PaginatedEntriesResponse> {
     const queryParams = new URLSearchParams();
     if (params?.entityId) queryParams.set('entityId', params.entityId);
     if (params?.sortBy) queryParams.set('sortBy', params.sortBy);
     if (params?.sortOrder) queryParams.set('sortOrder', params.sortOrder);
     if (params?.includeArchived) queryParams.set('includeArchived', 'true');
+    if (params?.limit) queryParams.set('limit', params.limit.toString());
+    if (params?.after) queryParams.set('after', params.after);
+    if (params?.afterId) queryParams.set('afterId', params.afterId);
 
     const query = queryParams.toString() ? `?${queryParams.toString()}` : '';
-    return this.request<IEntry[]>(`/api/entries${query}`);
+    return this.request<PaginatedEntriesResponse>(`/api/entries${query}`);
   }
 
   static async getEntry(id: string): Promise<IEntry> {

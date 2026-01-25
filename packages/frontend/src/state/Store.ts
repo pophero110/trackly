@@ -3,6 +3,7 @@ import { Entry } from '../models/Entry.js';
 import { IEntity, IEntry, StoreListener, Unsubscribe } from '../types/index.js';
 import { APIClient } from '../api/client.js';
 import { URLStateManager } from '../utils/urlState.js';
+import type { PaginationCursor } from '@trackly/shared';
 
 /**
  * Central state management store - API-backed
@@ -14,6 +15,11 @@ export class Store {
   private selectedEntityId: string | null;
   private isLoaded: boolean;
   private entryVersion: number;
+  private paginationState: {
+    hasMore: boolean;
+    nextCursor: PaginationCursor | null;
+    isLoadingMore: boolean;
+  };
 
   constructor() {
     this.entities = [];
@@ -22,6 +28,11 @@ export class Store {
     this.selectedEntityId = null;
     this.isLoaded = false;
     this.entryVersion = 0;
+    this.paginationState = {
+      hasMore: true,
+      nextCursor: null,
+      isLoadingMore: false
+    };
 
     // Load data with initial sort from URL if present
     const sortBy = URLStateManager.getSortBy() || undefined;
@@ -32,13 +43,18 @@ export class Store {
   // Load data from API
   private async loadData(sortBy?: string, sortOrder?: 'asc' | 'desc'): Promise<void> {
     try {
-      const [entitiesData, entriesData] = await Promise.all([
+      const [entitiesData, entriesResponse] = await Promise.all([
         APIClient.getEntities(),
-        APIClient.getEntries({ sortBy, sortOrder, includeArchived: true })
+        APIClient.getEntries({ sortBy, sortOrder, includeArchived: true, limit: 30 })
       ]);
 
       this.entities = entitiesData.map(data => new Entity(data));
-      this.entries = entriesData.map(data => new Entry(data));
+      this.entries = entriesResponse.entries.map(data => new Entry(data));
+      this.paginationState = {
+        hasMore: entriesResponse.pagination.hasMore,
+        nextCursor: entriesResponse.pagination.nextCursor,
+        isLoadingMore: false
+      };
       this.isLoaded = true;
       this.notifyEntryChange();
     } catch (error) {
@@ -345,15 +361,91 @@ export class Store {
     });
   }
 
-  // Reload entries with sort parameters
+  // Reload entries with sort parameters (resets pagination)
   async reloadEntries(sortBy?: string, sortOrder?: 'asc' | 'desc'): Promise<void> {
+    await this.resetPagination();
+  }
+
+  // Reset pagination and fetch fresh data
+  async resetPagination(): Promise<void> {
+    this.paginationState = {
+      hasMore: true,
+      nextCursor: null,
+      isLoadingMore: false
+    };
+
     try {
-      const entriesData = await APIClient.getEntries({ sortBy, sortOrder, includeArchived: true });
-      this.entries = entriesData.map(data => new Entry(data));
+      const sortBy = URLStateManager.getSortBy() || undefined;
+      const sortOrder = URLStateManager.getSortOrder() || undefined;
+
+      const response = await APIClient.getEntries({
+        sortBy,
+        sortOrder,
+        includeArchived: true,
+        limit: 30
+      });
+
+      this.entries = response.entries.map(data => new Entry(data));
+      this.paginationState = {
+        hasMore: response.pagination.hasMore,
+        nextCursor: response.pagination.nextCursor,
+        isLoadingMore: false
+      };
       this.notifyEntryChange();
     } catch (error) {
-      console.error('Error reloading entries:', error);
+      console.error('Error resetting pagination:', error);
     }
+  }
+
+  // Load more entries (append to existing)
+  async loadMoreEntries(): Promise<void> {
+    if (!this.paginationState.hasMore || this.paginationState.isLoadingMore) {
+      return;
+    }
+    if (!this.paginationState.nextCursor) {
+      return;
+    }
+
+    this.paginationState.isLoadingMore = true;
+    this.notify();
+
+    try {
+      const sortBy = URLStateManager.getSortBy() || 'timestamp';
+      const sortOrder = URLStateManager.getSortOrder() || 'desc';
+
+      const response = await APIClient.getEntries({
+        sortBy,
+        sortOrder,
+        includeArchived: true,
+        limit: 30,
+        after: this.paginationState.nextCursor.after,
+        afterId: this.paginationState.nextCursor.afterId
+      });
+
+      // Append new entries
+      const newEntries = response.entries.map(data => new Entry(data));
+      this.entries = [...this.entries, ...newEntries];
+
+      this.paginationState = {
+        hasMore: response.pagination.hasMore,
+        nextCursor: response.pagination.nextCursor,
+        isLoadingMore: false
+      };
+
+      this.notifyEntryChange();
+    } catch (error) {
+      console.error('Error loading more entries:', error);
+      this.paginationState.isLoadingMore = false;
+      this.notify();
+    }
+  }
+
+  // Get pagination state for UI
+  getPaginationState(): { hasMore: boolean; isLoadingMore: boolean } {
+    return {
+      hasMore: this.paginationState.hasMore,
+      isLoadingMore: this.paginationState.isLoadingMore
+    };
   }
 
   // Check if data is loaded

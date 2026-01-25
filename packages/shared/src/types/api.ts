@@ -79,6 +79,30 @@ export interface UpdateEntryRequest {
 export type EntryListResponse = IEntry[];
 export type EntryResponse = IEntry;
 
+// Pagination
+export interface PaginationCursor {
+  after: string;      // Sort field value (ISO timestamp or string)
+  afterId: string;    // Entry ID for tie-breaking
+}
+
+export interface PaginatedEntriesResponse {
+  entries: IEntry[];
+  pagination: {
+    hasMore: boolean;
+    nextCursor: PaginationCursor | null;
+  };
+}
+
+export interface GetEntriesParams {
+  entityId?: string;
+  sortBy?: string;
+  sortOrder?: 'asc' | 'desc';
+  includeArchived?: boolean;
+  limit?: number;
+  after?: string;
+  afterId?: string;
+}
+
 // Sync API
 export interface SyncRequest {
   entities: IEntity[];

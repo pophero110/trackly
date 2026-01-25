@@ -13,8 +13,6 @@ export class EntryListController implements ReactiveController {
   private host: ReactiveControllerHost;
   private storeController: StoreController;
 
-  public maxEntries: number = 30;
-
   constructor(host: ReactiveControllerHost, storeController: StoreController) {
     this.host = host;
     this.storeController = storeController;
@@ -54,7 +52,7 @@ export class EntryListController implements ReactiveController {
       });
     }
 
-    return entries.slice(0, this.maxEntries);
+    return entries;
   }
 
   /**
@@ -123,5 +121,24 @@ export class EntryListController implements ReactiveController {
     });
 
     return groups;
+  }
+
+  /**
+   * Get pagination state from store
+   */
+  getPaginationState(): { hasMore: boolean; isLoadingMore: boolean } {
+    const store = this.storeController.store;
+    if (!store) return { hasMore: false, isLoadingMore: false };
+    return store.getPaginationState();
+  }
+
+  /**
+   * Load more entries
+   */
+  loadMoreEntries(): void {
+    const store = this.storeController.store;
+    if (store) {
+      store.loadMoreEntries();
+    }
   }
 }

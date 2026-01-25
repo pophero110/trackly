@@ -11,43 +11,89 @@ router.use(requireAuth);
 
 /**
  * GET /api/entries
- * List all entries for the authenticated user
- * Optional query params:
+ * List entries for the authenticated user with cursor-based pagination
+ * Query params:
  *   - entityId (filter by entity)
  *   - includeArchived (include archived entries)
  *   - sortBy (field to sort by: timestamp, createdAt, entityName)
  *   - sortOrder (asc or desc, default: desc)
+ *   - limit (page size, default: 30)
+ *   - after (cursor: sort field value, ISO timestamp or string)
+ *   - afterId (cursor: entry ID for tie-breaking)
  */
 router.get('/', async (req: AuthRequest, res, next): Promise<void> => {
   try {
     const userId = req.user!.id;
-    const { entityId, includeArchived, sortBy, sortOrder } = req.query;
+    const { entityId, includeArchived, sortBy, sortOrder, limit, after, afterId } = req.query;
 
-    const where: any = { userId };
+    // Base where clause
+    const baseWhere: any = { userId };
     if (entityId) {
-      where.entityId = entityId as string;
+      baseWhere.entityId = entityId as string;
     }
-    // By default, exclude archived entries unless explicitly requested
     if (includeArchived !== 'true') {
-      where.isArchived = false;
+      baseWhere.isArchived = false;
     }
 
     // Determine sort field and order
     const validSortFields = ['timestamp', 'createdAt', 'entityName', 'updatedAt'];
     const sortField = validSortFields.includes(sortBy as string) ? (sortBy as string) : 'timestamp';
-    const order = (sortOrder === 'asc' || sortOrder === 'desc') ? sortOrder : 'desc';
+    const order: 'asc' | 'desc' = (sortOrder === 'asc' || sortOrder === 'desc') ? sortOrder : 'desc';
 
+    // Parse limit (default 30, max 100)
+    const pageSize = Math.min(Math.max(parseInt(limit as string) || 30, 1), 100);
+
+    // Build where clause with cursor if provided
+    let where: any = baseWhere;
+    if (after && afterId) {
+      const cursorComparison = order === 'desc' ? 'lt' : 'gt';
+      const isDateField = ['timestamp', 'createdAt', 'updatedAt'].includes(sortField);
+      const cursorValue = isDateField ? new Date(after as string) : after as string;
+
+      where = {
+        AND: [
+          baseWhere,
+          {
+            OR: [
+              // Entries with sort field value beyond cursor
+              { [sortField]: { [cursorComparison]: cursorValue } },
+              // Entries with same sort field value but ID beyond cursor
+              {
+                [sortField]: cursorValue,
+                id: { [cursorComparison]: afterId as string }
+              }
+            ]
+          }
+        ]
+      };
+    }
+
+    // Fetch one extra to determine hasMore
     const entries = await prisma.entry.findMany({
       where,
-      // Use createdAt as tiebreaker for consistent ordering when primary field matches
       orderBy: [
         { [sortField]: order },
-        { createdAt: order }
-      ]
+        { id: order }  // Use ID for tie-breaking (consistent with cursor)
+      ],
+      take: pageSize + 1
     });
 
+    // Determine if there are more entries
+    const hasMore = entries.length > pageSize;
+    const resultEntries = hasMore ? entries.slice(0, pageSize) : entries;
+
+    // Build next cursor from last entry
+    const lastEntry = resultEntries[resultEntries.length - 1];
+    const isDateField = ['timestamp', 'createdAt', 'updatedAt'].includes(sortField);
+    const nextCursor = hasMore && lastEntry ? {
+      after: isDateField
+        ? (lastEntry[sortField as keyof typeof lastEntry] as Date).toISOString()
+        : lastEntry[sortField as keyof typeof lastEntry] as string,
+      afterId: lastEntry.id
+    } : null;
+
     // Convert to IEntry format
-    const formattedEntries: IEntry[] = entries.map(entry => ({
+    const formattedEntries: IEntry[] = resultEntries.map(entry => ({
       id: entry.id,
       entityId: entry.entityId,
       entityName: entry.entityName,
@@ -70,7 +116,13 @@ router.get('/', async (req: AuthRequest, res, next): Promise<void> => {
       updatedAt: entry.updatedAt.toISOString()
     }));
 
-    res.json(formattedEntries);
+    res.json({
+      entries: formattedEntries,
+      pagination: {
+        hasMore,
+        nextCursor
+      }
+    });
   } catch (error) {
     next(error);
   }
