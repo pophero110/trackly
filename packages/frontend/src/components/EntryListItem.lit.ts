@@ -101,6 +101,7 @@ export class EntryListItem extends LitElement {
   };
 
   private handleContextMenuAction = (e: CustomEvent) => {
+    e.stopPropagation();
     const { action } = e.detail;
 
     if (action === 'archive') {
@@ -133,6 +134,7 @@ export class EntryListItem extends LitElement {
   };
 
   private handleEntityMenuAction = (e: CustomEvent) => {
+    e.stopPropagation();
     const { data } = e.detail;
     if (data) {
       this.handleEntityChange(data as Entity);

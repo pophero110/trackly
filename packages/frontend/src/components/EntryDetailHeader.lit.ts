@@ -104,6 +104,7 @@ export class EntryDetailHeader extends LitElement {
   };
 
   private handleActionsMenuAction = (e: CustomEvent): void => {
+    e.stopPropagation(); // Prevent original event from bubbling further
     const { action } = e.detail;
 
     // Dispatch custom event for parent to handle
@@ -115,6 +116,7 @@ export class EntryDetailHeader extends LitElement {
   };
 
   private handleEntityMenuAction = (e: CustomEvent): void => {
+    e.stopPropagation(); // Prevent original event from bubbling further
     const { data } = e.detail;
     const entity = data as Entity;
 
