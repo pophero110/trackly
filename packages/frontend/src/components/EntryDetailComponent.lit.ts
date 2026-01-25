@@ -1,10 +1,8 @@
 import { html, LitElement } from 'lit';
 import { customElement } from 'lit/decorators.js';
-import { when } from 'lit/directives/when.js';
 import { StoreController } from '../controllers/StoreController.js';
 import { EntryDetailController } from '../controllers/EntryDetailController.js';
 import './EntryDetailHeader.lit.js';
-import './EntryDetailProperties.lit.js';
 import './EntryDetailEditor.lit.js';
 import './EntryDetailFooter.lit.js';
 
@@ -17,7 +15,6 @@ import './EntryDetailFooter.lit.js';
  *
  * Sub-components:
  * - EntryDetailHeader: Entity chip, timestamp, menu
- * - EntryDetailProperties: Entry value and custom properties
  * - EntryDetailEditor: Milkdown markdown editor
  * - EntryDetailFooter: Hashtags
  */
@@ -147,15 +144,6 @@ export class EntryDetailComponent extends LitElement {
             placeholder="Entry title"
             rows="1"></textarea>
 
-          ${when(
-      entry.value !== undefined || (entity.properties && entity.properties.length > 0),
-      () => html`
-              <entry-detail-properties
-                .entry=${entry}
-                .entity=${entity}>
-              </entry-detail-properties>
-            `
-    )}
           <entry-detail-editor
             .notes=${this.detailController.editedNotes}
             @notes-change=${this.handleNotesChange}>

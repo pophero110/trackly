@@ -3,7 +3,6 @@ import { customElement, property } from 'lit/decorators.js';
 import { map } from 'lit/directives/map.js';
 import { when } from 'lit/directives/when.js';
 import { Entry } from '../models/Entry.js';
-import { escapeHtml } from '../utils/helpers.js';
 import { URLStateManager } from '../utils/urlState.js';
 
 /**
@@ -46,7 +45,7 @@ export class EntryDetailFooter extends LitElement {
                 href="#"
                 class="entry-detail-hashtag"
                 @click=${(e: Event) => this.handleHashtagClick(e, tag)}>
-                #${escapeHtml(tag)}
+                #${tag}
               </a>
             `)}
           </div>

@@ -135,7 +135,7 @@ export class EntryDetailProperties extends LitElement {
               return html`<span .innerHTML=${formattedPropValue}></span>`;
             }
             return html`
-              <span class="property-label">${escapeHtml(capitalizeFirstLetter(prop.name))}:</span>
+              <span class="property-label">${capitalizeFirstLetter(prop.name)}:</span>
               <span .innerHTML=${formattedPropValue}></span>
             `;
           })

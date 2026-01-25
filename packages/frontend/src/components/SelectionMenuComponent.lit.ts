@@ -2,7 +2,6 @@ import { html, LitElement } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { map } from 'lit/directives/map.js';
 import { when } from 'lit/directives/when.js';
-import { escapeHtml } from '../utils/helpers.js';
 
 export interface SelectionOption {
   value: string;
@@ -193,7 +192,7 @@ export class SelectionMenuComponent extends LitElement {
                 value="${opt.value}"
                 ?checked=${opt.value === this.selectedValue}
                 @change=${this.handleOptionChange}>
-              <span>${escapeHtml(opt.label)}</span>
+              <span>${opt.label}</span>
             </label>
           `)}
         </div>

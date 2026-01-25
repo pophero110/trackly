@@ -6,7 +6,6 @@ import { repeat } from 'lit/directives/repeat.js';
 import { StoreController } from '../controllers/StoreController.js';
 import { EntityListController } from '../controllers/EntityListController.js';
 import { Entity } from '../models/Entity.js';
-import { escapeHtml } from '../utils/helpers.js';
 import { URLStateManager } from '../utils/urlState.js';
 import './DropdownMenuComponent.lit.js';
 import type { DropdownMenuComponent, DropdownMenuItem } from './DropdownMenuComponent.lit.js';
@@ -169,7 +168,7 @@ export class EntityListComponent extends LitElement {
            @contextmenu=${(e: MouseEvent) => this.handleCardContextMenu(e, entity.id)}>
         <div class="entity-card-header">
           <div class="entity-name-type">
-            <h3>${escapeHtml(entity.name)}</h3>
+            <h3>${entity.name}</h3>
             <span class="entity-type ${entity.type.toLowerCase()}">${entity.type}</span>
           </div>
           <button class="entity-menu-btn"
@@ -181,7 +180,7 @@ export class EntityListComponent extends LitElement {
       () => html`
               <div class="entity-categories">
                 ${map(entity.categories, cat => html`
-                  <span class="entity-category-chip">${escapeHtml(cat)}</span>
+                  <span class="entity-category-chip">${cat}</span>
                 `)}
               </div>
             `

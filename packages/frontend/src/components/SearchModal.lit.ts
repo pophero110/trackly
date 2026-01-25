@@ -335,7 +335,7 @@ export class SearchModal extends LitElement {
                         ${unsafeHTML(this.highlightMatch(entry.title || 'Untitled', this.searchQuery))}
                       </div>
                       <div class="search-result-meta">
-                        <span class="search-result-entity">${escapeHtml(entity?.name || '')}</span>
+                        <span class="search-result-entity">${entity?.name || ''}</span>
                         ${entry.notes ? html`
                           <span class="search-result-preview">
                             ${unsafeHTML(this.highlightMatch(entry.notes.substring(0, 100), this.searchQuery))}
@@ -349,7 +349,7 @@ export class SearchModal extends LitElement {
             </div>
           ` : this.searchQuery.trim() ? html`
             <div class="search-modal-empty">
-              No entries found for "${escapeHtml(this.searchQuery)}"
+              No entries found for "${this.searchQuery}"
             </div>
           ` : html`
             <div class="search-modal-hint">

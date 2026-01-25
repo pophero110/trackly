@@ -4,7 +4,7 @@ import { map } from 'lit/directives/map.js';
 import { when } from 'lit/directives/when.js';
 import { Entry } from '../models/Entry.js';
 import { Entity } from '../models/Entity.js';
-import { escapeHtml, extractHashtags } from '../utils/helpers.js';
+import { extractHashtags } from '../utils/helpers.js';
 import { URLStateManager } from '../utils/urlState.js';
 import { getEntityColor } from '../utils/entryHelpers.js';
 import { Store } from '../state/Store.js';
@@ -253,10 +253,10 @@ export class EntryListItem extends LitElement {
                   <span
                     class="entry-chip entry-chip-entity"
                     data-entity-id="${entity!.id}"
-                    data-entity-name="${escapeHtml(entity!.name)}"
+                    data-entity-name="${entity!.name}"
                     style="--entity-color: ${entityColor}; cursor: pointer;"
                     @click=${this.handleEntityChipClick}>
-                    ${escapeHtml(entity!.name)}
+                    ${entity!.name}
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-left: 4px; vertical-align: middle;">
                       <polyline points="6 9 12 15 18 9"></polyline>
                     </svg>
@@ -274,7 +274,7 @@ export class EntryListItem extends LitElement {
           </div>
 
           ${when(this.entry.title, () => html`
-            <div class="timeline-entry-title">${escapeHtml(this.entry.title)}</div>
+            <div class="timeline-entry-title">${this.entry.title}</div>
           `)}
 
           ${when(tags.length > 0, () => html`
@@ -282,9 +282,9 @@ export class EntryListItem extends LitElement {
               ${map(tags, tag => html`
                 <span
                   class="timeline-entry-tag"
-                  data-tag="${escapeHtml(tag)}"
+                  data-tag="${tag}"
                   @click=${(e: MouseEvent) => this.handleTagClick(e, tag)}>
-                  #${escapeHtml(tag)}
+                  #${tag}
                 </span>
               `)}
             </div>
