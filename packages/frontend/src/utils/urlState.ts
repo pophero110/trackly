@@ -409,6 +409,13 @@ export class URLStateManager {
   }
 
   /**
+   * Go back to previous page in history
+   */
+  static goBack(): void {
+    window.history.back();
+  }
+
+  /**
    * Close panel
    */
   static closePanel(): void {
