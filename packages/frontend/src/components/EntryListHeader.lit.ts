@@ -1,4 +1,4 @@
-import { html, LitElement } from 'lit';
+import { html, css, LitElement } from 'lit';
 import { customElement, property, state, query } from 'lit/decorators.js';
 import { when } from 'lit/directives/when.js';
 import { extractHashtags } from '../utils/helpers.js';
@@ -11,6 +11,10 @@ import { toast } from '../utils/toast.js';
 import './SelectionMenuComponent.lit.js';
 import type { SelectionMenuComponent } from './SelectionMenuComponent.lit.js';
 import type { SelectionOption } from './SelectionMenuComponent.lit.js';
+// Phosphor icons web components
+import '@phosphor-icons/webcomponents/PhSortAscending';
+import '@phosphor-icons/webcomponents/PhTag';
+import '@phosphor-icons/webcomponents/PhMagnifyingGlass';
 
 type OpenSelectionMenu = 'sort' | 'tag-filter' | null;
 
@@ -20,6 +24,111 @@ type OpenSelectionMenu = 'sort' | 'tag-filter' | null;
  */
 @customElement('entry-list-header')
 export class EntryListHeader extends LitElement {
+  static styles = css`
+    :host {
+      display: block;
+    }
+
+    .header-filters-row {
+      display: flex;
+      align-items: center;
+      gap: 24px;
+      flex-wrap: wrap;
+    }
+
+    .search-btn {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 0;
+      border: none;
+      background: transparent;
+      color: var(--text-secondary);
+      cursor: pointer;
+      border-radius: var(--radius-sm);
+      transition: var(--transition);
+    }
+
+    .search-btn:hover {
+      color: var(--text-primary);
+      background: var(--background);
+    }
+
+    .search-btn ph-magnifying-glass {
+      font-size: 1rem;
+    }
+
+    .search-btn kbd {
+      background: var(--background, #f5f5f5);
+      border: 1px solid var(--border, #e0e0e0);
+      border-radius: 4px;
+      padding: 2px 6px;
+      font-size: 0.75rem;
+      color: var(--text-secondary, #666);
+      font-family: inherit;
+    }
+
+    .quick-entry-container {
+      position: relative;
+    }
+
+    .quick-entry-input {
+      font-size: 1rem;
+      padding: 8px 12px;
+      padding-right: 36px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      background-color: var(--bg);
+      color: var(--text-primary);
+      outline: none !important;
+    }
+
+    .quick-entry-input:focus {
+      border-color: var(--primary);
+    }
+
+    .quick-entry-input::placeholder {
+      color: var(--text-secondary);
+      opacity: 0.6;
+    }
+
+    .quick-entry-shortcut {
+      position: absolute;
+      right: 8px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: var(--background, #f5f5f5);
+      border: 1px solid var(--border, #e0e0e0);
+      border-radius: 4px;
+      padding: 2px 6px;
+      font-size: 0.75rem;
+      color: var(--text-tertiary, #999);
+      font-family: inherit;
+      pointer-events: none;
+    }
+
+    .quick-entry-input:focus + .quick-entry-shortcut {
+      display: none;
+    }
+
+    @media (max-width: 480px) {
+      .search-btn kbd {
+        display: none;
+      }
+
+      .quick-entry-container {
+        width: 100%;
+      }
+
+      .quick-entry-shortcut {
+        display: none;
+      }
+
+      .quick-entry-input {
+        width: 100%;
+      }
+    }
+  `;
   @property({ type: Object })
   selectedEntity: Entity | null = null;
 
@@ -77,11 +186,6 @@ export class EntryListHeader extends LitElement {
       this.quickEntryInput?.focus();
     }
   };
-
-  // Disable Shadow DOM for compatibility with existing global styles
-  createRenderRoot() {
-    return this;
-  }
 
   private handleSortChange = (e: CustomEvent) => {
     const { value } = e.detail;
@@ -186,10 +290,10 @@ export class EntryListHeader extends LitElement {
             data-menu-type="sort"
             .options=${sortOptions}
             .selectedValue=${this.currentSortValue}
-            .icon=${'ph-duotone ph-sort-ascending'}
             .title=${'Sort by'}
             @selection-change=${this.handleSortChange}
             @menu-open=${this.handleSortMenuOpen}>
+            <ph-sort-ascending slot="icon" weight="duotone"></ph-sort-ascending>
           </selection-menu>
 
           <!-- Tag Filter Dropdown -->
@@ -200,18 +304,18 @@ export class EntryListHeader extends LitElement {
                 data-menu-type="tag-filter"
                 .options=${tagOptions}
                 .selectedValue=${currentTag}
-                .icon=${'ph-duotone ph-tag'}
                 .title=${'Filter by tags'}
                 .clearOptionLabel=${'All Tags'}
                 @selection-change=${this.handleTagFilterChange}
                 @menu-open=${this.handleTagFilterMenuOpen}>
+                <ph-tag slot="icon" weight="duotone"></ph-tag>
               </selection-menu>
             `
     )}
 
           <!-- Search Button -->
           <button class="search-btn" @click=${this.handleSearchClick} title="Search">
-            <i class="ph-duotone ph-magnifying-glass"></i>
+            <ph-magnifying-glass weight="duotone"></ph-magnifying-glass>
             <span class="btn-label">Search</span>
             <kbd class="shortcut">⌘K</kbd>
           </button>

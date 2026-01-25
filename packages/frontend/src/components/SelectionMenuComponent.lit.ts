@@ -1,4 +1,4 @@
-import { html, LitElement } from 'lit';
+import { html, css, LitElement } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { map } from 'lit/directives/map.js';
 import { when } from 'lit/directives/when.js';
@@ -16,14 +16,109 @@ export interface SelectionOption {
  */
 @customElement('selection-menu')
 export class SelectionMenuComponent extends LitElement {
+  static styles = css`
+    :host {
+      display: inline-block;
+      position: relative;
+    }
+
+    .btn-tag-filter {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 0px;
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: var(--text-secondary);
+      background: transparent;
+      border: none;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      transition: var(--transition);
+      outline: none;
+      max-width: 300px;
+    }
+
+    .btn-tag-filter:hover {
+      border-color: var(--text-muted);
+      color: var(--text-primary);
+      background: var(--background);
+    }
+
+    .btn-tag-filter ::slotted(*) {
+      flex-shrink: 0;
+      font-size: 1rem;
+    }
+
+    slot[name="icon"] {
+      display: flex;
+      align-items: center;
+    }
+
+    .tag-filter-menu {
+      position: absolute;
+      top: 100%;
+      margin-top: 4px;
+      background: var(--background);
+      border: none;
+      border-radius: var(--radius-sm);
+      box-shadow: var(--shadow-lg);
+      min-width: 200px;
+      max-height: 300px;
+      overflow-y: auto;
+      z-index: 1000;
+      padding: 0;
+      left: 0px;
+      right: auto;
+      max-width: calc(-48px + 100vw);
+    }
+
+    .tag-filter-option {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px var(--base-size-16, 16px);
+      cursor: pointer;
+      transition: var(--transition);
+      user-select: none;
+    }
+
+    .tag-filter-option:hover {
+      background: var(--background);
+    }
+
+    .tag-filter-option input[type="checkbox"],
+    .tag-filter-option input[type="radio"] {
+      margin: 0;
+      cursor: pointer;
+    }
+
+    .tag-filter-option span {
+      font-size: 0.875rem;
+      color: var(--text-primary);
+      font-weight: 500;
+    }
+
+    @media (max-width: 480px) {
+      .btn-tag-filter {
+        min-height: 40px;
+        padding: 7px 0px;
+        font-size: 0.8125rem;
+        max-width: 140px;
+        position: relative;
+      }
+
+      .btn-tag-filter i {
+        margin: 0;
+      }
+    }
+  `;
+
   @property({ type: Array })
   options: SelectionOption[] = [];
 
   @property({ type: String })
   selectedValue: string = '';
-
-  @property({ type: String })
-  icon: string = ''; // Phosphor icon class (e.g., "ph-duotone ph-sort-ascending")
 
   @property({ type: String })
   title: string = '';
@@ -36,11 +131,6 @@ export class SelectionMenuComponent extends LitElement {
 
   private documentClickHandler?: (e: Event) => void;
   private documentScrollHandler?: (e: Event) => void;
-
-  // Disable Shadow DOM for compatibility with existing global styles
-  createRenderRoot() {
-    return this;
-  }
 
   connectedCallback(): void {
     super.connectedCallback();
@@ -56,10 +146,9 @@ export class SelectionMenuComponent extends LitElement {
 
   private attachDocumentListener(): void {
     this.documentClickHandler = (e: Event) => {
-      const target = e.target as HTMLElement;
-      // Close menu if clicked outside
-      if (!target.closest('.tag-filter-container') ||
-        !this.contains(target.closest('.tag-filter-container') as Node)) {
+      // Close menu if clicked outside this component
+      const path = e.composedPath();
+      if (!path.includes(this)) {
         this.menuOpen = false;
       }
     };
@@ -77,17 +166,9 @@ export class SelectionMenuComponent extends LitElement {
     this.documentScrollHandler = (e: Event) => {
       if (!this.menuOpen) return;
 
-      const target = e.target as Node;
-      const menuContainer = this.querySelector('.tag-filter-menu') as HTMLElement;
-
-      // Don't close if scrolling inside the menu itself
-      if (target === menuContainer || menuContainer?.contains(target)) {
-        return;
-      }
-
-      // Don't close if scrolling inside the tag-filter-container
-      const container = this.querySelector('.tag-filter-container') as HTMLElement;
-      if (target === container || container?.contains(target)) {
+      // Check if scrolling inside this component
+      const path = e.composedPath();
+      if (path.includes(this)) {
         return;
       }
 
@@ -123,7 +204,7 @@ export class SelectionMenuComponent extends LitElement {
    */
   public close(): void {
     this.menuOpen = false;
-    const menuContainer = this.querySelector('.tag-filter-menu') as HTMLElement;
+    const menuContainer = this.shadowRoot?.querySelector('.tag-filter-menu') as HTMLElement;
     if (menuContainer) {
       menuContainer.scrollTop = 0;
     }
@@ -143,7 +224,7 @@ export class SelectionMenuComponent extends LitElement {
     this.menuOpen = false;
   };
 
-  private handleClearSelection = (e: Event) => {
+  private handleClearSelection = () => {
     // Dispatch custom event with empty value
     this.dispatchEvent(new CustomEvent('selection-change', {
       detail: { value: '' },
@@ -163,40 +244,38 @@ export class SelectionMenuComponent extends LitElement {
     const radioGroupName = `selection-${this.title.replace(/\s+/g, '-').toLowerCase()}`;
 
     return html`
-      <div class="tag-filter-container">
-        <button
-          class="btn-tag-filter"
-          title="${this.title}"
-          @click=${this.handleToggleMenu}>
-          ${when(this.icon, () => html`<i class="${this.icon}"></i>`)}
-          <span>${currentLabel}</span>
-        </button>
-        <div
-          class="tag-filter-menu"
-          style="display: ${this.menuOpen ? 'block' : 'none'};">
-          ${when(this.clearOptionLabel, () => html`
-            <label class="tag-filter-option">
-              <input
-                type="radio"
-                name="${radioGroupName}"
-                value=""
-                .checked=${live(!this.selectedValue)}
-                @change=${this.handleClearSelection}>
-              <span>${this.clearOptionLabel}</span>
-            </label>
-          `)}
-          ${map(this.options, opt => html`
-            <label class="tag-filter-option">
-              <input
-                type="radio"
-                name="${radioGroupName}"
-                value="${opt.value}"
-                .checked=${live(opt.value === this.selectedValue)}
-                @change=${this.handleOptionChange}>
-              <span>${opt.label}</span>
-            </label>
-          `)}
-        </div>
+      <button
+        class="btn-tag-filter"
+        title="${this.title}"
+        @click=${this.handleToggleMenu}>
+        <slot name="icon"></slot>
+        <span>${currentLabel}</span>
+      </button>
+      <div
+        class="tag-filter-menu"
+        style="display: ${this.menuOpen ? 'block' : 'none'};">
+        ${when(this.clearOptionLabel, () => html`
+          <label class="tag-filter-option">
+            <input
+              type="radio"
+              name="${radioGroupName}"
+              value=""
+              .checked=${live(!this.selectedValue)}
+              @change=${this.handleClearSelection}>
+            <span>${this.clearOptionLabel}</span>
+          </label>
+        `)}
+        ${map(this.options, opt => html`
+          <label class="tag-filter-option">
+            <input
+              type="radio"
+              name="${radioGroupName}"
+              value="${opt.value}"
+              .checked=${live(opt.value === this.selectedValue)}
+              @change=${this.handleOptionChange}>
+            <span>${opt.label}</span>
+          </label>
+        `)}
       </div>
     `;
   }

@@ -1,4 +1,4 @@
-import { html, LitElement } from 'lit';
+import { html, LitElement, css } from 'lit';
 import { customElement, property, state, query } from 'lit/decorators.js';
 import { map } from 'lit/directives/map.js';
 import { when } from 'lit/directives/when.js';
@@ -21,6 +21,169 @@ type OpenDropdown = 'context-menu' | 'entity-menu' | null;
  */
 @customElement('entry-list-item')
 export class EntryListItem extends LitElement {
+  static styles = css`
+    :host {
+      display: block;
+    }
+
+    .timeline-entry-card {
+      background: transparent;
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius-lg);
+      padding: var(--base-size-16);
+      box-shadow: var(--shadow-ambient);
+      transition: all 0.2s ease;
+      cursor: pointer;
+      overflow-wrap: break-word;
+      word-break: break-word;
+    }
+
+    .timeline-entry-card:hover {
+      border-color: var(--primary);
+    }
+
+    .timeline-entry-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 16px;
+      margin-bottom: 12px;
+    }
+
+    .timeline-entry-primary {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex: 1;
+      min-width: 0;
+    }
+
+    .timeline-entry-title {
+      margin: 0;
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      line-height: 1.4;
+      margin: 0.5em 0 0.25em 0;
+      overflow-wrap: break-word;
+      word-break: break-word;
+    }
+
+    .timeline-entry-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 12px;
+    }
+
+    .timeline-entry-tag {
+      display: inline-flex;
+      align-items: center;
+      padding: 2px 8px;
+      background: var(--background);
+      border-radius: 12px;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all 0.2s;
+      opacity: 0.7;
+    }
+
+    .timeline-entry-tag:hover {
+      background: var(--primary);
+      color: white;
+      transform: translateY(-1px);
+      opacity: 1;
+    }
+
+    .entry-chip {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 12px;
+      font-size: 0.75rem;
+      font-weight: 500;
+      line-height: 1.4;
+    }
+
+    .entry-chip-entity {
+      --entity-color: #3b82f6;
+      background: color-mix(in srgb, var(--entity-color) 12%, transparent);
+      color: var(--entity-color);
+      border: 1px solid color-mix(in srgb, var(--entity-color) 30%, transparent);
+      cursor: pointer;
+      transition: all 0.2s;
+      font-weight: 600;
+    }
+
+    .entry-chip-entity:hover {
+      background: color-mix(in srgb, var(--entity-color) 20%, transparent);
+      border-color: color-mix(in srgb, var(--entity-color) 50%, transparent);
+      transform: translateY(-1px);
+      box-shadow: 0 2px 4px color-mix(in srgb, var(--entity-color) 15%, transparent);
+    }
+
+    .entry-chip-entity-container {
+      display: inline-block;
+      position: relative;
+    }
+
+    .entry-chip-entity svg {
+      margin-left: 4px;
+      vertical-align: middle;
+    }
+
+    .entry-menu-btn {
+      background: none;
+      border: none;
+      border-radius: 4px;
+      color: var(--text-muted);
+      font-size: 1.25rem;
+      cursor: pointer;
+      padding: 2px 6px;
+      line-height: 1;
+      transition: all 0.2s;
+      opacity: 1;
+    }
+
+    .entry-menu-btn:hover {
+      color: var(--text-primary);
+      background: var(--background);
+    }
+
+    /* Responsive styles */
+    @media (max-width: 768px) {
+      .timeline-entry-header {
+        gap: 8px;
+      }
+
+      .timeline-entry-primary {
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .timeline-entry-card:hover {
+        transform: none;
+      }
+
+      .timeline-entry-primary {
+        width: 100%;
+        gap: 6px;
+      }
+
+      .timeline-entry-tags {
+        gap: 4px;
+        margin-top: 8px;
+      }
+
+      .entry-chip {
+        font-size: 0.75rem;
+        padding: 3px 8px;
+      }
+    }
+  `;
+
   @property({ type: Object })
   entry!: Entry;
 
@@ -68,11 +231,6 @@ export class EntryListItem extends LitElement {
     } catch (e) {
       console.warn('EntryListItem: Store not yet initialized');
     }
-  }
-
-  // Disable Shadow DOM for compatibility with existing global styles
-  createRenderRoot() {
-    return this;
   }
 
   private handleCardClick = (e: MouseEvent) => {
@@ -251,15 +409,15 @@ export class EntryListItem extends LitElement {
           <div class="timeline-entry-header">
             <div class="timeline-entry-primary">
               ${when(entity, () => html`
-                <div class="entry-chip-entity-container" style="position: relative;" data-entry-id="${this.entry.id}">
+                <div class="entry-chip-entity-container" data-entry-id="${this.entry.id}">
                   <span
                     class="entry-chip entry-chip-entity"
                     data-entity-id="${entity!.id}"
                     data-entity-name="${entity!.name}"
-                    style="--entity-color: ${entityColor}; cursor: pointer;"
+                    style="--entity-color: ${entityColor}"
                     @click=${this.handleEntityChipClick}>
                     ${entity!.name}
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-left: 4px; vertical-align: middle;">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                       <polyline points="6 9 12 15 18 9"></polyline>
                     </svg>
                   </span>

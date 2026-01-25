@@ -84,6 +84,9 @@ importers:
       '@milkdown/theme-nord':
         specifier: ^7.18.0
         version: 7.18.0
+      '@phosphor-icons/webcomponents':
+        specifier: ^2.1.5
+        version: 2.1.5
       '@trackly/shared':
         specifier: workspace:*
         version: link:../shared
@@ -542,6 +545,12 @@ packages:
       nanoid: 5.1.6
     transitivePeerDependencies:
       - supports-color
+    dev: false
+
+  /@phosphor-icons/webcomponents@2.1.5:
+    resolution: {integrity: sha512-JcvQkZxvcX2jK+QCclm8+e8HXqtdFW9xV4/kk2aL9Y3dJA2oQVt+pzbv1orkumz3rfx4K9mn9fDoMr1He1yr7Q==}
+    dependencies:
+      lit: 3.3.2
     dev: false
 
   /@popperjs/core@2.11.8:

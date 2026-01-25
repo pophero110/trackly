@@ -8,6 +8,8 @@ import { URLStateManager } from '../utils/urlState.js';
 import './DropdownMenuComponent.lit.js';
 import type { DropdownMenuComponent, DropdownMenuItem } from './DropdownMenuComponent.lit.js';
 import './SelectionMenuComponent.lit.js';
+// Phosphor icons web components
+import '@phosphor-icons/webcomponents/PhSortAscending';
 
 /**
  * EntityList Lit Component for displaying entities in a grid layout
@@ -213,9 +215,9 @@ export class EntityListComponent extends LitElement {
           <selection-menu
             .options=${sortOptions}
             .selectedValue=${sortValue}
-            .icon=${'ph-duotone ph-sort-ascending'}
             .title=${'Sort by'}
             @selection-change=${this.handleSortChange}>
+            <ph-sort-ascending slot="icon" weight="duotone"></ph-sort-ascending>
           </selection-menu>
           <button class="btn-primary" @click=${this.handleCreateClick}>
             <i class="ph ph-plus"></i>

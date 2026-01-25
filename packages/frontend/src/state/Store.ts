@@ -320,8 +320,13 @@ export class Store {
   }
 
   setSelectedEntityId(entityId: string | null): void {
+    const changed = this.selectedEntityId !== entityId;
     this.selectedEntityId = entityId;
     this.notify();
+    // Reload entries with entity filter when selection changes
+    if (changed) {
+      this.resetPagination();
+    }
   }
 
   // Sort entries locally and notify (public API for sort changes without API call)
@@ -379,6 +384,7 @@ export class Store {
       const sortOrder = URLStateManager.getSortOrder() || undefined;
 
       const response = await APIClient.getEntries({
+        entityId: this.selectedEntityId || undefined,
         sortBy,
         sortOrder,
         includeArchived: true,
@@ -414,6 +420,7 @@ export class Store {
       const sortOrder = URLStateManager.getSortOrder() || 'desc';
 
       const response = await APIClient.getEntries({
+        entityId: this.selectedEntityId || undefined,
         sortBy,
         sortOrder,
         includeArchived: true,
