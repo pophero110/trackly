@@ -154,7 +154,7 @@ export class EntryDetailHeader extends LitElement {
                 style="--entity-color: ${entityColor}; cursor: pointer;"
                 @click=${this.handleEntityChipClick}>
                 ${escapeHtml(this.entity.name)}
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-left: 4px;">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-left: 4px; vertical-align: middle;">
                   <polyline points="6 9 12 15 18 9"></polyline>
                 </svg>
               </span>

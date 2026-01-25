@@ -196,11 +196,9 @@ entry-list-header {
 
 .quick-entry-container {
   position: relative;
-  flex: 1;
 }
 
 .quick-entry-input {
-  width: 100%;
   font-size: 1rem;
   padding: 8px 12px;
   padding-right: 36px;
@@ -226,11 +224,15 @@ entry-list-header {
   pointer-events: none;
 }
 
-.quick-entry-input:focus + .quick-entry-shortcut {
+.quick-entry-input:focus+.quick-entry-shortcut {
   display: none;
 }
 
 @media (max-width: 480px) {
+  .quick-entry-container {
+    width: 100%;
+  }
+
   .quick-entry-shortcut {
     display: none;
   }
