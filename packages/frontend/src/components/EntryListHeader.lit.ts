@@ -44,16 +44,39 @@ export class EntryListHeader extends LitElement {
   @query('selection-menu[data-menu-type="tag-filter"]')
   private tagFilterMenu?: SelectionMenuComponent;
 
+  @query('.quick-entry-input')
+  private quickEntryInput?: HTMLInputElement;
+
   private store!: Store;
 
   connectedCallback(): void {
     super.connectedCallback();
+    document.addEventListener('keydown', this.handleGlobalKeydown);
     try {
       this.store = storeRegistry.getStore();
     } catch (e) {
       console.warn('EntryListHeader: Store not yet initialized');
     }
   }
+
+  disconnectedCallback(): void {
+    super.disconnectedCallback();
+    document.removeEventListener('keydown', this.handleGlobalKeydown);
+  }
+
+  private handleGlobalKeydown = (e: KeyboardEvent): void => {
+    // Don't trigger if user is typing in an input/textarea
+    const target = e.target as HTMLElement;
+    if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable) {
+      return;
+    }
+
+    // "c" to focus quick entry input
+    if (e.key === 'c' && !e.metaKey && !e.ctrlKey && !e.altKey) {
+      e.preventDefault();
+      this.quickEntryInput?.focus();
+    }
+  };
 
   // Disable Shadow DOM for compatibility with existing global styles
   createRenderRoot() {
@@ -205,14 +228,17 @@ export class EntryListHeader extends LitElement {
         </div>
 
         <!-- Quick Entry Input -->
-        <input
-          type="text"
-          class="quick-entry-input"
-          id="quick-entry-input"
-          placeholder="Add a quick note..."
-          autocomplete="off"
-          @keypress=${this.handleQuickEntrySubmit}
-        />
+        <div class="quick-entry-container">
+          <input
+            type="text"
+            class="quick-entry-input"
+            id="quick-entry-input"
+            placeholder="Add a quick note..."
+            autocomplete="off"
+            @keypress=${this.handleQuickEntrySubmit}
+          />
+          <kbd class="quick-entry-shortcut">C</kbd>
+        </div>
     `;
   }
 }

@@ -194,14 +194,46 @@ entry-list-header {
   }
 }
 
+.quick-entry-container {
+  position: relative;
+  flex: 1;
+}
+
 .quick-entry-input {
+  width: 100%;
   font-size: 1rem;
   padding: 8px 12px;
+  padding-right: 36px;
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   background-color: var(--bg);
   color: var(--text-primary);
   outline: none !important;
+}
+
+.quick-entry-shortcut {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: var(--background, #f5f5f5);
+  border: 1px solid var(--border, #e0e0e0);
+  border-radius: 4px;
+  padding: 2px 6px;
+  font-size: 0.75rem;
+  color: var(--text-tertiary, #999);
+  font-family: inherit;
+  pointer-events: none;
+}
+
+.quick-entry-input:focus + .quick-entry-shortcut {
+  display: none;
+}
+
+@media (max-width: 480px) {
+  .quick-entry-shortcut {
+    display: none;
+  }
 }
 
 .quick-entry-input:focus {
