@@ -1,4 +1,4 @@
-import { html, LitElement } from 'lit';
+import { html, LitElement, css } from 'lit';
 import { customElement } from 'lit/decorators.js';
 import { StoreController } from '../controllers/StoreController.js';
 import { EntryDetailController } from '../controllers/EntryDetailController.js';
@@ -20,14 +20,78 @@ import './EntryDetailFooter.lit.js';
  */
 @customElement('entry-detail')
 export class EntryDetailComponent extends LitElement {
+  static styles = css`
+    :host {
+      display: flex;
+      height: 100%;
+      padding: var(--base-size-24);
+      flex-direction: column;
+      gap: var(--base-size-16);
+    }
+
+    .entry-detail-title {
+      display: block;
+      border: none;
+      width: 100%;
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      line-height: 1.3;
+      background: none;
+      resize: none;
+      overflow: hidden;
+      font-family: inherit;
+      word-break: break-word;
+      field-sizing: content;
+      min-height: 1lh;
+    }
+
+    .entry-detail-title:focus-visible {
+      border: none;
+      outline: none;
+    }
+
+    entry-detail-editor {
+      display: flex;
+      flex: 1;
+    }
+
+    .loading-state,
+    .empty-state {
+      text-align: center;
+      padding: 40px 20px;
+      color: var(--text-muted);
+      font-size: 0.875rem;
+      background: transparent;
+    }
+
+    .loading-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: var(--base-size-16);
+    }
+
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border: 3px solid var(--border);
+      border-top-color: var(--primary);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+  `;
+
   // Controllers handle all logic
   private storeController = new StoreController(this);
   private detailController = new EntryDetailController(this, this.storeController);
-
-  // Disable Shadow DOM for compatibility with existing global styles
-  createRenderRoot() {
-    return this;
-  }
 
   connectedCallback(): void {
     super.connectedCallback();

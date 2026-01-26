@@ -206,22 +206,23 @@ export class EntryListHeader extends LitElement {
     if (e.key !== 'Enter') return;
 
     const input = e.target as HTMLInputElement;
-    const notes = input.value.trim();
-    if (!notes) return;
+    const title = input.value.trim();
+    if (!title) return;
 
     if (!this.store) {
       console.error('Store not available');
       return;
     }
 
-    const entity = this.store.getEntities().filter(e => e.name === "Inbox")[0];
+    // Use selected entity if on entity entries page, otherwise fall back to Inbox
+    const entity = this.selectedEntity ?? this.store.getEntities().find(e => e.name === "Inbox");
     if (!entity) return;
 
     try {
       const entry = new Entry({
         entityId: entity.id,
         entityName: entity.name,
-        title: notes,
+        title: title,
         timestamp: new Date().toISOString(),
         notes: ''
       });

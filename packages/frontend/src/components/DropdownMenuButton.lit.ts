@@ -1,4 +1,4 @@
-import { html, LitElement } from 'lit';
+import { html, LitElement, css } from 'lit';
 import { customElement, property, query } from 'lit/decorators.js';
 import './DropdownMenuComponent.lit.js';
 import type { DropdownMenuComponent, DropdownMenuItem } from './DropdownMenuComponent.lit.js';
@@ -9,6 +9,31 @@ import type { DropdownMenuComponent, DropdownMenuItem } from './DropdownMenuComp
  */
 @customElement('dropdown-menu-button')
 export class DropdownMenuButton extends LitElement {
+  static styles = css`
+    :host {
+      display: inline-block;
+      position: relative;
+    }
+
+    .menu-btn {
+      background: none;
+      border: none;
+      border-radius: 4px;
+      color: var(--text-muted);
+      font-size: 1.25rem;
+      cursor: pointer;
+      padding: 2px 6px;
+      line-height: 1;
+      transition: all 0.2s;
+      opacity: 1;
+    }
+
+    .menu-btn:hover {
+      color: var(--text-primary);
+      background: var(--background);
+    }
+  `;
+
   @property({ type: Array })
   items: DropdownMenuItem[] = [];
 
@@ -16,18 +41,10 @@ export class DropdownMenuButton extends LitElement {
   icon: string = '⋮';
 
   @property({ type: String })
-  buttonClass: string = 'entry-menu-btn';
-
-  @property({ type: String })
   menuId: string = '';
 
   @query('dropdown-menu')
   private dropdownMenu?: DropdownMenuComponent;
-
-  // Disable Shadow DOM for compatibility with existing global styles
-  createRenderRoot() {
-    return this;
-  }
 
   private handleButtonClick = (e: MouseEvent): void => {
     e.stopPropagation();
@@ -64,7 +81,7 @@ export class DropdownMenuButton extends LitElement {
   render() {
     return html`
       <button
-        class="${this.buttonClass}"
+        class="menu-btn"
         @click=${this.handleButtonClick}>
         ${this.icon}
       </button>

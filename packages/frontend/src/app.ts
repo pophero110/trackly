@@ -11,7 +11,7 @@ import { EntityEditFormComponent } from './components/EntityEditFormComponent.js
 import './components/EntityListComponent.lit.js'; // Lit version (self-registering)
 import './components/EntryListComponent.lit.js'; // Lit version (self-registering)
 import './components/EntryDetailComponent.lit.js'; // Lit version (self-registering)
-import './components/AuthComponent.js'; // Register custom element
+import './components/AuthComponent.lit.js'; // Lit version (self-registering)
 import { APIClient } from './api/client.js';
 
 /**
