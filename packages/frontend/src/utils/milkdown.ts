@@ -1,9 +1,16 @@
 import { Editor, rootCtx, defaultValueCtx, editorViewCtx } from '@milkdown/core';
 import { commonmark } from '@milkdown/preset-commonmark';
 import { nord } from '@milkdown/theme-nord';
+import { gfm } from '@milkdown/preset-gfm';
+import { emoji } from '@milkdown/plugin-emoji';
+import { indent } from '@milkdown/plugin-indent';
 import { listener, listenerCtx } from '@milkdown/plugin-listener';
+import { slashFactory } from '@milkdown/plugin-slash';
 import { clipboard } from '@milkdown/plugin-clipboard';
 import { history } from '@milkdown/plugin-history';
+import { createSlashMenu } from './slashPluginView';
+
+const slash = slashFactory('my-slash')
 
 /**
  * Initialize Milkdown editor
@@ -17,6 +24,9 @@ export async function createMilkdownEditor(
     .config((ctx) => {
       ctx.set(rootCtx, container);
       ctx.set(defaultValueCtx, initialValue);
+      // ctx.set(slash.key, {
+      //   view: createSlashMenu
+      // })
 
       if (onChange) {
         ctx.get(listenerCtx).markdownUpdated((ctx, markdown) => {
@@ -26,6 +36,10 @@ export async function createMilkdownEditor(
     })
     .use(nord)
     .use(commonmark)
+    .use(gfm)
+    .use(emoji)
+    .use(indent)
+    // .use(slash)
     .use(clipboard)
     .use(listener)
     .use(history)

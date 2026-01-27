@@ -19,7 +19,7 @@ export class EntryListComponent extends LitElement {
     :host {
       display: flex;
       flex-direction: column;
-      gap: var(--base-size-24);
+      gap: var(--base-size-24, 24px);
       align-items: center;
       justify-content: center;
       width: 100%;
@@ -27,7 +27,7 @@ export class EntryListComponent extends LitElement {
 
     entry-list-header {
       display: flex;
-      margin-top: var(--base-size-16);
+      margin-top: var(--base-size-16, 16px);
       justify-content: space-between;
       align-items: center;
       max-width: 75ch;
@@ -62,7 +62,7 @@ export class EntryListComponent extends LitElement {
     .timeline-entries {
       display: flex;
       flex-direction: column;
-      gap: var(--base-size-16);
+      gap: var(--base-size-16, 16px);
     }
 
     /* Loading and empty states */
@@ -80,7 +80,7 @@ export class EntryListComponent extends LitElement {
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      gap: var(--base-size-16);
+      gap: var(--base-size-16, 16px);
     }
 
     .spinner {
@@ -117,17 +117,17 @@ export class EntryListComponent extends LitElement {
     .loading-more {
       display: flex;
       align-items: center;
-      gap: var(--base-size-8);
+      gap: var(--base-size-8, 8px);
       color: var(--text-muted);
       font-size: 0.875rem;
-      padding: var(--base-size-16);
+      padding: var(--base-size-16, 16px);
     }
 
     .end-of-list {
       text-align: center;
       color: var(--text-muted);
       font-size: 0.875rem;
-      padding: var(--base-size-24) var(--base-size-16);
+      padding: var(--base-size-24, 24px) var(--base-size-16, 16px);
     }
 
     /* Responsive styles */

@@ -51,7 +51,7 @@ export class AuthComponent extends LitElement {
     .auth-tabs {
       display: flex;
       gap: 4px;
-      margin-bottom: var(--base-size-24);
+      margin-bottom: var(--base-size-24, 24px);
       background: var(--background);
       border-radius: var(--radius-sm);
       padding: 4px;
@@ -83,7 +83,7 @@ export class AuthComponent extends LitElement {
     .auth-form {
       display: flex;
       flex-direction: column;
-      gap: var(--base-size-16);
+      gap: var(--base-size-16, 16px);
     }
 
     .form-group {
@@ -99,7 +99,7 @@ export class AuthComponent extends LitElement {
     }
 
     .form-group input {
-      padding: 12px var(--base-size-16);
+      padding: 12px var(--base-size-16, 16px);
       border: 1px solid var(--border);
       border-radius: var(--radius-sm);
       font-size: 16px;
@@ -170,7 +170,7 @@ export class AuthComponent extends LitElement {
     /* Mobile responsiveness */
     @media (max-width: 480px) {
       .auth-card {
-        padding: var(--base-size-24);
+        padding: var(--base-size-24, 24px);
       }
 
       .auth-title {

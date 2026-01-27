@@ -42,6 +42,7 @@
   --transition-fast: all 0.2s ease;
 
   /* Spacing */
+  --base-size-8: 8px;
   --base-size-16: 16px;
   --base-size-24: 24px;
 }

@@ -17,11 +17,6 @@ export class EntryDetailFooter extends LitElement {
   @property({ type: Array })
   hashtags: string[] = [];
 
-  // Disable Shadow DOM for compatibility with existing global styles
-  createRenderRoot() {
-    return this;
-  }
-
   private handleHashtagClick = (e: Event, tag: string): void => {
     e.preventDefault();
     URLStateManager.setHashtagFilter(tag);

@@ -24,9 +24,9 @@ export class EntryDetailComponent extends LitElement {
     :host {
       display: flex;
       height: 100%;
-      padding: var(--base-size-24);
+      padding: var(--base-size-24, 24px);
       flex-direction: column;
-      gap: var(--base-size-16);
+      gap: var(--base-size-16, 16px);
     }
 
     .entry-detail-title {
