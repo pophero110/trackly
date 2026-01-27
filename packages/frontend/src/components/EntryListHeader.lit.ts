@@ -180,8 +180,8 @@ export class EntryListHeader extends LitElement {
       return;
     }
 
-    // "c" to focus quick entry input
-    if (e.key === 'c' && !e.metaKey && !e.ctrlKey && !e.altKey) {
+    // "Cmd+E" (Mac) or "Ctrl+E" (Windows/Linux) to focus quick entry input
+    if (e.key.toLowerCase() === 'e' && (e.metaKey || e.ctrlKey)) {
       e.preventDefault();
       this.quickEntryInput?.focus();
     }
@@ -332,7 +332,7 @@ export class EntryListHeader extends LitElement {
             autocomplete="off"
             @keypress=${this.handleQuickEntrySubmit}
           />
-          <kbd class="quick-entry-shortcut">C</kbd>
+          <kbd class="quick-entry-shortcut">⌘E</kbd>
         </div>
     `;
   }

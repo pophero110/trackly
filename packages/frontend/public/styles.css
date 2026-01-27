@@ -114,8 +114,7 @@ body {
 }
 
 /* Web Components - ensure they take full height */
-entity-list,
-entry-list {
+entity-list {
   display: flex;
   flex-direction: column;
   gap: var(--base-size-24);
@@ -132,15 +131,6 @@ entry-list {
 }
 
 .entity-section-header-actions {
-  display: flex;
-  margin-top: var(--base-size-16);
-  justify-content: space-between;
-  align-items: center;
-  max-width: 75ch;
-  width: 100%;
-}
-
-entry-list-header {
   display: flex;
   margin-top: var(--base-size-16);
   justify-content: space-between;
@@ -447,74 +437,13 @@ entry-list-header {
 
 /* Responsive Entries Grid */
 @media (max-width: 768px) {
-
-  entity-list,
-  entry-list {
+  entity-list {
     padding: 0 16px;
     gap: var(--base-size-16);
   }
 }
 
-/* Timeline - Paper & Ink "Logbook" Style */
-.timeline-date-group {
-  display: grid;
-  grid-template-columns: minmax(0, 75ch);
-  justify-content: center;
-  align-content: start;
-  margin-bottom: 48px;
-}
-
-.timeline-date-header {
-  position: sticky;
-  top: 0;
-  z-index: 10;
-  background: var(--background);
-  padding: 0 0 12px 0;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: var(--text-secondary);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-}
-
-.timeline-entries {
-  display: flex;
-  flex-direction: column;
-  gap: var(--base-size-16);
-}
-
-/* Responsive Timeline */
-@media (max-width: 768px) {
-  .timeline-date-header {
-    font-size: 0.8125rem;
-    padding: 0 0 10px 0;
-  }
-
-  .timeline-date-group {
-    margin-bottom: 32px;
-  }
-}
-
-/* Extra small mobile (≤480px) - Simplified timeline */
 @media (max-width: 480px) {
-  .timeline-entries {
-    padding-left: 0;
-    padding-right: 0;
-  }
-
-  .timeline-date-header {
-    font-size: 0.75rem;
-    padding: 0 0 8px 0;
-    text-align: left;
-  }
-
-  .timeline-date-group {
-    margin-bottom: 24px;
-  }
-
   .btn-primary {
     min-height: 44px;
     padding: 10px 16px;
@@ -774,12 +703,6 @@ input[type="datetime-local"] {
 
   form {
     padding: var(--base-size-16);
-  }
-
-  entry-list-header {
-    gap: 6px;
-    flex-direction: column-reverse;
-    align-items: start;
   }
 }
 

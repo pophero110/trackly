@@ -1,4 +1,4 @@
-import { html, LitElement } from 'lit';
+import { html, LitElement, css } from 'lit';
 import { customElement } from 'lit/decorators.js';
 import { repeat } from 'lit/directives/repeat.js';
 import { StoreController } from '../controllers/StoreController.js';
@@ -15,6 +15,156 @@ import './EntryListItem.lit.js';
  */
 @customElement('entry-list')
 export class EntryListComponent extends LitElement {
+  static styles = css`
+    :host {
+      display: flex;
+      flex-direction: column;
+      gap: var(--base-size-24);
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+    }
+
+    entry-list-header {
+      display: flex;
+      margin-top: var(--base-size-16);
+      justify-content: space-between;
+      align-items: center;
+      max-width: 75ch;
+      width: 100%;
+    }
+
+    /* Timeline styles */
+    .timeline-date-group {
+      display: grid;
+      grid-template-columns: minmax(0, 75ch);
+      justify-content: center;
+      align-content: start;
+      margin-bottom: 48px;
+    }
+
+    .timeline-date-header {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      background: var(--background);
+      padding: 0 0 12px 0;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+    }
+
+    .timeline-entries {
+      display: flex;
+      flex-direction: column;
+      gap: var(--base-size-16);
+    }
+
+    /* Loading and empty states */
+    .loading-state,
+    .empty-state {
+      text-align: center;
+      padding: 40px 20px;
+      color: var(--text-muted);
+      font-size: 0.875rem;
+      background: transparent;
+    }
+
+    .loading-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: var(--base-size-16);
+    }
+
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border: 3px solid var(--border);
+      border-top-color: var(--primary);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    .spinner-small {
+      width: 16px;
+      height: 16px;
+      border: 2px solid var(--border);
+      border-top-color: var(--primary);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    .load-more-sentinel {
+      min-height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .loading-more {
+      display: flex;
+      align-items: center;
+      gap: var(--base-size-8);
+      color: var(--text-muted);
+      font-size: 0.875rem;
+      padding: var(--base-size-16);
+    }
+
+    .end-of-list {
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 0.875rem;
+      padding: var(--base-size-24) var(--base-size-16);
+    }
+
+    /* Responsive styles */
+    @media (max-width: 768px) {
+      .timeline-date-header {
+        font-size: 0.8125rem;
+        padding: 0 0 10px 0;
+      }
+
+      .timeline-date-group {
+        margin-bottom: 32px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      :host {
+        padding: 0 16px;
+        gap: var(--base-size-16);
+      }
+
+      .timeline-entries {
+        padding-left: 0;
+        padding-right: 0;
+      }
+
+      .timeline-date-header {
+        font-size: 0.75rem;
+        padding: 0 0 8px 0;
+        text-align: left;
+      }
+
+      .timeline-date-group {
+        margin-bottom: 24px;
+      }
+    }
+  `;
+
   // Controllers handle all logic
   // Use selector to avoid re-renders when unrelated store data changes
   private storeController = new StoreController(this, {
@@ -29,11 +179,6 @@ export class EntryListComponent extends LitElement {
   private unsubscribeUrl: (() => void) | null = null;
   private observer: IntersectionObserver | null = null;
   private sentinelRef: Element | null = null;
-
-  // Disable Shadow DOM for compatibility with existing global styles
-  createRenderRoot() {
-    return this;
-  }
 
   connectedCallback() {
     super.connectedCallback();
@@ -77,7 +222,7 @@ export class EntryListComponent extends LitElement {
 
   updated() {
     // Re-observe sentinel after render
-    const sentinel = this.querySelector('.load-more-sentinel');
+    const sentinel = this.renderRoot.querySelector('.load-more-sentinel');
     if (sentinel && this.observer) {
       if (this.sentinelRef !== sentinel) {
         if (this.sentinelRef) {

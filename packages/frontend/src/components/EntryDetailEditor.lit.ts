@@ -33,6 +33,55 @@ export class EntryDetailEditor extends LitElement {
       color: var(--text-primary);
     }
 
+    .milkdown table {
+      border-spacing: 0;
+      border-collapse: collapse;
+      margin-top: 0;
+      margin-bottom: 16px;
+      width: max-content; /* Allows horizontal scrolling if too wide */
+      max-width: 100%;
+      display: block;
+      overflow: auto;
+    }
+
+    .milkdown table th {
+      font-weight: 600;
+      background-color: var(--background-alt, #f6f8fa);
+    }
+
+    .milkdown table th,
+    .milkdown table td {
+      padding: 6px 13px;
+      border: 1px solid var(--border, #d0d7de);
+    }
+
+    .milkdown table tr {
+      background-color: var(--background, #ffffff);
+      border-top: 1px solid var(--border, #d0d7de);
+    }
+
+    /* Zebra striping */
+    .milkdown table tr:nth-child(2n) {
+      background-color: var(--background-subtle, #f6f8fa);
+    }
+
+    /* Dark Mode Adjustments */
+    @media (prefers-color-scheme: dark) {
+      .milkdown table th {
+        background-color: #161b22;
+      }
+      .milkdown table tr {
+        background-color: #0d1117;
+      }
+      .milkdown table tr:nth-child(2n) {
+        background-color: #161b22;
+      }
+      .milkdown table th,
+      .milkdown table td {
+        border-color: #30363d;
+      }
+    }
+
     .milkdown:focus,
     .milkdown:focus-within,
     .milkdown *:focus {
