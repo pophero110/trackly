@@ -2,7 +2,7 @@ import { ReactiveController, ReactiveControllerHost } from 'lit';
 import { StoreController } from './StoreController.js';
 import { Entry } from '../models/Entry.js';
 import { Entity } from '../models/Entity.js';
-import { extractHashtags } from '../utils/helpers.js';
+import { extractHashtags } from '../utils/entryHelpers.js';
 import { URLStateManager } from '../utils/urlState.js';
 
 /**
@@ -71,13 +71,6 @@ export class EntryListController implements ReactiveController {
    */
   getTagFilters(): string[] {
     return URLStateManager.getTagFilters();
-  }
-
-  /**
-   * Get current hashtag filter
-   */
-  getHashtagFilter(): string | null {
-    return URLStateManager.getHashtagFilter();
   }
 
   /**

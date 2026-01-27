@@ -243,21 +243,6 @@ export class URLStateManager {
   }
 
   /**
-   * Set hashtag filter in URL (legacy single tag support)
-   */
-  static setHashtagFilter(hashtag: string | null): void {
-    const params = new URLSearchParams(window.location.search);
-
-    if (hashtag) {
-      params.set('hashtag', hashtag);
-    } else {
-      params.delete('hashtag');
-    }
-
-    URLStateManager.updateURL(params);
-  }
-
-  /**
    * Get multiple tag filters from URL
    * Returns array of tag names (without # symbol)
    */

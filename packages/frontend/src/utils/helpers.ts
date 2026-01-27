@@ -317,27 +317,6 @@ export async function replaceUrlsWithTitles(text: string): Promise<{ text: strin
 }
 
 /**
- * Extract all hashtags from a text string
- * Returns array of unique hashtags (without the # symbol)
- */
-export function extractHashtags(text: string): string[] {
-  if (!text) return [];
-
-  // Match hashtags that are not part of URLs
-  // Hashtag must be preceded by start of string, whitespace, or >
-  const hashtagRegex = /(?:^|\s|>)#([a-zA-Z0-9_]+)/g;
-  const matches = [];
-  let match;
-
-  while ((match = hashtagRegex.exec(text)) !== null) {
-    matches.push(match[1]);
-  }
-
-  // Return unique hashtags
-  return [...new Set(matches)];
-}
-
-/**
  * Create a debounced function that delays invoking func until after wait milliseconds
  * have elapsed since the last time the debounced function was invoked.
  * The debounced function comes with a `cancel` method to cancel delayed func invocations

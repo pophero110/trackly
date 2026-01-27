@@ -19,7 +19,7 @@ export class EntryDetailFooter extends LitElement {
 
   private handleHashtagClick = (e: Event, tag: string): void => {
     e.preventDefault();
-    URLStateManager.setHashtagFilter(tag);
+    URLStateManager.addTagFilter(tag);
     URLStateManager.showHome();
   };
 

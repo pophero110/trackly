@@ -2,7 +2,8 @@ import { ReactiveController, ReactiveControllerHost } from 'lit';
 import { StoreController } from './StoreController.js';
 import { Entry } from '../models/Entry.js';
 import { Entity } from '../models/Entity.js';
-import { extractHashtags, debounce } from '../utils/helpers.js';
+import { debounce } from '../utils/helpers.js';
+import { extractHashtags } from '../utils/entryHelpers.js';
 import { URLStateManager } from '../utils/urlState.js';
 import { toast } from '../utils/toast.js';
 

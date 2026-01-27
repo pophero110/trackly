@@ -1,7 +1,7 @@
 import { html, css, LitElement } from 'lit';
 import { customElement, property, state, query } from 'lit/decorators.js';
 import { when } from 'lit/directives/when.js';
-import { extractHashtags } from '../utils/helpers.js';
+import { extractHashtags } from '../utils/entryHelpers.js';
 import { URLStateManager } from '../utils/urlState.js';
 import { Entity } from '../models/Entity.js';
 import { Entry } from '../models/Entry.js';
