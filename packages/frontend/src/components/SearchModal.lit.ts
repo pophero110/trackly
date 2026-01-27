@@ -21,11 +21,14 @@ export class SearchModal extends LitElement {
       left: 0;
       right: 0;
       bottom: 0;
-      background: rgba(0, 0, 0, 0.5);
+      background: rgba(0, 0, 0, 0.4);
+      backdrop-filter: blur(4px);
       display: flex;
       align-items: flex-start;
       justify-content: center;
       padding-top: 15vh;
+      padding-left: 16px;
+      padding-right: 16px;
       z-index: 1000;
     }
 
@@ -33,9 +36,11 @@ export class SearchModal extends LitElement {
       background: var(--surface, #fff);
       border-radius: 12px;
       width: 100%;
-      max-width: 600px;
+      max-width: 75ch;
       box-shadow: 0 16px 70px rgba(0, 0, 0, 0.2);
       overflow: hidden;
+      margin-left: auto;
+      margin-right: auto;
     }
 
     .search-modal-input-wrapper {
@@ -268,7 +273,9 @@ export class SearchModal extends LitElement {
   }
 
   private selectResult(entry: Entry): void {
-    this.close();
+    // Close search with replaceState to avoid adding history entry
+    // Then navigate to entry detail (which will save origin and pushState)
+    URLStateManager.closeSearch({ replace: true });
     URLStateManager.showEntryDetail(entry.id);
   }
 

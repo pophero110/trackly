@@ -9,6 +9,7 @@ export type ActionType = 'log-entry' | 'create-entity' | 'edit-entity' | 'clone-
 
 export class URLStateManager {
   private static listeners: StateChangeCallback[] = [];
+  private static originUrl: string | null = null;
 
   /**
    * Encode entity name for URL path (lowercase, replace spaces with hyphens)
@@ -152,10 +153,47 @@ export class URLStateManager {
   }
 
   /**
+   * Check if currently on an entry detail page
+   */
+  private static isOnEntryDetail(): boolean {
+    return /^\/entries\/[^/]+$/.test(window.location.pathname);
+  }
+
+  /**
    * Navigate to entry detail page
+   * Saves origin URL on first navigation, uses replaceState on subsequent navigations
    */
   static showEntryDetail(entryId: string): void {
-    URLStateManager.updatePath(`/entries/${entryId}`);
+    const path = `/entries/${entryId}`;
+
+    if (!URLStateManager.isOnEntryDetail()) {
+      // First time opening entry detail - save origin (current URL without ?search)
+      const currentUrl = new URL(window.location.href);
+      currentUrl.searchParams.delete('search');
+      URLStateManager.originUrl = currentUrl.pathname + currentUrl.search;
+      window.history.pushState(null, '', path);
+    } else {
+      // Already on entry detail - replace instead of push
+      window.history.replaceState(null, '', path);
+    }
+
+    URLStateManager.notifyListeners();
+  }
+
+  /**
+   * Navigate back to origin URL (where user was before opening entry details)
+   */
+  static navigateToOrigin(): void {
+    if (URLStateManager.originUrl) {
+      const origin = URLStateManager.originUrl;
+      URLStateManager.originUrl = null;
+      window.history.pushState(null, '', origin);
+      URLStateManager.notifyListeners();
+    } else {
+      // Fallback to /entries if no origin saved
+      window.history.pushState(null, '', '/entries');
+      URLStateManager.notifyListeners();
+    }
   }
 
   /**
@@ -445,11 +483,21 @@ export class URLStateManager {
 
   /**
    * Close search modal
+   * @param options.replace - Use replaceState instead of pushState (avoids adding history entry)
    */
-  static closeSearch(): void {
+  static closeSearch(options?: { replace?: boolean }): void {
     const params = new URLSearchParams(window.location.search);
     params.delete('search');
-    URLStateManager.updateURL(params);
+
+    if (options?.replace) {
+      const newURL = params.toString()
+        ? `${window.location.pathname}?${params.toString()}`
+        : window.location.pathname;
+      window.history.replaceState(null, '', newURL);
+      URLStateManager.notifyListeners();
+    } else {
+      URLStateManager.updateURL(params);
+    }
   }
 
   /**

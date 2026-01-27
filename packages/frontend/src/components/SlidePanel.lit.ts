@@ -188,7 +188,7 @@ export class SlidePanel extends LitElement {
   }
 
   private navigateBack(): void {
-    window.history.back();
+    URLStateManager.navigateToOrigin();
   }
 
   private handleBackdropClick = (): void => {
