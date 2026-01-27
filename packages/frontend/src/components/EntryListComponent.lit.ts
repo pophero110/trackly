@@ -19,18 +19,10 @@ export class EntryListComponent extends LitElement {
     :host {
       display: flex;
       flex-direction: column;
+      padding: 0 var(--base-size-16) !important;
       gap: var(--base-size-24, 24px);
       align-items: center;
       justify-content: center;
-      width: 100%;
-    }
-
-    entry-list-header {
-      display: flex;
-      margin-top: var(--base-size-16, 16px);
-      justify-content: space-between;
-      align-items: center;
-      max-width: 75ch;
       width: 100%;
     }
 
@@ -144,7 +136,7 @@ export class EntryListComponent extends LitElement {
 
     @media (max-width: 480px) {
       :host {
-        padding: 0 16px;
+        padding: 0 16px !important;
         gap: var(--base-size-16);
       }
 

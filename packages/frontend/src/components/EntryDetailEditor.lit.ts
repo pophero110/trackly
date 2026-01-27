@@ -95,23 +95,37 @@ export class EntryDetailEditor extends LitElement {
     }
 
     .milkdown h1 {
-      font-size: 1.25rem;
+      font-size: 1.5rem;
       font-weight: 600;
       margin-bottom: 0.5em;
       color: var(--text-primary);
     }
 
     .milkdown h2 {
-      font-size: 1.125rem;
+      font-size: 1.25rem;
       font-weight: 600;
       margin: 1em 0 0.5em;
       color: var(--text-primary);
     }
 
     .milkdown h3 {
+      font-size: 1.125rem;
       font-weight: 600;
       margin: 1em 0 0.5em;
       color: var(--text-primary);
+    }
+
+    .milkdown h4 {
+      font-size: 1rem;
+      font-weight: 600;
+      margin: 1em 0 0.5em;
+      color: var(--text-primary);
+    }
+
+    .milkdown h5 {
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: var(--text-secondary);
     }
 
     .milkdown p {

@@ -25,8 +25,37 @@ type OpenSelectionMenu = 'sort' | 'tag-filter' | null;
 @customElement('entry-list-header')
 export class EntryListHeader extends LitElement {
   static styles = css`
+    @media (max-width: 480px) {
+      :host {
+        flex-direction: column-reverse;
+        align-items: start !important;
+      }
+
+      .search-btn kbd {
+        display: none;
+      }
+
+      .quick-entry-container {
+        width: 100%;
+      }
+
+      .quick-entry-shortcut {
+        display: none;
+      }
+
+      .quick-entry-input {
+        padding: 12px 0 8px 8px !important;
+        width: 100%;
+      }
+    }
+
     :host {
-      display: block;
+      display: flex;
+      margin-top: var(--base-size-16, 16px);
+      justify-content: space-between;
+      align-items: center;
+      max-width: 75ch;
+      width: 100%;
     }
 
     .header-filters-row {
@@ -109,24 +138,6 @@ export class EntryListHeader extends LitElement {
 
     .quick-entry-input:focus + .quick-entry-shortcut {
       display: none;
-    }
-
-    @media (max-width: 480px) {
-      .search-btn kbd {
-        display: none;
-      }
-
-      .quick-entry-container {
-        width: 100%;
-      }
-
-      .quick-entry-shortcut {
-        display: none;
-      }
-
-      .quick-entry-input {
-        width: 100%;
-      }
     }
   `;
   @property({ type: Object })
