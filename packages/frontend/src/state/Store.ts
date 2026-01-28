@@ -193,12 +193,6 @@ export class Store {
         value: entry.value,
         valueDisplay: entry.valueDisplay,
         notes: entry.notes,
-        images: entry.images,
-        links: entry.links,
-        linkTitles: entry.linkTitles,
-        entryReferences: entry.entryReferences,
-        propertyValues: entry.propertyValues,
-        propertyValueDisplays: entry.propertyValueDisplays,
         latitude: entry.latitude,
         longitude: entry.longitude,
         locationName: entry.locationName

@@ -14,15 +14,9 @@ export class Entry implements IEntry {
     value?: string | number | boolean;
     valueDisplay?: string;
     notes: string;
-    images?: string[];
-    propertyValues?: Record<string, string | number | boolean>;
-    propertyValueDisplays?: Record<string, string>;
     latitude?: number;
     longitude?: number;
     locationName?: string;
-    links?: string[];
-    linkTitles?: Record<string, string>;
-    entryReferences?: string[];
     isArchived?: boolean;
     createdAt: string;
 
@@ -36,15 +30,9 @@ export class Entry implements IEntry {
         this.value = data.value;
         this.valueDisplay = data.valueDisplay;
         this.notes = data.notes || '';
-        this.images = data.images || [];
-        this.propertyValues = data.propertyValues || {};
-        this.propertyValueDisplays = data.propertyValueDisplays || {};
         this.latitude = data.latitude;
         this.longitude = data.longitude;
         this.locationName = data.locationName;
-        this.links = data.links || [];
-        this.linkTitles = data.linkTitles || {};
-        this.entryReferences = data.entryReferences || [];
         this.isArchived = data.isArchived;
         this.createdAt = data.createdAt || new Date().toISOString();
     }
@@ -92,15 +80,9 @@ export class Entry implements IEntry {
             value: this.value,
             valueDisplay: this.valueDisplay,
             notes: this.notes,
-            images: this.images,
-            propertyValues: this.propertyValues,
-            propertyValueDisplays: this.propertyValueDisplays,
             latitude: this.latitude,
             longitude: this.longitude,
             locationName: this.locationName,
-            links: this.links,
-            linkTitles: this.linkTitles,
-            entryReferences: this.entryReferences,
             isArchived: this.isArchived,
             createdAt: this.createdAt
         };

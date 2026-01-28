@@ -61,9 +61,6 @@ export interface CreateEntryRequest {
   value?: string | number | boolean;
   valueDisplay?: string;
   notes?: string;
-  images?: string[];
-  propertyValues?: Record<string, string | number | boolean>;
-  propertyValueDisplays?: Record<string, string>;
 }
 
 export interface UpdateEntryRequest {
@@ -71,9 +68,6 @@ export interface UpdateEntryRequest {
   value?: string | number | boolean;
   valueDisplay?: string;
   notes?: string;
-  images?: string[];
-  propertyValues?: Record<string, string | number | boolean>;
-  propertyValueDisplays?: Record<string, string>;
 }
 
 export type EntryListResponse = IEntry[];

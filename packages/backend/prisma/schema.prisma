@@ -44,27 +44,21 @@ model Entity {
 }
 
 model Entry {
-  id                    String   @id @default(cuid())
-  entityId              String
-  entityName            String   // Denormalized for faster queries
-  title                 String   @default("") // Mandatory title for the entry
-  timestamp             DateTime
-  value                 String?
-  valueDisplay          String?
-  notes                 String?
-  images                String[] // Base64 or URLs
-  propertyValues        Json?
-  propertyValueDisplays Json?
-  latitude              Float?   // Location latitude
-  longitude             Float?   // Location longitude
-  locationName          String?  // Optional location name (e.g., "San Francisco, CA")
-  links                 String[] // Array of URLs for context/reference
-  linkTitles            Json?    // URL to page title mappings
-  entryReferences       String[] // Array of entry IDs that this entry references
-  tags                  String[] @default([]) // Extracted hashtags for querying
-  isArchived            Boolean  @default(false)
-  createdAt             DateTime @default(now())
-  updatedAt             DateTime @updatedAt
+  id           String   @id @default(cuid())
+  entityId     String
+  entityName   String   // Denormalized for faster queries
+  title        String   @default("") // Mandatory title for the entry
+  timestamp    DateTime
+  value        String?
+  valueDisplay String?
+  notes        String?
+  latitude     Float?   // Location latitude
+  longitude    Float?   // Location longitude
+  locationName String?  // Optional location name (e.g., "San Francisco, CA")
+  tags         String[] @default([]) // Extracted hashtags for querying
+  isArchived   Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
   userId                String
   user                  User     @relation(fields: [userId], references: [id], onDelete: Cascade)

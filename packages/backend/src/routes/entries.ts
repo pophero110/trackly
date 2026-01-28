@@ -109,12 +109,6 @@ router.get('/', async (req: AuthRequest, res, next): Promise<void> => {
       value: entry.value || undefined,
       valueDisplay: entry.valueDisplay || undefined,
       notes: entry.notes || '',
-      images: entry.images,
-      links: entry.links,
-      linkTitles: entry.linkTitles ? (entry.linkTitles as any) : undefined,
-      entryReferences: entry.entryReferences,
-      propertyValues: entry.propertyValues ? (entry.propertyValues as any) : undefined,
-      propertyValueDisplays: entry.propertyValueDisplays ? (entry.propertyValueDisplays as any) : undefined,
       latitude: entry.latitude ?? undefined,
       longitude: entry.longitude ?? undefined,
       locationName: entry.locationName || undefined,
@@ -189,12 +183,6 @@ router.get('/:id', async (req: AuthRequest, res, next): Promise<void> => {
       value: entry.value || undefined,
       valueDisplay: entry.valueDisplay || undefined,
       notes: entry.notes || '',
-      images: entry.images,
-      links: entry.links,
-      linkTitles: entry.linkTitles ? (entry.linkTitles as any) : undefined,
-      entryReferences: entry.entryReferences,
-      propertyValues: entry.propertyValues ? (entry.propertyValues as any) : undefined,
-      propertyValueDisplays: entry.propertyValueDisplays ? (entry.propertyValueDisplays as any) : undefined,
       latitude: entry.latitude ?? undefined,
       longitude: entry.longitude ?? undefined,
       locationName: entry.locationName || undefined,
@@ -216,7 +204,7 @@ router.get('/:id', async (req: AuthRequest, res, next): Promise<void> => {
 router.post('/', validate(createEntrySchema), async (req: AuthRequest, res, next): Promise<void> => {
   try {
     const userId = req.user!.id;
-    const { entityId, title, timestamp, value, valueDisplay, notes, images, links, linkTitles, entryReferences, propertyValues, propertyValueDisplays, latitude, longitude, locationName } = req.body;
+    const { entityId, title, timestamp, value, valueDisplay, notes, latitude, longitude, locationName } = req.body;
 
     // Verify entity exists and belongs to user
     const entity = await prisma.entity.findFirst({
@@ -246,13 +234,7 @@ router.post('/', validate(createEntrySchema), async (req: AuthRequest, res, next
         value: value?.toString() || null,
         valueDisplay: valueDisplay || null,
         notes: notes || '',
-        images: images || [],
-        links: links || [],
-        linkTitles: linkTitles || null,
-        entryReferences: entryReferences || [],
         tags,
-        propertyValues: propertyValues || null,
-        propertyValueDisplays: propertyValueDisplays || null,
         latitude: latitude ?? null,
         longitude: longitude ?? null,
         locationName: locationName || null,
@@ -269,12 +251,6 @@ router.post('/', validate(createEntrySchema), async (req: AuthRequest, res, next
       value: entry.value || undefined,
       valueDisplay: entry.valueDisplay || undefined,
       notes: entry.notes || '',
-      images: entry.images,
-      links: entry.links,
-      linkTitles: entry.linkTitles ? (entry.linkTitles as any) : undefined,
-      entryReferences: entry.entryReferences,
-      propertyValues: entry.propertyValues ? (entry.propertyValues as any) : undefined,
-      propertyValueDisplays: entry.propertyValueDisplays ? (entry.propertyValueDisplays as any) : undefined,
       latitude: entry.latitude ?? undefined,
       longitude: entry.longitude ?? undefined,
       locationName: entry.locationName || undefined,
@@ -329,12 +305,6 @@ router.put('/:id', validate(updateEntrySchema), async (req: AuthRequest, res, ne
     if (req.body.value !== undefined) updateData.value = req.body.value?.toString() || null;
     if (req.body.valueDisplay !== undefined) updateData.valueDisplay = req.body.valueDisplay || null;
     if (req.body.notes !== undefined) updateData.notes = req.body.notes;
-    if (req.body.images !== undefined) updateData.images = req.body.images;
-    if (req.body.links !== undefined) updateData.links = req.body.links;
-    if (req.body.linkTitles !== undefined) updateData.linkTitles = req.body.linkTitles;
-    if (req.body.entryReferences !== undefined) updateData.entryReferences = req.body.entryReferences;
-    if (req.body.propertyValues !== undefined) updateData.propertyValues = req.body.propertyValues;
-    if (req.body.propertyValueDisplays !== undefined) updateData.propertyValueDisplays = req.body.propertyValueDisplays;
     if (req.body.latitude !== undefined) updateData.latitude = req.body.latitude ?? null;
     if (req.body.longitude !== undefined) updateData.longitude = req.body.longitude ?? null;
     if (req.body.locationName !== undefined) updateData.locationName = req.body.locationName || null;
@@ -365,12 +335,6 @@ router.put('/:id', validate(updateEntrySchema), async (req: AuthRequest, res, ne
       value: entry.value || undefined,
       valueDisplay: entry.valueDisplay || undefined,
       notes: entry.notes || '',
-      images: entry.images,
-      links: entry.links,
-      linkTitles: entry.linkTitles ? (entry.linkTitles as any) : undefined,
-      entryReferences: entry.entryReferences,
-      propertyValues: entry.propertyValues ? (entry.propertyValues as any) : undefined,
-      propertyValueDisplays: entry.propertyValueDisplays ? (entry.propertyValueDisplays as any) : undefined,
       latitude: entry.latitude ?? undefined,
       longitude: entry.longitude ?? undefined,
       locationName: entry.locationName || undefined,
@@ -420,12 +384,6 @@ router.patch('/:id/archive', async (req: AuthRequest, res, next): Promise<void> 
       value: entry.value || undefined,
       valueDisplay: entry.valueDisplay || undefined,
       notes: entry.notes || '',
-      images: entry.images,
-      links: entry.links,
-      linkTitles: entry.linkTitles ? (entry.linkTitles as any) : undefined,
-      entryReferences: entry.entryReferences,
-      propertyValues: entry.propertyValues ? (entry.propertyValues as any) : undefined,
-      propertyValueDisplays: entry.propertyValueDisplays ? (entry.propertyValueDisplays as any) : undefined,
       latitude: entry.latitude ?? undefined,
       longitude: entry.longitude ?? undefined,
       locationName: entry.locationName || undefined,
