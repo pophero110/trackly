@@ -242,8 +242,6 @@ export class EntryListComponent extends LitElement {
     const selectedEntity = this.listController.getSelectedEntity();
     const tagFilters = this.listController.getTagFilters();
     const { sortValue } = this.listController.getSortConfig();
-    const allEntries = this.listController.getAllEntries();
-
     // Empty state
     if (entries.length === 0) {
       const msg = selectedEntity ? `No entries yet for ${selectedEntity.name}.` : 'No entries yet.';
@@ -251,8 +249,7 @@ export class EntryListComponent extends LitElement {
           <entry-list-header
             .selectedEntity=${selectedEntity}
             .tagFilters=${tagFilters}
-            .currentSortValue=${sortValue}
-            .allEntries=${allEntries}>
+            .currentSortValue=${sortValue}>
           </entry-list-header>
           <div class="empty-state">${msg}</div>
       `;
@@ -266,8 +263,7 @@ export class EntryListComponent extends LitElement {
         <entry-list-header
           .selectedEntity=${selectedEntity}
           .tagFilters=${tagFilters}
-          .currentSortValue=${sortValue}
-          .allEntries=${allEntries}>
+          .currentSortValue=${sortValue}>
         </entry-list-header>
           ${repeat(
       Array.from(entriesByDate.entries()),

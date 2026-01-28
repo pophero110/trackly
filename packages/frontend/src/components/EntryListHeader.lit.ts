@@ -1,12 +1,12 @@
 import { html, css, LitElement } from 'lit';
 import { customElement, property, state, query } from 'lit/decorators.js';
 import { when } from 'lit/directives/when.js';
-import { extractHashtags } from '../utils/entryHelpers.js';
 import { URLStateManager } from '../utils/urlState.js';
 import { Entity } from '../models/Entity.js';
 import { Entry } from '../models/Entry.js';
 import { Store } from '../state/Store.js';
 import { storeRegistry } from '../state/StoreRegistry.js';
+import { APIClient } from '../api/client.js';
 import { toast } from '../utils/toast.js';
 import './SelectionMenuComponent.lit.js';
 import type { SelectionMenuComponent } from './SelectionMenuComponent.lit.js';
@@ -152,8 +152,8 @@ export class EntryListHeader extends LitElement {
   @property({ type: String })
   currentSortValue: string = 'timestamp-desc';
 
-  @property({ type: Array })
-  allEntries: Entry[] = [];
+  @state()
+  private availableTags: string[] = [];
 
   @state()
   private openSelectionMenu: OpenSelectionMenu = null;
@@ -176,6 +176,16 @@ export class EntryListHeader extends LitElement {
       this.store = storeRegistry.getStore();
     } catch (e) {
       console.warn('EntryListHeader: Store not yet initialized');
+    }
+    this.loadTags();
+  }
+
+  private async loadTags(): Promise<void> {
+    try {
+      const response = await APIClient.getTags();
+      this.availableTags = response.tags;
+    } catch (error) {
+      console.error('Error loading tags:', error);
     }
   }
 
@@ -279,15 +289,8 @@ export class EntryListHeader extends LitElement {
       { value: 'createdAt-asc', label: 'Oldest Created' }
     ];
 
-    // Extract all available tags
-    const allTags = new Set<string>();
-    this.allEntries.forEach(entry => {
-      if (entry.notes) extractHashtags(entry.notes).forEach(tag => allTags.add(tag));
-    });
-    const availableTags = Array.from(allTags).sort();
-
-    // Tag filter options
-    const tagOptions: SelectionOption[] = availableTags.map(tag => ({
+    // Tag filter options (from API)
+    const tagOptions: SelectionOption[] = this.availableTags.map(tag => ({
       value: tag,
       label: `#${tag}`
     }));

@@ -45,7 +45,10 @@
       "Bash(npm search:*)",
       "Bash(npm view:*)",
       "WebSearch",
-      "Bash(ls:*)"
+      "Bash(ls:*)",
+      "Bash(railway variables:*)",
+      "Bash(railway link:*)",
+      "Bash(railway whoami:*)"
     ],
     "deny": [],
     "ask": []

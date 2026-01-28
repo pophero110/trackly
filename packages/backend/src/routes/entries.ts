@@ -136,6 +136,33 @@ router.get('/', async (req: AuthRequest, res, next): Promise<void> => {
 });
 
 /**
+ * GET /api/entries/tags
+ * Get all unique tags for the authenticated user
+ */
+router.get('/tags', async (req: AuthRequest, res, next): Promise<void> => {
+  try {
+    const userId = req.user!.id;
+
+    // Get all unique tags from non-archived entries
+    const entries = await prisma.entry.findMany({
+      where: { userId, isArchived: false },
+      select: { tags: true }
+    });
+
+    // Flatten and deduplicate tags
+    const allTags = new Set<string>();
+    entries.forEach(entry => {
+      entry.tags.forEach(tag => allTags.add(tag));
+    });
+
+    const sortedTags = Array.from(allTags).sort();
+    res.json({ tags: sortedTags });
+  } catch (error) {
+    next(error);
+  }
+});
+
+/**
  * GET /api/entries/:id
  * Get a single entry by ID
  */

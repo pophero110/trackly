@@ -144,6 +144,10 @@ export class APIClient {
     return this.request<PaginatedEntriesResponse>(`/api/entries${query}`);
   }
 
+  static async getTags(): Promise<{ tags: string[] }> {
+    return this.request<{ tags: string[] }>('/api/entries/tags');
+  }
+
   static async getEntry(id: string): Promise<IEntry> {
     return this.request<IEntry>(`/api/entries/${id}`);
   }
