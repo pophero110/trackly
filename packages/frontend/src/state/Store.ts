@@ -49,7 +49,6 @@ export class Store {
         APIClient.getEntries({
           sortBy,
           sortOrder,
-          includeArchived: true,
           limit: 30,
           tags: tagFilters.length > 0 ? tagFilters : undefined
         })
@@ -395,7 +394,6 @@ export class Store {
         entityId: this.selectedEntityId || undefined,
         sortBy,
         sortOrder,
-        includeArchived: true,
         limit: 30,
         tags: tagFilters.length > 0 ? tagFilters : undefined
       });
@@ -433,7 +431,6 @@ export class Store {
         entityId: this.selectedEntityId || undefined,
         sortBy,
         sortOrder,
-        includeArchived: true,
         limit: 30,
         after: this.paginationState.nextCursor.after,
         afterId: this.paginationState.nextCursor.afterId,
