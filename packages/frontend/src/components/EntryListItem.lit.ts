@@ -400,8 +400,10 @@ export class EntryListItem extends LitElement {
     // Entity chip with dropdown
     const entityColor = entity ? getEntityColor(entity.name) : '';
 
-    // Extract hashtags from notes
-    const tags = this.entry.notes ? extractHashtags(this.entry.notes) : [];
+    // Extract hashtags from title and notes
+    const titleTags = this.entry.title ? extractHashtags(this.entry.title) : [];
+    const notesTags = this.entry.notes ? extractHashtags(this.entry.notes) : [];
+    const tags = [...new Set([...titleTags, ...notesTags])];
 
     return html`
         <div class="timeline-entry-card" @click=${this.handleCardClick}>

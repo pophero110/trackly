@@ -313,11 +313,14 @@ export class EntryDetailController implements ReactiveController {
   }
 
   /**
-   * Get extracted hashtags from notes
+   * Get extracted hashtags from title and notes
    */
   getHashtags(): string[] {
-    if (!this.entry?.notes) return [];
-    return extractHashtags(this.entry.notes);
+    if (!this.entry) return [];
+    const titleTags = this.entry.title ? extractHashtags(this.entry.title) : [];
+    const notesTags = this.entry.notes ? extractHashtags(this.entry.notes) : [];
+    // Deduplicate
+    return [...new Set([...titleTags, ...notesTags])];
   }
 
   /**
