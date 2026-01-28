@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { prisma } from '../db/client.js';
 import { requireAuth, AuthRequest } from '../middleware/auth.js';
 import { validate, createEntrySchema, updateEntrySchema } from '../middleware/validation.js';
+import { extractHashtags } from '../utils/tagExtractor.js';
 import type { IEntry } from '@trackly/shared';
 
 const router: Router = Router();
@@ -20,11 +21,12 @@ router.use(requireAuth);
  *   - limit (page size, default: 30)
  *   - after (cursor: sort field value, ISO timestamp or string)
  *   - afterId (cursor: entry ID for tie-breaking)
+ *   - tags (comma-separated list of tags to filter by, AND logic)
  */
 router.get('/', async (req: AuthRequest, res, next): Promise<void> => {
   try {
     const userId = req.user!.id;
-    const { entityId, includeArchived, sortBy, sortOrder, limit, after, afterId } = req.query;
+    const { entityId, includeArchived, sortBy, sortOrder, limit, after, afterId, tags } = req.query;
 
     // Base where clause
     const baseWhere: any = { userId };
@@ -33,6 +35,11 @@ router.get('/', async (req: AuthRequest, res, next): Promise<void> => {
     }
     if (includeArchived !== 'true') {
       baseWhere.isArchived = false;
+    }
+    // Filter by tags (AND logic - must have all tags)
+    if (tags) {
+      const tagArray = (tags as string).split(',').map(t => t.trim().toLowerCase());
+      baseWhere.tags = { hasEvery: tagArray };
     }
 
     // Determine sort field and order
@@ -194,6 +201,14 @@ router.post('/', validate(createEntrySchema), async (req: AuthRequest, res, next
       return;
     }
 
+    // Extract tags from notes and title
+    const extractedTags = [
+      ...extractHashtags(notes || ''),
+      ...extractHashtags(title || '')
+    ];
+    // Deduplicate tags
+    const tags = [...new Set(extractedTags)];
+
     // Create entry
     const entry = await prisma.entry.create({
       data: {
@@ -208,6 +223,7 @@ router.post('/', validate(createEntrySchema), async (req: AuthRequest, res, next
         links: links || [],
         linkTitles: linkTitles || null,
         entryReferences: entryReferences || [],
+        tags,
         propertyValues: propertyValues || null,
         propertyValueDisplays: propertyValueDisplays || null,
         latitude: latitude ?? null,
@@ -295,6 +311,17 @@ router.put('/:id', validate(updateEntrySchema), async (req: AuthRequest, res, ne
     if (req.body.latitude !== undefined) updateData.latitude = req.body.latitude ?? null;
     if (req.body.longitude !== undefined) updateData.longitude = req.body.longitude ?? null;
     if (req.body.locationName !== undefined) updateData.locationName = req.body.locationName || null;
+
+    // Re-extract tags when notes or title change
+    if (req.body.notes !== undefined || req.body.title !== undefined) {
+      const notesText = req.body.notes ?? existingEntry.notes ?? '';
+      const titleText = req.body.title ?? existingEntry.title ?? '';
+      const extractedTags = [
+        ...extractHashtags(notesText),
+        ...extractHashtags(titleText)
+      ];
+      updateData.tags = [...new Set(extractedTags)];
+    }
 
     // Update entry
     const entry = await prisma.entry.update({

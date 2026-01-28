@@ -43,9 +43,16 @@ export class Store {
   // Load data from API
   private async loadData(sortBy?: string, sortOrder?: 'asc' | 'desc'): Promise<void> {
     try {
+      const tagFilters = URLStateManager.getTagFilters();
       const [entitiesData, entriesResponse] = await Promise.all([
         APIClient.getEntities(),
-        APIClient.getEntries({ sortBy, sortOrder, includeArchived: true, limit: 30 })
+        APIClient.getEntries({
+          sortBy,
+          sortOrder,
+          includeArchived: true,
+          limit: 30,
+          tags: tagFilters.length > 0 ? tagFilters : undefined
+        })
       ]);
 
       this.entities = entitiesData.map(data => new Entity(data));
@@ -382,13 +389,15 @@ export class Store {
     try {
       const sortBy = URLStateManager.getSortBy() || undefined;
       const sortOrder = URLStateManager.getSortOrder() || undefined;
+      const tagFilters = URLStateManager.getTagFilters();
 
       const response = await APIClient.getEntries({
         entityId: this.selectedEntityId || undefined,
         sortBy,
         sortOrder,
         includeArchived: true,
-        limit: 30
+        limit: 30,
+        tags: tagFilters.length > 0 ? tagFilters : undefined
       });
 
       this.entries = response.entries.map(data => new Entry(data));
@@ -418,6 +427,7 @@ export class Store {
     try {
       const sortBy = URLStateManager.getSortBy() || 'timestamp';
       const sortOrder = URLStateManager.getSortOrder() || 'desc';
+      const tagFilters = URLStateManager.getTagFilters();
 
       const response = await APIClient.getEntries({
         entityId: this.selectedEntityId || undefined,
@@ -426,7 +436,8 @@ export class Store {
         includeArchived: true,
         limit: 30,
         after: this.paginationState.nextCursor.after,
-        afterId: this.paginationState.nextCursor.afterId
+        afterId: this.paginationState.nextCursor.afterId,
+        tags: tagFilters.length > 0 ? tagFilters : undefined
       });
 
       // Append new entries

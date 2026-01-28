@@ -15,6 +15,7 @@ export interface IEntry {
   links?: string[];  // Array of URLs for context/reference
   linkTitles?: Record<string, string>;  // URL to page title mappings
   entryReferences?: string[];  // Array of entry IDs that this entry references
+  tags?: string[];  // Extracted hashtags (for API responses)
   propertyValues?: Record<string, string | number | boolean>;  // Custom property values by property ID
   propertyValueDisplays?: Record<string, string>;  // Display text for property values (e.g., URL titles)
   latitude?: number;  // Location latitude

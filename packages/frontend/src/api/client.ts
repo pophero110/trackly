@@ -128,6 +128,7 @@ export class APIClient {
     limit?: number;
     after?: string;
     afterId?: string;
+    tags?: string[];
   }): Promise<PaginatedEntriesResponse> {
     const queryParams = new URLSearchParams();
     if (params?.entityId) queryParams.set('entityId', params.entityId);
@@ -137,6 +138,7 @@ export class APIClient {
     if (params?.limit) queryParams.set('limit', params.limit.toString());
     if (params?.after) queryParams.set('after', params.after);
     if (params?.afterId) queryParams.set('afterId', params.afterId);
+    if (params?.tags && params.tags.length > 0) queryParams.set('tags', params.tags.join(','));
 
     const query = queryParams.toString() ? `?${queryParams.toString()}` : '';
     return this.request<PaginatedEntriesResponse>(`/api/entries${query}`);
