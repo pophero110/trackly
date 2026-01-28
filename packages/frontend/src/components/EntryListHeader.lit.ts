@@ -214,12 +214,16 @@ export class EntryListHeader extends LitElement {
     URLStateManager.setSort(sortBy, sortOrder);
   };
 
-  private handleTagFilterChange = (e: CustomEvent) => {
+  private handleTagFilterChange = async (e: CustomEvent) => {
     const { value } = e.detail;
     if (value) {
       URLStateManager.setTagFilters([value]);
     } else {
       URLStateManager.setTagFilters([]);
+    }
+    // Reload entries from API with new tag filter
+    if (this.store) {
+      await this.store.resetPagination();
     }
   };
 

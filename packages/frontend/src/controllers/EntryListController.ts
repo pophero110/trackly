@@ -2,7 +2,6 @@ import { ReactiveController, ReactiveControllerHost } from 'lit';
 import { StoreController } from './StoreController.js';
 import { Entry } from '../models/Entry.js';
 import { Entity } from '../models/Entity.js';
-import { extractHashtags } from '../utils/entryHelpers.js';
 import { URLStateManager } from '../utils/urlState.js';
 
 /**
@@ -29,6 +28,7 @@ export class EntryListController implements ReactiveController {
 
   /**
    * Get filtered entries based on current URL state
+   * Note: Tag filtering is now handled server-side via API
    */
   getFilteredEntries(): Entry[] {
     const store = this.storeController.store;
@@ -40,16 +40,6 @@ export class EntryListController implements ReactiveController {
     const selectedEntityId = store.getSelectedEntityId();
     if (selectedEntityId) {
       entries = entries.filter(e => e.entityId === selectedEntityId);
-    }
-
-    // Filter by tags
-    const tagFilters = URLStateManager.getTagFilters();
-    if (tagFilters.length > 0) {
-      entries = entries.filter(e => {
-        if (!e.notes) return false;
-        const entryTags = extractHashtags(e.notes);
-        return tagFilters.every(tag => entryTags.some(et => et.toLowerCase() === tag.toLowerCase()));
-      });
     }
 
     return entries;
