@@ -91,7 +91,6 @@ export class EntryListItem extends LitElement {
     .timeline-entry-tag:hover {
       background: var(--primary);
       color: white;
-      transform: translateY(-1px);
       opacity: 1;
     }
 

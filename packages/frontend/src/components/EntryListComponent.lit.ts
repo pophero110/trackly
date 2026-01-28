@@ -171,11 +171,18 @@ export class EntryListComponent extends LitElement {
   private unsubscribeUrl: (() => void) | null = null;
   private observer: IntersectionObserver | null = null;
   private sentinelRef: Element | null = null;
+  private lastTagFilters: string = '';
 
   connectedCallback() {
     super.connectedCallback();
+    this.lastTagFilters = URLStateManager.getTagFilters().join(',');
     // Subscribe to URL changes for tag filter updates
     this.unsubscribeUrl = URLStateManager.subscribe(() => {
+      const currentTags = URLStateManager.getTagFilters().join(',');
+      if (currentTags !== this.lastTagFilters) {
+        this.lastTagFilters = currentTags;
+        this.storeController.store?.resetPagination();
+      }
       this.requestUpdate();
     });
 

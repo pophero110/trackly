@@ -24,7 +24,7 @@ export class EntryDetailComponent extends LitElement {
     :host {
       display: flex;
       height: 100%;
-      padding: var(--base-size-16) !important;
+      padding: var(--base-size-24) !important;
       flex-direction: column;
     }
 
