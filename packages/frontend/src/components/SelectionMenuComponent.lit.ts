@@ -22,6 +22,16 @@ export class SelectionMenuComponent extends LitElement {
       position: relative;
     }
 
+    .backdrop {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      z-index: 999;
+      background: transparent;
+    }
+
     .btn-tag-filter {
       display: inline-flex;
       align-items: center;
@@ -235,6 +245,11 @@ export class SelectionMenuComponent extends LitElement {
     this.menuOpen = false;
   };
 
+  private handleBackdropClick = (e: MouseEvent) => {
+    e.stopPropagation();
+    this.close();
+  };
+
   render() {
     // Find current selection label
     const currentOption = this.options.find(opt => opt.value === this.selectedValue);
@@ -244,6 +259,7 @@ export class SelectionMenuComponent extends LitElement {
     const radioGroupName = `selection-${this.title.replace(/\s+/g, '-').toLowerCase()}`;
 
     return html`
+      ${this.menuOpen ? html`<div class="backdrop" @click=${this.handleBackdropClick}></div>` : ''}
       <button
         class="btn-tag-filter"
         title="${this.title}"
