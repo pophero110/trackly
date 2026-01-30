@@ -33,49 +33,98 @@ export class EntryDetailEditor extends LitElement {
       color: var(--text-primary);
     }
 
+    /* ProseMirror table wrapper - required for table rendering */
+    .ProseMirror .tableWrapper {
+      overflow-x: auto;
+      margin: 1em 0;
+    }
+
+    .ProseMirror table,
     .milkdown table {
       border-spacing: 0;
       border-collapse: collapse;
+      table-layout: fixed;
+      width: 100%;
       margin-top: 0;
       margin-bottom: 16px;
-      width: max-content; /* Allows horizontal scrolling if too wide */
-      max-width: 100%;
-      display: block;
-      overflow: auto;
+      overflow: hidden;
     }
 
+    .ProseMirror td,
+    .ProseMirror th,
+    .milkdown table th,
+    .milkdown table td {
+      vertical-align: top;
+      box-sizing: border-box;
+      position: relative;
+      padding: 6px 13px;
+      border: 1px solid var(--border, #d0d7de);
+      min-width: 1em;
+    }
+
+    .ProseMirror th,
     .milkdown table th {
       font-weight: 600;
       background-color: var(--background-alt, #f6f8fa);
     }
 
-    .milkdown table th,
-    .milkdown table td {
-      padding: 6px 13px;
-      border: 1px solid var(--border, #d0d7de);
-    }
-
+    .ProseMirror tr,
     .milkdown table tr {
       background-color: var(--background, #ffffff);
-      border-top: 1px solid var(--border, #d0d7de);
     }
 
     /* Zebra striping */
+    .ProseMirror tr:nth-child(2n),
     .milkdown table tr:nth-child(2n) {
       background-color: var(--background-subtle, #f6f8fa);
     }
 
+    /* Column resize handle */
+    .ProseMirror .column-resize-handle {
+      position: absolute;
+      right: -2px;
+      top: 0;
+      bottom: 0;
+      width: 4px;
+      z-index: 20;
+      background-color: var(--primary, #3b82f6);
+      pointer-events: none;
+    }
+
+    .ProseMirror.resize-cursor {
+      cursor: ew-resize;
+      cursor: col-resize;
+    }
+
+    /* Selected cell highlight */
+    .ProseMirror .selectedCell:after {
+      z-index: 2;
+      position: absolute;
+      content: '';
+      left: 0;
+      right: 0;
+      top: 0;
+      bottom: 0;
+      background: rgba(200, 200, 255, 0.4);
+      pointer-events: none;
+    }
+
     /* Dark Mode Adjustments */
     @media (prefers-color-scheme: dark) {
+      .ProseMirror th,
       .milkdown table th {
         background-color: #161b22;
       }
+      .ProseMirror tr,
       .milkdown table tr {
         background-color: #0d1117;
       }
+      .ProseMirror tr:nth-child(2n),
       .milkdown table tr:nth-child(2n) {
         background-color: #161b22;
       }
+      .ProseMirror td,
+      .ProseMirror th,
       .milkdown table th,
       .milkdown table td {
         border-color: #30363d;
