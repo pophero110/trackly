@@ -155,6 +155,10 @@ export class SelectionMenuComponent extends LitElement {
     super.disconnectedCallback();
     this.detachDocumentListener();
     this.detachScrollListener();
+    // Restore body scroll if menu was open
+    if (this.menuOpen) {
+      document.body.style.overflow = '';
+    }
   }
 
   private attachDocumentListener(): void {
@@ -163,6 +167,7 @@ export class SelectionMenuComponent extends LitElement {
       const path = e.composedPath();
       if (!path.includes(this)) {
         this.menuOpen = false;
+        document.body.style.overflow = '';
       }
     };
     document.addEventListener('click', this.documentClickHandler);
@@ -203,6 +208,13 @@ export class SelectionMenuComponent extends LitElement {
     const wasOpen = this.menuOpen;
     this.menuOpen = !this.menuOpen;
 
+    // Prevent body scroll when menu opens
+    if (this.menuOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+
     // Dispatch event when menu opens
     if (this.menuOpen && !wasOpen) {
       this.dispatchEvent(new CustomEvent('menu-open', {
@@ -217,6 +229,7 @@ export class SelectionMenuComponent extends LitElement {
    */
   public close(): void {
     this.menuOpen = false;
+    document.body.style.overflow = '';
     const menuContainer = this.shadowRoot?.querySelector('.tag-filter-menu') as HTMLElement;
     if (menuContainer) {
       menuContainer.scrollTop = 0;
@@ -235,6 +248,7 @@ export class SelectionMenuComponent extends LitElement {
     }));
 
     this.menuOpen = false;
+    document.body.style.overflow = '';
   };
 
   private handleClearSelection = () => {
@@ -246,6 +260,7 @@ export class SelectionMenuComponent extends LitElement {
     }));
 
     this.menuOpen = false;
+    document.body.style.overflow = '';
   };
 
   private handleBackdropClick = (e: MouseEvent) => {
