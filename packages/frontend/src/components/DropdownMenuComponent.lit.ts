@@ -117,6 +117,7 @@ export class DropdownMenuComponent extends LitElement {
 
   private documentClickHandler?: (e: Event) => void;
   private documentScrollHandler?: (e: Event) => void;
+  private previousBodyOverflow: string = '';
 
   connectedCallback(): void {
     super.connectedCallback();
@@ -141,7 +142,7 @@ export class DropdownMenuComponent extends LitElement {
     this.detachScrollListener();
     // Restore body scroll if menu was open
     if (this.open) {
-      document.body.style.overflow = '';
+      document.body.style.overflow = this.previousBodyOverflow;
     }
   }
 
@@ -214,6 +215,7 @@ export class DropdownMenuComponent extends LitElement {
   openAt(x: number, y: number): void {
     this.position = { x, y };
     this.open = true;
+    this.previousBodyOverflow = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
     this.requestUpdate();
 
@@ -231,7 +233,7 @@ export class DropdownMenuComponent extends LitElement {
   close(): void {
     if (this.open) {
       this.open = false;
-      document.body.style.overflow = '';
+      document.body.style.overflow = this.previousBodyOverflow;
       this.detachDocumentListener();
       this.detachScrollListener();
       this.dispatchEvent(new CustomEvent('menu-close', { bubbles: true, composed: true }));
