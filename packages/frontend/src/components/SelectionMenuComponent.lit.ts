@@ -145,6 +145,7 @@ export class SelectionMenuComponent extends LitElement {
   private documentClickHandler?: (e: Event) => void;
   private documentScrollHandler?: (e: Event) => void;
   private previousBodyOverflow: string = '';
+  private previousHtmlOverflow: string = '';
 
   connectedCallback(): void {
     super.connectedCallback();
@@ -156,8 +157,9 @@ export class SelectionMenuComponent extends LitElement {
     super.disconnectedCallback();
     this.detachDocumentListener();
     this.detachScrollListener();
-    // Restore body scroll if menu was open
+    // Restore scroll if menu was open
     if (this.menuOpen) {
+      document.documentElement.style.overflow = this.previousHtmlOverflow;
       document.body.style.overflow = this.previousBodyOverflow;
     }
   }
@@ -168,6 +170,7 @@ export class SelectionMenuComponent extends LitElement {
       const path = e.composedPath();
       if (!path.includes(this)) {
         this.menuOpen = false;
+        document.documentElement.style.overflow = this.previousHtmlOverflow;
         document.body.style.overflow = this.previousBodyOverflow;
       }
     };
@@ -211,9 +214,12 @@ export class SelectionMenuComponent extends LitElement {
 
     // Prevent body scroll when menu opens, restore previous value when closing
     if (this.menuOpen) {
+      this.previousHtmlOverflow = document.documentElement.style.overflow;
       this.previousBodyOverflow = document.body.style.overflow;
+      document.documentElement.style.overflow = 'hidden';
       document.body.style.overflow = 'hidden';
     } else {
+      document.documentElement.style.overflow = this.previousHtmlOverflow;
       document.body.style.overflow = this.previousBodyOverflow;
     }
 
@@ -231,6 +237,7 @@ export class SelectionMenuComponent extends LitElement {
    */
   public close(): void {
     this.menuOpen = false;
+    document.documentElement.style.overflow = this.previousHtmlOverflow;
     document.body.style.overflow = this.previousBodyOverflow;
     const menuContainer = this.shadowRoot?.querySelector('.tag-filter-menu') as HTMLElement;
     if (menuContainer) {
@@ -250,6 +257,7 @@ export class SelectionMenuComponent extends LitElement {
     }));
 
     this.menuOpen = false;
+    document.documentElement.style.overflow = this.previousHtmlOverflow;
     document.body.style.overflow = this.previousBodyOverflow;
   };
 
@@ -262,6 +270,7 @@ export class SelectionMenuComponent extends LitElement {
     }));
 
     this.menuOpen = false;
+    document.documentElement.style.overflow = this.previousHtmlOverflow;
     document.body.style.overflow = this.previousBodyOverflow;
   };
 

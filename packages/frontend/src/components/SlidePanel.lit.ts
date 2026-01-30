@@ -34,6 +34,8 @@ export class SlidePanel extends LitElement {
       -webkit-backdrop-filter: blur(4px);
       z-index: 999;
       display: none;
+      touch-action: none;
+      overscroll-behavior: contain;
     }
 
     :host([active]) .backdrop {
@@ -135,6 +137,12 @@ export class SlidePanel extends LitElement {
       document.removeEventListener('keydown', this.keydownHandler);
       this.keydownHandler = null;
     }
+
+    // Restore scroll if panel was open
+    if (this.isActive) {
+      document.documentElement.style.overflow = '';
+      document.body.style.overflow = '';
+    }
   }
 
   private attachKeyboardListener(): void {
@@ -177,14 +185,18 @@ export class SlidePanel extends LitElement {
   private openPanel(): void {
     this.isActive = true;
     this.classList.add('active');
-    document.body.style.overflow = 'hidden'; // Prevent background scroll
+    // Prevent background scroll - need both html and body for iOS
+    document.documentElement.style.overflow = 'hidden';
+    document.body.style.overflow = 'hidden';
   }
 
   private closePanel(): void {
     // Remove active class to trigger slide-out animation
     this.isActive = false;
     this.classList.remove('active');
-    document.body.style.overflow = ''; // Restore scroll
+    // Restore scroll
+    document.documentElement.style.overflow = '';
+    document.body.style.overflow = '';
   }
 
   private navigateBack(): void {
@@ -193,6 +205,10 @@ export class SlidePanel extends LitElement {
 
   private handleBackdropClick = (): void => {
     this.navigateBack();
+  };
+
+  private preventScroll = (e: Event): void => {
+    e.preventDefault();
   };
 
   // IMPORTANT: Sync the internal state to the HTML attribute
@@ -209,7 +225,10 @@ export class SlidePanel extends LitElement {
 
   render() {
     return html`
-      <div class="backdrop" @click=${this.handleBackdropClick}></div>
+      <div class="backdrop"
+        @click=${this.handleBackdropClick}
+        @wheel=${this.preventScroll}
+        @touchmove=${this.preventScroll}></div>
       <div class="body">
         <slot></slot>
       </div>
