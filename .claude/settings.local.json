@@ -48,7 +48,8 @@
       "Bash(ls:*)",
       "Bash(railway variables:*)",
       "Bash(railway link:*)",
-      "Bash(railway whoami:*)"
+      "Bash(railway whoami:*)",
+      "Bash(pnpm run build:*)"
     ],
     "deny": [],
     "ask": []

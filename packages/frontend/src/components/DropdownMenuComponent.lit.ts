@@ -23,6 +23,16 @@ export class DropdownMenuComponent extends LitElement {
       display: contents;
     }
 
+    .backdrop {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      z-index: 9999;
+      background: transparent;
+    }
+
     .dropdown-menu-container {
       position: fixed;
       background: var(--background, #F9FAFB);
@@ -303,12 +313,18 @@ export class DropdownMenuComponent extends LitElement {
     }
   }
 
+  private handleBackdropClick = (e: MouseEvent): void => {
+    e.stopPropagation();
+    this.close();
+  };
+
   render() {
     if (!this.open || this.items.length === 0) {
       return html``;
     }
 
     return html`
+      <div class="backdrop" @click=${this.handleBackdropClick}></div>
       <div
         class="dropdown-menu-container"
         style="left: ${this.position.x}px; top: ${this.position.y}px; max-height: 400px; overflow-y: auto;"
