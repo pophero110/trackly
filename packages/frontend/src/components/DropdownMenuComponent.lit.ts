@@ -31,6 +31,9 @@ export class DropdownMenuComponent extends LitElement {
       bottom: 0;
       z-index: 9999;
       background: transparent;
+      overflow: hidden;
+      touch-action: none;
+      overscroll-behavior: contain;
     }
 
     .dropdown-menu-container {
@@ -318,13 +321,17 @@ export class DropdownMenuComponent extends LitElement {
     this.close();
   };
 
+  private preventScroll = (e: Event): void => {
+    e.preventDefault();
+  };
+
   render() {
     if (!this.open || this.items.length === 0) {
       return html``;
     }
 
     return html`
-      <div class="backdrop" @click=${this.handleBackdropClick}></div>
+      <div class="backdrop" @click=${this.handleBackdropClick} @wheel=${this.preventScroll} @touchmove=${this.preventScroll}></div>
       <div
         class="dropdown-menu-container"
         style="left: ${this.position.x}px; top: ${this.position.y}px; max-height: 400px; overflow-y: auto;"

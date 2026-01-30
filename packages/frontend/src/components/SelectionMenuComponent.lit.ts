@@ -30,6 +30,9 @@ export class SelectionMenuComponent extends LitElement {
       bottom: 0;
       z-index: 999;
       background: transparent;
+      overflow: hidden;
+      touch-action: none;
+      overscroll-behavior: contain;
     }
 
     .btn-tag-filter {
@@ -250,6 +253,10 @@ export class SelectionMenuComponent extends LitElement {
     this.close();
   };
 
+  private preventScroll = (e: Event) => {
+    e.preventDefault();
+  };
+
   render() {
     // Find current selection label
     const currentOption = this.options.find(opt => opt.value === this.selectedValue);
@@ -259,7 +266,7 @@ export class SelectionMenuComponent extends LitElement {
     const radioGroupName = `selection-${this.title.replace(/\s+/g, '-').toLowerCase()}`;
 
     return html`
-      ${this.menuOpen ? html`<div class="backdrop" @click=${this.handleBackdropClick}></div>` : ''}
+      ${this.menuOpen ? html`<div class="backdrop" @click=${this.handleBackdropClick} @wheel=${this.preventScroll} @touchmove=${this.preventScroll}></div>` : ''}
       <button
         class="btn-tag-filter"
         title="${this.title}"
