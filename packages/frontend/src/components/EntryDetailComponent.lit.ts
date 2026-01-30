@@ -32,6 +32,8 @@ export class EntryDetailComponent extends LitElement {
       display: block;
       border: none;
       width: 100%;
+      max-width: 100%;
+      box-sizing: border-box;
       font-size: 1.5rem;
       font-weight: 600;
       color: var(--text-primary);
@@ -41,6 +43,8 @@ export class EntryDetailComponent extends LitElement {
       overflow: hidden;
       font-family: inherit;
       word-break: break-word;
+      overflow-wrap: break-word;
+      white-space: pre-wrap;
       field-sizing: content;
       min-height: 1lh;
     }
