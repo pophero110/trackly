@@ -182,10 +182,20 @@ export class EntryListHeader extends LitElement {
 
   private async loadTags(): Promise<void> {
     try {
-      const response = await APIClient.getTags();
-      this.availableTags = response.tags;
+      const tags = await APIClient.getTags();
+      // Extract unique hashtags from all tags' categories
+      const allHashtags = new Set<string>();
+      for (const tag of tags) {
+        if (tag.categories) {
+          for (const category of tag.categories) {
+            allHashtags.add(category);
+          }
+        }
+      }
+      this.availableTags = Array.from(allHashtags).sort();
     } catch (error) {
       console.error('Error loading tags:', error);
+      this.availableTags = [];
     }
   }
 
@@ -290,7 +300,7 @@ export class EntryListHeader extends LitElement {
     ];
 
     // Tag filter options (from API)
-    const tagOptions: SelectionOption[] = this.availableTags.map(tag => ({
+    const tagOptions: SelectionOption[] = (this.availableTags || []).map(tag => ({
       value: tag,
       label: `#${tag}`
     }));
