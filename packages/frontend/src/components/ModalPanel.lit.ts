@@ -96,7 +96,6 @@ export class ModalPanel extends LitElement {
     this.contentElement = contentElement;
     this.isOpen = true;
     this.classList.add('active');
-    document.body.style.overflow = 'hidden'; // Prevent background scroll
   }
 
   close(): void {
@@ -104,7 +103,6 @@ export class ModalPanel extends LitElement {
     this.title = '';
     this.contentElement = null;
     this.classList.remove('active');
-    document.body.style.overflow = ''; // Restore scroll
   }
 
   getIsOpen(): boolean {

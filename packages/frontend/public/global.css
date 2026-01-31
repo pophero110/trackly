@@ -729,6 +729,8 @@ modal-panel.active {
   justify-content: center;
   z-index: 1100;
   animation: fadeIn 0.2s ease-out;
+  touch-action: none;
+  overscroll-behavior: contain;
 }
 
 .modal-dialog {
