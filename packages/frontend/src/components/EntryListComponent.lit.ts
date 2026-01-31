@@ -247,7 +247,7 @@ export class EntryListComponent extends LitElement {
     // Get all data from controllers
     const entries = this.listController.getFilteredEntries();
     const selectedTag = this.listController.getSelectedTag();
-    const tagFilters = this.listController.getTagFilters();
+    const hashtagFilters = this.listController.getHashtagFilters();
     const { sortValue } = this.listController.getSortConfig();
     // Empty state
     if (entries.length === 0) {
@@ -255,7 +255,7 @@ export class EntryListComponent extends LitElement {
       return html`
           <entry-list-header
             .selectedTag=${selectedTag}
-            .tagFilters=${tagFilters}
+            .tagFilters=${hashtagFilters}
             .currentSortValue=${sortValue}>
           </entry-list-header>
           <div class="empty-state">${msg}</div>
@@ -269,7 +269,7 @@ export class EntryListComponent extends LitElement {
     return html`
         <entry-list-header
           .selectedTag=${selectedTag}
-          .tagFilters=${tagFilters}
+          .tagFilters=${hashtagFilters}
           .currentSortValue=${sortValue}>
         </entry-list-header>
           ${repeat(
