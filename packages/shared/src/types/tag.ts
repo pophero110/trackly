@@ -1,8 +1,8 @@
 /**
- * Entity type definitions
+ * Tag type definitions
  */
 
-export type EntityType =
+export type TagType =
   | 'Habit'
   | 'Task'
   | 'Mood'
@@ -57,7 +57,7 @@ export interface SelectOption {
   label: string;
 }
 
-export interface EntityProperty {
+export interface TagProperty {
   id: string;
   name: string;
   valueType: ValueType;
@@ -65,20 +65,20 @@ export interface EntityProperty {
   options?: SelectOption[];  // For 'select' valueType
 }
 
-export interface IEntity {
+export interface ITag {
   id: string;
   name: string;
-  type: EntityType;
+  type: TagType;
   categories: string[];
   valueType?: ValueType;
   options?: SelectOption[];  // For 'select' valueType
-  properties?: EntityProperty[];  // Custom properties
+  properties?: TagProperty[];  // Custom properties
   createdAt: string;
   updatedAt?: string;
 }
 
-export interface EntityFormData {
+export interface TagFormData {
   name: string;
-  type: EntityType;
+  type: TagType;
   categories?: string;
 }

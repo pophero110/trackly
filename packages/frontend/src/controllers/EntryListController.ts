@@ -1,7 +1,7 @@
 import { ReactiveController, ReactiveControllerHost } from 'lit';
 import { StoreController } from './StoreController.js';
 import { Entry } from '../models/Entry.js';
-import { Entity } from '../models/Entity.js';
+import { Tag } from '../models/Tag.js';
 import { URLStateManager } from '../utils/urlState.js';
 
 /**
@@ -28,7 +28,7 @@ export class EntryListController implements ReactiveController {
 
   /**
    * Get filtered entries based on current URL state
-   * Note: Tag filtering is now handled server-side via API
+   * Note: Hashtag filtering is now handled server-side via API
    */
   getFilteredEntries(): Entry[] {
     const store = this.storeController.store;
@@ -36,31 +36,31 @@ export class EntryListController implements ReactiveController {
 
     let entries = store.getEntries();
 
-    // Filter by selected entity
-    const selectedEntityId = store.getSelectedEntityId();
-    if (selectedEntityId) {
-      entries = entries.filter(e => e.entityId === selectedEntityId);
+    // Filter by selected tag
+    const selectedTagId = store.getSelectedTagId();
+    if (selectedTagId) {
+      entries = entries.filter(e => e.tagId === selectedTagId);
     }
 
     return entries;
   }
 
   /**
-   * Get selected entity if any
+   * Get selected tag if any
    */
-  getSelectedEntity(): Entity | null {
+  getSelectedTag(): Tag | null {
     const store = this.storeController.store;
     if (!store) return null;
 
-    const selectedEntityId = store.getSelectedEntityId();
-    return selectedEntityId ? store.getEntityById(selectedEntityId) : null;
+    const selectedTagId = store.getSelectedTagId();
+    return selectedTagId ? store.getTagById(selectedTagId) ?? null : null;
   }
 
   /**
-   * Get current tag filters
+   * Get current hashtag filters
    */
-  getTagFilters(): string[] {
-    return URLStateManager.getTagFilters();
+  getHashtagFilters(): string[] {
+    return URLStateManager.getHashtagFilters();
   }
 
   /**
@@ -75,7 +75,7 @@ export class EntryListController implements ReactiveController {
   }
 
   /**
-   * Get all entries for header (used for tag extraction)
+   * Get all entries for header (used for hashtag extraction)
    */
   getAllEntries(): Entry[] {
     const store = this.storeController.store;

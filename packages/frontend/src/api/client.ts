@@ -1,4 +1,4 @@
-import type { IEntity, IEntry, AuthResponse, PaginatedEntriesResponse } from '@trackly/shared';
+import type { ITag, IEntry, AuthResponse, PaginatedEntriesResponse } from '@trackly/shared';
 
 /**
  * API configuration
@@ -90,62 +90,62 @@ export class APIClient {
     return this.getAuthToken() !== null;
   }
 
-  // Entities
-  static async getEntities(): Promise<IEntity[]> {
-    return this.request<IEntity[]>('/api/entities');
+  // Tags
+  static async getTags(): Promise<ITag[]> {
+    return this.request<ITag[]>('/api/tags');
   }
 
-  static async getEntity(id: string): Promise<IEntity> {
-    return this.request<IEntity>(`/api/entities/${id}`);
+  static async getTag(id: string): Promise<ITag> {
+    return this.request<ITag>(`/api/tags/${id}`);
   }
 
-  static async createEntity(data: Omit<IEntity, 'id' | 'createdAt' | 'updatedAt'>): Promise<IEntity> {
-    return this.request<IEntity>('/api/entities', {
+  static async createTag(data: Omit<ITag, 'id' | 'createdAt' | 'updatedAt'>): Promise<ITag> {
+    return this.request<ITag>('/api/tags', {
       method: 'POST',
       body: JSON.stringify(data),
     });
   }
 
-  static async updateEntity(id: string, data: Partial<IEntity>): Promise<IEntity> {
-    return this.request<IEntity>(`/api/entities/${id}`, {
+  static async updateTag(id: string, data: Partial<ITag>): Promise<ITag> {
+    return this.request<ITag>(`/api/tags/${id}`, {
       method: 'PUT',
       body: JSON.stringify(data),
     });
   }
 
-  static async deleteEntity(id: string): Promise<void> {
-    return this.request<void>(`/api/entities/${id}`, {
+  static async deleteTag(id: string): Promise<void> {
+    return this.request<void>(`/api/tags/${id}`, {
       method: 'DELETE',
     });
   }
 
   // Entries
   static async getEntries(params?: {
-    entityId?: string;
+    tagId?: string;
     sortBy?: string;
     sortOrder?: 'asc' | 'desc';
     includeArchived?: boolean;
     limit?: number;
     after?: string;
     afterId?: string;
-    tags?: string[];
+    hashtags?: string[];
   }): Promise<PaginatedEntriesResponse> {
     const queryParams = new URLSearchParams();
-    if (params?.entityId) queryParams.set('entityId', params.entityId);
+    if (params?.tagId) queryParams.set('tagId', params.tagId);
     if (params?.sortBy) queryParams.set('sortBy', params.sortBy);
     if (params?.sortOrder) queryParams.set('sortOrder', params.sortOrder);
     if (params?.includeArchived) queryParams.set('includeArchived', 'true');
     if (params?.limit) queryParams.set('limit', params.limit.toString());
     if (params?.after) queryParams.set('after', params.after);
     if (params?.afterId) queryParams.set('afterId', params.afterId);
-    if (params?.tags && params.tags.length > 0) queryParams.set('tags', params.tags.join(','));
+    if (params?.hashtags && params.hashtags.length > 0) queryParams.set('hashtags', params.hashtags.join(','));
 
     const query = queryParams.toString() ? `?${queryParams.toString()}` : '';
     return this.request<PaginatedEntriesResponse>(`/api/entries${query}`);
   }
 
-  static async getTags(): Promise<{ tags: string[] }> {
-    return this.request<{ tags: string[] }>('/api/entries/tags');
+  static async getHashtags(): Promise<{ hashtags: string[] }> {
+    return this.request<{ hashtags: string[] }>('/api/entries/hashtags');
   }
 
   static async getEntry(id: string): Promise<IEntry> {

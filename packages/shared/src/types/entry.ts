@@ -4,14 +4,14 @@
 
 export interface IEntry {
   id: string;
-  entityId: string;
-  entityName: string;
+  tagId: string;
+  tagName: string;
   title: string;  // Mandatory title for the entry
   timestamp: string;
   value?: string | number | boolean;
   valueDisplay?: string;  // For storing fetched titles or display text
   notes: string;
-  tags?: string[];  // Extracted hashtags (for API responses)
+  hashtags?: string[];  // Extracted hashtags (for API responses)
   latitude?: number;  // Location latitude
   longitude?: number;  // Location longitude
   locationName?: string;  // Optional location name (e.g., "San Francisco, CA")

@@ -37,8 +37,8 @@ export const loginSchema = z.object({
   password: z.string().min(1, 'Password is required')
 });
 
-// Entity validation schemas
-export const createEntitySchema = z.object({
+// Tag validation schemas
+export const createTagSchema = z.object({
   name: z.string().min(1, 'Name is required'),
   type: z.string().min(1, 'Type is required'),
   categories: z.array(z.string()).optional().default([]),
@@ -47,7 +47,7 @@ export const createEntitySchema = z.object({
   properties: z.any().optional()
 });
 
-export const updateEntitySchema = z.object({
+export const updateTagSchema = z.object({
   name: z.string().min(1).optional(),
   type: z.string().min(1).optional(),
   categories: z.array(z.string()).optional(),
@@ -58,7 +58,7 @@ export const updateEntitySchema = z.object({
 
 // Entry validation schemas
 export const createEntrySchema = z.object({
-  entityId: z.string().min(1, 'Entity ID is required'),
+  tagId: z.string().min(1, 'Tag ID is required'),
   title: z.string().min(1, 'Title is required'),
   timestamp: z.string().datetime('Invalid timestamp'),
   value: z.union([z.string(), z.number(), z.boolean()]).optional(),
@@ -70,8 +70,8 @@ export const createEntrySchema = z.object({
 });
 
 export const updateEntrySchema = z.object({
-  entityId: z.string().optional(),
-  entityName: z.string().optional(),
+  tagId: z.string().optional(),
+  tagName: z.string().optional(),
   title: z.string().min(1, 'Title cannot be blank').optional(),
   timestamp: z.string().datetime().optional(),
   value: z.union([z.string(), z.number(), z.boolean()]).optional(),

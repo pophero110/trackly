@@ -3,8 +3,8 @@ import { customElement, property, state, query } from 'lit/decorators.js';
 import { map } from 'lit/directives/map.js';
 import { when } from 'lit/directives/when.js';
 import { Entry } from '../models/Entry.js';
-import { Entity } from '../models/Entity.js';
-import { extractHashtags, getEntityColor } from '../utils/entryHelpers.js';
+import { Tag } from '../models/Tag.js';
+import { extractHashtags, getTagColor } from '../utils/entryHelpers.js';
 import { URLStateManager } from '../utils/urlState.js';
 import { Store } from '../state/Store.js';
 import { storeRegistry } from '../state/StoreRegistry.js';
@@ -12,7 +12,7 @@ import { toast } from '../utils/toast.js';
 import './DropdownMenuComponent.lit.js';
 import type { DropdownMenuComponent, DropdownMenuItem } from './DropdownMenuComponent.lit.js';
 
-type OpenDropdown = 'context-menu' | 'entity-menu' | null;
+type OpenDropdown = 'context-menu' | 'tag-menu' | null;
 
 /**
  * EntryListItem Lit Component
@@ -103,29 +103,29 @@ export class EntryListItem extends LitElement {
       line-height: 1.4;
     }
 
-    .entry-chip-entity {
-      --entity-color: #3b82f6;
-      background: color-mix(in srgb, var(--entity-color) 12%, transparent);
-      color: var(--entity-color);
-      border: 1px solid color-mix(in srgb, var(--entity-color) 30%, transparent);
+    .entry-chip-tag {
+      --tag-color: #3b82f6;
+      background: color-mix(in srgb, var(--tag-color) 12%, transparent);
+      color: var(--tag-color);
+      border: 1px solid color-mix(in srgb, var(--tag-color) 30%, transparent);
       cursor: pointer;
       transition: all 0.2s;
       font-weight: 600;
     }
 
-    .entry-chip-entity:hover {
-      background: color-mix(in srgb, var(--entity-color) 20%, transparent);
-      border-color: color-mix(in srgb, var(--entity-color) 50%, transparent);
+    .entry-chip-tag:hover {
+      background: color-mix(in srgb, var(--tag-color) 20%, transparent);
+      border-color: color-mix(in srgb, var(--tag-color) 50%, transparent);
       transform: translateY(-1px);
-      box-shadow: 0 2px 4px color-mix(in srgb, var(--entity-color) 15%, transparent);
+      box-shadow: 0 2px 4px color-mix(in srgb, var(--tag-color) 15%, transparent);
     }
 
-    .entry-chip-entity-container {
+    .entry-chip-tag-container {
       display: inline-block;
       position: relative;
     }
 
-    .entry-chip-entity svg {
+    .entry-chip-tag svg {
       margin-left: 4px;
       vertical-align: middle;
     }
@@ -191,8 +191,8 @@ export class EntryListItem extends LitElement {
   @query('dropdown-menu[data-menu-type="context"]')
   private contextMenu?: DropdownMenuComponent;
 
-  @query('dropdown-menu[data-menu-type="entity"]')
-  private entityMenu?: DropdownMenuComponent;
+  @query('dropdown-menu[data-menu-type="tag"]')
+  private tagMenu?: DropdownMenuComponent;
 
   private store!: Store;
 
@@ -212,13 +212,13 @@ export class EntryListItem extends LitElement {
     ];
   }
 
-  private get entityMenuItems(): DropdownMenuItem[] {
-    const allEntities = this.store?.getEntities() || [];
-    return allEntities.map(entity => ({
-      id: entity.id,
-      label: entity.name,
-      color: getEntityColor(entity.name),
-      data: entity
+  private get tagMenuItems(): DropdownMenuItem[] {
+    const allTags = this.store?.getTags() || [];
+    return allTags.map(tag => ({
+      id: tag.id,
+      label: tag.name,
+      color: getTagColor(tag.name),
+      data: tag
     }));
   }
 
@@ -233,7 +233,7 @@ export class EntryListItem extends LitElement {
 
   private handleCardClick = (e: MouseEvent) => {
     const target = e.target as HTMLElement;
-    if (target.closest('[data-action="menu"], a, .timeline-entry-tag, .entry-chip-entity-container')) {
+    if (target.closest('[data-action="menu"], a, .timeline-entry-tag, .entry-chip-tag-container')) {
       return;
     }
     URLStateManager.showEntryDetail(this.entry.id);
@@ -246,9 +246,9 @@ export class EntryListItem extends LitElement {
 
     if (!this.contextMenu || !menuButton) return;
 
-    // Close entity menu if open
-    if (this.openDropdown === 'entity-menu') {
-      this.entityMenu?.close();
+    // Close tag menu if open
+    if (this.openDropdown === 'tag-menu') {
+      this.tagMenu?.close();
     }
 
     this.openDropdown = 'context-menu';
@@ -272,28 +272,28 @@ export class EntryListItem extends LitElement {
     URLStateManager.addTagFilter(tag);
   };
 
-  private handleEntityChipClick = (e: MouseEvent) => {
+  private handleTagChipClick = (e: MouseEvent) => {
     e.stopPropagation();
     const target = e.target as HTMLElement;
-    const entityChip = target.closest('.entry-chip-entity-container') as HTMLElement;
+    const tagChip = target.closest('.entry-chip-tag-container') as HTMLElement;
 
-    if (!this.entityMenu || !entityChip) return;
+    if (!this.tagMenu || !tagChip) return;
 
     // Close context menu if open
     if (this.openDropdown === 'context-menu') {
       this.contextMenu?.close();
     }
 
-    this.openDropdown = 'entity-menu';
-    const rect = entityChip.getBoundingClientRect();
-    this.entityMenu.openAt(rect.left, rect.bottom + 4);
+    this.openDropdown = 'tag-menu';
+    const rect = tagChip.getBoundingClientRect();
+    this.tagMenu.openAt(rect.left, rect.bottom + 4);
   };
 
-  private handleEntityMenuAction = (e: CustomEvent) => {
+  private handleTagMenuAction = (e: CustomEvent) => {
     e.stopPropagation();
     const { data } = e.detail;
     if (data) {
-      this.handleEntityChange(data as Entity);
+      this.handleTagChange(data as Tag);
     }
   };
 
@@ -303,41 +303,41 @@ export class EntryListItem extends LitElement {
     }
   };
 
-  private handleEntityMenuClose = () => {
-    if (this.openDropdown === 'entity-menu') {
+  private handleTagMenuClose = () => {
+    if (this.openDropdown === 'tag-menu') {
       this.openDropdown = null;
     }
   };
 
-  private async handleEntityChange(newEntity: Entity) {
+  private async handleTagChange(newTag: Tag) {
     if (!this.store) {
       console.error('Store not available');
       return;
     }
 
-    const oldEntityId = this.entry.entityId;
-    const oldEntityName = this.entry.entityName;
+    const oldTagId = this.entry.tagId;
+    const oldTagName = this.entry.tagName;
 
     // Optimistic update
     this.entry = {
       ...this.entry,
-      entityId: newEntity.id,
-      entityName: newEntity.name
+      tagId: newTag.id,
+      tagName: newTag.name
     };
     this.requestUpdate();
 
     try {
       await this.store.updateEntry(this.entry.id, {
-        entityId: newEntity.id,
-        entityName: newEntity.name
+        tagId: newTag.id,
+        tagName: newTag.name
       });
     } catch (error) {
-      console.error('Error updating entry entity:', error);
+      console.error('Error updating entry tag:', error);
       // Rollback on error
       this.entry = {
         ...this.entry,
-        entityId: oldEntityId,
-        entityName: oldEntityName
+        tagId: oldTagId,
+        tagName: oldTagName
       };
       this.requestUpdate();
     }
@@ -394,10 +394,10 @@ export class EntryListItem extends LitElement {
   }
 
   render() {
-    const entity = this.store?.getEntityById(this.entry.entityId);
+    const tag = this.store?.getTagById(this.entry.tagId);
 
-    // Entity chip with dropdown
-    const entityColor = entity ? getEntityColor(entity.name) : '';
+    // Tag chip with dropdown
+    const tagColor = tag ? getTagColor(tag.name) : '';
 
     // Extract hashtags from title and notes
     const titleTags = this.entry.title ? extractHashtags(this.entry.title) : [];
@@ -408,15 +408,15 @@ export class EntryListItem extends LitElement {
         <div class="timeline-entry-card" @click=${this.handleCardClick}>
           <div class="timeline-entry-header">
             <div class="timeline-entry-primary">
-              ${when(entity, () => html`
-                <div class="entry-chip-entity-container" data-entry-id="${this.entry.id}">
+              ${when(tag, () => html`
+                <div class="entry-chip-tag-container" data-entry-id="${this.entry.id}">
                   <span
-                    class="entry-chip entry-chip-entity"
-                    data-entity-id="${entity!.id}"
-                    data-entity-name="${entity!.name}"
-                    style="--entity-color: ${entityColor}"
-                    @click=${this.handleEntityChipClick}>
-                    ${entity!.name}
+                    class="entry-chip entry-chip-tag"
+                    data-tag-id="${tag!.id}"
+                    data-tag-name="${tag!.name}"
+                    style="--tag-color: ${tagColor}"
+                    @click=${this.handleTagChipClick}>
+                    ${tag!.name}
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                       <polyline points="6 9 12 15 18 9"></polyline>
                     </svg>
@@ -462,13 +462,13 @@ export class EntryListItem extends LitElement {
         @menu-close=${this.handleContextMenuClose}>
       </dropdown-menu>
 
-      <!-- Entity Selector Menu -->
+      <!-- Tag Selector Menu -->
       <dropdown-menu
-        data-menu-type="entity"
-        .items=${this.entityMenuItems}
-        .menuId=${'entity-selector-' + this.entry.id}
-        @menu-action=${this.handleEntityMenuAction}
-        @menu-close=${this.handleEntityMenuClose}>
+        data-menu-type="tag"
+        .items=${this.tagMenuItems}
+        .menuId=${'tag-selector-' + this.entry.id}
+        @menu-action=${this.handleTagMenuAction}
+        @menu-close=${this.handleTagMenuClose}>
       </dropdown-menu>
     `;
   }

@@ -1,9 +1,9 @@
 import { escapeHtml } from './helpers.js';
 
 /**
- * Get consistent color for entity based on name
+ * Get consistent color for tag based on name
  */
-export function getEntityColor(entityName: string): string {
+export function getTagColor(tagName: string): string {
   const colorMap: Record<string, string> = {
     'Life': '#10b981',
     'Work': '#3b82f6',
@@ -17,14 +17,14 @@ export function getEntityColor(entityName: string): string {
     'Project': '#14b8a6',
   };
 
-  if (colorMap[entityName]) {
-    return colorMap[entityName];
+  if (colorMap[tagName]) {
+    return colorMap[tagName];
   }
 
-  // Generate consistent color based on entity name hash
+  // Generate consistent color based on tag name hash
   let hash = 0;
-  for (let i = 0; i < entityName.length; i++) {
-    hash = entityName.charCodeAt(i) + ((hash << 5) - hash);
+  for (let i = 0; i < tagName.length; i++) {
+    hash = tagName.charCodeAt(i) + ((hash << 5) - hash);
   }
 
   const hue = Math.abs(hash % 360);

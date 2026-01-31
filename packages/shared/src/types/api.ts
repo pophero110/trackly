@@ -2,7 +2,7 @@
  * API request and response type definitions
  */
 
-import { IEntity } from './entity';
+import { ITag } from './tag';
 import { IEntry } from './entry';
 
 // Authentication
@@ -32,8 +32,8 @@ export interface ApiError {
   details?: unknown;
 }
 
-// Entity API
-export interface CreateEntityRequest {
+// Tag API
+export interface CreateTagRequest {
   name: string;
   type: string;
   categories: string[];
@@ -42,7 +42,7 @@ export interface CreateEntityRequest {
   properties?: unknown;
 }
 
-export interface UpdateEntityRequest {
+export interface UpdateTagRequest {
   name?: string;
   type?: string;
   categories?: string[];
@@ -51,12 +51,12 @@ export interface UpdateEntityRequest {
   properties?: unknown;
 }
 
-export type EntityListResponse = IEntity[];
-export type EntityResponse = IEntity;
+export type TagListResponse = ITag[];
+export type TagResponse = ITag;
 
 // Entry API
 export interface CreateEntryRequest {
-  entityId: string;
+  tagId: string;
   timestamp: string;
   value?: string | number | boolean;
   valueDisplay?: string;
@@ -88,7 +88,7 @@ export interface PaginatedEntriesResponse {
 }
 
 export interface GetEntriesParams {
-  entityId?: string;
+  tagId?: string;
   sortBy?: string;
   sortOrder?: 'asc' | 'desc';
   includeArchived?: boolean;
@@ -99,14 +99,14 @@ export interface GetEntriesParams {
 
 // Sync API
 export interface SyncRequest {
-  entities: IEntity[];
+  tags: ITag[];
   entries: IEntry[];
 }
 
 export interface SyncResponse {
   success: boolean;
   imported: {
-    entities: number;
+    tags: number;
     entries: number;
   };
 }

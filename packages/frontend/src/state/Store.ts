@@ -1,6 +1,6 @@
-import { Entity } from '../models/Entity.js';
+import { Tag } from '../models/Tag.js';
 import { Entry } from '../models/Entry.js';
-import { IEntity, IEntry, StoreListener, Unsubscribe } from '../types/index.js';
+import { ITag, IEntry, StoreListener, Unsubscribe } from '../types/index.js';
 import { APIClient } from '../api/client.js';
 import { URLStateManager } from '../utils/urlState.js';
 import type { PaginationCursor } from '@trackly/shared';
@@ -9,10 +9,10 @@ import type { PaginationCursor } from '@trackly/shared';
  * Central state management store - API-backed
  */
 export class Store {
-  private entities: Entity[];
+  private tags: Tag[];
   private entries: Entry[];
   private listeners: StoreListener[];
-  private selectedEntityId: string | null;
+  private selectedTagId: string | null;
   private isLoaded: boolean;
   private entryVersion: number;
   private paginationState: {
@@ -22,10 +22,10 @@ export class Store {
   };
 
   constructor() {
-    this.entities = [];
+    this.tags = [];
     this.entries = [];
     this.listeners = [];
-    this.selectedEntityId = null;
+    this.selectedTagId = null;
     this.isLoaded = false;
     this.entryVersion = 0;
     this.paginationState = {
@@ -43,18 +43,18 @@ export class Store {
   // Load data from API
   private async loadData(sortBy?: string, sortOrder?: 'asc' | 'desc'): Promise<void> {
     try {
-      const tagFilters = URLStateManager.getTagFilters();
-      const [entitiesData, entriesResponse] = await Promise.all([
-        APIClient.getEntities(),
+      const hashtagFilters = URLStateManager.getHashtagFilters();
+      const [tagsData, entriesResponse] = await Promise.all([
+        APIClient.getTags(),
         APIClient.getEntries({
           sortBy,
           sortOrder,
           limit: 30,
-          tags: tagFilters.length > 0 ? tagFilters : undefined
+          hashtags: hashtagFilters.length > 0 ? hashtagFilters : undefined
         })
       ]);
 
-      this.entities = entitiesData.map(data => new Entity(data));
+      this.tags = tagsData.map(data => new Tag(data));
       this.entries = entriesResponse.entries.map(data => new Entry(data));
       this.paginationState = {
         hasMore: entriesResponse.pagination.hasMore,
@@ -88,54 +88,54 @@ export class Store {
     this.notify();
   }
 
-  // Entity operations
-  getEntities(): Entity[] {
-    return [...this.entities];
+  // Tag operations
+  getTags(): Tag[] {
+    return [...this.tags];
   }
 
-  getEntityById(id: string): Entity | undefined {
-    return this.entities.find(e => e.id === id);
+  getTagById(id: string): Tag | undefined {
+    return this.tags.find(t => t.id === id);
   }
 
-  getEntityByName(name: string): Entity | undefined {
-    return this.entities.find(e => e.name === name);
+  getTagByName(name: string): Tag | undefined {
+    return this.tags.find(t => t.name === name);
   }
 
-  async addEntity(entity: Entity): Promise<void> {
-    const errors = entity.validate();
+  async addTag(tag: Tag): Promise<void> {
+    const errors = tag.validate();
     if (errors.length > 0) {
       throw new Error(errors.join(', '));
     }
 
-    if (this.entities.some(e => e.name === entity.name)) {
-      throw new Error('An entity with this name already exists');
+    if (this.tags.some(t => t.name === tag.name)) {
+      throw new Error('A tag with this name already exists');
     }
 
-    // Create entity via API
-    const created = await APIClient.createEntity({
-      name: entity.name,
-      type: entity.type,
-      categories: entity.categories,
-      valueType: entity.valueType,
-      options: entity.options,
-      properties: entity.properties
+    // Create tag via API
+    const created = await APIClient.createTag({
+      name: tag.name,
+      type: tag.type,
+      categories: tag.categories,
+      valueType: tag.valueType,
+      options: tag.options,
+      properties: tag.properties
     });
 
-    this.entities.push(new Entity(created));
+    this.tags.push(new Tag(created));
     this.notify();
   }
 
-  async updateEntity(id: string, updates: Partial<IEntity>): Promise<void> {
-    const index = this.entities.findIndex(e => e.id === id);
+  async updateTag(id: string, updates: Partial<ITag>): Promise<void> {
+    const index = this.tags.findIndex(t => t.id === id);
     if (index === -1) {
-      throw new Error('Entity not found');
+      throw new Error('Tag not found');
     }
 
     // Update via API
-    const updated = await APIClient.updateEntity(id, updates);
-    this.entities[index] = new Entity(updated);
+    const updated = await APIClient.updateTag(id, updates);
+    this.tags[index] = new Tag(updated);
 
-    const errors = this.entities[index].validate();
+    const errors = this.tags[index].validate();
     if (errors.length > 0) {
       throw new Error(errors.join(', '));
     }
@@ -143,12 +143,12 @@ export class Store {
     this.notify();
   }
 
-  async deleteEntity(id: string): Promise<void> {
+  async deleteTag(id: string): Promise<void> {
     // Delete via API (cascade deletes entries on backend)
-    await APIClient.deleteEntity(id);
+    await APIClient.deleteTag(id);
 
-    this.entities = this.entities.filter(e => e.id !== id);
-    this.entries = this.entries.filter(e => e.entityId !== id);
+    this.tags = this.tags.filter(t => t.id !== id);
+    this.entries = this.entries.filter(e => e.tagId !== id);
     this.notify();
   }
 
@@ -158,12 +158,12 @@ export class Store {
     return this.entries.filter(e => !e.isArchived);
   }
 
-  getEntriesByEntityId(entityId: string, includeArchived: boolean = false): Entry[] {
+  getEntriesByTagId(tagId: string, includeArchived: boolean = false): Entry[] {
     if (includeArchived) {
-      return this.entries.filter(e => e.entityId === entityId);
+      return this.entries.filter(e => e.tagId === tagId);
     }
     // Filter out archived entries by default
-    return this.entries.filter(e => e.entityId === entityId && !e.isArchived);
+    return this.entries.filter(e => e.tagId === tagId && !e.isArchived);
   }
 
   getEntryById(id: string): Entry | undefined {
@@ -186,8 +186,8 @@ export class Store {
     try {
       // Create entry via API in the background
       const createdEntry = await APIClient.createEntry({
-        entityId: entry.entityId,
-        entityName: entry.entityName,
+        tagId: entry.tagId,
+        tagName: entry.tagName,
         title: entry.title,
         timestamp: entry.timestamp,
         value: entry.value,
@@ -314,16 +314,16 @@ export class Store {
     }
   }
 
-  // Selected entity operations
-  getSelectedEntityId(): string | null {
-    return this.selectedEntityId;
+  // Selected tag operations
+  getSelectedTagId(): string | null {
+    return this.selectedTagId;
   }
 
-  setSelectedEntityId(entityId: string | null): void {
-    const changed = this.selectedEntityId !== entityId;
-    this.selectedEntityId = entityId;
+  setSelectedTagId(tagId: string | null): void {
+    const changed = this.selectedTagId !== tagId;
+    this.selectedTagId = tagId;
     this.notify();
-    // Reload entries with entity filter when selection changes
+    // Reload entries with tag filter when selection changes
     if (changed) {
       this.resetPagination();
     }
@@ -349,9 +349,9 @@ export class Store {
           aVal = new Date(a.createdAt || a.timestamp).getTime();
           bVal = new Date(b.createdAt || b.timestamp).getTime();
           break;
-        case 'entityName':
-          aVal = a.entityName?.toLowerCase() || '';
-          bVal = b.entityName?.toLowerCase() || '';
+        case 'tagName':
+          aVal = a.tagName?.toLowerCase() || '';
+          bVal = b.tagName?.toLowerCase() || '';
           break;
         case 'timestamp':
         default:
@@ -382,14 +382,14 @@ export class Store {
     try {
       const sortBy = URLStateManager.getSortBy() || undefined;
       const sortOrder = URLStateManager.getSortOrder() || undefined;
-      const tagFilters = URLStateManager.getTagFilters();
+      const hashtagFilters = URLStateManager.getHashtagFilters();
 
       const response = await APIClient.getEntries({
-        entityId: this.selectedEntityId || undefined,
+        tagId: this.selectedTagId || undefined,
         sortBy,
         sortOrder,
         limit: 30,
-        tags: tagFilters.length > 0 ? tagFilters : undefined
+        hashtags: hashtagFilters.length > 0 ? hashtagFilters : undefined
       });
 
       this.entries = response.entries.map(data => new Entry(data));
@@ -419,16 +419,16 @@ export class Store {
     try {
       const sortBy = URLStateManager.getSortBy() || 'timestamp';
       const sortOrder = URLStateManager.getSortOrder() || 'desc';
-      const tagFilters = URLStateManager.getTagFilters();
+      const hashtagFilters = URLStateManager.getHashtagFilters();
 
       const response = await APIClient.getEntries({
-        entityId: this.selectedEntityId || undefined,
+        tagId: this.selectedTagId || undefined,
         sortBy,
         sortOrder,
         limit: 30,
         after: this.paginationState.nextCursor.after,
         afterId: this.paginationState.nextCursor.afterId,
-        tags: tagFilters.length > 0 ? tagFilters : undefined
+        hashtags: hashtagFilters.length > 0 ? hashtagFilters : undefined
       });
 
       // Append new entries

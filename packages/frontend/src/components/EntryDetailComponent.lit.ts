@@ -14,7 +14,7 @@ import './EntryDetailFooter.lit.js';
  * - EntryDetailController: Handles entry loading, editing, and operations
  *
  * Sub-components:
- * - EntryDetailHeader: Entity chip, timestamp, menu
+ * - EntryDetailHeader: Tag chip, timestamp, menu
  * - EntryDetailEditor: Milkdown markdown editor
  * - EntryDetailFooter: Hashtags
  */
@@ -148,9 +148,9 @@ export class EntryDetailComponent extends LitElement {
     this.detailController.updateNotes(notes);
   };
 
-  private handleEntityChange = async (e: CustomEvent): Promise<void> => {
-    const { entityId, entityName } = e.detail;
-    await this.detailController.updateEntity(entityId, entityName);
+  private handleTagChange = async (e: CustomEvent): Promise<void> => {
+    const { tagId, tagName } = e.detail;
+    await this.detailController.updateTag(tagId, tagName);
   };
 
   private handleMenuAction = async (e: CustomEvent): Promise<void> => {
@@ -184,23 +184,23 @@ export class EntryDetailComponent extends LitElement {
     }
 
     // Check if we have an entry to display
-    if (!this.detailController.entry || !this.detailController.entity) {
+    if (!this.detailController.entry || !this.detailController.tag) {
       return html`
           <div class="empty-state">Entry not found</div>
       `;
     }
 
     const entry = this.detailController.entry;
-    const entity = this.detailController.entity;
-    const allEntities = this.detailController.getAllEntities();
+    const tag = this.detailController.tag;
+    const allTags = this.detailController.getAllTags();
     const hashtags = this.detailController.getHashtags();
 
     return html`
           <entry-detail-header
             .entry=${entry}
-            .entity=${entity}
-            .allEntities=${allEntities}
-            @entity-change=${this.handleEntityChange}
+            .tag=${tag}
+            .allTags=${allTags}
+            @tag-change=${this.handleTagChange}
             @menu-action=${this.handleMenuAction}>
           </entry-detail-header>
 

@@ -2,7 +2,7 @@ import { html, css, LitElement } from 'lit';
 import { customElement, property, state, query } from 'lit/decorators.js';
 import { when } from 'lit/directives/when.js';
 import { URLStateManager } from '../utils/urlState.js';
-import { Entity } from '../models/Entity.js';
+import { Tag } from '../models/Tag.js';
 import { Entry } from '../models/Entry.js';
 import { Store } from '../state/Store.js';
 import { storeRegistry } from '../state/StoreRegistry.js';
@@ -141,7 +141,7 @@ export class EntryListHeader extends LitElement {
     }
   `;
   @property({ type: Object })
-  selectedEntity: Entity | null = null;
+  selectedTag: Tag | null = null;
 
   @property({ type: Array })
   tagFilters: string[] = [];
@@ -235,14 +235,14 @@ export class EntryListHeader extends LitElement {
       return;
     }
 
-    // Use selected entity if on entity entries page, otherwise fall back to Inbox
-    const entity = this.selectedEntity ?? this.store.getEntities().find(e => e.name === "Inbox");
-    if (!entity) return;
+    // Use selected tag if on tag entries page, otherwise fall back to Inbox
+    const tag = this.selectedTag ?? this.store.getTags().find(t => t.name === "Inbox");
+    if (!tag) return;
 
     try {
       const entry = new Entry({
-        entityId: entity.id,
-        entityName: entity.name,
+        tagId: tag.id,
+        tagName: tag.name,
         title: title,
         timestamp: new Date().toISOString(),
         notes: ''

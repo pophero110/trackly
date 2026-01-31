@@ -1,44 +1,44 @@
 /**
  * URL State Manager - Uses route as the source of truth for app state
- * Path-based routing: /entities/life/entries
+ * Path-based routing: /tags/life/entries
  */
 
 type StateChangeCallback = () => void;
 
-export type ActionType = 'log-entry' | 'create-entity' | 'edit-entity' | 'clone-entity' | 'edit-entry' | null;
+export type ActionType = 'log-entry' | 'create-tag' | 'edit-tag' | 'clone-tag' | 'edit-entry' | null;
 
 export class URLStateManager {
   private static listeners: StateChangeCallback[] = [];
   private static originUrl: string | null = null;
 
   /**
-   * Encode entity name for URL path (lowercase, replace spaces with hyphens)
+   * Encode tag name for URL path (lowercase, replace spaces with hyphens)
    */
-  private static encodeEntityName(name: string): string {
+  private static encodeTagName(name: string): string {
     return name.toLowerCase().replace(/\s+/g, '-');
   }
 
   /**
-   * Decode entity slug to find actual entity name
-   * The encoded value is lowercase with hyphens, we need to find the matching entity
+   * Decode tag slug to find actual tag name
+   * The encoded value is lowercase with hyphens, we need to find the matching tag
    * Note: This requires access to the store, so it's handled in app.ts instead
    * For now, just return the encoded value and let the caller handle the lookup
    */
-  private static decodeEntityName(encoded: string): string {
+  private static decodeTagName(encoded: string): string {
     // The encoded value is already the slug format (lowercase, hyphens)
-    // The caller (app.ts) will use store.getEntityByName or similar lookup
+    // The caller (app.ts) will use store.getTagByName or similar lookup
     return encoded;
   }
 
   /**
    * Parse the current pathname and return route info
    */
-  private static parsePathname(): { view: 'home' | 'entities' | 'entries', entitySlug?: string } {
+  private static parsePathname(): { view: 'home' | 'tags' | 'entries', tagSlug?: string } {
     const path = window.location.pathname;
 
-    // Match /entities
-    if (path === '/entities') {
-      return { view: 'entities' };
+    // Match /tags
+    if (path === '/tags') {
+      return { view: 'tags' };
     }
 
     // Match /entries (all entries view)
@@ -46,10 +46,10 @@ export class URLStateManager {
       return { view: 'entries' };
     }
 
-    // Match /entities/:entitySlug/entries
-    const entriesMatch = path.match(/^\/entities\/([^/]+)\/entries$/);
+    // Match /tags/:tagSlug/entries
+    const entriesMatch = path.match(/^\/tags\/([^/]+)\/entries$/);
     if (entriesMatch) {
-      return { view: 'entries', entitySlug: entriesMatch[1] };
+      return { view: 'entries', tagSlug: entriesMatch[1] };
     }
 
     // Default to home (redirect to /entries)
@@ -57,18 +57,18 @@ export class URLStateManager {
   }
 
   /**
-   * Get selected entity name from URL path
-   * Needs to match entity slug to actual entity name
+   * Get selected tag name from URL path
+   * Needs to match tag slug to actual tag name
    */
-  static getSelectedEntityName(): string | null {
-    const { entitySlug } = URLStateManager.parsePathname();
-    return entitySlug || null;
+  static getSelectedTagName(): string | null {
+    const { tagSlug } = URLStateManager.parsePathname();
+    return tagSlug || null;
   }
 
   /**
    * Get current view from URL path
    */
-  static getView(): 'home' | 'entities' | 'entries' {
+  static getView(): 'home' | 'tags' | 'entries' {
     const { view } = URLStateManager.parsePathname();
     return view;
   }
@@ -80,34 +80,34 @@ export class URLStateManager {
     const params = new URLSearchParams(window.location.search);
     const action = params.get('action');
 
-    if (action === 'log-entry' || action === 'create-entity' || action === 'edit-entity' || action === 'clone-entity' || action === 'edit-entry') {
+    if (action === 'log-entry' || action === 'create-tag' || action === 'edit-tag' || action === 'clone-tag' || action === 'edit-entry') {
       return action;
     }
     return null;
   }
 
   /**
-   * Get entity name for editing from URL
+   * Get tag name for editing from URL
    */
-  static getEditEntityName(): string | null {
+  static getEditTagName(): string | null {
     const params = new URLSearchParams(window.location.search);
     const encoded = params.get('edit');
-    return encoded ? URLStateManager.decodeEntityName(encoded) : null;
+    return encoded ? URLStateManager.decodeTagName(encoded) : null;
   }
 
-  static getCloneEntityName(): string | null {
+  static getCloneTagName(): string | null {
     const params = new URLSearchParams(window.location.search);
     const encoded = params.get('clone');
-    return encoded ? URLStateManager.decodeEntityName(encoded) : null;
+    return encoded ? URLStateManager.decodeTagName(encoded) : null;
   }
 
   /**
-   * Set selected entity name in URL (deprecated - use showEntryList instead)
+   * Set selected tag name in URL (deprecated - use showEntryList instead)
    */
-  static setSelectedEntityName(entityName: string | null): void {
-    if (entityName) {
-      const slug = URLStateManager.encodeEntityName(entityName);
-      URLStateManager.updatePath(`/entities/${slug}/entries`);
+  static setSelectedTagName(tagName: string | null): void {
+    if (tagName) {
+      const slug = URLStateManager.encodeTagName(tagName);
+      URLStateManager.updatePath(`/tags/${slug}/entries`);
     } else {
       URLStateManager.updatePath('/entries');
     }
@@ -116,9 +116,9 @@ export class URLStateManager {
   /**
    * Set current view in URL (deprecated - use specific navigation methods)
    */
-  static setView(view: 'home' | 'entities' | 'entries'): void {
-    if (view === 'entities') {
-      URLStateManager.updatePath('/entities');
+  static setView(view: 'home' | 'tags' | 'entries'): void {
+    if (view === 'tags') {
+      URLStateManager.updatePath('/tags');
     } else if (view === 'entries') {
       URLStateManager.updatePath('/entries');
     } else if (view === 'home') {
@@ -127,22 +127,22 @@ export class URLStateManager {
   }
 
   /**
-   * Navigate to entity entry list
+   * Navigate to tag entry list
    */
-  static showEntryList(entityName: string): void {
-    const slug = URLStateManager.encodeEntityName(entityName);
+  static showEntryList(tagName: string): void {
+    const slug = URLStateManager.encodeTagName(tagName);
     const params = new URLSearchParams(window.location.search);
     const queryString = params.toString();
-    const path = `/entities/${slug}/entries${queryString ? '?' + queryString : ''}`;
+    const path = `/tags/${slug}/entries${queryString ? '?' + queryString : ''}`;
     URLStateManager.updatePath(path);
   }
 
   /**
-   * Navigate back to entity grid
+   * Navigate back to tag grid
    */
   static showGrid(): void {
-    // Navigate to /entities with no query parameters (fresh state)
-    window.history.pushState(null, '', '/entities');
+    // Navigate to /tags with no query parameters (fresh state)
+    window.history.pushState(null, '', '/tags');
     URLStateManager.notifyListeners();
   }
 
@@ -197,21 +197,21 @@ export class URLStateManager {
   }
 
   /**
-   * Open create entity panel
+   * Open create tag panel
    */
-  static openCreateEntityPanel(): void {
+  static openCreateTagPanel(): void {
     const params = new URLSearchParams(window.location.search);
-    params.set('action', 'create-entity');
+    params.set('action', 'create-tag');
     URLStateManager.updateURL(params);
   }
 
   /**
-   * Open edit entity panel
+   * Open edit tag panel
    */
-  static openEditEntityPanel(entityName: string): void {
+  static openEditTagPanel(tagName: string): void {
     const params = new URLSearchParams(window.location.search);
-    params.set('action', 'edit-entity');
-    params.set('edit', URLStateManager.encodeEntityName(entityName));
+    params.set('action', 'edit-tag');
+    params.set('edit', URLStateManager.encodeTagName(tagName));
     URLStateManager.updateURL(params);
   }
 
@@ -234,17 +234,72 @@ export class URLStateManager {
   }
 
   /**
-   * Get entity name from URL query parameter (for log entry panel)
+   * Get tag name from URL query parameter (for log entry panel)
    */
-  static getEntityParam(): string | null {
+  static getTagParam(): string | null {
     const params = new URLSearchParams(window.location.search);
-    const encoded = params.get('entity');
-    return encoded ? URLStateManager.decodeEntityName(encoded) : null;
+    const encoded = params.get('tag');
+    return encoded ? URLStateManager.decodeTagName(encoded) : null;
+  }
+
+  /**
+   * Get multiple hashtag filters from URL
+   * Returns array of hashtag names (without # symbol)
+   */
+  static getHashtagFilters(): string[] {
+    const params = new URLSearchParams(window.location.search);
+    const hashtags = params.get('hashtags');
+    if (hashtags) {
+      return hashtags.split(',').map(t => t.trim()).filter(t => t.length > 0);
+    }
+    return [];
+  }
+
+  /**
+   * Set multiple hashtag filters in URL
+   * Pass array of hashtag names (without # symbol)
+   */
+  static setHashtagFilters(hashtags: string[]): void {
+    const params = new URLSearchParams(window.location.search);
+
+    if (hashtags && hashtags.length > 0) {
+      params.set('hashtags', hashtags.join(','));
+    } else {
+      params.delete('hashtags');
+    }
+
+    URLStateManager.updateURL(params);
+  }
+
+  /**
+   * Add a hashtag to the current filters
+   */
+  static addHashtagFilter(hashtag: string): void {
+    const current = URLStateManager.getHashtagFilters();
+    if (!current.includes(hashtag)) {
+      URLStateManager.setHashtagFilters([...current, hashtag]);
+    }
+  }
+
+  /**
+   * Remove a hashtag from the current filters
+   */
+  static removeHashtagFilter(hashtag: string): void {
+    const current = URLStateManager.getHashtagFilters();
+    const filtered = current.filter(t => t !== hashtag);
+    URLStateManager.setHashtagFilters(filtered);
+  }
+
+  /**
+   * Clear all hashtag filters
+   */
+  static clearHashtagFilters(): void {
+    URLStateManager.setHashtagFilters([]);
   }
 
   /**
    * Get multiple tag filters from URL
-   * Returns array of tag names (without # symbol)
+   * Returns array of tag names
    */
   static getTagFilters(): string[] {
     const params = new URLSearchParams(window.location.search);
@@ -257,7 +312,7 @@ export class URLStateManager {
 
   /**
    * Set multiple tag filters in URL
-   * Pass array of tag names (without # symbol)
+   * Pass array of tag names
    */
   static setTagFilters(tags: string[]): void {
     const params = new URLSearchParams(window.location.search);
@@ -295,61 +350,6 @@ export class URLStateManager {
    */
   static clearTagFilters(): void {
     URLStateManager.setTagFilters([]);
-  }
-
-  /**
-   * Get multiple entity filters from URL
-   * Returns array of entity names
-   */
-  static getEntityFilters(): string[] {
-    const params = new URLSearchParams(window.location.search);
-    const entities = params.get('entities');
-    if (entities) {
-      return entities.split(',').map(e => e.trim()).filter(e => e.length > 0);
-    }
-    return [];
-  }
-
-  /**
-   * Set multiple entity filters in URL
-   * Pass array of entity names
-   */
-  static setEntityFilters(entities: string[]): void {
-    const params = new URLSearchParams(window.location.search);
-
-    if (entities && entities.length > 0) {
-      params.set('entities', entities.join(','));
-    } else {
-      params.delete('entities');
-    }
-
-    URLStateManager.updateURL(params);
-  }
-
-  /**
-   * Add an entity to the current filters
-   */
-  static addEntityFilter(entity: string): void {
-    const current = URLStateManager.getEntityFilters();
-    if (!current.includes(entity)) {
-      URLStateManager.setEntityFilters([...current, entity]);
-    }
-  }
-
-  /**
-   * Remove an entity from the current filters
-   */
-  static removeEntityFilter(entity: string): void {
-    const current = URLStateManager.getEntityFilters();
-    const filtered = current.filter(e => e !== entity);
-    URLStateManager.setEntityFilters(filtered);
-  }
-
-  /**
-   * Clear all entity filters
-   */
-  static clearEntityFilters(): void {
-    URLStateManager.setEntityFilters([]);
   }
 
   /**
@@ -391,29 +391,29 @@ export class URLStateManager {
   }
 
   /**
-   * Get entity sort field from URL
+   * Get tag sort field from URL
    * Note: Uses same parameter name as entries (sortBy) since they're on different routes
    */
-  static getEntitySortBy(): string | null {
+  static getTagSortBy(): string | null {
     const params = new URLSearchParams(window.location.search);
     return params.get('sortBy');
   }
 
   /**
-   * Get entity sort order from URL
+   * Get tag sort order from URL
    * Note: Uses same parameter name as entries (sortOrder) since they're on different routes
    */
-  static getEntitySortOrder(): 'asc' | 'desc' | null {
+  static getTagSortOrder(): 'asc' | 'desc' | null {
     const params = new URLSearchParams(window.location.search);
     const order = params.get('sortOrder');
     return (order === 'asc' || order === 'desc') ? order : null;
   }
 
   /**
-   * Set entity sort parameters in URL
+   * Set tag sort parameters in URL
    * Note: Uses same parameter names as entries (sortBy/sortOrder) since they're on different routes
    */
-  static setEntitySort(sortBy: string | null, sortOrder: 'asc' | 'desc' | null): void {
+  static setTagSort(sortBy: string | null, sortOrder: 'asc' | 'desc' | null): void {
     const params = new URLSearchParams(window.location.search);
 
     if (sortBy) {

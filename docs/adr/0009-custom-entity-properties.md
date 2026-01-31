@@ -1,36 +1,36 @@
-# ADR 0009: Custom Entity Properties System
+# ADR 0009: Custom Tag Properties System
 
 ## Status
 Accepted
 
 ## Context
-Initially, entities had a single optional "value" field with a predefined type (e.g., duration for Exercise, rating for Mood). This worked for simple tracking but was too limited for complex use cases.
+Initially, tags had a single optional "value" field with a predefined type (e.g., duration for Exercise, rating for Mood). This worked for simple tracking but was too limited for complex use cases.
 
 Example limitations:
-- Exercise entity needed to track: sets, reps, weight, duration
-- Book entity needed to track: pages read, author, ISBN
-- Project entity needed to track: status, priority, deadline
+- Exercise tag needed to track: sets, reps, weight, duration
+- Book tag needed to track: pages read, author, ISBN
+- Project tag needed to track: status, priority, deadline
 
-We needed a flexible way to allow users to define custom properties per entity without hardcoding every possible field.
+We needed a flexible way to allow users to define custom properties per tag without hardcoding every possible field.
 
 ## Decision
-We will implement a **dynamic custom properties system** that allows users to define typed properties when creating entities.
+We will implement a **dynamic custom properties system** that allows users to define typed properties when creating tags.
 
 ## Rationale
 
 ### Flexibility
-1. **User-defined schema**: Each entity can have unique properties
+1. **User-defined schema**: Each tag can have unique properties
 2. **Type safety**: Each property has a specific value type
 3. **Optional vs required**: Properties can be marked as required
 4. **No code changes needed**: New use cases don't require code updates
 
 ### Scalability
 1. **Grows with user needs**: Users discover what they need to track
-2. **No predefined limits**: Unlimited properties per entity
+2. **No predefined limits**: Unlimited properties per tag
 3. **Future-proof**: Supports unforeseen tracking requirements
 
 ### Simplicity
-1. **Same as entity value**: Reuses existing value type system
+1. **Same as tag value**: Reuses existing value type system
 2. **Consistent UX**: Property inputs work like main value input
 3. **Minimal cognitive load**: Users understand types from main value
 
@@ -38,9 +38,9 @@ We will implement a **dynamic custom properties system** that allows users to de
 
 ### Data Model
 
-#### Entity Interface
+#### Tag Interface
 ```typescript
-interface EntityProperty {
+interface TagProperty {
   id: string;              // Unique identifier
   name: string;            // Display name (e.g., "Sets", "Author")
   valueType: ValueType;    // Type: number, text, url, date, etc.
@@ -48,14 +48,14 @@ interface EntityProperty {
   options?: SelectOption[]; // For select-type properties
 }
 
-interface IEntity {
+interface ITag {
   id: string;
   name: string;
-  type: EntityType;
+  type: TagType;
   categories: string[];
-  valueType?: ValueType;     // Now optional (entity can have no default value)
+  valueType?: ValueType;     // Now optional (tag can have no default value)
   options?: SelectOption[];
-  properties?: EntityProperty[]; // Array of custom properties
+  properties?: TagProperty[]; // Array of custom properties
   createdAt: string;
 }
 ```
@@ -64,8 +64,8 @@ interface IEntity {
 ```typescript
 interface IEntry {
   id: string;
-  entityId: string;
-  entityName: string;
+  tagId: string;
+  tagName: string;
   timestamp: string;
   value?: string | number | boolean;         // Main value (optional)
   valueDisplay?: string;                     // Display text for URLs
@@ -91,7 +91,7 @@ Reuses the existing ValueType system:
 
 ### UI Components
 
-#### 1. Entity Form - Property Management
+#### 1. Tag Form - Property Management
 - "Custom Properties" section with "+ Add Property" button
 - Clicking opens property modal
 - Properties displayed as list with type badges and remove buttons
@@ -133,7 +133,7 @@ Reuses the existing ValueType system:
 ╚═══════════════════════════════════╝
 ```
 
-**Entity Grid (Compact Display)**:
+**Tag Grid (Compact Display)**:
 - Truncated property values
 - Abbreviated units
 - Only non-empty properties shown
@@ -141,28 +141,28 @@ Reuses the existing ValueType system:
 ## Implementation Details
 
 ### Creating Properties
-1. User clicks "+ Add Property" in entity form
+1. User clicks "+ Add Property" in tag form
 2. Property modal opens with form
 3. User enters name, selects type, sets required flag
-4. Property added to entity.properties array with generated ID
-5. Property saved with entity on form submission
+4. Property added to tag.properties array with generated ID
+5. Property saved with tag on form submission
 
 ### Entering Property Values
-1. Entry form renders input for each entity property
+1. Entry form renders input for each tag property
 2. Input type matches property.valueType
 3. Required properties show asterisk and enforce validation
 4. Values collected on form submit to propertyValues Record
 5. For URL-type properties, title fetching happens asynchronously
 
 ### Displaying Property Values
-1. Entry cards check if entity.properties exists
+1. Entry cards check if tag.properties exists
 2. Filters properties to only show non-empty values
 3. Renders each property with label and formatted value
 4. Uses propertyValueDisplays for URL titles if available
 5. Type-specific formatting (✓/✗ for checkboxes, units for duration/rating)
 
 ### Storage
-- Properties stored in entity as array: `Entity.properties`
+- Properties stored in tag as array: `Tag.properties`
 - Property values stored in entry as Record: `Entry.propertyValues`
 - Uses property ID as key for values: `{ "prop-abc123": 3, "prop-def456": "https://..." }`
 - URL titles stored separately: `Entry.propertyValueDisplays`
@@ -171,11 +171,11 @@ Reuses the existing ValueType system:
 
 ### Positive
 - **Extreme flexibility**: Users can track anything
-- **No backend needed**: Schema defined in entity, values in entry
+- **No backend needed**: Schema defined in tag, values in entry
 - **Type safety**: Value types prevent incorrect data
 - **Reuses existing code**: ValueType config, input components, formatters
-- **Scalable**: Handles 0 to 100+ properties per entity
-- **Backwards compatible**: Entities without properties continue working
+- **Scalable**: Handles 0 to 100+ properties per tag
+- **Backwards compatible**: Tags without properties continue working
 
 ### Negative
 - **localStorage limits**: Many properties = more data per entry
@@ -201,7 +201,7 @@ Reuses the existing ValueType system:
 ### Short-term
 1. **Reorder properties**: Drag and drop in property list
 2. **Edit properties**: Modify name/type/required after creation
-3. **Property templates**: Predefined property sets for common entities
+3. **Property templates**: Predefined property sets for common tags
 4. **Property groups**: Organize related properties visually
 
 ### Long-term
@@ -216,7 +216,7 @@ Reuses the existing ValueType system:
 - Property system reuses value type infrastructure
 
 ## Migration Path
-1. Existing entities: `properties: []` (empty array)
+1. Existing tags: `properties: []` (empty array)
 2. Existing entries: `propertyValues: {}` (empty record)
 3. No data migration needed
 4. Feature is additive, not breaking

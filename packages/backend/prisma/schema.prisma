@@ -17,13 +17,13 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  entities  Entity[]
+  tags      Tag[]
   entries   Entry[]
 
   @@index([email])
 }
 
-model Entity {
+model Tag {
   id         String   @id @default(cuid())
   name       String
   type       String
@@ -41,12 +41,13 @@ model Entity {
 
   @@index([userId])
   @@index([name])
+  @@map("Entity")
 }
 
 model Entry {
   id           String   @id @default(cuid())
-  entityId     String
-  entityName   String   // Denormalized for faster queries
+  tagId        String   @map("entityId")
+  tagName      String   @map("entityName") // Denormalized for faster queries
   title        String   @default("") // Mandatory title for the entry
   timestamp    DateTime
   value        String?
@@ -55,7 +56,7 @@ model Entry {
   latitude     Float?   // Location latitude
   longitude    Float?   // Location longitude
   locationName String?  // Optional location name (e.g., "San Francisco, CA")
-  tags         String[] @default([]) // Extracted hashtags for querying
+  hashtags     String[] @default([]) @map("tags") // Extracted hashtags for querying
   isArchived   Boolean  @default(false)
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
@@ -63,10 +64,10 @@ model Entry {
   userId                String
   user                  User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  entity                Entity   @relation(fields: [entityId], references: [id], onDelete: Cascade)
+  tag                   Tag      @relation(fields: [tagId], references: [id], onDelete: Cascade)
 
   @@index([userId])
-  @@index([entityId])
+  @@index([tagId], map: "Entry_entityId_idx")
   @@index([timestamp])
   @@index([isArchived])
 }

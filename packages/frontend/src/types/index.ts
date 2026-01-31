@@ -2,8 +2,8 @@
  * Type definitions for Trackly
  */
 
-// Core entity types (7 types based on tracking behavior)
-export type EntityType = 'Habit' | 'Metric' | 'Task' | 'Note' | 'Event' | 'Resource' | 'Decision';
+// Core tag types (7 types based on tracking behavior)
+export type TagType = 'Habit' | 'Metric' | 'Task' | 'Note' | 'Event' | 'Resource' | 'Decision';
 
 export type ValueType =
   // Text-based inputs
@@ -40,7 +40,7 @@ export interface SelectOption {
   label: string;
 }
 
-export interface EntityProperty {
+export interface TagProperty {
   id: string;
   name: string;
   valueType: ValueType;
@@ -48,21 +48,21 @@ export interface EntityProperty {
   options?: SelectOption[];  // For 'select' valueType
 }
 
-export interface IEntity {
+export interface ITag {
   id: string;
   name: string;
-  type: EntityType;
+  type: TagType;
   categories: string[];
   valueType?: ValueType;
   options?: SelectOption[];  // For 'select' valueType
-  properties?: EntityProperty[];  // Custom properties
+  properties?: TagProperty[];  // Custom properties
   createdAt: string;
 }
 
 export interface IEntry {
   id: string;
-  entityId: string;
-  entityName: string;
+  tagId: string;
+  tagName: string;
   title: string;  // Mandatory title for the entry
   timestamp: string;
   value?: string | number | boolean;
@@ -75,9 +75,9 @@ export interface IEntry {
   createdAt: string;
 }
 
-export interface EntityFormData {
+export interface TagFormData {
   name: string;
-  type: EntityType;
+  type: TagType;
   categories?: string;
 }
 

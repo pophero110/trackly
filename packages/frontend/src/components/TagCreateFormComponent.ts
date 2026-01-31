@@ -1,16 +1,16 @@
 import { WebComponent } from './WebComponent.js';
-import { Entity } from '../models/Entity.js';
-import { EntityFormData, EntityType, EntityProperty, ValueType, SelectOption } from '../types/index.js';
+import { Tag } from '../models/Tag.js';
+import { TagFormData, TagType, TagProperty, ValueType, SelectOption } from '../types/index.js';
 import { URLStateManager } from '../utils/urlState.js';
 import { generateId } from '../utils/helpers.js';
 import { toast } from '../utils/toast.js';
 
 /**
- * EntityCreateForm Web Component for creating new entities
+ * TagCreateForm Web Component for creating new tags
  * Handles both regular create and clone modes
  */
-export class EntityCreateFormComponent extends WebComponent {
-    private properties: EntityProperty[] = [];
+export class TagCreateFormComponent extends WebComponent {
+    private properties: TagProperty[] = [];
     private hasUnsavedChanges: boolean = false;
 
     connectedCallback(): void {
@@ -25,10 +25,10 @@ export class EntityCreateFormComponent extends WebComponent {
         this.attachEventListeners();
     }
 
-    // For clone mode - provide entity to clone
-    setCloneMode(sourceEntity: Entity): void {
-        // Clone properties from source entity
-        this.properties = sourceEntity.properties ? sourceEntity.properties.map(prop => ({
+    // For clone mode - provide tag to clone
+    setCloneMode(sourceTag: Tag): void {
+        // Clone properties from source tag
+        this.properties = sourceTag.properties ? sourceTag.properties.map(prop => ({
             ...prop,
             id: generateId() // Generate new IDs for cloned properties
         })) : [];
@@ -36,29 +36,29 @@ export class EntityCreateFormComponent extends WebComponent {
         this.render();
         this.attachEventListeners();
 
-        // Pre-fill form with source entity data
-        const nameInput = this.querySelector('#entity-name') as HTMLInputElement;
-        const typeSelect = this.querySelector('#entity-type') as HTMLSelectElement;
+        // Pre-fill form with source tag data
+        const nameInput = this.querySelector('#tag-name') as HTMLInputElement;
+        const typeSelect = this.querySelector('#tag-type') as HTMLSelectElement;
 
         if (nameInput) {
-            nameInput.value = `${sourceEntity.name} (Copy)`;
+            nameInput.value = `${sourceTag.name} (Copy)`;
         }
         if (typeSelect) {
-            typeSelect.value = sourceEntity.type;
+            typeSelect.value = sourceTag.type;
         }
     }
 
     render(): void {
         this.innerHTML = `
-            <form id="entity-create-form">
+            <form id="tag-create-form">
                 <div class="form-group">
-                    <label for="entity-name">Name *</label>
-                    <input type="text" id="entity-name" value="" placeholder="e.g., Morning Run" required>
+                    <label for="tag-name">Name *</label>
+                    <input type="text" id="tag-name" value="" placeholder="e.g., Morning Run" required>
                 </div>
 
                 <div class="form-group">
-                    <label for="entity-type">Type *</label>
-                    <select id="entity-type" required>
+                    <label for="tag-type">Type *</label>
+                    <select id="tag-type" required>
                         <option value="">Select type...</option>
                         <option value="Habit">Habit - Binary yes/no tracking</option>
                         <option value="Metric">Metric - Numeric measurements</option>
@@ -68,7 +68,7 @@ export class EntityCreateFormComponent extends WebComponent {
                         <option value="Resource">Resource - External references (URLs)</option>
                         <option value="Decision">Decision - Choice tracking</option>
                     </select>
-                    <small style="color: var(--text-muted); font-size: 0.75rem; margin-top: 4px; display: block;">Choose based on how you want to track this entity</small>
+                    <small style="color: var(--text-muted); font-size: 0.75rem; margin-top: 4px; display: block;">Choose based on how you want to track this tag</small>
                 </div>
 
                 <!-- Custom Properties - commented out for now
@@ -81,7 +81,7 @@ export class EntityCreateFormComponent extends WebComponent {
                 </div>
                 -->
 
-                <button type="submit" class="btn btn-primary">Create Entity</button>
+                <button type="submit" class="btn btn-primary">Create Tag</button>
             </form>
         `;
     }
@@ -106,7 +106,7 @@ export class EntityCreateFormComponent extends WebComponent {
     }
 
     protected attachEventListeners(): void {
-        const form = this.querySelector('#entity-create-form') as HTMLFormElement;
+        const form = this.querySelector('#tag-create-form') as HTMLFormElement;
 
         if (form) {
             form.addEventListener('submit', (e) => this.handleSubmit(e));
@@ -261,7 +261,7 @@ export class EntityCreateFormComponent extends WebComponent {
             }
 
             if (name) {
-                const newProperty: EntityProperty = {
+                const newProperty: TagProperty = {
                     id: generateId(),
                     name: capitalizeFirstLetter(name),
                     valueType,
@@ -317,18 +317,18 @@ export class EntityCreateFormComponent extends WebComponent {
         e.preventDefault();
 
         try {
-            const name = (this.querySelector('#entity-name') as HTMLInputElement).value.trim();
-            const type = (this.querySelector('#entity-type') as HTMLSelectElement).value as EntityType;
+            const name = (this.querySelector('#tag-name') as HTMLInputElement).value.trim();
+            const type = (this.querySelector('#tag-type') as HTMLSelectElement).value as TagType;
 
-            const formData: EntityFormData = {
+            const formData: TagFormData = {
                 name,
                 type
             };
 
-            // Create new entity
-            const entity = Entity.fromFormData(formData);
-            // entity.properties = this.properties; // Custom Properties - commented out for now
-            await this.store.addEntity(entity);
+            // Create new tag
+            const tag = Tag.fromFormData(formData);
+            // tag.properties = this.properties; // Custom Properties - commented out for now
+            await this.store.addTag(tag);
 
             // Reset unsaved changes flag
             this.hasUnsavedChanges = false;

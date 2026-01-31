@@ -3,15 +3,15 @@
  * Used by both frontend and backend packages
  */
 
-// Entity types
+// Tag types
 export type {
-  EntityType,
+  TagType,
   ValueType,
   SelectOption,
-  EntityProperty,
-  IEntity,
-  EntityFormData,
-} from './types/entity';
+  TagProperty,
+  ITag,
+  TagFormData,
+} from './types/tag';
 
 // Entry types
 export type {
@@ -25,10 +25,10 @@ export type {
   LoginRequest,
   AuthResponse,
   ApiError,
-  CreateEntityRequest,
-  UpdateEntityRequest,
-  EntityListResponse,
-  EntityResponse,
+  CreateTagRequest,
+  UpdateTagRequest,
+  TagListResponse,
+  TagResponse,
   CreateEntryRequest,
   UpdateEntryRequest,
   EntryListResponse,

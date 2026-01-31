@@ -1,32 +1,32 @@
 import { WebComponent } from './WebComponent.js';
-import { Entity } from '../models/Entity.js';
-import { EntityType, EntityProperty, ValueType, SelectOption } from '../types/index.js';
+import { Tag } from '../models/Tag.js';
+import { TagType, TagProperty, ValueType, SelectOption } from '../types/index.js';
 import { URLStateManager } from '../utils/urlState.js';
 import { generateId } from '../utils/helpers.js';
 
 /**
- * EntityEditForm Web Component for editing existing entities
+ * TagEditForm Web Component for editing existing tags
  */
-export class EntityEditFormComponent extends WebComponent {
-  private entity: Entity | null = null;
-  private properties: EntityProperty[] = [];
+export class TagEditFormComponent extends WebComponent {
+  private tag: Tag | null = null;
+  private properties: TagProperty[] = [];
   private hasUnsavedChanges: boolean = false;
 
   connectedCallback(): void {
     // Don't auto-render, wait for setEditMode()
   }
 
-  // For edit mode - provide entity slug
-  setEditMode(entitySlug: string): void {
-    this.entitySlug = entitySlug;
+  // For edit mode - provide tag slug
+  setEditMode(tagSlug: string): void {
+    this.tagSlug = tagSlug;
 
     // Show loading state if data hasn't loaded yet
     if (!this.store.getIsLoaded()) {
-      this.innerHTML = this.renderLoadingState('Loading entity...');
+      this.innerHTML = this.renderLoadingState('Loading tag...');
       // Subscribe to store to render when data loads
       this.unsubscribe = this.store.subscribe(() => {
         if (this.store.getIsLoaded()) {
-          this.initializeEntity(entitySlug);
+          this.initializeTag(tagSlug);
           // Unsubscribe after initialization to prevent repeated calls
           if (this.unsubscribe) {
             this.unsubscribe();
@@ -37,41 +37,41 @@ export class EntityEditFormComponent extends WebComponent {
       return;
     }
 
-    this.initializeEntity(entitySlug);
+    this.initializeTag(tagSlug);
   }
 
-  private initializeEntity(entitySlug: string): void {
-    // Find entity by matching slug (lowercase with hyphens)
-    const entities = this.store.getEntities();
-    const foundEntity = entities.find(e =>
-      e.name.toLowerCase().replace(/\s+/g, '-') === entitySlug.toLowerCase()
+  private initializeTag(tagSlug: string): void {
+    // Find tag by matching slug (lowercase with hyphens)
+    const tags = this.store.getTags();
+    const foundTag = tags.find(e =>
+      e.name.toLowerCase().replace(/\s+/g, '-') === tagSlug.toLowerCase()
     );
 
-    if (foundEntity) {
-      this.entity = foundEntity;
-      this.properties = foundEntity.properties ? [...foundEntity.properties] : [];
+    if (foundTag) {
+      this.tag = foundTag;
+      this.properties = foundTag.properties ? [...foundTag.properties] : [];
       this.hasUnsavedChanges = false;
       this.render();
       this.attachEventListeners();
     } else {
-      this.innerHTML = '<p>Entity not found</p>';
+      this.innerHTML = '<p>Tag not found</p>';
     }
   }
 
   render(): void {
-    const nameValue = this.entity ? this.entity.name : '';
-    const typeValue = this.entity ? this.entity.type : '';
+    const nameValue = this.tag ? this.tag.name : '';
+    const typeValue = this.tag ? this.tag.type : '';
 
     this.innerHTML = `
-            <form id="entity-edit-form">
+            <form id="tag-edit-form">
                 <div class="form-group">
-                    <label for="entity-name">Name *</label>
-                    <input type="text" id="entity-name" value="${nameValue}" placeholder="e.g., Morning Run" required>
+                    <label for="tag-name">Name *</label>
+                    <input type="text" id="tag-name" value="${nameValue}" placeholder="e.g., Morning Run" required>
                 </div>
 
                 <div class="form-group">
-                    <label for="entity-type">Type *</label>
-                    <select id="entity-type" required>
+                    <label for="tag-type">Type *</label>
+                    <select id="tag-type" required>
                         <option value="">Select type...</option>
                         <option value="Habit" ${typeValue === 'Habit' ? 'selected' : ''}>Habit - Binary yes/no tracking</option>
                         <option value="Metric" ${typeValue === 'Metric' ? 'selected' : ''}>Metric - Numeric measurements</option>
@@ -81,19 +81,19 @@ export class EntityEditFormComponent extends WebComponent {
                         <option value="Resource" ${typeValue === 'Resource' ? 'selected' : ''}>Resource - External references (URLs)</option>
                         <option value="Decision" ${typeValue === 'Decision' ? 'selected' : ''}>Decision - Choice tracking</option>
                     </select>
-                    <small style="color: var(--text-muted); font-size: 0.75rem; margin-top: 4px; display: block;">Choose based on how you want to track this entity</small>
+                    <small style="color: var(--text-muted); font-size: 0.75rem; margin-top: 4px; display: block;">Choose based on how you want to track this tag</small>
                 </div>
-                <button type="submit" class="btn btn-primary">Update Entity</button>
+                <button type="submit" class="btn btn-primary">Update Tag</button>
             </form>
         `;
   }
 
   private renderCategoryChips(): string {
-    if (!this.entity || this.entity.categories.length === 0) {
+    if (!this.tag || this.tag.categories.length === 0) {
       return '';
     }
 
-    return this.entity.categories.map(cat => `
+    return this.tag.categories.map(cat => `
             <span class="category-chip" data-category="${cat}">
                 ${cat}
                 <button type="button" class="remove-category-btn" data-category="${cat}">×</button>
@@ -124,7 +124,7 @@ export class EntityEditFormComponent extends WebComponent {
   }
 
   protected attachEventListeners(): void {
-    const form = this.querySelector('#entity-edit-form') as HTMLFormElement;
+    const form = this.querySelector('#tag-edit-form') as HTMLFormElement;
     const addPropertyBtn = this.querySelector('#add-property-btn') as HTMLButtonElement;
     const addCategoryBtn = this.querySelector('#add-category-btn') as HTMLButtonElement;
     const categoryInput = this.querySelector('#category-input') as HTMLInputElement;
@@ -187,10 +187,10 @@ export class EntityEditFormComponent extends WebComponent {
     const categoryInput = this.querySelector('#category-input') as HTMLInputElement;
     const category = categoryInput.value.trim();
 
-    if (category && this.entity) {
+    if (category && this.tag) {
       // Don't add duplicate categories
-      if (!this.entity.categories.includes(category)) {
-        this.entity.categories.push(category);
+      if (!this.tag.categories.includes(category)) {
+        this.tag.categories.push(category);
         this.hasUnsavedChanges = true;
         categoryInput.value = '';
         this.updateCategoriesDisplay();
@@ -199,10 +199,10 @@ export class EntityEditFormComponent extends WebComponent {
   }
 
   private handleRemoveCategory(category: string): void {
-    if (this.entity) {
-      const index = this.entity.categories.indexOf(category);
+    if (this.tag) {
+      const index = this.tag.categories.indexOf(category);
       if (index > -1) {
-        this.entity.categories.splice(index, 1);
+        this.tag.categories.splice(index, 1);
         this.hasUnsavedChanges = true;
         this.updateCategoriesDisplay();
       }
@@ -354,7 +354,7 @@ export class EntityEditFormComponent extends WebComponent {
       }
 
       if (name) {
-        const newProperty: EntityProperty = {
+        const newProperty: TagProperty = {
           id: generateId(),
           name: capitalizeFirstLetter(name),
           valueType,
@@ -572,13 +572,13 @@ export class EntityEditFormComponent extends WebComponent {
     e.preventDefault();
 
     try {
-      const name = (this.querySelector('#entity-name') as HTMLInputElement).value.trim();
-      const type = (this.querySelector('#entity-type') as HTMLSelectElement).value as EntityType;
-      const categories = this.entity ? this.entity.categories : [];
+      const name = (this.querySelector('#tag-name') as HTMLInputElement).value.trim();
+      const type = (this.querySelector('#tag-type') as HTMLSelectElement).value as TagType;
+      const categories = this.tag ? this.tag.categories : [];
 
-      if (this.entity) {
-        // Update existing entity
-        this.store.updateEntity(this.entity.id, {
+      if (this.tag) {
+        // Update existing tag
+        this.store.updateTag(this.tag.id, {
           name,
           type,
           categories,
@@ -596,7 +596,7 @@ export class EntityEditFormComponent extends WebComponent {
       (e.target as HTMLFormElement).reset();
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Unknown error';
-      alert(`Error updating entity: ${message}`);
+      alert(`Error updating tag: ${message}`);
     }
   }
 }

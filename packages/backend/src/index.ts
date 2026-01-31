@@ -4,7 +4,7 @@ import { fileURLToPath } from 'url';
 import { corsMiddleware } from './middleware/cors.js';
 import { errorHandler, notFoundHandler } from './middleware/errorHandler.js';
 import authRoutes from './routes/auth.js';
-import entityRoutes from './routes/entities.js';
+import tagRoutes from './routes/tags.js';
 import entryRoutes from './routes/entries.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -27,7 +27,7 @@ app.use('/dist', express.static(frontendDistPath));
 
 // API Routes
 app.use('/api/auth', authRoutes);
-app.use('/api/entities', entityRoutes);
+app.use('/api/tags', tagRoutes);
 app.use('/api/entries', entryRoutes);
 
 // Health check

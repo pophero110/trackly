@@ -29,13 +29,13 @@ router.post('/register', validate(registerSchema), async (req, res, next): Promi
     // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Create user with default Inbox entity
+    // Create user with default Inbox tag
     const user = await prisma.user.create({
       data: {
         email,
         password: hashedPassword,
         name,
-        entities: {
+        tags: {
           create: {
             name: 'Inbox',
             type: 'Note'

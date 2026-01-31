@@ -1,13 +1,13 @@
 import { ReactiveController, ReactiveControllerHost } from 'lit';
 import { StoreController } from './StoreController.js';
-import { Entity } from '../models/Entity.js';
+import { Tag } from '../models/Tag.js';
 import { URLStateManager } from '../utils/urlState.js';
 
 /**
- * Reactive Controller for Entity List logic
- * Handles sorting and data preparation for entity lists
+ * Reactive Controller for Tag List logic
+ * Handles sorting and data preparation for tag lists
  */
-export class EntityListController implements ReactiveController {
+export class TagListController implements ReactiveController {
   private host: ReactiveControllerHost;
   private storeController: StoreController;
 
@@ -29,32 +29,32 @@ export class EntityListController implements ReactiveController {
    * Get current sort configuration
    */
   getSortConfig(): { sortBy: string; sortOrder: 'asc' | 'desc'; sortValue: string } {
-    const sortBy = URLStateManager.getEntitySortBy() || 'created';
-    const sortOrder = URLStateManager.getEntitySortOrder() || 'desc';
+    const sortBy = URLStateManager.getTagSortBy() || 'created';
+    const sortOrder = URLStateManager.getTagSortOrder() || 'desc';
     const sortValue = `${sortBy}-${sortOrder}`;
 
     return { sortBy, sortOrder, sortValue };
   }
 
   /**
-   * Get sorted entities based on current sort configuration
+   * Get sorted tags based on current sort configuration
    */
-  getSortedEntities(): Entity[] {
+  getSortedTags(): Tag[] {
     const store = this.storeController.store;
     if (!store) return [];
 
     const { sortBy, sortOrder } = this.getSortConfig();
-    return this.sortEntities(store.getEntities(), sortBy, sortOrder);
+    return this.sortTags(store.getTags(), sortBy, sortOrder);
   }
 
   /**
-   * Sort entities by various criteria
+   * Sort tags by various criteria
    */
-  private sortEntities(entities: Entity[], sortBy: string, sortOrder: 'asc' | 'desc'): Entity[] {
+  private sortTags(tags: Tag[], sortBy: string, sortOrder: 'asc' | 'desc'): Tag[] {
     const store = this.storeController.store;
-    if (!store) return entities;
+    if (!store) return tags;
 
-    const sorted = [...entities];
+    const sorted = [...tags];
 
     switch (sortBy) {
       case 'created':
@@ -67,8 +67,8 @@ export class EntityListController implements ReactiveController {
 
       case 'entries':
         const entryCounts = new Map<string, number>();
-        sorted.forEach(entity => {
-          entryCounts.set(entity.id, store.getEntriesByEntityId(entity.id, false).length);
+        sorted.forEach(tag => {
+          entryCounts.set(tag.id, store.getEntriesByTagId(tag.id, false).length);
         });
         sorted.sort((a, b) => {
           return (entryCounts.get(a.id) || 0) - (entryCounts.get(b.id) || 0);
@@ -91,12 +91,12 @@ export class EntityListController implements ReactiveController {
   }
 
   /**
-   * Check if entity is selected
+   * Check if tag is selected
    */
-  isEntitySelected(entityId: string): boolean {
+  isTagSelected(tagId: string): boolean {
     const store = this.storeController.store;
     if (!store) return false;
 
-    return store.getSelectedEntityId() === entityId;
+    return store.getSelectedTagId() === tagId;
   }
 }

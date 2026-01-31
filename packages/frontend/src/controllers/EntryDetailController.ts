@@ -1,7 +1,7 @@
 import { ReactiveController, ReactiveControllerHost } from 'lit';
 import { StoreController } from './StoreController.js';
 import { Entry } from '../models/Entry.js';
-import { Entity } from '../models/Entity.js';
+import { Tag } from '../models/Tag.js';
 import { debounce } from '../utils/helpers.js';
 import { extractHashtags } from '../utils/entryHelpers.js';
 import { URLStateManager } from '../utils/urlState.js';
@@ -19,7 +19,7 @@ export class EntryDetailController implements ReactiveController {
 
   public entryId: string | null = null;
   public entry: Entry | null = null;
-  public entity: Entity | null = null;
+  public tag: Tag | null = null;
   public editedTitle: string = '';
   public editedNotes: string = '';
   public hasUnsavedChanges: boolean = false;
@@ -85,7 +85,7 @@ export class EntryDetailController implements ReactiveController {
     if (!currentPath.startsWith('/entries/')) {
       this.entryId = null;
       this.entry = null;
-      this.entity = null;
+      this.tag = null;
       this.host.requestUpdate();
       return;
     }
@@ -136,14 +136,14 @@ export class EntryDetailController implements ReactiveController {
     const store = this.storeController.store;
     if (!store || !this.entryId) {
       this.entry = null;
-      this.entity = null;
+      this.tag = null;
       this.host.requestUpdate();
       return;
     }
 
-    this.entry = store.getEntryById(this.entryId);
+    this.entry = store.getEntryById(this.entryId) ?? null;
     if (this.entry) {
-      this.entity = store.getEntityById(this.entry.entityId);
+      this.tag = store.getTagById(this.entry.tagId) ?? null;
       this.editedTitle = this.entry.title || '';
       this.editedNotes = this.entry.notes || '';
       this.hasUnsavedChanges = false;
@@ -278,22 +278,22 @@ export class EntryDetailController implements ReactiveController {
   }
 
   /**
-   * Update entry entity
+   * Update entry tag
    */
-  async updateEntity(newEntityId: string, newEntityName: string): Promise<void> {
+  async updateTag(newTagId: string, newTagName: string): Promise<void> {
     if (!this.entry || !this.storeController.store) return;
 
     try {
       await this.storeController.store.updateEntry(this.entry.id, {
-        entityId: newEntityId,
-        entityName: newEntityName
+        tagId: newTagId,
+        tagName: newTagName
       });
 
       // Reload entry to get updated data
       this.loadEntry();
     } catch (error) {
-      console.error('Error updating entry entity:', error);
-      toast.error('Failed to update entity');
+      console.error('Error updating entry tag:', error);
+      toast.error('Failed to update tag');
     }
   }
 
@@ -337,10 +337,10 @@ export class EntryDetailController implements ReactiveController {
   }
 
   /**
-   * Get all entities for dropdown
+   * Get all tags for dropdown
    */
-  getAllEntities(): Entity[] {
-    return this.storeController.store?.getEntities() || [];
+  getAllTags(): Tag[] {
+    return this.storeController.store?.getTags() || [];
   }
 
   /**

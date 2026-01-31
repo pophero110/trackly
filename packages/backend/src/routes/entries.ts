@@ -14,36 +14,36 @@ router.use(requireAuth);
  * GET /api/entries
  * List entries for the authenticated user with cursor-based pagination
  * Query params:
- *   - entityId (filter by entity)
+ *   - tagId (filter by tag)
  *   - includeArchived (include archived entries)
- *   - sortBy (field to sort by: timestamp, createdAt, entityName)
+ *   - sortBy (field to sort by: timestamp, createdAt, tagName)
  *   - sortOrder (asc or desc, default: desc)
  *   - limit (page size, default: 30)
  *   - after (cursor: sort field value, ISO timestamp or string)
  *   - afterId (cursor: entry ID for tie-breaking)
- *   - tags (comma-separated list of tags to filter by, AND logic)
+ *   - hashtags (comma-separated list of hashtags to filter by, AND logic)
  */
 router.get('/', async (req: AuthRequest, res, next): Promise<void> => {
   try {
     const userId = req.user!.id;
-    const { entityId, includeArchived, sortBy, sortOrder, limit, after, afterId, tags } = req.query;
+    const { tagId, includeArchived, sortBy, sortOrder, limit, after, afterId, hashtags } = req.query;
 
     // Base where clause
     const baseWhere: any = { userId };
-    if (entityId) {
-      baseWhere.entityId = entityId as string;
+    if (tagId) {
+      baseWhere.tagId = tagId as string;
     }
     if (includeArchived !== 'true') {
       baseWhere.isArchived = false;
     }
-    // Filter by tags (AND logic - must have all tags)
-    if (tags) {
-      const tagArray = (tags as string).split(',').map(t => t.trim().toLowerCase());
-      baseWhere.tags = { hasEvery: tagArray };
+    // Filter by hashtags (AND logic - must have all hashtags)
+    if (hashtags) {
+      const hashtagArray = (hashtags as string).split(',').map(t => t.trim().toLowerCase());
+      baseWhere.hashtags = { hasEvery: hashtagArray };
     }
 
     // Determine sort field and order
-    const validSortFields = ['timestamp', 'createdAt', 'entityName', 'updatedAt'];
+    const validSortFields = ['timestamp', 'createdAt', 'tagName', 'updatedAt'];
     const sortField = validSortFields.includes(sortBy as string) ? (sortBy as string) : 'timestamp';
     const order: 'asc' | 'desc' = (sortOrder === 'asc' || sortOrder === 'desc') ? sortOrder : 'desc';
 
@@ -102,8 +102,8 @@ router.get('/', async (req: AuthRequest, res, next): Promise<void> => {
     // Convert to IEntry format
     const formattedEntries: IEntry[] = resultEntries.map(entry => ({
       id: entry.id,
-      entityId: entry.entityId,
-      entityName: entry.entityName,
+      tagId: entry.tagId,
+      tagName: entry.tagName,
       title: entry.title,
       timestamp: entry.timestamp.toISOString(),
       value: entry.value || undefined,
@@ -130,27 +130,27 @@ router.get('/', async (req: AuthRequest, res, next): Promise<void> => {
 });
 
 /**
- * GET /api/entries/tags
- * Get all unique tags for the authenticated user
+ * GET /api/entries/hashtags
+ * Get all unique hashtags for the authenticated user
  */
-router.get('/tags', async (req: AuthRequest, res, next): Promise<void> => {
+router.get('/hashtags', async (req: AuthRequest, res, next): Promise<void> => {
   try {
     const userId = req.user!.id;
 
-    // Get all unique tags from non-archived entries
+    // Get all unique hashtags from non-archived entries
     const entries = await prisma.entry.findMany({
       where: { userId, isArchived: false },
-      select: { tags: true }
+      select: { hashtags: true }
     });
 
-    // Flatten and deduplicate tags
-    const allTags = new Set<string>();
+    // Flatten and deduplicate hashtags
+    const allHashtags = new Set<string>();
     entries.forEach(entry => {
-      entry.tags.forEach(tag => allTags.add(tag));
+      entry.hashtags.forEach(hashtag => allHashtags.add(hashtag));
     });
 
-    const sortedTags = Array.from(allTags).sort();
-    res.json({ tags: sortedTags });
+    const sortedHashtags = Array.from(allHashtags).sort();
+    res.json({ hashtags: sortedHashtags });
   } catch (error) {
     next(error);
   }
@@ -176,8 +176,8 @@ router.get('/:id', async (req: AuthRequest, res, next): Promise<void> => {
 
     const formattedEntry: IEntry = {
       id: entry.id,
-      entityId: entry.entityId,
-      entityName: entry.entityName,
+      tagId: entry.tagId,
+      tagName: entry.tagName,
       title: entry.title,
       timestamp: entry.timestamp.toISOString(),
       value: entry.value || undefined,
@@ -204,37 +204,37 @@ router.get('/:id', async (req: AuthRequest, res, next): Promise<void> => {
 router.post('/', validate(createEntrySchema), async (req: AuthRequest, res, next): Promise<void> => {
   try {
     const userId = req.user!.id;
-    const { entityId, title, timestamp, value, valueDisplay, notes, latitude, longitude, locationName } = req.body;
+    const { tagId, title, timestamp, value, valueDisplay, notes, latitude, longitude, locationName } = req.body;
 
-    // Verify entity exists and belongs to user
-    const entity = await prisma.entity.findFirst({
-      where: { id: entityId, userId }
+    // Verify tag exists and belongs to user
+    const tag = await prisma.tag.findFirst({
+      where: { id: tagId, userId }
     });
 
-    if (!entity) {
-      res.status(404).json({ error: 'Entity not found' });
+    if (!tag) {
+      res.status(404).json({ error: 'Tag not found' });
       return;
     }
 
-    // Extract tags from notes and title
-    const extractedTags = [
+    // Extract hashtags from notes and title
+    const extractedHashtags = [
       ...extractHashtags(notes || ''),
       ...extractHashtags(title || '')
     ];
-    // Deduplicate tags
-    const tags = [...new Set(extractedTags)];
+    // Deduplicate hashtags
+    const hashtags = [...new Set(extractedHashtags)];
 
     // Create entry
     const entry = await prisma.entry.create({
       data: {
-        entityId,
-        entityName: entity.name,
+        tagId,
+        tagName: tag.name,
         title,
         timestamp: new Date(timestamp),
         value: value?.toString() || null,
         valueDisplay: valueDisplay || null,
         notes: notes || '',
-        tags,
+        hashtags,
         latitude: latitude ?? null,
         longitude: longitude ?? null,
         locationName: locationName || null,
@@ -244,8 +244,8 @@ router.post('/', validate(createEntrySchema), async (req: AuthRequest, res, next
 
     const formattedEntry: IEntry = {
       id: entry.id,
-      entityId: entry.entityId,
-      entityName: entry.entityName,
+      tagId: entry.tagId,
+      tagName: entry.tagName,
       title: entry.title,
       timestamp: entry.timestamp.toISOString(),
       value: entry.value || undefined,
@@ -284,22 +284,22 @@ router.put('/:id', validate(updateEntrySchema), async (req: AuthRequest, res, ne
       return;
     }
 
-    // If entityId is being updated, verify the new entity exists and belongs to user
-    if (req.body.entityId && req.body.entityId !== existingEntry.entityId) {
-      const newEntity = await prisma.entity.findFirst({
-        where: { id: req.body.entityId, userId }
+    // If tagId is being updated, verify the new tag exists and belongs to user
+    if (req.body.tagId && req.body.tagId !== existingEntry.tagId) {
+      const newTag = await prisma.tag.findFirst({
+        where: { id: req.body.tagId, userId }
       });
 
-      if (!newEntity) {
-        res.status(404).json({ error: 'New entity not found' });
+      if (!newTag) {
+        res.status(404).json({ error: 'New tag not found' });
         return;
       }
     }
 
     // Prepare update data
     const updateData: any = {};
-    if (req.body.entityId !== undefined) updateData.entityId = req.body.entityId;
-    if (req.body.entityName !== undefined) updateData.entityName = req.body.entityName;
+    if (req.body.tagId !== undefined) updateData.tagId = req.body.tagId;
+    if (req.body.tagName !== undefined) updateData.tagName = req.body.tagName;
     if (req.body.title !== undefined) updateData.title = req.body.title;
     if (req.body.timestamp) updateData.timestamp = new Date(req.body.timestamp);
     if (req.body.value !== undefined) updateData.value = req.body.value?.toString() || null;
@@ -309,15 +309,15 @@ router.put('/:id', validate(updateEntrySchema), async (req: AuthRequest, res, ne
     if (req.body.longitude !== undefined) updateData.longitude = req.body.longitude ?? null;
     if (req.body.locationName !== undefined) updateData.locationName = req.body.locationName || null;
 
-    // Re-extract tags when notes or title change
+    // Re-extract hashtags when notes or title change
     if (req.body.notes !== undefined || req.body.title !== undefined) {
       const notesText = req.body.notes ?? existingEntry.notes ?? '';
       const titleText = req.body.title ?? existingEntry.title ?? '';
-      const extractedTags = [
+      const extractedHashtags = [
         ...extractHashtags(notesText),
         ...extractHashtags(titleText)
       ];
-      updateData.tags = [...new Set(extractedTags)];
+      updateData.hashtags = [...new Set(extractedHashtags)];
     }
 
     // Update entry
@@ -328,8 +328,8 @@ router.put('/:id', validate(updateEntrySchema), async (req: AuthRequest, res, ne
 
     const formattedEntry: IEntry = {
       id: entry.id,
-      entityId: entry.entityId,
-      entityName: entry.entityName,
+      tagId: entry.tagId,
+      tagName: entry.tagName,
       title: entry.title,
       timestamp: entry.timestamp.toISOString(),
       value: entry.value || undefined,
@@ -377,8 +377,8 @@ router.patch('/:id/archive', async (req: AuthRequest, res, next): Promise<void> 
 
     const formattedEntry: IEntry = {
       id: entry.id,
-      entityId: entry.entityId,
-      entityName: entry.entityName,
+      tagId: entry.tagId,
+      tagName: entry.tagName,
       title: entry.title,
       timestamp: entry.timestamp.toISOString(),
       value: entry.value || undefined,

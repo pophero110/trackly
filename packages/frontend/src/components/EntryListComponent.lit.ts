@@ -162,7 +162,7 @@ export class EntryListComponent extends LitElement {
   private storeController = new StoreController(this, {
     selector: (store) => ({
       isLoaded: store.getIsLoaded(),
-      selectedEntityId: store.getSelectedEntityId(),
+      selectedTagId: store.getSelectedTagId(),
       // Track entry version to detect any entry mutations
       entryVersion: store.getEntryVersion(),
     })
@@ -246,15 +246,15 @@ export class EntryListComponent extends LitElement {
 
     // Get all data from controllers
     const entries = this.listController.getFilteredEntries();
-    const selectedEntity = this.listController.getSelectedEntity();
+    const selectedTag = this.listController.getSelectedTag();
     const tagFilters = this.listController.getTagFilters();
     const { sortValue } = this.listController.getSortConfig();
     // Empty state
     if (entries.length === 0) {
-      const msg = selectedEntity ? `No entries yet for ${selectedEntity.name}.` : 'No entries yet.';
+      const msg = selectedTag ? `No entries yet for ${selectedTag.name}.` : 'No entries yet.';
       return html`
           <entry-list-header
-            .selectedEntity=${selectedEntity}
+            .selectedTag=${selectedTag}
             .tagFilters=${tagFilters}
             .currentSortValue=${sortValue}>
           </entry-list-header>
@@ -268,7 +268,7 @@ export class EntryListComponent extends LitElement {
 
     return html`
         <entry-list-header
-          .selectedEntity=${selectedEntity}
+          .selectedTag=${selectedTag}
           .tagFilters=${tagFilters}
           .currentSortValue=${sortValue}>
         </entry-list-header>

@@ -6,9 +6,9 @@ import './components/ModalPanel.lit.js'; // Lit version (self-registering)
 import './components/SlidePanel.lit.js'; // Lit version (self-registering)
 import './components/ToastComponent.lit.js'; // Lit version (self-registering)
 import './components/SearchModal.lit.js'; // Search modal (Cmd+K)
-import { EntityCreateFormComponent } from './components/EntityCreateFormComponent.js';
-import { EntityEditFormComponent } from './components/EntityEditFormComponent.js';
-import './components/EntityListComponent.lit.js'; // Lit version (self-registering)
+import { TagCreateFormComponent } from './components/TagCreateFormComponent.js';
+import { TagEditFormComponent } from './components/TagEditFormComponent.js';
+import './components/TagListComponent.lit.js'; // Lit version (self-registering)
 import './components/EntryListComponent.lit.js'; // Lit version (self-registering)
 import './components/EntryDetailComponent.lit.js'; // Lit version (self-registering)
 import './components/AuthComponent.lit.js'; // Lit version (self-registering)
@@ -49,11 +49,11 @@ class TracklyApp {
 
     // Set up navigation links
     this.setupEntriesLink();
-    this.setupEntitiesLink();
+    this.setupTagsLink();
   }
 
   private setupViewRouting(): void {
-    const entityGrid = document.querySelector('entity-list') as HTMLElement;
+    const tagGrid = document.querySelector('tag-list') as HTMLElement;
     const entryList = document.querySelector('entry-list') as HTMLElement;
     const panel = document.querySelector('modal-panel') as any;
 
@@ -61,15 +61,15 @@ class TracklyApp {
     let lastSortBy: string | undefined = undefined;
     let lastSortOrder: 'asc' | 'desc' | undefined = undefined;
 
-    const updatePageTitle = (view: string, entityName?: string, entryTitle?: string) => {
+    const updatePageTitle = (view: string, tagName?: string, entryTitle?: string) => {
       let title = 'Trackly';
 
       if (entryTitle) {
         title = `${entryTitle} - Trackly`;
-      } else if (view === 'entities') {
-        title = 'Entities - Trackly';
-      } else if (view === 'entries' && entityName) {
-        title = `${entityName} - Trackly`;
+      } else if (view === 'tags') {
+        title = 'Tags - Trackly';
+      } else if (view === 'entries' && tagName) {
+        title = `${tagName} - Trackly`;
       } else if (view === 'entries') {
         title = 'Entries - Trackly';
       }
@@ -80,7 +80,7 @@ class TracklyApp {
     const updateView = () => {
       const path = window.location.pathname;
       const view = URLStateManager.getView();
-      const entitySlug = URLStateManager.getSelectedEntityName();
+      const tagSlug = URLStateManager.getSelectedTagName();
       const actionType = URLStateManager.getAction();
 
       // Redirect home (/) to /entries
@@ -95,13 +95,13 @@ class TracklyApp {
       if (entryDetailMatch) {
         const entryId = entryDetailMatch[1];
 
-        // Show entry list in background (or entities if that was the previous view)
+        // Show entry list in background (or tags if that was the previous view)
         const previousView = sessionStorage.getItem('previousView') || 'entries';
-        if (previousView === 'entities') {
-          if (entityGrid) entityGrid.style.display = 'flex';
+        if (previousView === 'tags') {
+          if (tagGrid) tagGrid.style.display = 'flex';
           if (entryList) entryList.style.display = 'none';
         } else {
-          if (entityGrid) entityGrid.style.display = 'none';
+          if (tagGrid) tagGrid.style.display = 'none';
           if (entryList) entryList.style.display = 'flex';
         }
 
@@ -109,8 +109,8 @@ class TracklyApp {
         if (this.store.getIsLoaded()) {
           const entry = this.store.getEntryById(entryId);
           if (entry) {
-            const entity = this.store.getEntityById(entry.entityId);
-            const entryTitle = entry.notes ? entry.notes.split('\n')[0].trim().substring(0, 50) : entity?.name || 'Entry';
+            const tag = this.store.getTagById(entry.tagId);
+            const entryTitle = entry.notes ? entry.notes.split('\n')[0].trim().substring(0, 50) : tag?.name || 'Entry';
             updatePageTitle('entry-detail', undefined, entryTitle);
           }
         }
@@ -120,19 +120,19 @@ class TracklyApp {
         return;
       }
 
-      // Look up entity by slug (case-insensitive match)
-      let entity = null;
-      if (entitySlug && this.store.getIsLoaded()) {
-        const entities = this.store.getEntities();
-        entity = entities.find(e =>
-          e.name.toLowerCase().replace(/\s+/g, '-') === entitySlug.toLowerCase()
+      // Look up tag by slug (case-insensitive match)
+      let tag = null;
+      if (tagSlug && this.store.getIsLoaded()) {
+        const tags = this.store.getTags();
+        tag = tags.find(t =>
+          t.name.toLowerCase().replace(/\s+/g, '-') === tagSlug.toLowerCase()
         ) || null;
       }
 
       // Handle view routing
-      if (view === 'entries' && entitySlug) {
-        // Show entry list for specific entity
-        if (entityGrid) entityGrid.style.display = 'none';
+      if (view === 'entries' && tagSlug) {
+        // Show entry list for specific tag
+        if (tagGrid) tagGrid.style.display = 'none';
         if (entryList) {
           entryList.style.display = 'flex';
 
@@ -146,33 +146,33 @@ class TracklyApp {
           }
         }
 
-        // Set entity ID if found, or null if still loading
-        const targetEntityId = entity ? entity.id : null;
+        // Set tag ID if found, or null if still loading
+        const targetTagId = tag ? tag.id : null;
 
         // Only update if changed to avoid infinite loop
-        if (this.store.getSelectedEntityId() !== targetEntityId) {
-          this.store.setSelectedEntityId(targetEntityId);
+        if (this.store.getSelectedTagId() !== targetTagId) {
+          this.store.setSelectedTagId(targetTagId);
         }
 
-        // Update page title with entity name
-        updatePageTitle('entries', entity?.name);
-      } else if (view === 'entities') {
-        // Show entity grid
-        if (entityGrid) {
-          entityGrid.style.display = 'flex';
-          // Force re-render when showing entity grid (Lit component)
-          (entityGrid as any).requestUpdate?.();
+        // Update page title with tag name
+        updatePageTitle('entries', tag?.name);
+      } else if (view === 'tags') {
+        // Show tag grid
+        if (tagGrid) {
+          tagGrid.style.display = 'flex';
+          // Force re-render when showing tag grid (Lit component)
+          (tagGrid as any).requestUpdate?.();
         }
         if (entryList) entryList.style.display = 'none';
-        if (this.store.getSelectedEntityId() !== null) {
-          this.store.setSelectedEntityId(null);
+        if (this.store.getSelectedTagId() !== null) {
+          this.store.setSelectedTagId(null);
         }
 
         // Update page title
-        updatePageTitle('entities');
+        updatePageTitle('tags');
       } else if (view === 'entries') {
         // All entries view (/entries)
-        if (entityGrid) entityGrid.style.display = 'none';
+        if (tagGrid) tagGrid.style.display = 'none';
         if (entryList) {
           entryList.style.display = 'flex';
 
@@ -185,15 +185,15 @@ class TracklyApp {
             this.store.sortEntries();
           }
         }
-        if (this.store.getSelectedEntityId() !== null) {
-          this.store.setSelectedEntityId(null);
+        if (this.store.getSelectedTagId() !== null) {
+          this.store.setSelectedTagId(null);
         }
 
         // Update page title
         updatePageTitle('entries');
       } else {
         // Fallback - show all recent entries
-        if (entityGrid) entityGrid.style.display = 'none';
+        if (tagGrid) tagGrid.style.display = 'none';
         if (entryList) {
           entryList.style.display = 'flex';
 
@@ -206,8 +206,8 @@ class TracklyApp {
             this.store.sortEntries();
           }
         }
-        if (this.store.getSelectedEntityId() !== null) {
-          this.store.setSelectedEntityId(null);
+        if (this.store.getSelectedTagId() !== null) {
+          this.store.setSelectedTagId(null);
         }
       }
 
@@ -229,12 +229,12 @@ class TracklyApp {
     if (!panel) return;
 
     if (actionType === 'log-entry') {
-      const selectedEntityName = URLStateManager.getSelectedEntityName();
-      const entity = selectedEntityName ? this.store.getEntityByName(selectedEntityName) : null;
+      const selectedTagName = URLStateManager.getSelectedTagName();
+      const tag = selectedTagName ? this.store.getTagByName(selectedTagName) : null;
 
-      // Set selected entity in store if found
-      if (entity) {
-        this.store.setSelectedEntityId(entity.id);
+      // Set selected tag in store if found
+      if (tag) {
+        this.store.setSelectedTagId(tag.id);
       }
 
       // Open log entry panel
@@ -245,9 +245,9 @@ class TracklyApp {
         formClone.style.display = 'block';
         panel.open('Log New Entry', formClone);
       }
-    } else if (actionType === 'create-entity') {
-      // Open create entity panel
-      const formTemplate = document.querySelector('#entity-create-form-template');
+    } else if (actionType === 'create-tag') {
+      // Open create tag panel
+      const formTemplate = document.querySelector('#tag-create-form-template');
       if (formTemplate && !panel.getIsOpen()) {
         const formClone = formTemplate.cloneNode(true) as HTMLElement;
         formClone.removeAttribute('id');
@@ -258,43 +258,43 @@ class TracklyApp {
           createForm.setCreateMode();
         }
 
-        panel.open('Create New Entity', formClone);
+        panel.open('Create New Tag', formClone);
       }
-    } else if (actionType === 'edit-entity') {
-      // Open edit entity panel
-      const editEntitySlug = URLStateManager.getEditEntityName();
-      if (editEntitySlug) {
-        const formTemplate = document.querySelector('#entity-edit-form-template');
+    } else if (actionType === 'edit-tag') {
+      // Open edit tag panel
+      const editTagSlug = URLStateManager.getEditTagName();
+      if (editTagSlug) {
+        const formTemplate = document.querySelector('#tag-edit-form-template');
         if (formTemplate && !panel.getIsOpen()) {
           const formClone = formTemplate.cloneNode(true) as HTMLElement;
           formClone.removeAttribute('id');
           formClone.style.display = 'block';
 
-          panel.open('Edit Entity', formClone);
+          panel.open('Edit Tag', formClone);
 
           // Wait for element to be connected before calling setEditMode
           setTimeout(() => {
             const editForm = formClone as any;
             if (editForm && typeof editForm.setEditMode === 'function') {
-              editForm.setEditMode(editEntitySlug);
+              editForm.setEditMode(editTagSlug);
             }
           }, 0);
         }
       }
-    } else if (actionType === 'clone-entity') {
-      // Open clone entity panel
-      const cloneEntitySlug = URLStateManager.getCloneEntityName();
-      // Find entity by matching slug (lowercase with hyphens)
-      let entity = null;
-      if (cloneEntitySlug) {
-        const entities = this.store.getEntities();
-        entity = entities.find(e =>
-          e.name.toLowerCase().replace(/\s+/g, '-') === cloneEntitySlug.toLowerCase()
+    } else if (actionType === 'clone-tag') {
+      // Open clone tag panel
+      const cloneTagSlug = URLStateManager.getCloneTagName();
+      // Find tag by matching slug (lowercase with hyphens)
+      let tag = null;
+      if (cloneTagSlug) {
+        const tags = this.store.getTags();
+        tag = tags.find(t =>
+          t.name.toLowerCase().replace(/\s+/g, '-') === cloneTagSlug.toLowerCase()
         ) || null;
       }
 
-      if (entity) {
-        const formTemplate = document.querySelector('#entity-create-form-template');
+      if (tag) {
+        const formTemplate = document.querySelector('#tag-create-form-template');
         if (formTemplate && !panel.getIsOpen()) {
           const formClone = formTemplate.cloneNode(true) as HTMLElement;
           formClone.removeAttribute('id');
@@ -302,10 +302,10 @@ class TracklyApp {
 
           const createForm = formClone as any;
           if (createForm && typeof createForm.setCloneMode === 'function') {
-            createForm.setCloneMode(entity);
+            createForm.setCloneMode(tag);
           }
 
-          panel.open('Clone Entity', formClone);
+          panel.open('Clone Tag', formClone);
         }
       }
     } else {
@@ -321,9 +321,9 @@ class TracklyApp {
     customElements.define('app-tabs', AppTabs);
     // modal-panel is registered via @customElement decorator in ModalPanel.lit.ts
     // slide-panel is registered via @customElement decorator in SlidePanel.lit.ts
-    customElements.define('entity-create-form', EntityCreateFormComponent);
-    customElements.define('entity-edit-form', EntityEditFormComponent);
-    // entity-list is registered via @customElement decorator in EntityListComponent.lit.ts
+    customElements.define('tag-create-form', TagCreateFormComponent);
+    customElements.define('tag-edit-form', TagEditFormComponent);
+    // tag-list is registered via @customElement decorator in TagListComponent.lit.ts
     // entry-list is registered via @customElement decorator in EntryListComponent.lit.ts
     // entry-detail is registered via @customElement decorator in EntryDetailComponent.lit.ts
   }
@@ -407,13 +407,13 @@ class TracklyApp {
     }
   }
 
-  private setupEntitiesLink(): void {
-    const entitiesLink = document.getElementById('entities-link');
-    if (entitiesLink) {
-      entitiesLink.addEventListener('click', (e) => {
+  private setupTagsLink(): void {
+    const tagsLink = document.getElementById('tags-link');
+    if (tagsLink) {
+      tagsLink.addEventListener('click', (e) => {
         e.preventDefault();
-        // Navigate to entities grid view
-        URLStateManager.setView('entities');
+        // Navigate to tags grid view
+        URLStateManager.setView('tags');
       });
     }
   }
