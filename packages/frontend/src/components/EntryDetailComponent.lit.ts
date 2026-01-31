@@ -26,6 +26,7 @@ export class EntryDetailComponent extends LitElement {
       height: 100%;
       padding: var(--base-size-24) !important;
       flex-direction: column;
+      overscroll-behavior: contain;
     }
 
     .entry-detail-title {
