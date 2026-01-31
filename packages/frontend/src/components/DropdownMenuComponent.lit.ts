@@ -47,6 +47,7 @@ export class DropdownMenuComponent extends LitElement {
       z-index: 10000;
       -webkit-user-select: none;
       -webkit-touch-callout: none;
+      overscroll-behavior: contain;
       user-select: none;
     }
 

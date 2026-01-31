@@ -35,7 +35,6 @@ export class SlidePanel extends LitElement {
       z-index: 999;
       display: none;
       touch-action: none;
-      overscroll-behavior: contain;
     }
 
     :host([active]) .backdrop {
@@ -56,6 +55,7 @@ export class SlidePanel extends LitElement {
       z-index: 1000;
       display: flex;
       flex-direction: column;
+      overscroll-behavior: contain;
     }
 
     .close {

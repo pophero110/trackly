@@ -32,7 +32,6 @@ export class SelectionMenuComponent extends LitElement {
       background: transparent;
       overflow: hidden;
       touch-action: none;
-      overscroll-behavior: contain;
     }
 
     .btn-tag-filter {
@@ -84,6 +83,7 @@ export class SelectionMenuComponent extends LitElement {
       left: 0px;
       right: auto;
       max-width: calc(-48px + 100vw);
+      overscroll-behavior: contain;
     }
 
     .tag-filter-option {
