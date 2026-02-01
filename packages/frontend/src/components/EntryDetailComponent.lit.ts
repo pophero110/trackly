@@ -48,6 +48,9 @@ export class EntryDetailComponent extends LitElement {
       font-family: inherit;
       padding: 0;
       margin: 0;
+      resize: none;
+      overflow: hidden;
+      min-height: 1.3em;
     }
 
     .entry-detail-title:focus {
@@ -105,7 +108,7 @@ export class EntryDetailComponent extends LitElement {
   private autocomplete?: TagAutocompleteDropdown;
 
   @query('.entry-detail-title')
-  private titleInput?: HTMLInputElement;
+  private titleInput?: HTMLTextAreaElement;
 
   @state()
   private autocompleteOpen: boolean = false;
@@ -154,7 +157,10 @@ export class EntryDetailComponent extends LitElement {
   };
 
   private handleTitleInput = (e: InputEvent): void => {
-    const input = e.target as HTMLInputElement;
+    const input = e.target as HTMLTextAreaElement;
+    // Auto-resize textarea to fit content
+    input.style.height = 'auto';
+    input.style.height = input.scrollHeight + 'px';
     const value = input.value;
     const cursorPos = input.selectionStart ?? value.length;
 
@@ -289,14 +295,14 @@ export class EntryDetailComponent extends LitElement {
           </entry-detail-header>
 
           <div class="title-container">
-            <input
-              type="text"
+            <textarea
               class="entry-detail-title"
               placeholder="Entry title"
+              rows="1"
               .value=${this.detailController.editedTitle}
               @input=${this.handleTitleInput}
               @keydown=${this.handleTitleKeydown}
-            />
+            ></textarea>
             <tag-autocomplete-dropdown
               .tags=${tagNames}
               .query=${this.autocompleteQuery}
