@@ -40,19 +40,21 @@ export class EntryDetailComponent extends LitElement {
       color: var(--text-primary);
       line-height: 1.3;
       background: none;
-      resize: none;
-      overflow: hidden;
       font-family: inherit;
       word-break: break-word;
       overflow-wrap: break-word;
       white-space: pre-wrap;
-      field-sizing: content;
       min-height: 1lh;
     }
 
     .entry-detail-title:focus-visible {
       border: none;
       outline: none;
+    }
+
+    .entry-detail-title:empty::before {
+      content: attr(data-placeholder);
+      color: var(--text-muted);
     }
 
     entry-detail-editor {
@@ -132,9 +134,11 @@ export class EntryDetailComponent extends LitElement {
   };
 
   private handleTitleChange = (e: InputEvent): void => {
-    const input = e.target as HTMLTextAreaElement;
+    const div = e.target as HTMLDivElement;
+    // Use textContent to get plain text without HTML
+    const text = div.textContent || '';
     // Remove any newlines that might be pasted
-    this.detailController.updateTitle(input.value.replace(/\n/g, ''));
+    this.detailController.updateTitle(text.replace(/\n/g, ''));
   };
 
   private handleTitleKeydown = (e: KeyboardEvent): void => {
@@ -204,13 +208,12 @@ export class EntryDetailComponent extends LitElement {
             @menu-action=${this.handleMenuAction}>
           </entry-detail-header>
 
-          <textarea
+          <div
             class="entry-detail-title"
-            .value=${this.detailController.editedTitle}
+            contenteditable="true"
+            data-placeholder="Entry title"
             @input=${this.handleTitleChange}
-            @keydown=${this.handleTitleKeydown}
-            placeholder="Entry title"
-            rows="1"></textarea>
+            @keydown=${this.handleTitleKeydown}>${this.detailController.editedTitle}</div>
 
           <entry-detail-editor
             .notes=${this.detailController.editedNotes}
