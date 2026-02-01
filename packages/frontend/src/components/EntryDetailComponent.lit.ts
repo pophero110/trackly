@@ -141,6 +141,49 @@ export class EntryDetailComponent extends LitElement {
     }
   }
 
+  private getCaretCoordinates(element: HTMLTextAreaElement, position: number): DOMRect {
+    // Create a mirror div to measure caret position
+    const mirror = document.createElement('div');
+    const style = getComputedStyle(element);
+
+    // Copy textarea styles to mirror
+    mirror.style.position = 'absolute';
+    mirror.style.visibility = 'hidden';
+    mirror.style.whiteSpace = 'pre-wrap';
+    mirror.style.wordWrap = 'break-word';
+    mirror.style.width = style.width;
+    mirror.style.font = style.font;
+    mirror.style.fontSize = style.fontSize;
+    mirror.style.fontFamily = style.fontFamily;
+    mirror.style.fontWeight = style.fontWeight;
+    mirror.style.lineHeight = style.lineHeight;
+    mirror.style.padding = style.padding;
+    mirror.style.border = style.border;
+    mirror.style.boxSizing = style.boxSizing;
+
+    // Get text before cursor and add a span to mark position
+    const textBeforeCursor = element.value.substring(0, position);
+    mirror.textContent = textBeforeCursor;
+
+    const marker = document.createElement('span');
+    marker.textContent = '|';
+    mirror.appendChild(marker);
+
+    document.body.appendChild(mirror);
+
+    const elementRect = element.getBoundingClientRect();
+    const markerRect = marker.getBoundingClientRect();
+    const mirrorRect = mirror.getBoundingClientRect();
+
+    // Calculate position relative to viewport
+    const left = elementRect.left + (markerRect.left - mirrorRect.left);
+    const top = elementRect.top + (markerRect.top - mirrorRect.top);
+
+    document.body.removeChild(mirror);
+
+    return new DOMRect(left, top, 0, markerRect.height);
+  }
+
   connectedCallback(): void {
     super.connectedCallback();
 
@@ -194,7 +237,7 @@ export class EntryDetailComponent extends LitElement {
       if (!textAfterHash.includes(' ')) {
         this.triggerIndex = hashIndex;
         this.autocompleteQuery = textAfterHash;
-        this.inputRect = input.getBoundingClientRect();
+        this.inputRect = this.getCaretCoordinates(input, cursorPos);
         this.autocompleteOpen = true;
         return;
       }
