@@ -11,6 +11,8 @@ import { toast } from '../utils/toast.js';
 import './SelectionMenuComponent.lit.js';
 import type { SelectionMenuComponent } from './SelectionMenuComponent.lit.js';
 import type { SelectionOption } from './SelectionMenuComponent.lit.js';
+import './TagAutocompleteDropdown.lit.js';
+import type { TagAutocompleteDropdown } from './TagAutocompleteDropdown.lit.js';
 // Phosphor icons web components
 import '@phosphor-icons/webcomponents/PhSortAscending';
 import '@phosphor-icons/webcomponents/PhTag';
@@ -167,6 +169,21 @@ export class EntryListHeader extends LitElement {
   @query('.quick-entry-input')
   private quickEntryInput?: HTMLInputElement;
 
+  @query('tag-autocomplete-dropdown')
+  private autocomplete?: TagAutocompleteDropdown;
+
+  @state()
+  private autocompleteOpen: boolean = false;
+
+  @state()
+  private autocompleteQuery: string = '';
+
+  @state()
+  private triggerIndex: number = -1;
+
+  @state()
+  private inputRect: DOMRect | null = null;
+
   private store!: Store;
 
   connectedCallback(): void {
@@ -225,43 +242,154 @@ export class EntryListHeader extends LitElement {
     }
   };
 
-  private handleQuickEntrySubmit = async (e: KeyboardEvent) => {
-    if (e.key !== 'Enter') return;
-
+  private handleQuickEntryInput = (e: InputEvent) => {
     const input = e.target as HTMLInputElement;
-    const title = input.value.trim();
-    if (!title) return;
+    const value = input.value;
+    const cursorPos = input.selectionStart ?? value.length;
+
+    // Find the last # before cursor
+    const textBeforeCursor = value.substring(0, cursorPos);
+    const hashIndex = textBeforeCursor.lastIndexOf('#');
+
+    if (hashIndex !== -1) {
+      const textAfterHash = textBeforeCursor.substring(hashIndex + 1);
+      // Only show dropdown if no space after # (tag still being typed)
+      if (!textAfterHash.includes(' ')) {
+        this.triggerIndex = hashIndex;
+        this.autocompleteQuery = textAfterHash;
+        this.inputRect = input.getBoundingClientRect();
+        this.autocompleteOpen = true;
+        return;
+      }
+    }
+
+    // No active trigger, close dropdown
+    this.closeAutocomplete();
+  };
+
+  private handleQuickEntryKeydown = (e: KeyboardEvent) => {
+    // If autocomplete is open, forward keys to it
+    if (this.autocompleteOpen && this.autocomplete) {
+      const consumed = this.autocomplete.handleKeydown(e);
+      if (consumed) {
+        return;
+      }
+    }
+
+    // Handle Enter for submission when autocomplete is not open
+    if (e.key === 'Enter' && !this.autocompleteOpen) {
+      this.submitQuickEntry();
+    }
+  };
+
+  private async submitQuickEntry(): Promise<void> {
+    const input = this.quickEntryInput;
+    if (!input) return;
+
+    const value = input.value.trim();
+    if (!value) return;
 
     if (!this.store) {
       console.error('Store not available');
       return;
     }
 
-    // Use selected tag if on tag entries page, otherwise fall back to Inbox
-    const tag = this.selectedTag ?? this.store.getTags().find(t => t.name === "Inbox");
-    if (!tag) return;
+    // Parse hashtags from input
+    const hashtagRegex = /#(\S+)/g;
+    const hashtags: string[] = [];
+    let match;
+    while ((match = hashtagRegex.exec(value)) !== null) {
+      hashtags.push(match[1]);
+    }
+
+    // Remove hashtags from title
+    const title = value.replace(hashtagRegex, '').trim();
+    if (!title) {
+      toast.error('Entry needs a title');
+      return;
+    }
+
+    // Find matching tags from available tags
+    const matchedTags = hashtags
+      .map(ht => this.availableTags.find(t => t.toLowerCase() === ht.toLowerCase()))
+      .filter((t): t is string => t !== undefined);
+
+    // Get tag objects from store
+    const storeTags = this.store.getTags();
+    const tagObjects = matchedTags
+      .map(name => storeTags.find(t => t.name === name))
+      .filter((t): t is Tag => t !== undefined);
+
+    // Use matched tags, or fall back to selected tag, or Inbox
+    let finalTags: Tag[] = tagObjects;
+    if (finalTags.length === 0) {
+      const fallbackTag = this.selectedTag ?? storeTags.find(t => t.name === "Inbox");
+      if (fallbackTag) {
+        finalTags = [fallbackTag];
+      }
+    }
+
+    if (finalTags.length === 0) {
+      toast.error('No valid tags found');
+      return;
+    }
 
     try {
       const entry = new Entry({
-        tags: [{
-          id: `temp-${Date.now()}`,
+        tags: finalTags.map(tag => ({
+          id: `temp-${Date.now()}-${tag.id}`,
           tagId: tag.id,
           tagName: tag.name,
           createdAt: new Date().toISOString()
-        }],
+        })),
         title: title,
         timestamp: new Date().toISOString(),
         notes: ''
       });
 
       input.value = '';
+      this.closeAutocomplete();
       toast.success('Quick entry created');
       await this.store.addEntry(entry);
     } catch (error) {
       console.error('Error creating quick entry:', error);
       toast.error('Failed to create entry');
     }
+  }
+
+  private handleTagSelected = (e: CustomEvent<{ tagName: string }>) => {
+    const input = this.quickEntryInput;
+    if (!input) return;
+
+    const { tagName } = e.detail;
+    const value = input.value;
+    const cursorPos = input.selectionStart ?? value.length;
+
+    // Replace from trigger index to cursor with the selected tag
+    const beforeTrigger = value.substring(0, this.triggerIndex);
+    const afterCursor = value.substring(cursorPos);
+    const newValue = `${beforeTrigger}#${tagName} ${afterCursor}`;
+
+    input.value = newValue;
+
+    // Position cursor after inserted tag (trigger + # + tagName + space)
+    const newCursorPos = this.triggerIndex + 1 + tagName.length + 1;
+    input.setSelectionRange(newCursorPos, newCursorPos);
+    input.focus();
+
+    this.closeAutocomplete();
   };
+
+  private handleDropdownClose = () => {
+    this.closeAutocomplete();
+  };
+
+  private closeAutocomplete(): void {
+    this.autocompleteOpen = false;
+    this.autocompleteQuery = '';
+    this.triggerIndex = -1;
+    this.inputRect = null;
+  }
 
   private handleSortMenuOpen = () => {
     // Close tag filter menu if open
@@ -348,11 +476,20 @@ export class EntryListHeader extends LitElement {
             type="text"
             class="quick-entry-input"
             id="quick-entry-input"
-            placeholder="Add a quick entry"
+            placeholder="Add entry... (use # for tags)"
             autocomplete="off"
-            @keypress=${this.handleQuickEntrySubmit}
+            @input=${this.handleQuickEntryInput}
+            @keydown=${this.handleQuickEntryKeydown}
           />
           <kbd class="quick-entry-shortcut">⌘E</kbd>
+          <tag-autocomplete-dropdown
+            .tags=${this.availableTags}
+            .query=${this.autocompleteQuery}
+            .open=${this.autocompleteOpen}
+            .anchorRect=${this.inputRect}
+            @tag-selected=${this.handleTagSelected}
+            @dropdown-close=${this.handleDropdownClose}
+          ></tag-autocomplete-dropdown>
         </div>
     `;
   }
