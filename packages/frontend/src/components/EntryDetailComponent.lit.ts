@@ -120,6 +120,20 @@ export class EntryDetailComponent extends LitElement {
   @state()
   private titleRect: DOMRect | null = null;
 
+  // Track current entry ID to know when to reset title content
+  private currentEntryId: string | null = null;
+
+  protected updated(): void {
+    // Set title content only when entry changes (not on every state update)
+    const entryId = this.detailController.entry?.id ?? null;
+    if (entryId !== this.currentEntryId) {
+      this.currentEntryId = entryId;
+      if (this.titleElement && this.detailController.editedTitle) {
+        this.titleElement.textContent = this.detailController.editedTitle;
+      }
+    }
+  }
+
   connectedCallback(): void {
     super.connectedCallback();
 
@@ -324,7 +338,7 @@ export class EntryDetailComponent extends LitElement {
             contenteditable="true"
             data-placeholder="Entry title"
             @input=${this.handleTitleChange}
-            @keydown=${this.handleTitleKeydown}>${this.detailController.editedTitle}</div>
+            @keydown=${this.handleTitleKeydown}></div>
 
           <tag-autocomplete-dropdown
             .tags=${tagNames}
