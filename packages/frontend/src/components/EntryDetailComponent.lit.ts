@@ -51,6 +51,9 @@ export class EntryDetailComponent extends LitElement {
       resize: none;
       overflow: hidden;
       min-height: 1.3em;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+      overflow-wrap: break-word;
     }
 
     .entry-detail-title:focus {
