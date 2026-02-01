@@ -31,11 +31,14 @@ export class EntryDetailComponent extends LitElement {
       overscroll-behavior: contain;
     }
 
+    .title-container {
+      position: relative;
+    }
+
     .entry-detail-title {
       display: block;
       border: none;
       width: 100%;
-      max-width: 100%;
       box-sizing: border-box;
       font-size: 1.5rem;
       font-weight: 600;
@@ -43,19 +46,15 @@ export class EntryDetailComponent extends LitElement {
       line-height: 1.3;
       background: none;
       font-family: inherit;
-      word-break: break-word;
-      overflow-wrap: break-word;
-      white-space: pre-wrap;
-      min-height: 1lh;
+      padding: 0;
+      margin: 0;
     }
 
-    .entry-detail-title:focus-visible {
-      border: none;
+    .entry-detail-title:focus {
       outline: none;
     }
 
-    .entry-detail-title:empty::before {
-      content: attr(data-placeholder);
+    .entry-detail-title::placeholder {
       color: var(--text-muted);
     }
 
@@ -106,7 +105,7 @@ export class EntryDetailComponent extends LitElement {
   private autocomplete?: TagAutocompleteDropdown;
 
   @query('.entry-detail-title')
-  private titleElement?: HTMLDivElement;
+  private titleInput?: HTMLInputElement;
 
   @state()
   private autocompleteOpen: boolean = false;
@@ -118,21 +117,7 @@ export class EntryDetailComponent extends LitElement {
   private triggerIndex: number = -1;
 
   @state()
-  private titleRect: DOMRect | null = null;
-
-  // Track current entry ID to know when to reset title content
-  private currentEntryId: string | null = null;
-
-  protected updated(): void {
-    // Set title content only when entry changes (not on every state update)
-    const entryId = this.detailController.entry?.id ?? null;
-    if (entryId !== this.currentEntryId) {
-      this.currentEntryId = entryId;
-      if (this.titleElement && this.detailController.editedTitle) {
-        this.titleElement.textContent = this.detailController.editedTitle;
-      }
-    }
-  }
+  private inputRect: DOMRect | null = null;
 
   connectedCallback(): void {
     super.connectedCallback();
@@ -168,27 +153,15 @@ export class EntryDetailComponent extends LitElement {
     }
   };
 
-  private handleTitleChange = (e: InputEvent): void => {
-    const div = e.target as HTMLDivElement;
-    // Use textContent to get plain text without HTML
-    const text = div.textContent || '';
-    // Remove any newlines that might be pasted
-    const cleanText = text.replace(/\n/g, '');
-    this.detailController.updateTitle(cleanText);
+  private handleTitleInput = (e: InputEvent): void => {
+    const input = e.target as HTMLInputElement;
+    const value = input.value;
+    const cursorPos = input.selectionStart ?? value.length;
 
-    // Check for # trigger for tag autocomplete
-    const selection = window.getSelection();
-    if (!selection || selection.rangeCount === 0) {
-      this.closeAutocomplete();
-      return;
-    }
-
-    // Get cursor position in text
-    const range = selection.getRangeAt(0);
-    const cursorPos = range.startOffset;
+    this.detailController.updateTitle(value);
 
     // Find the last # before cursor
-    const textBeforeCursor = cleanText.substring(0, cursorPos);
+    const textBeforeCursor = value.substring(0, cursorPos);
     const hashIndex = textBeforeCursor.lastIndexOf('#');
 
     if (hashIndex !== -1) {
@@ -197,7 +170,7 @@ export class EntryDetailComponent extends LitElement {
       if (!textAfterHash.includes(' ')) {
         this.triggerIndex = hashIndex;
         this.autocompleteQuery = textAfterHash;
-        this.titleRect = div.getBoundingClientRect();
+        this.inputRect = input.getBoundingClientRect();
         this.autocompleteOpen = true;
         return;
       }
@@ -214,34 +187,30 @@ export class EntryDetailComponent extends LitElement {
         return;
       }
     }
-
-    if (e.key === 'Enter') {
-      e.preventDefault();
-    }
   };
 
   private handleTagSelected = (e: CustomEvent<{ tagName: string }>): void => {
-    const div = this.titleElement;
-    if (!div) return;
+    const input = this.titleInput;
+    if (!input) return;
 
     const { tagName } = e.detail;
-    const text = div.textContent || '';
-
-    // Get current cursor position
-    const selection = window.getSelection();
-    const cursorPos = selection?.rangeCount ? selection.getRangeAt(0).startOffset : text.length;
+    const value = input.value;
+    const cursorPos = input.selectionStart ?? value.length;
 
     // Replace from trigger index to cursor with the selected tag
-    const beforeTrigger = text.substring(0, this.triggerIndex);
-    const afterCursor = text.substring(cursorPos);
-    const newText = `${beforeTrigger}#${tagName} ${afterCursor}`;
+    const beforeTrigger = value.substring(0, this.triggerIndex);
+    const afterCursor = value.substring(cursorPos);
+    const newValue = `${beforeTrigger}#${tagName} ${afterCursor}`;
 
-    div.textContent = newText;
-    this.detailController.updateTitle(newText);
+    // Update input and controller
+    this.detailController.updateTitle(newValue);
 
     // Position cursor after inserted tag
-    const newCursorPos = this.triggerIndex + 1 + tagName.length + 1;
-    this.setCursorPosition(div, newCursorPos);
+    this.updateComplete.then(() => {
+      const newCursorPos = this.triggerIndex + 1 + tagName.length + 1;
+      input.setSelectionRange(newCursorPos, newCursorPos);
+      input.focus();
+    });
 
     this.closeAutocomplete();
   };
@@ -254,21 +223,7 @@ export class EntryDetailComponent extends LitElement {
     this.autocompleteOpen = false;
     this.autocompleteQuery = '';
     this.triggerIndex = -1;
-    this.titleRect = null;
-  }
-
-  private setCursorPosition(element: HTMLElement, position: number): void {
-    const range = document.createRange();
-    const selection = window.getSelection();
-    const textNode = element.firstChild;
-
-    if (textNode && selection) {
-      const safePos = Math.min(position, textNode.textContent?.length || 0);
-      range.setStart(textNode, safePos);
-      range.collapse(true);
-      selection.removeAllRanges();
-      selection.addRange(range);
-    }
+    this.inputRect = null;
   }
 
   private handleNotesChange = (e: CustomEvent): void => {
@@ -333,21 +288,24 @@ export class EntryDetailComponent extends LitElement {
             @menu-action=${this.handleMenuAction}>
           </entry-detail-header>
 
-          <div
-            class="entry-detail-title"
-            contenteditable="true"
-            data-placeholder="Entry title"
-            @input=${this.handleTitleChange}
-            @keydown=${this.handleTitleKeydown}></div>
-
-          <tag-autocomplete-dropdown
-            .tags=${tagNames}
-            .query=${this.autocompleteQuery}
-            .open=${this.autocompleteOpen}
-            .anchorRect=${this.titleRect}
-            @tag-selected=${this.handleTagSelected}
-            @dropdown-close=${this.handleDropdownClose}>
-          </tag-autocomplete-dropdown>
+          <div class="title-container">
+            <input
+              type="text"
+              class="entry-detail-title"
+              placeholder="Entry title"
+              .value=${this.detailController.editedTitle}
+              @input=${this.handleTitleInput}
+              @keydown=${this.handleTitleKeydown}
+            />
+            <tag-autocomplete-dropdown
+              .tags=${tagNames}
+              .query=${this.autocompleteQuery}
+              .open=${this.autocompleteOpen}
+              .anchorRect=${this.inputRect}
+              @tag-selected=${this.handleTagSelected}
+              @dropdown-close=${this.handleDropdownClose}>
+            </tag-autocomplete-dropdown>
+          </div>
 
           <entry-detail-editor
             .notes=${this.detailController.editedNotes}
