@@ -39,7 +39,7 @@ export class EntryListController implements ReactiveController {
     // Filter by selected tag
     const selectedTagId = store.getSelectedTagId();
     if (selectedTagId) {
-      entries = entries.filter(e => e.tagId === selectedTagId);
+      entries = entries.filter(e => e.hasTag(selectedTagId));
     }
 
     return entries;

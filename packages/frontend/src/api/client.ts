@@ -121,7 +121,7 @@ export class APIClient {
 
   // Entries
   static async getEntries(params?: {
-    tagId?: string;
+    tagIds?: string[];
     sortBy?: string;
     sortOrder?: 'asc' | 'desc';
     includeArchived?: boolean;
@@ -131,7 +131,7 @@ export class APIClient {
     hashtags?: string[];
   }): Promise<PaginatedEntriesResponse> {
     const queryParams = new URLSearchParams();
-    if (params?.tagId) queryParams.set('tagId', params.tagId);
+    if (params?.tagIds && params.tagIds.length > 0) queryParams.set('tagIds', params.tagIds.join(','));
     if (params?.sortBy) queryParams.set('sortBy', params.sortBy);
     if (params?.sortOrder) queryParams.set('sortOrder', params.sortOrder);
     if (params?.includeArchived) queryParams.set('includeArchived', 'true');
@@ -152,14 +152,34 @@ export class APIClient {
     return this.request<IEntry>(`/api/entries/${id}`);
   }
 
-  static async createEntry(data: Omit<IEntry, 'id' | 'createdAt' | 'updatedAt'>): Promise<IEntry> {
+  static async createEntry(data: {
+    tagIds: string[];
+    title: string;
+    timestamp: string;
+    value?: string | number | boolean;
+    valueDisplay?: string;
+    notes?: string;
+    latitude?: number;
+    longitude?: number;
+    locationName?: string;
+  }): Promise<IEntry> {
     return this.request<IEntry>('/api/entries', {
       method: 'POST',
       body: JSON.stringify(data),
     });
   }
 
-  static async updateEntry(id: string, data: Partial<IEntry>, options?: { keepalive?: boolean }): Promise<IEntry> {
+  static async updateEntry(id: string, data: {
+    tagIds?: string[];
+    title?: string;
+    timestamp?: string;
+    value?: string | number | boolean;
+    valueDisplay?: string;
+    notes?: string;
+    latitude?: number;
+    longitude?: number;
+    locationName?: string;
+  }, options?: { keepalive?: boolean }): Promise<IEntry> {
     return this.request<IEntry>(`/api/entries/${id}`, {
       method: 'PUT',
       body: JSON.stringify(data),

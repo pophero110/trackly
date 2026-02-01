@@ -15,6 +15,7 @@ export type {
 
 // Entry types
 export type {
+  IEntryTag,
   IEntry,
   EntryFormData,
 } from './types/entry';

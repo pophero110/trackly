@@ -3,7 +3,7 @@ import { prisma } from '../db/client.js';
 import { requireAuth, AuthRequest } from '../middleware/auth.js';
 import { validate, createEntrySchema, updateEntrySchema } from '../middleware/validation.js';
 import { extractHashtags } from '../utils/tagExtractor.js';
-import type { IEntry } from '@trackly/shared';
+import type { IEntry, IEntryTag } from '@trackly/shared';
 
 const router: Router = Router();
 
@@ -11,12 +11,40 @@ const router: Router = Router();
 router.use(requireAuth);
 
 /**
+ * Helper function to format entry with tags for API response
+ */
+function formatEntry(entry: any): IEntry {
+  const tags: IEntryTag[] = entry.entryTags.map((et: any) => ({
+    id: et.id,
+    tagId: et.tagId,
+    tagName: et.tag.name,
+    createdAt: et.createdAt.toISOString()
+  }));
+
+  return {
+    id: entry.id,
+    tags,
+    title: entry.title,
+    timestamp: entry.timestamp.toISOString(),
+    value: entry.value || undefined,
+    valueDisplay: entry.valueDisplay || undefined,
+    notes: entry.notes || '',
+    latitude: entry.latitude ?? undefined,
+    longitude: entry.longitude ?? undefined,
+    locationName: entry.locationName || undefined,
+    isArchived: entry.isArchived,
+    createdAt: entry.createdAt.toISOString(),
+    updatedAt: entry.updatedAt.toISOString()
+  };
+}
+
+/**
  * GET /api/entries
  * List entries for the authenticated user with cursor-based pagination
  * Query params:
- *   - tagId (filter by tag)
+ *   - tagIds (comma-separated list of tag IDs to filter by)
  *   - includeArchived (include archived entries)
- *   - sortBy (field to sort by: timestamp, createdAt, tagName)
+ *   - sortBy (field to sort by: timestamp, createdAt)
  *   - sortOrder (asc or desc, default: desc)
  *   - limit (page size, default: 30)
  *   - after (cursor: sort field value, ISO timestamp or string)
@@ -26,16 +54,25 @@ router.use(requireAuth);
 router.get('/', async (req: AuthRequest, res, next): Promise<void> => {
   try {
     const userId = req.user!.id;
-    const { tagId, includeArchived, sortBy, sortOrder, limit, after, afterId, hashtags } = req.query;
+    const { tagIds, includeArchived, sortBy, sortOrder, limit, after, afterId, hashtags } = req.query;
 
     // Base where clause
     const baseWhere: any = { userId };
-    if (tagId) {
-      baseWhere.tagId = tagId as string;
+
+    // Filter by tag IDs (entries must have at least one of these tags)
+    if (tagIds) {
+      const tagIdArray = (tagIds as string).split(',').map(id => id.trim());
+      baseWhere.entryTags = {
+        some: {
+          tagId: { in: tagIdArray }
+        }
+      };
     }
+
     if (includeArchived !== 'true') {
       baseWhere.isArchived = false;
     }
+
     // Filter by hashtags (AND logic - must have all hashtags)
     if (hashtags) {
       const hashtagArray = (hashtags as string).split(',').map(t => t.trim().toLowerCase());
@@ -43,7 +80,7 @@ router.get('/', async (req: AuthRequest, res, next): Promise<void> => {
     }
 
     // Determine sort field and order
-    const validSortFields = ['timestamp', 'createdAt', 'tagName', 'updatedAt'];
+    const validSortFields = ['timestamp', 'createdAt', 'updatedAt'];
     const sortField = validSortFields.includes(sortBy as string) ? (sortBy as string) : 'timestamp';
     const order: 'asc' | 'desc' = (sortOrder === 'asc' || sortOrder === 'desc') ? sortOrder : 'desc';
 
@@ -78,6 +115,13 @@ router.get('/', async (req: AuthRequest, res, next): Promise<void> => {
     // Fetch one extra to determine hasMore
     const entries = await prisma.entry.findMany({
       where,
+      include: {
+        entryTags: {
+          include: {
+            tag: true
+          }
+        }
+      },
       orderBy: [
         { [sortField]: order },
         { id: order }  // Use ID for tie-breaking (consistent with cursor)
@@ -100,22 +144,7 @@ router.get('/', async (req: AuthRequest, res, next): Promise<void> => {
     } : null;
 
     // Convert to IEntry format
-    const formattedEntries: IEntry[] = resultEntries.map(entry => ({
-      id: entry.id,
-      tagId: entry.tagId,
-      tagName: entry.tagName,
-      title: entry.title,
-      timestamp: entry.timestamp.toISOString(),
-      value: entry.value || undefined,
-      valueDisplay: entry.valueDisplay || undefined,
-      notes: entry.notes || '',
-      latitude: entry.latitude ?? undefined,
-      longitude: entry.longitude ?? undefined,
-      locationName: entry.locationName || undefined,
-      isArchived: entry.isArchived,
-      createdAt: entry.createdAt.toISOString(),
-      updatedAt: entry.updatedAt.toISOString()
-    }));
+    const formattedEntries: IEntry[] = resultEntries.map(formatEntry);
 
     res.json({
       entries: formattedEntries,
@@ -166,7 +195,14 @@ router.get('/:id', async (req: AuthRequest, res, next): Promise<void> => {
     const userId = req.user!.id;
 
     const entry = await prisma.entry.findFirst({
-      where: { id, userId }
+      where: { id, userId },
+      include: {
+        entryTags: {
+          include: {
+            tag: true
+          }
+        }
+      }
     });
 
     if (!entry) {
@@ -174,24 +210,7 @@ router.get('/:id', async (req: AuthRequest, res, next): Promise<void> => {
       return;
     }
 
-    const formattedEntry: IEntry = {
-      id: entry.id,
-      tagId: entry.tagId,
-      tagName: entry.tagName,
-      title: entry.title,
-      timestamp: entry.timestamp.toISOString(),
-      value: entry.value || undefined,
-      valueDisplay: entry.valueDisplay || undefined,
-      notes: entry.notes || '',
-      latitude: entry.latitude ?? undefined,
-      longitude: entry.longitude ?? undefined,
-      locationName: entry.locationName || undefined,
-      isArchived: entry.isArchived,
-      createdAt: entry.createdAt.toISOString(),
-      updatedAt: entry.updatedAt.toISOString()
-    };
-
-    res.json(formattedEntry);
+    res.json(formatEntry(entry));
   } catch (error) {
     next(error);
   }
@@ -204,15 +223,18 @@ router.get('/:id', async (req: AuthRequest, res, next): Promise<void> => {
 router.post('/', validate(createEntrySchema), async (req: AuthRequest, res, next): Promise<void> => {
   try {
     const userId = req.user!.id;
-    const { tagId, title, timestamp, value, valueDisplay, notes, latitude, longitude, locationName } = req.body;
+    const { tagIds, title, timestamp, value, valueDisplay, notes, latitude, longitude, locationName } = req.body;
 
-    // Verify tag exists and belongs to user
-    const tag = await prisma.tag.findFirst({
-      where: { id: tagId, userId }
+    // Verify all tags exist and belong to user
+    const tags = await prisma.tag.findMany({
+      where: {
+        id: { in: tagIds },
+        userId
+      }
     });
 
-    if (!tag) {
-      res.status(404).json({ error: 'Tag not found' });
+    if (tags.length !== tagIds.length) {
+      res.status(404).json({ error: 'One or more tags not found' });
       return;
     }
 
@@ -224,11 +246,9 @@ router.post('/', validate(createEntrySchema), async (req: AuthRequest, res, next
     // Deduplicate hashtags
     const hashtags = [...new Set(extractedHashtags)];
 
-    // Create entry
+    // Create entry with tags in a transaction
     const entry = await prisma.entry.create({
       data: {
-        tagId,
-        tagName: tag.name,
         title,
         timestamp: new Date(timestamp),
         value: value?.toString() || null,
@@ -238,28 +258,23 @@ router.post('/', validate(createEntrySchema), async (req: AuthRequest, res, next
         latitude: latitude ?? null,
         longitude: longitude ?? null,
         locationName: locationName || null,
-        userId
+        userId,
+        entryTags: {
+          create: tagIds.map((tagId: string) => ({
+            tagId
+          }))
+        }
+      },
+      include: {
+        entryTags: {
+          include: {
+            tag: true
+          }
+        }
       }
     });
 
-    const formattedEntry: IEntry = {
-      id: entry.id,
-      tagId: entry.tagId,
-      tagName: entry.tagName,
-      title: entry.title,
-      timestamp: entry.timestamp.toISOString(),
-      value: entry.value || undefined,
-      valueDisplay: entry.valueDisplay || undefined,
-      notes: entry.notes || '',
-      latitude: entry.latitude ?? undefined,
-      longitude: entry.longitude ?? undefined,
-      locationName: entry.locationName || undefined,
-      isArchived: entry.isArchived,
-      createdAt: entry.createdAt.toISOString(),
-      updatedAt: entry.updatedAt.toISOString()
-    };
-
-    res.status(201).json(formattedEntry);
+    res.status(201).json(formatEntry(entry));
   } catch (error) {
     next(error);
   }
@@ -276,7 +291,10 @@ router.put('/:id', validate(updateEntrySchema), async (req: AuthRequest, res, ne
 
     // Verify ownership
     const existingEntry = await prisma.entry.findFirst({
-      where: { id, userId }
+      where: { id, userId },
+      include: {
+        entryTags: true
+      }
     });
 
     if (!existingEntry) {
@@ -284,22 +302,23 @@ router.put('/:id', validate(updateEntrySchema), async (req: AuthRequest, res, ne
       return;
     }
 
-    // If tagId is being updated, verify the new tag exists and belongs to user
-    if (req.body.tagId && req.body.tagId !== existingEntry.tagId) {
-      const newTag = await prisma.tag.findFirst({
-        where: { id: req.body.tagId, userId }
+    // If tagIds is being updated, verify all new tags exist and belong to user
+    if (req.body.tagIds !== undefined) {
+      const tags = await prisma.tag.findMany({
+        where: {
+          id: { in: req.body.tagIds },
+          userId
+        }
       });
 
-      if (!newTag) {
-        res.status(404).json({ error: 'New tag not found' });
+      if (tags.length !== req.body.tagIds.length) {
+        res.status(404).json({ error: 'One or more tags not found' });
         return;
       }
     }
 
     // Prepare update data
     const updateData: any = {};
-    if (req.body.tagId !== undefined) updateData.tagId = req.body.tagId;
-    if (req.body.tagName !== undefined) updateData.tagName = req.body.tagName;
     if (req.body.title !== undefined) updateData.title = req.body.title;
     if (req.body.timestamp) updateData.timestamp = new Date(req.body.timestamp);
     if (req.body.value !== undefined) updateData.value = req.body.value?.toString() || null;
@@ -320,30 +339,49 @@ router.put('/:id', validate(updateEntrySchema), async (req: AuthRequest, res, ne
       updateData.hashtags = [...new Set(extractedHashtags)];
     }
 
-    // Update entry
-    const entry = await prisma.entry.update({
-      where: { id },
-      data: updateData
+    // Use transaction to update entry and tags atomically
+    const entry = await prisma.$transaction(async (tx) => {
+      // Update entry fields
+      await tx.entry.update({
+        where: { id },
+        data: updateData
+      });
+
+      // Update tags if provided (replace all existing tags)
+      if (req.body.tagIds !== undefined) {
+        // Delete existing entry tags
+        await tx.entryTag.deleteMany({
+          where: { entryId: id }
+        });
+
+        // Create new entry tags
+        await tx.entryTag.createMany({
+          data: req.body.tagIds.map((tagId: string) => ({
+            entryId: id,
+            tagId
+          }))
+        });
+      }
+
+      // Return updated entry with tags
+      return tx.entry.findUnique({
+        where: { id },
+        include: {
+          entryTags: {
+            include: {
+              tag: true
+            }
+          }
+        }
+      });
     });
 
-    const formattedEntry: IEntry = {
-      id: entry.id,
-      tagId: entry.tagId,
-      tagName: entry.tagName,
-      title: entry.title,
-      timestamp: entry.timestamp.toISOString(),
-      value: entry.value || undefined,
-      valueDisplay: entry.valueDisplay || undefined,
-      notes: entry.notes || '',
-      latitude: entry.latitude ?? undefined,
-      longitude: entry.longitude ?? undefined,
-      locationName: entry.locationName || undefined,
-      isArchived: entry.isArchived,
-      createdAt: entry.createdAt.toISOString(),
-      updatedAt: entry.updatedAt.toISOString()
-    };
+    if (!entry) {
+      res.status(404).json({ error: 'Entry not found' });
+      return;
+    }
 
-    res.json(formattedEntry);
+    res.json(formatEntry(entry));
   } catch (error) {
     next(error);
   }
@@ -372,27 +410,17 @@ router.patch('/:id/archive', async (req: AuthRequest, res, next): Promise<void> 
     // Update archive status
     const entry = await prisma.entry.update({
       where: { id },
-      data: { isArchived: isArchived ?? true }
+      data: { isArchived: isArchived ?? true },
+      include: {
+        entryTags: {
+          include: {
+            tag: true
+          }
+        }
+      }
     });
 
-    const formattedEntry: IEntry = {
-      id: entry.id,
-      tagId: entry.tagId,
-      tagName: entry.tagName,
-      title: entry.title,
-      timestamp: entry.timestamp.toISOString(),
-      value: entry.value || undefined,
-      valueDisplay: entry.valueDisplay || undefined,
-      notes: entry.notes || '',
-      latitude: entry.latitude ?? undefined,
-      longitude: entry.longitude ?? undefined,
-      locationName: entry.locationName || undefined,
-      isArchived: entry.isArchived,
-      createdAt: entry.createdAt.toISOString(),
-      updatedAt: entry.updatedAt.toISOString()
-    };
-
-    res.json(formattedEntry);
+    res.json(formatEntry(entry));
   } catch (error) {
     next(error);
   }
@@ -417,7 +445,7 @@ router.delete('/:id', async (req: AuthRequest, res, next): Promise<void> => {
       return;
     }
 
-    // Delete entry
+    // Delete entry (cascade will delete entry tags)
     await prisma.entry.delete({
       where: { id }
     });

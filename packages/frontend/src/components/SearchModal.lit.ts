@@ -331,7 +331,8 @@ export class SearchModal extends LitElement {
       this.results,
       (entry) => entry.id,
       (entry, index) => {
-        const entity = this.store?.getEntityById(entry.entityId);
+        const primaryTag = entry.primaryTag;
+        const tag = primaryTag ? this.store?.getTagById(primaryTag.tagId) : undefined;
         return html`
                     <div
                       class="search-result-item ${index === this.selectedIndex ? 'selected' : ''}"
@@ -342,7 +343,7 @@ export class SearchModal extends LitElement {
                         ${unsafeHTML(this.highlightMatch(entry.title || 'Untitled', this.searchQuery))}
                       </div>
                       <div class="search-result-meta">
-                        <span class="search-result-entity">${entity?.name || ''}</span>
+                        <span class="search-result-entity">${tag?.name || ''}</span>
                         ${entry.notes ? html`
                           <span class="search-result-preview">
                             ${unsafeHTML(this.highlightMatch(entry.notes.substring(0, 100), this.searchQuery))}

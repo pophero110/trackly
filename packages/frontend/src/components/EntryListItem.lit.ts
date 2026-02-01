@@ -315,30 +315,31 @@ export class EntryListItem extends LitElement {
       return;
     }
 
-    const oldTagId = this.entry.tagId;
-    const oldTagName = this.entry.tagName;
+    const oldTags = [...this.entry.tags];
 
-    // Optimistic update
-    this.entry = {
+    // Optimistic update - replace all tags with the new one
+    this.entry = new Entry({
       ...this.entry,
-      tagId: newTag.id,
-      tagName: newTag.name
-    };
+      tags: [{
+        id: `temp-${Date.now()}`,
+        tagId: newTag.id,
+        tagName: newTag.name,
+        createdAt: new Date().toISOString()
+      }]
+    });
     this.requestUpdate();
 
     try {
       await this.store.updateEntry(this.entry.id, {
-        tagId: newTag.id,
-        tagName: newTag.name
+        tagIds: [newTag.id]
       });
     } catch (error) {
       console.error('Error updating entry tag:', error);
       // Rollback on error
-      this.entry = {
+      this.entry = new Entry({
         ...this.entry,
-        tagId: oldTagId,
-        tagName: oldTagName
-      };
+        tags: oldTags
+      });
       this.requestUpdate();
     }
   };
@@ -394,35 +395,47 @@ export class EntryListItem extends LitElement {
   }
 
   render() {
-    const tag = this.store?.getTagById(this.entry.tagId);
+    // Get the first tag for the dropdown (primary tag)
+    const primaryEntryTag = this.entry.primaryTag;
+    const primaryTag = primaryEntryTag ? this.store?.getTagById(primaryEntryTag.tagId) : undefined;
 
     // Tag chip with dropdown
-    const tagColor = tag ? getTagColor(tag.name) : '';
+    const tagColor = primaryTag ? getTagColor(primaryTag.name) : '';
 
     // Extract hashtags from title and notes
     const titleTags = this.entry.title ? extractHashtags(this.entry.title) : [];
     const notesTags = this.entry.notes ? extractHashtags(this.entry.notes) : [];
-    const tags = [...new Set([...titleTags, ...notesTags])];
+    const hashtags = [...new Set([...titleTags, ...notesTags])];
 
     return html`
         <div class="timeline-entry-card" @click=${this.handleCardClick}>
           <div class="timeline-entry-header">
             <div class="timeline-entry-primary">
-              ${when(tag, () => html`
+              ${when(primaryTag, () => html`
                 <div class="entry-chip-tag-container" data-entry-id="${this.entry.id}">
                   <span
                     class="entry-chip entry-chip-tag"
-                    data-tag-id="${tag!.id}"
-                    data-tag-name="${tag!.name}"
+                    data-tag-id="${primaryTag!.id}"
+                    data-tag-name="${primaryTag!.name}"
                     style="--tag-color: ${tagColor}"
                     @click=${this.handleTagChipClick}>
-                    ${tag!.name}
+                    ${primaryTag!.name}
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                       <polyline points="6 9 12 15 18 9"></polyline>
                     </svg>
                   </span>
                 </div>
               `)}
+              ${map(this.entry.tags.slice(1), entryTag => {
+                const tag = this.store?.getTagById(entryTag.tagId);
+                return tag ? html`
+                  <span
+                    class="entry-chip entry-chip-tag"
+                    style="--tag-color: ${getTagColor(tag.name)}">
+                    ${tag.name}
+                  </span>
+                ` : null;
+              })}
             </div>
             <button
               class="entry-menu-btn"
@@ -437,9 +450,9 @@ export class EntryListItem extends LitElement {
             <div class="timeline-entry-title">${this.entry.title}</div>
           `)}
 
-          ${when(tags.length > 0, () => html`
+          ${when(hashtags.length > 0, () => html`
             <div class="timeline-entry-tags">
-              ${map(tags, tag => html`
+              ${map(hashtags, tag => html`
                 <span
                   class="timeline-entry-tag"
                   data-tag="${tag}"

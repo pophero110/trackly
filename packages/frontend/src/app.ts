@@ -109,7 +109,8 @@ class TracklyApp {
         if (this.store.getIsLoaded()) {
           const entry = this.store.getEntryById(entryId);
           if (entry) {
-            const tag = this.store.getTagById(entry.tagId);
+            const primaryTag = entry.primaryTag;
+            const tag = primaryTag ? this.store.getTagById(primaryTag.tagId) : undefined;
             const entryTitle = entry.notes ? entry.notes.split('\n')[0].trim().substring(0, 50) : tag?.name || 'Entry';
             updatePageTitle('entry-detail', undefined, entryTitle);
           }

@@ -56,18 +56,27 @@ export type TagResponse = ITag;
 
 // Entry API
 export interface CreateEntryRequest {
-  tagId: string;
+  tagIds: string[];  // Array of tag IDs for many-to-many relationship
+  title: string;
   timestamp: string;
   value?: string | number | boolean;
   valueDisplay?: string;
   notes?: string;
+  latitude?: number;
+  longitude?: number;
+  locationName?: string;
 }
 
 export interface UpdateEntryRequest {
+  tagIds?: string[];  // Optional: replace all tags with these
+  title?: string;
   timestamp?: string;
   value?: string | number | boolean;
   valueDisplay?: string;
   notes?: string;
+  latitude?: number;
+  longitude?: number;
+  locationName?: string;
 }
 
 export type EntryListResponse = IEntry[];
@@ -88,7 +97,7 @@ export interface PaginatedEntriesResponse {
 }
 
 export interface GetEntriesParams {
-  tagId?: string;
+  tagIds?: string[];  // Filter by multiple tag IDs (entries must have at least one)
   sortBy?: string;
   sortOrder?: 'asc' | 'desc';
   includeArchived?: boolean;

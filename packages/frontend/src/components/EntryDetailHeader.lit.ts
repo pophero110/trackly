@@ -1,7 +1,9 @@
 import { css, html, LitElement } from 'lit';
 import { customElement, property, state, query } from 'lit/decorators.js';
+import { map } from 'lit/directives/map.js';
 import { Entry } from '../models/Entry.js';
 import { Tag } from '../models/Tag.js';
+import { IEntryTag } from '../types/index.js';
 import { formatDate } from '../utils/helpers.js';
 import { getTagColor } from '../utils/entryHelpers.js';
 import './DropdownMenuComponent.lit.js';
@@ -94,8 +96,8 @@ export class EntryDetailHeader extends LitElement {
   @property({ type: Object })
   entry!: Entry;
 
-  @property({ type: Object })
-  tag!: Tag;
+  @property({ type: Array })
+  entryTags: IEntryTag[] = [];
 
   @property({ type: Array })
   allTags: Tag[] = [];
@@ -211,22 +213,32 @@ export class EntryDetailHeader extends LitElement {
   };
 
   render() {
-    const tagColor = getTagColor(this.tag.name);
     const formattedDate = formatDate(this.entry.timestamp);
+    const primaryTag = this.entryTags[0];
+    const primaryTagColor = primaryTag ? getTagColor(primaryTag.tagName) : '';
 
     return html`
       <div class="entry-detail-tag-time">
-        <div class="entry-chip-tag-container">
+        ${primaryTag ? html`
+          <div class="entry-chip-tag-container">
+            <span
+              class="entry-chip entry-chip-tag"
+              style="--tag-color: ${primaryTagColor}"
+              @click=${this.handleTagChipClick}>
+              ${primaryTag.tagName}
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="6 9 12 15 18 9"></polyline>
+              </svg>
+            </span>
+          </div>
+        ` : null}
+        ${map(this.entryTags.slice(1), entryTag => html`
           <span
             class="entry-chip entry-chip-tag"
-            style="--tag-color: ${tagColor}"
-            @click=${this.handleTagChipClick}>
-            ${this.tag.name}
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <polyline points="6 9 12 15 18 9"></polyline>
-            </svg>
+            style="--tag-color: ${getTagColor(entryTag.tagName)}">
+            ${entryTag.tagName}
           </span>
-        </div>
+        `)}
         <span class="entry-detail-timestamp">${formattedDate}</span>
       </div>
 

@@ -243,8 +243,12 @@ export class EntryListHeader extends LitElement {
 
     try {
       const entry = new Entry({
-        tagId: tag.id,
-        tagName: tag.name,
+        tags: [{
+          id: `temp-${Date.now()}`,
+          tagId: tag.id,
+          tagName: tag.name,
+          createdAt: new Date().toISOString()
+        }],
         title: title,
         timestamp: new Date().toISOString(),
         notes: ''

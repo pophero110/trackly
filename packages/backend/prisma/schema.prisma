@@ -37,17 +37,29 @@ model Tag {
   userId     String
   user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  entries    Entry[]
+  entryTags  EntryTag[]
 
   @@index([userId])
   @@index([name])
   @@map("Entity")
 }
 
+model EntryTag {
+  id        String   @id @default(cuid())
+  entryId   String
+  tagId     String
+  createdAt DateTime @default(now())
+
+  entry     Entry    @relation(fields: [entryId], references: [id], onDelete: Cascade)
+  tag       Tag      @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@unique([entryId, tagId])
+  @@index([entryId])
+  @@index([tagId])
+}
+
 model Entry {
   id           String   @id @default(cuid())
-  tagId        String   @map("entityId")
-  tagName      String   @map("entityName") // Denormalized for faster queries
   title        String   @default("") // Mandatory title for the entry
   timestamp    DateTime
   value        String?
@@ -61,13 +73,12 @@ model Entry {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
-  userId                String
-  user                  User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId       String
+  user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  tag                   Tag      @relation(fields: [tagId], references: [id], onDelete: Cascade)
+  entryTags    EntryTag[]
 
   @@index([userId])
-  @@index([tagId], map: "Entry_entityId_idx")
   @@index([timestamp])
   @@index([isArchived])
 }

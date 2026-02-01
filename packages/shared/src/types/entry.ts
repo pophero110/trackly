@@ -2,10 +2,19 @@
  * Entry type definitions
  */
 
-export interface IEntry {
+/**
+ * Represents a tag associated with an entry (many-to-many relationship)
+ */
+export interface IEntryTag {
   id: string;
   tagId: string;
   tagName: string;
+  createdAt: string;
+}
+
+export interface IEntry {
+  id: string;
+  tags: IEntryTag[];  // Many-to-many relationship with tags
   title: string;  // Mandatory title for the entry
   timestamp: string;
   value?: string | number | boolean;

@@ -148,7 +148,8 @@ export class Store {
     await APIClient.deleteTag(id);
 
     this.tags = this.tags.filter(t => t.id !== id);
-    this.entries = this.entries.filter(e => e.tagId !== id);
+    // Remove entries that have this tag (cascade delete handled on backend)
+    this.entries = this.entries.filter(e => !e.hasTag(id));
     this.notify();
   }
 
@@ -160,10 +161,10 @@ export class Store {
 
   getEntriesByTagId(tagId: string, includeArchived: boolean = false): Entry[] {
     if (includeArchived) {
-      return this.entries.filter(e => e.tagId === tagId);
+      return this.entries.filter(e => e.hasTag(tagId));
     }
     // Filter out archived entries by default
-    return this.entries.filter(e => e.tagId === tagId && !e.isArchived);
+    return this.entries.filter(e => e.hasTag(tagId) && !e.isArchived);
   }
 
   getEntryById(id: string): Entry | undefined {
@@ -186,8 +187,7 @@ export class Store {
     try {
       // Create entry via API in the background
       const createdEntry = await APIClient.createEntry({
-        tagId: entry.tagId,
-        tagName: entry.tagName,
+        tagIds: entry.tagIds,
         title: entry.title,
         timestamp: entry.timestamp,
         value: entry.value,
@@ -228,15 +228,16 @@ export class Store {
     }
   }
 
-  async updateEntry(id: string, updates: Partial<IEntry>, options?: { silent?: boolean; keepalive?: boolean }): Promise<void> {
+  async updateEntry(id: string, updates: { tagIds?: string[]; title?: string; timestamp?: string; value?: string | number | boolean; valueDisplay?: string; notes?: string; latitude?: number; longitude?: number; locationName?: string }, options?: { silent?: boolean; keepalive?: boolean }): Promise<void> {
     // Optimistic update: Update entry in local state immediately
     const index = this.entries.findIndex(e => e.id === id);
     if (index !== -1) {
       // Store original entry for rollback
       const originalEntry = this.entries[index];
 
-      // Apply updates optimistically
-      this.entries[index] = new Entry({ ...this.entries[index], ...updates });
+      // Apply updates optimistically (excluding tagIds which needs server response)
+      const { tagIds, ...entryUpdates } = updates;
+      this.entries[index] = new Entry({ ...this.entries[index], ...entryUpdates });
 
       // Always notify subscribers of the optimistic update
       // This ensures all components (like EntryList) re-render with the new data
@@ -244,13 +245,16 @@ export class Store {
 
       try {
         // Update via API in the background
-        await APIClient.updateEntry(id, updates, { keepalive: options?.keepalive ?? false });
+        const updatedEntry = await APIClient.updateEntry(id, updates, { keepalive: options?.keepalive ?? false });
+
+        // Update local entry with server response (includes proper tags)
+        this.entries[index] = new Entry(updatedEntry);
 
         // If timestamp changed, re-sort locally (no API call needed)
         if (updates.timestamp) {
           this.sortEntriesLocally();
-          this.notifyEntryChange();
         }
+        this.notifyEntryChange();
       } catch (error) {
         // If API call fails, rollback to original entry
         this.entries[index] = originalEntry;
@@ -349,10 +353,6 @@ export class Store {
           aVal = new Date(a.createdAt || a.timestamp).getTime();
           bVal = new Date(b.createdAt || b.timestamp).getTime();
           break;
-        case 'tagName':
-          aVal = a.tagName?.toLowerCase() || '';
-          bVal = b.tagName?.toLowerCase() || '';
-          break;
         case 'timestamp':
         default:
           aVal = new Date(a.timestamp).getTime();
@@ -385,7 +385,7 @@ export class Store {
       const hashtagFilters = URLStateManager.getHashtagFilters();
 
       const response = await APIClient.getEntries({
-        tagId: this.selectedTagId || undefined,
+        tagIds: this.selectedTagId ? [this.selectedTagId] : undefined,
         sortBy,
         sortOrder,
         limit: 30,
@@ -422,7 +422,7 @@ export class Store {
       const hashtagFilters = URLStateManager.getHashtagFilters();
 
       const response = await APIClient.getEntries({
-        tagId: this.selectedTagId || undefined,
+        tagIds: this.selectedTagId ? [this.selectedTagId] : undefined,
         sortBy,
         sortOrder,
         limit: 30,

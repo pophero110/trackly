@@ -58,7 +58,7 @@ export const updateTagSchema = z.object({
 
 // Entry validation schemas
 export const createEntrySchema = z.object({
-  tagId: z.string().min(1, 'Tag ID is required'),
+  tagIds: z.array(z.string().min(1)).min(1, 'At least one tag is required'),
   title: z.string().min(1, 'Title is required'),
   timestamp: z.string().datetime('Invalid timestamp'),
   value: z.union([z.string(), z.number(), z.boolean()]).optional(),
@@ -70,8 +70,7 @@ export const createEntrySchema = z.object({
 });
 
 export const updateEntrySchema = z.object({
-  tagId: z.string().optional(),
-  tagName: z.string().optional(),
+  tagIds: z.array(z.string().min(1)).optional(),
   title: z.string().min(1, 'Title cannot be blank').optional(),
   timestamp: z.string().datetime().optional(),
   value: z.union([z.string(), z.number(), z.boolean()]).optional(),

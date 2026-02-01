@@ -19,7 +19,6 @@ export class EntryDetailController implements ReactiveController {
 
   public entryId: string | null = null;
   public entry: Entry | null = null;
-  public tag: Tag | null = null;
   public editedTitle: string = '';
   public editedNotes: string = '';
   public hasUnsavedChanges: boolean = false;
@@ -85,7 +84,6 @@ export class EntryDetailController implements ReactiveController {
     if (!currentPath.startsWith('/entries/')) {
       this.entryId = null;
       this.entry = null;
-      this.tag = null;
       this.host.requestUpdate();
       return;
     }
@@ -136,14 +134,12 @@ export class EntryDetailController implements ReactiveController {
     const store = this.storeController.store;
     if (!store || !this.entryId) {
       this.entry = null;
-      this.tag = null;
       this.host.requestUpdate();
       return;
     }
 
     this.entry = store.getEntryById(this.entryId) ?? null;
     if (this.entry) {
-      this.tag = store.getTagById(this.entry.tagId) ?? null;
       this.editedTitle = this.entry.title || '';
       this.editedNotes = this.entry.notes || '';
       this.hasUnsavedChanges = false;
@@ -278,15 +274,14 @@ export class EntryDetailController implements ReactiveController {
   }
 
   /**
-   * Update entry tag
+   * Update entry tags (replaces all tags with the selected one)
    */
-  async updateTag(newTagId: string, newTagName: string): Promise<void> {
+  async updateTag(newTagId: string, _newTagName: string): Promise<void> {
     if (!this.entry || !this.storeController.store) return;
 
     try {
       await this.storeController.store.updateEntry(this.entry.id, {
-        tagId: newTagId,
-        tagName: newTagName
+        tagIds: [newTagId]
       });
 
       // Reload entry to get updated data

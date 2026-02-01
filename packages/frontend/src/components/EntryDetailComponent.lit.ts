@@ -184,21 +184,21 @@ export class EntryDetailComponent extends LitElement {
     }
 
     // Check if we have an entry to display
-    if (!this.detailController.entry || !this.detailController.tag) {
+    if (!this.detailController.entry || this.detailController.entry.tags.length === 0) {
       return html`
           <div class="empty-state">Entry not found</div>
       `;
     }
 
     const entry = this.detailController.entry;
-    const tag = this.detailController.tag;
+    const entryTags = entry.tags;
     const allTags = this.detailController.getAllTags();
     const hashtags = this.detailController.getHashtags();
 
     return html`
           <entry-detail-header
             .entry=${entry}
-            .tag=${tag}
+            .entryTags=${entryTags}
             .allTags=${allTags}
             @tag-change=${this.handleTagChange}
             @menu-action=${this.handleMenuAction}>
