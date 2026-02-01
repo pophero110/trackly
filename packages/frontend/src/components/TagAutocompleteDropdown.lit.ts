@@ -39,14 +39,21 @@ export class TagAutocompleteDropdown extends LitElement {
       gap: 4px;
       padding: 8px 12px;
       cursor: pointer;
-      transition: var(--transition);
+      transition: background-color 0.15s ease, border-color 0.15s ease;
       user-select: none;
       font-size: 0.875rem;
+      border-left: 3px solid transparent;
+      margin: 2px 4px;
+      border-radius: var(--radius-sm);
     }
 
-    .dropdown-item:hover,
-    .dropdown-item.selected {
+    .dropdown-item:hover {
       background: var(--background);
+    }
+
+    .dropdown-item.selected {
+      background: color-mix(in srgb, var(--primary) 15%, transparent);
+      border-left-color: var(--primary);
     }
 
     .hash-prefix {
@@ -54,9 +61,18 @@ export class TagAutocompleteDropdown extends LitElement {
       font-weight: 500;
     }
 
+    .dropdown-item.selected .hash-prefix {
+      color: var(--primary);
+    }
+
     .tag-name {
       color: var(--text-primary);
       font-weight: 500;
+    }
+
+    .dropdown-item.selected .tag-name {
+      color: var(--primary);
+      font-weight: 600;
     }
 
     .empty-state {
