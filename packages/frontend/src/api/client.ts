@@ -148,6 +148,13 @@ export class APIClient {
     return this.request<{ hashtags: string[] }>('/api/entries/hashtags');
   }
 
+  static async searchEntries(query: string, limit: number = 20): Promise<{ entries: IEntry[] }> {
+    const params = new URLSearchParams();
+    params.set('q', query);
+    params.set('limit', limit.toString());
+    return this.request<{ entries: IEntry[] }>(`/api/entries/search?${params.toString()}`);
+  }
+
   static async getEntry(id: string): Promise<IEntry> {
     return this.request<IEntry>(`/api/entries/${id}`);
   }

@@ -186,6 +186,54 @@ router.get('/hashtags', async (req: AuthRequest, res, next): Promise<void> => {
 });
 
 /**
+ * GET /api/entries/search
+ * Search entries by title and notes
+ * Query params:
+ *   - q: search query (required)
+ *   - limit: max results (default: 20, max: 50)
+ */
+router.get('/search', async (req: AuthRequest, res, next): Promise<void> => {
+  try {
+    const userId = req.user!.id;
+    const { q, limit } = req.query;
+
+    if (!q || typeof q !== 'string' || !q.trim()) {
+      res.json({ entries: [] });
+      return;
+    }
+
+    const searchQuery = q.trim();
+    const maxResults = Math.min(Math.max(parseInt(limit as string) || 20, 1), 50);
+
+    // Search in title and notes using case-insensitive contains
+    const entries = await prisma.entry.findMany({
+      where: {
+        userId,
+        isArchived: false,
+        OR: [
+          { title: { contains: searchQuery, mode: 'insensitive' } },
+          { notes: { contains: searchQuery, mode: 'insensitive' } }
+        ]
+      },
+      include: {
+        entryTags: {
+          include: {
+            tag: true
+          }
+        }
+      },
+      orderBy: { timestamp: 'desc' },
+      take: maxResults
+    });
+
+    const formattedEntries: IEntry[] = entries.map(formatEntry);
+    res.json({ entries: formattedEntries });
+  } catch (error) {
+    next(error);
+  }
+});
+
+/**
  * GET /api/entries/:id
  * Get a single entry by ID
  */

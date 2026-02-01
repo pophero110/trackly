@@ -5,8 +5,9 @@ import { unsafeHTML } from 'lit/directives/unsafe-html.js';
 import { Entry } from '../models/Entry.js';
 import { storeRegistry } from '../state/StoreRegistry.js';
 import { Store } from '../state/Store.js';
+import { APIClient } from '../api/client.js';
 import { URLStateManager } from '../utils/urlState.js';
-import { escapeHtml } from '../utils/helpers.js';
+import { escapeHtml, debounce } from '../utils/helpers.js';
 
 /**
  * SearchModal component for global search (Cmd+K)
@@ -161,12 +162,20 @@ export class SearchModal extends LitElement {
   @state()
   private selectedIndex: number = 0;
 
+  @state()
+  private isLoading: boolean = false;
+
   @query('.search-input')
   private searchInput?: HTMLInputElement;
 
   private store: Store | null = null;
 
   private unsubscribeUrl: (() => void) | null = null;
+
+  // Debounced search function
+  private debouncedSearch = debounce(async (query: string) => {
+    await this.performSearch(query);
+  }, 300);
 
   connectedCallback(): void {
     super.connectedCallback();
@@ -248,28 +257,41 @@ export class SearchModal extends LitElement {
   private handleInput = (e: InputEvent): void => {
     const input = e.target as HTMLInputElement;
     this.searchQuery = input.value;
-    this.search();
-  };
 
-  private search(): void {
-    if (!this.store || !this.searchQuery.trim()) {
+    if (!this.searchQuery.trim()) {
       this.results = [];
       this.selectedIndex = 0;
+      this.isLoading = false;
       return;
     }
 
-    const query = this.searchQuery.toLowerCase().trim();
-    const allEntries = this.store.getEntries();
+    this.isLoading = true;
+    this.debouncedSearch(this.searchQuery);
+  };
 
-    this.results = allEntries
-      .filter(entry => {
-        const titleMatch = entry.title?.toLowerCase().includes(query);
-        const notesMatch = entry.notes?.toLowerCase().includes(query);
-        return titleMatch || notesMatch;
-      })
-      .slice(0, 10); // Limit to 10 results
+  private async performSearch(query: string): Promise<void> {
+    if (!query.trim()) {
+      this.results = [];
+      this.selectedIndex = 0;
+      this.isLoading = false;
+      return;
+    }
 
-    this.selectedIndex = 0;
+    try {
+      const response = await APIClient.searchEntries(query, 20);
+      // Only update if query hasn't changed
+      if (this.searchQuery === query) {
+        this.results = response.entries.map(data => new Entry(data));
+        this.selectedIndex = 0;
+      }
+    } catch (error) {
+      console.error('Search error:', error);
+      this.results = [];
+    } finally {
+      if (this.searchQuery === query) {
+        this.isLoading = false;
+      }
+    }
   }
 
   private selectResult(entry: Entry): void {
@@ -325,7 +347,9 @@ export class SearchModal extends LitElement {
             <kbd class="search-modal-kbd">ESC</kbd>
           </div>
 
-          ${this.results.length > 0 ? html`
+          ${this.isLoading ? html`
+            <div class="search-modal-hint">Searching...</div>
+          ` : this.results.length > 0 ? html`
             <div class="search-modal-results">
               ${repeat(
       this.results,
@@ -343,7 +367,7 @@ export class SearchModal extends LitElement {
                         ${unsafeHTML(this.highlightMatch(entry.title || 'Untitled', this.searchQuery))}
                       </div>
                       <div class="search-result-meta">
-                        <span class="search-result-entity">${tag?.name || ''}</span>
+                        <span class="search-result-entity">${tag?.name || primaryTag?.tagName || ''}</span>
                         ${entry.notes ? html`
                           <span class="search-result-preview">
                             ${unsafeHTML(this.highlightMatch(entry.notes.substring(0, 100), this.searchQuery))}
@@ -361,7 +385,7 @@ export class SearchModal extends LitElement {
             </div>
           ` : html`
             <div class="search-modal-hint">
-              Type to search entries by title or notes
+              Type to search all entries
             </div>
           `}
         </div>
