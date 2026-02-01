@@ -242,6 +242,40 @@ export class EntryListHeader extends LitElement {
     }
   };
 
+  private getCaretCoordinates(element: HTMLInputElement, position: number): DOMRect {
+    // Create a mirror span to measure caret position
+    const mirror = document.createElement('span');
+    const style = getComputedStyle(element);
+
+    // Copy input styles to mirror
+    mirror.style.position = 'absolute';
+    mirror.style.visibility = 'hidden';
+    mirror.style.whiteSpace = 'pre';
+    mirror.style.font = style.font;
+    mirror.style.fontSize = style.fontSize;
+    mirror.style.fontFamily = style.fontFamily;
+    mirror.style.fontWeight = style.fontWeight;
+    mirror.style.letterSpacing = style.letterSpacing;
+
+    // Get text before cursor
+    const textBeforeCursor = element.value.substring(0, position);
+    mirror.textContent = textBeforeCursor;
+
+    document.body.appendChild(mirror);
+
+    const elementRect = element.getBoundingClientRect();
+    const textWidth = mirror.offsetWidth;
+
+    document.body.removeChild(mirror);
+
+    // Calculate position: element left + text width + padding
+    const paddingLeft = parseFloat(style.paddingLeft) || 0;
+    const left = elementRect.left + paddingLeft + textWidth;
+    const top = elementRect.top;
+
+    return new DOMRect(left, top, 0, elementRect.height);
+  }
+
   private handleQuickEntryInput = (e: InputEvent) => {
     const input = e.target as HTMLInputElement;
     const value = input.value;
@@ -257,7 +291,7 @@ export class EntryListHeader extends LitElement {
       if (!textAfterHash.includes(' ')) {
         this.triggerIndex = hashIndex;
         this.autocompleteQuery = textAfterHash;
-        this.inputRect = input.getBoundingClientRect();
+        this.inputRect = this.getCaretCoordinates(input, cursorPos);
         this.autocompleteOpen = true;
         return;
       }
