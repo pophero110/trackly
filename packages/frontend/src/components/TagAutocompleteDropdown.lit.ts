@@ -22,7 +22,7 @@ export class TagAutocompleteDropdown extends LitElement {
 
     .dropdown {
       position: fixed;
-      background: var(--surface);
+      background: var(--card-background);
       border-radius: var(--radius-sm);
       box-shadow: var(--shadow-lg);
       min-width: 200px;
