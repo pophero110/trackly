@@ -122,6 +122,25 @@ export class EntryDetailComponent extends LitElement {
   @state()
   private inputRect: DOMRect | null = null;
 
+  // Track entry ID to resize textarea when entry changes
+  private currentEntryId: string | null = null;
+
+  protected updated(): void {
+    // Auto-resize textarea when entry changes
+    const entryId = this.detailController.entry?.id ?? null;
+    if (entryId !== this.currentEntryId) {
+      this.currentEntryId = entryId;
+      this.autoGrowTextarea();
+    }
+  }
+
+  private autoGrowTextarea(): void {
+    if (this.titleInput) {
+      this.titleInput.style.height = 'auto';
+      this.titleInput.style.height = `${this.titleInput.scrollHeight}px`;
+    }
+  }
+
   connectedCallback(): void {
     super.connectedCallback();
 
@@ -159,8 +178,7 @@ export class EntryDetailComponent extends LitElement {
   private handleTitleInput = (e: InputEvent): void => {
     const input = e.target as HTMLTextAreaElement;
     // Auto-resize textarea to fit content
-    input.style.height = 'auto';
-    input.style.height = input.scrollHeight + 'px';
+    this.autoGrowTextarea();
     const value = input.value;
     const cursorPos = input.selectionStart ?? value.length;
 
