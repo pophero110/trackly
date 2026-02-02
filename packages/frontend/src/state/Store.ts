@@ -192,6 +192,17 @@ export class Store {
     return this.entries.find(e => e.id === id);
   }
 
+  /**
+   * Add an entry to local cache without API call.
+   * Used when fetching an entry directly (e.g., from search results).
+   */
+  addEntryToCache(entry: Entry): void {
+    // Only add if not already in cache
+    if (!this.entries.find(e => e.id === entry.id)) {
+      this.entries.push(entry);
+    }
+  }
+
   async addEntry(entry: Entry): Promise<void> {
     const errors = entry.validate();
     if (errors.length > 0) {

@@ -6,6 +6,7 @@ import { debounce } from '../utils/helpers.js';
 import { extractHashtags } from '../utils/entryHelpers.js';
 import { URLStateManager } from '../utils/urlState.js';
 import { toast } from '../utils/toast.js';
+import { APIClient } from '../api/client.js';
 
 /**
  * Reactive Controller for Entry Detail logic
@@ -128,9 +129,9 @@ export class EntryDetailController implements ReactiveController {
   }
 
   /**
-   * Load entry data from store
+   * Load entry data from store or fetch from API if not found
    */
-  private loadEntry(): void {
+  private async loadEntry(): Promise<void> {
     const store = this.storeController.store;
     if (!store || !this.entryId) {
       this.entry = null;
@@ -138,7 +139,22 @@ export class EntryDetailController implements ReactiveController {
       return;
     }
 
+    // First try to get from local store
     this.entry = store.getEntryById(this.entryId) ?? null;
+
+    // If not found locally, fetch from API (e.g., opened from search)
+    if (!this.entry) {
+      try {
+        const entryData = await APIClient.getEntry(this.entryId);
+        this.entry = new Entry(entryData);
+        // Add to store so subsequent operations (archive, delete, update) work
+        store.addEntryToCache(this.entry);
+      } catch (error) {
+        console.error('Failed to fetch entry:', error);
+        this.entry = null;
+      }
+    }
+
     if (this.entry) {
       this.editedTitle = this.entry.title || '';
       this.editedNotes = this.entry.notes || '';
