@@ -88,6 +88,27 @@ export class Store {
     this.notify();
   }
 
+  // Get combined tag IDs for filtering (selectedTagId + URL tag filters)
+  private getFilterTagIds(): string[] | undefined {
+    const tagIds: string[] = [];
+
+    // Add selected tag from sidebar
+    if (this.selectedTagId) {
+      tagIds.push(this.selectedTagId);
+    }
+
+    // Add tag filters from URL (convert names to IDs)
+    const tagFilters = URLStateManager.getTagFilters();
+    for (const tagName of tagFilters) {
+      const tag = this.tags.find(t => t.name.toLowerCase() === tagName.toLowerCase());
+      if (tag && !tagIds.includes(tag.id)) {
+        tagIds.push(tag.id);
+      }
+    }
+
+    return tagIds.length > 0 ? tagIds : undefined;
+  }
+
   // Tag operations
   getTags(): Tag[] {
     return [...this.tags];
@@ -383,9 +404,10 @@ export class Store {
       const sortBy = URLStateManager.getSortBy() || undefined;
       const sortOrder = URLStateManager.getSortOrder() || undefined;
       const hashtagFilters = URLStateManager.getHashtagFilters();
+      const tagIds = this.getFilterTagIds();
 
       const response = await APIClient.getEntries({
-        tagIds: this.selectedTagId ? [this.selectedTagId] : undefined,
+        tagIds,
         sortBy,
         sortOrder,
         limit: 30,
@@ -420,9 +442,10 @@ export class Store {
       const sortBy = URLStateManager.getSortBy() || 'timestamp';
       const sortOrder = URLStateManager.getSortOrder() || 'desc';
       const hashtagFilters = URLStateManager.getHashtagFilters();
+      const tagIds = this.getFilterTagIds();
 
       const response = await APIClient.getEntries({
-        tagIds: this.selectedTagId ? [this.selectedTagId] : undefined,
+        tagIds,
         sortBy,
         sortOrder,
         limit: 30,
