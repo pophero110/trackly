@@ -1,7 +1,8 @@
 import { html, LitElement, css } from 'lit';
-import { customElement, state, query } from 'lit/decorators.js';
+import { customElement, query } from 'lit/decorators.js';
 import { StoreController } from '../controllers/StoreController.js';
 import { EntryDetailController } from '../controllers/EntryDetailController.js';
+import { TagAutocompleteController } from '../controllers/TagAutocompleteController.js';
 import './EntryDetailHeader.lit.js';
 import './EntryDetailEditor.lit.js';
 import './EntryDetailFooter.lit.js';
@@ -103,24 +104,23 @@ export class EntryDetailComponent extends LitElement {
   private storeController = new StoreController(this);
   private detailController = new EntryDetailController(this, this.storeController);
 
-  // Tag autocomplete state
   @query('tag-autocomplete-dropdown')
   private autocomplete?: TagAutocompleteDropdown;
 
   @query('.entry-detail-title')
   private titleInput?: HTMLTextAreaElement;
 
-  @state()
-  private autocompleteOpen: boolean = false;
-
-  @state()
-  private autocompleteQuery: string = '';
-
-  @state()
-  private triggerIndex: number = -1;
-
-  @state()
-  private inputRect: DOMRect | null = null;
+  // Tag autocomplete controller - consolidates duplicate autocomplete logic
+  private autocompleteController = new TagAutocompleteController(this, {
+    getInputElement: () => this.titleInput ?? null,
+    getTagNames: () => this.detailController.getAllTags().map(t => t.name).sort(),
+    getDropdown: () => this.autocomplete,
+    onValueChange: (value) => {
+      this.autoGrowTextarea();
+      this.detailController.updateTitle(value);
+    },
+    asyncCursorPositioning: true
+  });
 
   // Track entry ID to resize textarea when entry changes
   private currentEntryId: string | null = null;
@@ -139,49 +139,6 @@ export class EntryDetailComponent extends LitElement {
       this.titleInput.style.height = 'auto';
       this.titleInput.style.height = `${this.titleInput.scrollHeight}px`;
     }
-  }
-
-  private getCaretCoordinates(element: HTMLTextAreaElement, position: number): DOMRect {
-    // Create a mirror div to measure caret position
-    const mirror = document.createElement('div');
-    const style = getComputedStyle(element);
-
-    // Copy textarea styles to mirror
-    mirror.style.position = 'absolute';
-    mirror.style.visibility = 'hidden';
-    mirror.style.whiteSpace = 'pre-wrap';
-    mirror.style.wordWrap = 'break-word';
-    mirror.style.width = style.width;
-    mirror.style.font = style.font;
-    mirror.style.fontSize = style.fontSize;
-    mirror.style.fontFamily = style.fontFamily;
-    mirror.style.fontWeight = style.fontWeight;
-    mirror.style.lineHeight = style.lineHeight;
-    mirror.style.padding = style.padding;
-    mirror.style.border = style.border;
-    mirror.style.boxSizing = style.boxSizing;
-
-    // Get text before cursor and add a span to mark position
-    const textBeforeCursor = element.value.substring(0, position);
-    mirror.textContent = textBeforeCursor;
-
-    const marker = document.createElement('span');
-    marker.textContent = '|';
-    mirror.appendChild(marker);
-
-    document.body.appendChild(mirror);
-
-    const elementRect = element.getBoundingClientRect();
-    const markerRect = marker.getBoundingClientRect();
-    const mirrorRect = mirror.getBoundingClientRect();
-
-    // Calculate position relative to viewport
-    const left = elementRect.left + (markerRect.left - mirrorRect.left);
-    const top = elementRect.top + (markerRect.top - mirrorRect.top);
-
-    document.body.removeChild(mirror);
-
-    return new DOMRect(left, top, 0, markerRect.height);
   }
 
   connectedCallback(): void {
@@ -219,79 +176,20 @@ export class EntryDetailComponent extends LitElement {
   };
 
   private handleTitleInput = (e: InputEvent): void => {
-    const input = e.target as HTMLTextAreaElement;
-    // Auto-resize textarea to fit content
-    this.autoGrowTextarea();
-    const value = input.value;
-    const cursorPos = input.selectionStart ?? value.length;
-
-    this.detailController.updateTitle(value);
-
-    // Find the last # before cursor
-    const textBeforeCursor = value.substring(0, cursorPos);
-    const hashIndex = textBeforeCursor.lastIndexOf('#');
-
-    if (hashIndex !== -1) {
-      const textAfterHash = textBeforeCursor.substring(hashIndex + 1);
-      // Only show dropdown if no space after # (tag still being typed)
-      if (!textAfterHash.includes(' ')) {
-        this.triggerIndex = hashIndex;
-        this.autocompleteQuery = textAfterHash;
-        this.inputRect = this.getCaretCoordinates(input, cursorPos);
-        this.autocompleteOpen = true;
-        return;
-      }
-    }
-
-    this.closeAutocomplete();
+    this.autocompleteController.handleInput(e);
   };
 
   private handleTitleKeydown = (e: KeyboardEvent): void => {
-    // If autocomplete is open, forward keys to it
-    if (this.autocompleteOpen && this.autocomplete) {
-      const consumed = this.autocomplete.handleKeydown(e);
-      if (consumed) {
-        return;
-      }
-    }
+    this.autocompleteController.handleKeydown(e);
   };
 
   private handleTagSelected = (e: CustomEvent<{ tagName: string }>): void => {
-    const input = this.titleInput;
-    if (!input) return;
-
-    const { tagName } = e.detail;
-    const value = input.value;
-    const cursorPos = input.selectionStart ?? value.length;
-
-    // Replace from trigger index to cursor with the selected tag
-    const beforeTrigger = value.substring(0, this.triggerIndex);
-    const afterCursor = value.substring(cursorPos);
-    const newValue = `${beforeTrigger}#${tagName} ${afterCursor}`;
-
-    // Update input and controller
-    this.detailController.updateTitle(newValue);
-
-    // Position cursor after inserted tag
-    this.updateComplete.then(() => {
-      const newCursorPos = this.triggerIndex + 1 + tagName.length + 1;
-      input.setSelectionRange(newCursorPos, newCursorPos);
-      input.focus();
-    });
-
-    this.closeAutocomplete();
+    this.autocompleteController.handleTagSelected(e.detail.tagName);
   };
 
   private handleDropdownClose = (): void => {
-    this.closeAutocomplete();
+    this.autocompleteController.close();
   };
-
-  private closeAutocomplete(): void {
-    this.autocompleteOpen = false;
-    this.autocompleteQuery = '';
-    this.triggerIndex = -1;
-    this.inputRect = null;
-  }
 
   private handleNotesChange = (e: CustomEvent): void => {
     const { notes } = e.detail;
@@ -366,9 +264,9 @@ export class EntryDetailComponent extends LitElement {
             ></textarea>
             <tag-autocomplete-dropdown
               .tags=${tagNames}
-              .query=${this.autocompleteQuery}
-              .open=${this.autocompleteOpen}
-              .anchorRect=${this.inputRect}
+              .query=${this.autocompleteController.query}
+              .open=${this.autocompleteController.open}
+              .anchorRect=${this.autocompleteController.anchorRect}
               @tag-selected=${this.handleTagSelected}
               @dropdown-close=${this.handleDropdownClose}>
             </tag-autocomplete-dropdown>

@@ -8,6 +8,7 @@ import { Store } from '../state/Store.js';
 import { storeRegistry } from '../state/StoreRegistry.js';
 import { APIClient } from '../api/client.js';
 import { toast } from '../utils/toast.js';
+import { TagAutocompleteController } from '../controllers/TagAutocompleteController.js';
 import './SelectionMenuComponent.lit.js';
 import type { SelectionMenuComponent } from './SelectionMenuComponent.lit.js';
 import type { SelectionOption } from './SelectionMenuComponent.lit.js';
@@ -172,17 +173,13 @@ export class EntryListHeader extends LitElement {
   @query('tag-autocomplete-dropdown')
   private autocomplete?: TagAutocompleteDropdown;
 
-  @state()
-  private autocompleteOpen: boolean = false;
-
-  @state()
-  private autocompleteQuery: string = '';
-
-  @state()
-  private triggerIndex: number = -1;
-
-  @state()
-  private inputRect: DOMRect | null = null;
+  // Tag autocomplete controller - consolidates duplicate autocomplete logic
+  private autocompleteController = new TagAutocompleteController(this, {
+    getInputElement: () => this.quickEntryInput ?? null,
+    getTagNames: () => this.availableTags,
+    getDropdown: () => this.autocomplete,
+    asyncCursorPositioning: false
+  });
 
   private store!: Store;
 
@@ -242,76 +239,18 @@ export class EntryListHeader extends LitElement {
     }
   };
 
-  private getCaretCoordinates(element: HTMLInputElement, position: number): DOMRect {
-    // Create a mirror span to measure caret position
-    const mirror = document.createElement('span');
-    const style = getComputedStyle(element);
-
-    // Copy input styles to mirror
-    mirror.style.position = 'absolute';
-    mirror.style.visibility = 'hidden';
-    mirror.style.whiteSpace = 'pre';
-    mirror.style.font = style.font;
-    mirror.style.fontSize = style.fontSize;
-    mirror.style.fontFamily = style.fontFamily;
-    mirror.style.fontWeight = style.fontWeight;
-    mirror.style.letterSpacing = style.letterSpacing;
-
-    // Get text before cursor
-    const textBeforeCursor = element.value.substring(0, position);
-    mirror.textContent = textBeforeCursor;
-
-    document.body.appendChild(mirror);
-
-    const elementRect = element.getBoundingClientRect();
-    const textWidth = mirror.offsetWidth;
-
-    document.body.removeChild(mirror);
-
-    // Calculate position: element left + text width + padding
-    const paddingLeft = parseFloat(style.paddingLeft) || 0;
-    const left = elementRect.left + paddingLeft + textWidth;
-    const top = elementRect.top;
-
-    return new DOMRect(left, top, 0, elementRect.height);
-  }
-
   private handleQuickEntryInput = (e: InputEvent) => {
-    const input = e.target as HTMLInputElement;
-    const value = input.value;
-    const cursorPos = input.selectionStart ?? value.length;
-
-    // Find the last # before cursor
-    const textBeforeCursor = value.substring(0, cursorPos);
-    const hashIndex = textBeforeCursor.lastIndexOf('#');
-
-    if (hashIndex !== -1) {
-      const textAfterHash = textBeforeCursor.substring(hashIndex + 1);
-      // Only show dropdown if no space after # (tag still being typed)
-      if (!textAfterHash.includes(' ')) {
-        this.triggerIndex = hashIndex;
-        this.autocompleteQuery = textAfterHash;
-        this.inputRect = this.getCaretCoordinates(input, cursorPos);
-        this.autocompleteOpen = true;
-        return;
-      }
-    }
-
-    // No active trigger, close dropdown
-    this.closeAutocomplete();
+    this.autocompleteController.handleInput(e);
   };
 
   private handleQuickEntryKeydown = (e: KeyboardEvent) => {
-    // If autocomplete is open, forward keys to it
-    if (this.autocompleteOpen && this.autocomplete) {
-      const consumed = this.autocomplete.handleKeydown(e);
-      if (consumed) {
-        return;
-      }
+    // If autocomplete consumed the key, don't process further
+    if (this.autocompleteController.handleKeydown(e)) {
+      return;
     }
 
     // Handle Enter for submission when autocomplete is not open
-    if (e.key === 'Enter' && !this.autocompleteOpen) {
+    if (e.key === 'Enter' && !this.autocompleteController.open) {
       this.submitQuickEntry();
     }
   };
@@ -382,7 +321,7 @@ export class EntryListHeader extends LitElement {
       });
 
       input.value = '';
-      this.closeAutocomplete();
+      this.autocompleteController.close();
       toast.success('Quick entry created');
       await this.store.addEntry(entry);
     } catch (error) {
@@ -392,38 +331,12 @@ export class EntryListHeader extends LitElement {
   }
 
   private handleTagSelected = (e: CustomEvent<{ tagName: string }>) => {
-    const input = this.quickEntryInput;
-    if (!input) return;
-
-    const { tagName } = e.detail;
-    const value = input.value;
-    const cursorPos = input.selectionStart ?? value.length;
-
-    // Replace from trigger index to cursor with the selected tag
-    const beforeTrigger = value.substring(0, this.triggerIndex);
-    const afterCursor = value.substring(cursorPos);
-    const newValue = `${beforeTrigger}#${tagName} ${afterCursor}`;
-
-    input.value = newValue;
-
-    // Position cursor after inserted tag (trigger + # + tagName + space)
-    const newCursorPos = this.triggerIndex + 1 + tagName.length + 1;
-    input.setSelectionRange(newCursorPos, newCursorPos);
-    input.focus();
-
-    this.closeAutocomplete();
+    this.autocompleteController.handleTagSelected(e.detail.tagName);
   };
 
   private handleDropdownClose = () => {
-    this.closeAutocomplete();
+    this.autocompleteController.close();
   };
-
-  private closeAutocomplete(): void {
-    this.autocompleteOpen = false;
-    this.autocompleteQuery = '';
-    this.triggerIndex = -1;
-    this.inputRect = null;
-  }
 
   private handleSortMenuOpen = () => {
     // Close tag filter menu if open
@@ -518,9 +431,9 @@ export class EntryListHeader extends LitElement {
           <kbd class="quick-entry-shortcut">⌘E</kbd>
           <tag-autocomplete-dropdown
             .tags=${this.availableTags}
-            .query=${this.autocompleteQuery}
-            .open=${this.autocompleteOpen}
-            .anchorRect=${this.inputRect}
+            .query=${this.autocompleteController.query}
+            .open=${this.autocompleteController.open}
+            .anchorRect=${this.autocompleteController.anchorRect}
             @tag-selected=${this.handleTagSelected}
             @dropdown-close=${this.handleDropdownClose}
           ></tag-autocomplete-dropdown>
