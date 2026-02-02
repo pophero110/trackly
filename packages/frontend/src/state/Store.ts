@@ -289,53 +289,58 @@ export class Store {
   }
 
   async deleteEntry(id: string): Promise<void> {
-    // Optimistic update: Remove entry from local state immediately
     const index = this.entries.findIndex(e => e.id === id);
-    if (index === -1) {
-      throw new Error('Entry not found');
-    }
 
-    // Store original entry for rollback
-    const originalEntry = this.entries[index];
+    // If entry is in local state, do optimistic update
+    if (index !== -1) {
+      // Store original entry for rollback
+      const originalEntry = this.entries[index];
 
-    // Remove from local state
-    this.entries.splice(index, 1);
-    this.notifyEntryChange(); // Trigger immediate re-render
+      // Remove from local state
+      this.entries.splice(index, 1);
+      this.notifyEntryChange(); // Trigger immediate re-render
 
-    try {
-      // Delete via API in the background
+      try {
+        // Delete via API in the background
+        await APIClient.deleteEntry(id);
+        // Entry already removed from local state, no reload needed
+      } catch (error) {
+        // If API call fails, restore the entry
+        this.entries.splice(index, 0, originalEntry);
+        this.notifyEntryChange();
+        throw error;
+      }
+    } else {
+      // Entry not in local state (e.g., navigated away already), just call API
       await APIClient.deleteEntry(id);
-      // Entry already removed from local state, no reload needed
-    } catch (error) {
-      // If API call fails, restore the entry
-      this.entries.splice(index, 0, originalEntry);
-      this.notifyEntryChange();
-      throw error;
     }
   }
 
   async archiveEntry(id: string, isArchived: boolean = true): Promise<void> {
     const index = this.entries.findIndex(e => e.id === id);
-    if (index === -1) {
-      throw new Error('Entry not found');
-    }
 
-    // Store original entry for rollback
-    const originalEntry = this.entries[index];
+    // If entry is in local state, do optimistic update
+    if (index !== -1) {
+      // Store original entry for rollback
+      const originalEntry = this.entries[index];
 
-    // Optimistic update: Remove from local state immediately
-    this.entries.splice(index, 1);
-    this.notifyEntryChange(); // Trigger immediate re-render
+      // Optimistic update: Remove from local state immediately
+      this.entries.splice(index, 1);
+      this.notifyEntryChange(); // Trigger immediate re-render
 
-    try {
-      // Archive via API in the background
+      try {
+        // Archive via API in the background
+        await APIClient.archiveEntry(id, isArchived);
+        // Entry already removed from local state, no reload needed
+      } catch (error) {
+        // If API call fails, restore the entry
+        this.entries.splice(index, 0, originalEntry);
+        this.notifyEntryChange();
+        throw error;
+      }
+    } else {
+      // Entry not in local state (e.g., navigated away already), just call API
       await APIClient.archiveEntry(id, isArchived);
-      // Entry already removed from local state, no reload needed
-    } catch (error) {
-      // If API call fails, restore the entry
-      this.entries.splice(index, 0, originalEntry);
-      this.notifyEntryChange();
-      throw error;
     }
   }
 
