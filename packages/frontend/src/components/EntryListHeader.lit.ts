@@ -47,7 +47,8 @@ export class EntryListHeader extends LitElement {
       }
 
       .quick-entry-input {
-        padding: 12px 0 8px 8px !important;
+        padding: 8px 0 8px 0 !important;
+        text-align: center;
         width: 100%;
       }
     }
@@ -282,32 +283,47 @@ export class EntryListHeader extends LitElement {
       return;
     }
 
-    // Find matching tags from available tags
-    const matchedTags = hashtags
-      .map(ht => this.availableTags.find(t => t.toLowerCase() === ht.toLowerCase()))
-      .filter((t): t is string => t !== undefined);
-
-    // Get tag objects from store
-    const storeTags = this.store.getTags();
-    const tagObjects = matchedTags
-      .map(name => storeTags.find(t => t.name === name))
-      .filter((t): t is Tag => t !== undefined);
-
-    // Use matched tags, or fall back to selected tag, or Inbox
-    let finalTags: Tag[] = tagObjects;
-    if (finalTags.length === 0) {
-      const fallbackTag = this.selectedTag ?? storeTags.find(t => t.name === "Inbox");
-      if (fallbackTag) {
-        finalTags = [fallbackTag];
-      }
-    }
-
-    if (finalTags.length === 0) {
-      toast.error('No valid tags found');
-      return;
-    }
-
     try {
+      // Get current tags from store
+      let storeTags = this.store.getTags();
+      const finalTags: Tag[] = [];
+
+      // Process each hashtag - find existing or create new
+      for (const ht of hashtags) {
+        const existingTag = storeTags.find(t => t.name.toLowerCase() === ht.toLowerCase());
+        if (existingTag) {
+          if (!finalTags.some(t => t.id === existingTag.id)) {
+            finalTags.push(existingTag);
+          }
+        } else {
+          // Create new tag with 'Note' type as default
+          const newTag = new Tag({
+            name: ht,
+            type: 'Note'
+          });
+          await this.store.addTag(newTag);
+          // Refresh store tags to get the created tag with server-assigned ID
+          storeTags = this.store.getTags();
+          const createdTag = storeTags.find(t => t.name.toLowerCase() === ht.toLowerCase());
+          if (createdTag) {
+            finalTags.push(createdTag);
+          }
+        }
+      }
+
+      // Fall back to selected tag or Inbox if no tags specified
+      if (finalTags.length === 0) {
+        const fallbackTag = this.selectedTag ?? storeTags.find(t => t.name === "Inbox");
+        if (fallbackTag) {
+          finalTags.push(fallbackTag);
+        }
+      }
+
+      if (finalTags.length === 0) {
+        toast.error('No valid tags found');
+        return;
+      }
+
       const entry = new Entry({
         tags: finalTags.map(tag => ({
           id: `temp-${Date.now()}-${tag.id}`,
@@ -322,6 +338,8 @@ export class EntryListHeader extends LitElement {
 
       input.value = '';
       this.autocompleteController.close();
+      // Update available tags for autocomplete
+      this.availableTags = this.store.getTags().map(t => t.name).sort();
       toast.success('Quick entry created');
       await this.store.addEntry(entry);
     } catch (error) {
