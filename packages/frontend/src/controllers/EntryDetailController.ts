@@ -23,6 +23,7 @@ export class EntryDetailController implements ReactiveController {
   public editedTitle: string = '';
   public editedNotes: string = '';
   public hasUnsavedChanges: boolean = false;
+  public isLoading: boolean = false;
 
   // Debounced save function
   private debouncedBackendSave: ReturnType<typeof debounce> | null = null;
@@ -135,6 +136,7 @@ export class EntryDetailController implements ReactiveController {
     const store = this.storeController.store;
     if (!store || !this.entryId) {
       this.entry = null;
+      this.isLoading = false;
       this.host.requestUpdate();
       return;
     }
@@ -144,6 +146,9 @@ export class EntryDetailController implements ReactiveController {
 
     // If not found locally, fetch from API (e.g., opened from search)
     if (!this.entry) {
+      this.isLoading = true;
+      this.host.requestUpdate();
+
       try {
         const entryData = await APIClient.getEntry(this.entryId);
         this.entry = new Entry(entryData);
@@ -153,6 +158,8 @@ export class EntryDetailController implements ReactiveController {
         console.error('Failed to fetch entry:', error);
         this.entry = null;
       }
+
+      this.isLoading = false;
     }
 
     if (this.entry) {

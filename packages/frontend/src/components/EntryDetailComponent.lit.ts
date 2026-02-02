@@ -221,8 +221,8 @@ export class EntryDetailComponent extends LitElement {
     // Ensure entry is loaded when store becomes available (handles page refresh)
     this.detailController.ensureLoaded();
 
-    // Check if store is available and loaded
-    if (!this.storeController.store || !this.storeController.isLoaded) {
+    // Check if store is available and loaded, or if we're fetching the entry
+    if (!this.storeController.store || !this.storeController.isLoaded || this.detailController.isLoading) {
       return html`
           <div class="loading-state">
             <div class="spinner"></div>
