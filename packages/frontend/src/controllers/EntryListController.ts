@@ -64,6 +64,13 @@ export class EntryListController implements ReactiveController {
   }
 
   /**
+   * Get current tag filters (from URL ?tags= parameter)
+   */
+  getTagFilters(): string[] {
+    return URLStateManager.getTagFilters();
+  }
+
+  /**
    * Get current sort configuration
    */
   getSortConfig(): { sortBy: string; sortOrder: 'asc' | 'desc'; sortValue: string } {
