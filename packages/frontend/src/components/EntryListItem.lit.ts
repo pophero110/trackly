@@ -577,6 +577,23 @@ export class EntryListItem extends LitElement {
         <div class="timeline-entry-card ${ipoClass}" @click=${this.handleCardClick}>
           <div class="timeline-entry-header">
             <div class="timeline-entry-primary">
+              ${when(this.entry.ipoCategory, () => {
+                const ipoConfig = IPO_CONFIG[this.entry.ipoCategory!];
+                return html`
+                  <div class="entry-chip-ipo-container">
+                    <span
+                      class="entry-chip-ipo"
+                      style="--ipo-color: ${ipoConfig.color}"
+                      @click=${this.handleIpoChipClick}>
+                      <span class="ipo-icon">${ipoConfig.icon}</span>
+                      ${ipoConfig.label}
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="6 9 12 15 18 9"></polyline>
+                      </svg>
+                    </span>
+                  </div>
+                `;
+              })}
               ${when(primaryTag, () => html`
                 <div class="entry-chip-tag-container" data-entry-id="${this.entry.id}">
                   <span
@@ -601,23 +618,6 @@ export class EntryListItem extends LitElement {
                     ${tag.name}
                   </span>
                 ` : null;
-              })}
-              ${when(this.entry.ipoCategory, () => {
-                const ipoConfig = IPO_CONFIG[this.entry.ipoCategory!];
-                return html`
-                  <div class="entry-chip-ipo-container">
-                    <span
-                      class="entry-chip-ipo"
-                      style="--ipo-color: ${ipoConfig.color}"
-                      @click=${this.handleIpoChipClick}>
-                      <span class="ipo-icon">${ipoConfig.icon}</span>
-                      ${ipoConfig.label}
-                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <polyline points="6 9 12 15 18 9"></polyline>
-                      </svg>
-                    </span>
-                  </div>
-                `;
               })}
             </div>
             <button
