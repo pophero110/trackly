@@ -200,7 +200,8 @@ export class EntryListItem extends LitElement {
         margin-top: 8px;
       }
 
-      .entry-chip {
+      .entry-chip,
+      .entry-chip-ipo {
         font-size: 0.75rem;
         padding: 3px 8px;
       }
@@ -215,7 +216,6 @@ export class EntryListItem extends LitElement {
       --ipo-color: #6B7280;
       display: inline-flex;
       align-items: center;
-      gap: 4px;
       padding: 3px 10px;
       border-radius: 12px;
       font-size: 0.75rem;
