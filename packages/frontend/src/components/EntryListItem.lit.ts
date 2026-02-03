@@ -4,6 +4,7 @@ import { map } from 'lit/directives/map.js';
 import { when } from 'lit/directives/when.js';
 import { Entry } from '../models/Entry.js';
 import { Tag } from '../models/Tag.js';
+import { IpoCategory } from '../types/index.js';
 import { extractHashtags, getTagColor } from '../utils/entryHelpers.js';
 import { URLStateManager } from '../utils/urlState.js';
 import { Store } from '../state/Store.js';
@@ -12,7 +13,14 @@ import { toast } from '../utils/toast.js';
 import './DropdownMenuComponent.lit.js';
 import type { DropdownMenuComponent, DropdownMenuItem } from './DropdownMenuComponent.lit.js';
 
-type OpenDropdown = 'context-menu' | 'tag-menu' | null;
+type OpenDropdown = 'context-menu' | 'tag-menu' | 'ipo-menu' | null;
+
+// IPO category configuration
+const IPO_CONFIG = {
+  input: { icon: '↓', label: 'In', color: '#3B82F6' },
+  process: { icon: '⚙', label: 'Pro', color: '#F59E0B' },
+  output: { icon: '↑', label: 'Out', color: '#10B981' }
+} as const;
 
 /**
  * EntryListItem Lit Component
@@ -181,34 +189,42 @@ export class EntryListItem extends LitElement {
       }
     }
 
-    .ipo-badge {
+    .entry-chip-ipo-container {
+      display: inline-block;
+      position: relative;
+    }
+
+    .entry-chip-ipo {
+      --ipo-color: #6B7280;
       display: inline-flex;
       align-items: center;
-      gap: 2px;
-      padding: 2px 6px;
-      border-radius: 10px;
-      font-size: 0.65rem;
+      gap: 4px;
+      padding: 3px 10px;
+      border-radius: 12px;
+      font-size: 0.75rem;
       font-weight: 600;
-      line-height: 1;
+      line-height: 1.4;
+      background: color-mix(in srgb, var(--ipo-color) 12%, transparent);
+      color: var(--ipo-color);
+      border: 1px solid color-mix(in srgb, var(--ipo-color) 30%, transparent);
+      cursor: pointer;
+      transition: all 0.2s;
     }
 
-    .ipo-badge.input {
-      background: rgba(59, 130, 246, 0.15);
-      color: #3B82F6;
+    .entry-chip-ipo:hover {
+      background: color-mix(in srgb, var(--ipo-color) 20%, transparent);
+      border-color: color-mix(in srgb, var(--ipo-color) 50%, transparent);
+      transform: translateY(-1px);
+      box-shadow: 0 2px 4px color-mix(in srgb, var(--ipo-color) 15%, transparent);
     }
 
-    .ipo-badge.process {
-      background: rgba(245, 158, 11, 0.15);
-      color: #F59E0B;
+    .entry-chip-ipo svg {
+      margin-left: 4px;
+      vertical-align: middle;
     }
 
-    .ipo-badge.output {
-      background: rgba(16, 185, 129, 0.15);
-      color: #10B981;
-    }
-
-    .ipo-badge .ipo-icon {
-      font-size: 0.7rem;
+    .entry-chip-ipo .ipo-icon {
+      font-size: 0.85rem;
     }
   `;
 
@@ -223,6 +239,9 @@ export class EntryListItem extends LitElement {
 
   @query('dropdown-menu[data-menu-type="tag"]')
   private tagMenu?: DropdownMenuComponent;
+
+  @query('dropdown-menu[data-menu-type="ipo"]')
+  private ipoMenu?: DropdownMenuComponent;
 
   private store!: Store;
 
@@ -252,6 +271,41 @@ export class EntryListItem extends LitElement {
     }));
   }
 
+  private get ipoMenuItems(): DropdownMenuItem[] {
+    const currentIpo = this.entry.ipoCategory;
+    const items: DropdownMenuItem[] = [
+      {
+        id: 'input',
+        label: `${IPO_CONFIG.input.icon} Input`,
+        color: IPO_CONFIG.input.color,
+        data: 'input'
+      },
+      {
+        id: 'process',
+        label: `${IPO_CONFIG.process.icon} Process`,
+        color: IPO_CONFIG.process.color,
+        data: 'process'
+      },
+      {
+        id: 'output',
+        label: `${IPO_CONFIG.output.icon} Output`,
+        color: IPO_CONFIG.output.color,
+        data: 'output'
+      }
+    ];
+
+    // Add "Clear" option if there's a current selection
+    if (currentIpo) {
+      items.push({
+        id: 'clear',
+        label: '✕ Clear',
+        data: null
+      });
+    }
+
+    return items;
+  }
+
   connectedCallback(): void {
     super.connectedCallback();
     try {
@@ -263,7 +317,7 @@ export class EntryListItem extends LitElement {
 
   private handleCardClick = (e: MouseEvent) => {
     const target = e.target as HTMLElement;
-    if (target.closest('[data-action="menu"], a, .timeline-entry-tag, .entry-chip-tag-container')) {
+    if (target.closest('[data-action="menu"], a, .timeline-entry-tag, .entry-chip-tag-container, .entry-chip-ipo-container')) {
       return;
     }
     URLStateManager.showEntryDetail(this.entry.id);
@@ -338,6 +392,69 @@ export class EntryListItem extends LitElement {
       this.openDropdown = null;
     }
   };
+
+  private handleIpoChipClick = (e: MouseEvent) => {
+    e.stopPropagation();
+    const target = e.target as HTMLElement;
+    const ipoChip = target.closest('.entry-chip-ipo-container') as HTMLElement;
+
+    if (!this.ipoMenu || !ipoChip) return;
+
+    // Close other menus if open
+    if (this.openDropdown === 'context-menu') {
+      this.contextMenu?.close();
+    }
+    if (this.openDropdown === 'tag-menu') {
+      this.tagMenu?.close();
+    }
+
+    this.openDropdown = 'ipo-menu';
+    const rect = ipoChip.getBoundingClientRect();
+    this.ipoMenu.openAt(rect.left, rect.bottom + 4);
+  };
+
+  private handleIpoMenuAction = (e: CustomEvent) => {
+    e.stopPropagation();
+    const { data } = e.detail;
+    this.handleIpoChange(data as IpoCategory | null);
+  };
+
+  private handleIpoMenuClose = () => {
+    if (this.openDropdown === 'ipo-menu') {
+      this.openDropdown = null;
+    }
+  };
+
+  private async handleIpoChange(newIpo: IpoCategory | null) {
+    if (!this.store) {
+      console.error('Store not available');
+      return;
+    }
+
+    const oldIpo = this.entry.ipoCategory;
+
+    // Optimistic update
+    this.entry = new Entry({
+      ...this.entry,
+      ipoCategory: newIpo || undefined
+    });
+    this.requestUpdate();
+
+    try {
+      await this.store.updateEntry(this.entry.id, {
+        ipoCategory: newIpo
+      });
+    } catch (error) {
+      console.error('Error updating entry IPO category:', error);
+      // Rollback on error
+      this.entry = new Entry({
+        ...this.entry,
+        ipoCategory: oldIpo
+      });
+      this.requestUpdate();
+      toast.error('Failed to update IPO category');
+    }
+  }
 
   private async handleTagChange(newTag: Tag) {
     if (!this.store) {
@@ -466,12 +583,23 @@ export class EntryListItem extends LitElement {
                   </span>
                 ` : null;
               })}
-              ${when(this.entry.ipoCategory, () => html`
-                <span class="ipo-badge ${this.entry.ipoCategory}">
-                  <span class="ipo-icon">${this.entry.ipoCategory === 'input' ? '↓' : this.entry.ipoCategory === 'process' ? '⚙' : '↑'}</span>
-                  ${this.entry.ipoCategory === 'input' ? 'In' : this.entry.ipoCategory === 'process' ? 'Pro' : 'Out'}
-                </span>
-              `)}
+              ${when(this.entry.ipoCategory, () => {
+                const ipoConfig = IPO_CONFIG[this.entry.ipoCategory!];
+                return html`
+                  <div class="entry-chip-ipo-container">
+                    <span
+                      class="entry-chip-ipo"
+                      style="--ipo-color: ${ipoConfig.color}"
+                      @click=${this.handleIpoChipClick}>
+                      <span class="ipo-icon">${ipoConfig.icon}</span>
+                      ${ipoConfig.label}
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="6 9 12 15 18 9"></polyline>
+                      </svg>
+                    </span>
+                  </div>
+                `;
+              })}
             </div>
             <button
               class="entry-menu-btn"
@@ -518,6 +646,15 @@ export class EntryListItem extends LitElement {
         .menuId=${'tag-selector-' + this.entry.id}
         @menu-action=${this.handleTagMenuAction}
         @menu-close=${this.handleTagMenuClose}>
+      </dropdown-menu>
+
+      <!-- IPO Category Menu -->
+      <dropdown-menu
+        data-menu-type="ipo"
+        .items=${this.ipoMenuItems}
+        .menuId=${'ipo-selector-' + this.entry.id}
+        @menu-action=${this.handleIpoMenuAction}
+        @menu-close=${this.handleIpoMenuClose}>
       </dropdown-menu>
     `;
   }
