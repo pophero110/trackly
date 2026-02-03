@@ -1,4 +1,4 @@
-import { Editor, rootCtx, defaultValueCtx, editorViewCtx, serializerCtx } from '@milkdown/core';
+import { Editor, rootCtx, defaultValueCtx, editorViewCtx, serializerCtx, parserCtx } from '@milkdown/core';
 import { commonmark } from '@milkdown/preset-commonmark';
 import { nord } from '@milkdown/theme-nord';
 import {
@@ -14,6 +14,27 @@ import { indent } from '@milkdown/plugin-indent';
 import { listener, listenerCtx } from '@milkdown/plugin-listener';
 import { clipboard } from '@milkdown/plugin-clipboard';
 import { history } from '@milkdown/plugin-history';
+/**
+ * Check if text contains markdown table syntax
+ */
+function containsMarkdownTable(text: string): boolean {
+  // Look for markdown table patterns:
+  // | header | header |
+  // | --- | --- |
+  const lines = text.split('\n');
+  let hasSeparator = false;
+
+  for (const line of lines) {
+    const trimmed = line.trim();
+    // Check for separator row like | --- | --- | or |:---:|:---:|
+    if (/^\|(\s*:?-+:?\s*\|)+$/.test(trimmed)) {
+      hasSeparator = true;
+      break;
+    }
+  }
+
+  return hasSeparator;
+}
 
 /**
  * Initialize Milkdown editor
@@ -59,7 +80,55 @@ export async function createMilkdownEditor(
   // Set up table context menu after editor is created
   setupTableContextMenu(editor, container);
 
+  // Set up paste handler for markdown content with tables
+  setupMarkdownPasteHandler(editor, container);
+
   return editor;
+}
+
+/**
+ * Set up paste handler that properly handles markdown content with tables
+ * This intercepts paste events and parses markdown tables correctly
+ */
+function setupMarkdownPasteHandler(editor: Editor, container: HTMLElement): void {
+  container.addEventListener('paste', (event) => {
+    const clipboardData = event.clipboardData;
+    if (!clipboardData) return;
+
+    const text = clipboardData.getData('text/plain');
+    const html = clipboardData.getData('text/html');
+
+    // If the plain text contains markdown tables and we have HTML,
+    // the HTML conversion might create malformed tables.
+    // In this case, prefer to use the plain text as markdown.
+    if (text && html && containsMarkdownTable(text)) {
+      event.preventDefault();
+      event.stopPropagation();
+
+      // Insert the markdown text directly - Milkdown will parse it
+      editor.action((ctx) => {
+        try {
+          const view = ctx.get(editorViewCtx);
+          const parser = ctx.get(parserCtx);
+
+          // Parse the markdown text into a document
+          const doc = parser(text);
+          if (doc && doc.content.size > 0) {
+            // Replace the current selection with the parsed content
+            const { state } = view;
+            const tr = state.tr.replaceSelectionWith(doc, false);
+            view.dispatch(tr);
+          }
+        } catch (error) {
+          console.warn('[Milkdown] Error handling markdown paste:', error);
+          // Fallback: insert as plain text
+          const view = ctx.get(editorViewCtx);
+          const tr = view.state.tr.insertText(text);
+          view.dispatch(tr);
+        }
+      });
+    }
+  }, true); // Use capture phase to intercept before Milkdown's handler
 }
 
 /**
