@@ -56,7 +56,7 @@ export class EntryDetailController implements ReactiveController {
 
     // Setup auto-save debouncer (saves 2 seconds after last edit)
     this.debouncedBackendSave = debounce(async (entryId: string) => {
-      await this.saveToBackend(entryId, { silent: true });
+      await this.saveToBackend(entryId);
     }, 2000);
   }
 
@@ -211,7 +211,7 @@ export class EntryDetailController implements ReactiveController {
   /**
    * Save entry to backend
    */
-  async saveToBackend(entryId: string, options?: { keepalive?: boolean; silent?: boolean }): Promise<void> {
+  async saveToBackend(entryId: string, options?: { keepalive?: boolean }): Promise<void> {
     const store = this.storeController.store;
     if (!store) return;
 
@@ -225,19 +225,13 @@ export class EntryDetailController implements ReactiveController {
     const notesToSave = this.editedNotes;
 
     try {
-      await store.updateEntry(entryId, { title: titleToSave, notes: notesToSave }, { keepalive: options?.keepalive, silent: options?.silent });
-
-      if (!options?.silent) {
-        console.log('[AutoSave] Saved successfully');
-      }
+      await store.updateEntry(entryId, { title: titleToSave, notes: notesToSave }, { keepalive: options?.keepalive });
 
       this.hasUnsavedChanges = false;
       this.host.requestUpdate();
     } catch (error) {
       console.error('[AutoSave] Save failed:', error);
-      if (!options?.silent) {
-        toast.error('Failed to save changes');
-      }
+      toast.error('Failed to save changes');
     }
   }
 

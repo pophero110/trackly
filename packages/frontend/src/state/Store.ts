@@ -264,7 +264,7 @@ export class Store {
     }
   }
 
-  async updateEntry(id: string, updates: { tagIds?: string[]; title?: string; timestamp?: string; value?: string | number | boolean; valueDisplay?: string; notes?: string; latitude?: number; longitude?: number; locationName?: string; ipoCategory?: IpoCategory | null }, options?: { silent?: boolean; keepalive?: boolean }): Promise<void> {
+  async updateEntry(id: string, updates: { tagIds?: string[]; title?: string; timestamp?: string; value?: string | number | boolean; valueDisplay?: string; notes?: string; latitude?: number; longitude?: number; locationName?: string; ipoCategory?: IpoCategory | null }, options?: { keepalive?: boolean }): Promise<void> {
     // Optimistic update: Update entry in local state immediately
     const index = this.entries.findIndex(e => e.id === id);
     if (index !== -1) {
@@ -274,12 +274,7 @@ export class Store {
       // Apply updates optimistically (excluding tagIds which needs server response)
       const { tagIds, ...entryUpdates } = updates;
       this.entries[index] = new Entry({ ...this.entries[index], ...entryUpdates });
-
-      // Skip notification for silent updates (e.g., auto-save flush on panel close)
-      // The local state is already up to date from previous edits
-      if (!options?.silent) {
-        this.notifyEntryChange();
-      }
+      this.notifyEntryChange();
 
       try {
         // Update via API in the background
@@ -292,7 +287,6 @@ export class Store {
         if (updates.timestamp) {
           this.sortEntriesLocally();
         }
-        // Always notify after API success so list reflects saved changes
         this.notifyEntryChange();
       } catch (error) {
         // If API call fails, rollback to original entry
