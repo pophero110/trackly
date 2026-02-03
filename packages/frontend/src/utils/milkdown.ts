@@ -1,4 +1,4 @@
-import { Editor, rootCtx, defaultValueCtx, editorViewCtx } from '@milkdown/core';
+import { Editor, rootCtx, defaultValueCtx, editorViewCtx, serializerCtx } from '@milkdown/core';
 import { commonmark } from '@milkdown/preset-commonmark';
 import { nord } from '@milkdown/theme-nord';
 import {
@@ -29,8 +29,20 @@ export async function createMilkdownEditor(
       ctx.set(defaultValueCtx, initialValue);
 
       if (onChange) {
-        ctx.get(listenerCtx).markdownUpdated((ctx, markdown) => {
-          onChange(markdown);
+        // Use docUpdated instead of markdownUpdated to handle serialization errors
+        ctx.get(listenerCtx).updated((ctx, doc, prevDoc) => {
+          // Only process if document actually changed
+          if (doc.eq(prevDoc)) return;
+
+          try {
+            const serializer = ctx.get(serializerCtx);
+            const markdown = serializer(doc);
+            onChange(markdown);
+          } catch (error) {
+            // Handle table serialization errors gracefully
+            // This can happen with malformed table structures (e.g., rows with undefined cells)
+            console.warn('[Milkdown] Error during markdown serialization:', error);
+          }
         });
       }
     })
