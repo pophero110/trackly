@@ -65,7 +65,7 @@ export class EntryListHeader extends LitElement {
     .header-filters-row {
       display: flex;
       align-items: center;
-      gap: 24px;
+      gap: 12px;
       flex-wrap: wrap;
     }
 

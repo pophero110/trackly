@@ -1,6 +1,5 @@
 /**
- * URL State Manager - Uses route as the source of truth for app state
- * Path-based routing: /tags/life/entries
+ * URL State Manager - Uses query parameters as the source of truth for app state
  */
 
 type StateChangeCallback = () => void;
@@ -32,23 +31,15 @@ export class URLStateManager {
   /**
    * Parse the current pathname and return route info
    */
-  private static parsePathname(): { view: 'home' | 'tags' | 'entries', tagSlug?: string } {
+  private static parsePathname(): { view: 'home' | 'tags' | 'entries' } {
     const path = window.location.pathname;
 
-    // Match /tags
     if (path === '/tags') {
       return { view: 'tags' };
     }
 
-    // Match /entries (all entries view)
     if (path === '/entries') {
       return { view: 'entries' };
-    }
-
-    // Match /tags/:tagSlug/entries
-    const entriesMatch = path.match(/^\/tags\/([^/]+)\/entries$/);
-    if (entriesMatch) {
-      return { view: 'entries', tagSlug: entriesMatch[1] };
     }
 
     // Default to home (redirect to /entries)
@@ -56,12 +47,11 @@ export class URLStateManager {
   }
 
   /**
-   * Get selected tag name from URL path
-   * Needs to match tag slug to actual tag name
+   * Get selected tag slug from URL query param (?tag=)
    */
   static getSelectedTagName(): string | null {
-    const { tagSlug } = URLStateManager.parsePathname();
-    return tagSlug || null;
+    const params = new URLSearchParams(window.location.search);
+    return params.get('tag');
   }
 
   /**
@@ -101,19 +91,23 @@ export class URLStateManager {
   }
 
   /**
-   * Set selected tag name in URL (deprecated - use showEntryList instead)
+   * Set selected tag name in URL query param
    */
   static setSelectedTagName(tagName: string | null): void {
+    const params = new URLSearchParams(window.location.search);
     if (tagName) {
-      const slug = URLStateManager.encodeTagName(tagName);
-      URLStateManager.updatePath(`/tags/${slug}/entries`);
+      params.set('tag', URLStateManager.encodeTagName(tagName));
     } else {
-      URLStateManager.updatePath('/entries');
+      params.delete('tag');
     }
+    const queryString = params.toString();
+    const newURL = queryString ? `/entries?${queryString}` : '/entries';
+    window.history.pushState(null, '', newURL);
+    URLStateManager.notifyListeners();
   }
 
   /**
-   * Set current view in URL (deprecated - use specific navigation methods)
+   * Set current view in URL
    */
   static setView(view: 'home' | 'tags' | 'entries'): void {
     if (view === 'tags') {
@@ -126,14 +120,15 @@ export class URLStateManager {
   }
 
   /**
-   * Navigate to tag entry list
+   * Navigate to tag entry list (/entries?tag=slug)
    */
   static showEntryList(tagName: string): void {
     const slug = URLStateManager.encodeTagName(tagName);
     const params = new URLSearchParams(window.location.search);
-    const queryString = params.toString();
-    const path = `/tags/${slug}/entries${queryString ? '?' + queryString : ''}`;
-    URLStateManager.updatePath(path);
+    params.set('tag', slug);
+    const newURL = `/entries?${params.toString()}`;
+    window.history.pushState(null, '', newURL);
+    URLStateManager.notifyListeners();
   }
 
   /**

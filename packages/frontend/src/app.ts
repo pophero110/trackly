@@ -89,11 +89,11 @@ class TracklyApp {
         return;
       }
 
-      // Check if we're on an entry detail page
+      // Check if we're on an entry detail page (?id= query param)
       // SlidePanel now handles opening/closing automatically based on URL
-      const entryDetailMatch = path.match(/^\/entries\/([^/]+)$/);
-      if (entryDetailMatch) {
-        const entryId = entryDetailMatch[1];
+      const params = new URLSearchParams(window.location.search);
+      const entryId = params.get('id');
+      if (entryId) {
 
         // Show entry list in background (or tags if that was the previous view)
         const previousView = sessionStorage.getItem('previousView') || 'entries';
@@ -230,8 +230,10 @@ class TracklyApp {
     if (!panel) return;
 
     if (actionType === 'log-entry') {
-      const selectedTagName = URLStateManager.getSelectedTagName();
-      const tag = selectedTagName ? this.store.getTagByName(selectedTagName) : null;
+      const selectedTagSlug = URLStateManager.getSelectedTagName();
+      const tag = selectedTagSlug ? this.store.getTags().find(t =>
+        t.name.toLowerCase().replace(/\s+/g, '-') === selectedTagSlug.toLowerCase()
+      ) || null : null;
 
       // Set selected tag in store if found
       if (tag) {
