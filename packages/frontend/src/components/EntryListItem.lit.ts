@@ -239,10 +239,6 @@ export class EntryListItem extends LitElement {
       margin-left: 4px;
       vertical-align: middle;
     }
-
-    .entry-chip-ipo .ipo-icon {
-      font-size: 0.85rem;
-    }
   `;
 
   @property({ type: Object })
@@ -289,8 +285,7 @@ export class EntryListItem extends LitElement {
   }
 
   private get ipoMenuItems(): DropdownMenuItem[] {
-    const currentIpo = this.entry.ipoCategory;
-    const items: DropdownMenuItem[] = [
+    return [
       {
         id: 'input',
         label: `${IPO_CONFIG.input.icon} Input`,
@@ -310,17 +305,6 @@ export class EntryListItem extends LitElement {
         data: 'output'
       }
     ];
-
-    // Add "Clear" option if there's a current selection
-    if (currentIpo) {
-      items.push({
-        id: 'clear',
-        label: '✕ Clear',
-        data: null
-      });
-    }
-
-    return items;
   }
 
   connectedCallback(): void {
@@ -578,8 +562,8 @@ export class EntryListItem extends LitElement {
           <div class="timeline-entry-header">
             <div class="timeline-entry-primary">
               ${when(this.entry.ipoCategory, () => {
-                const ipoConfig = IPO_CONFIG[this.entry.ipoCategory!];
-                return html`
+      const ipoConfig = IPO_CONFIG[this.entry.ipoCategory!];
+      return html`
                   <div class="entry-chip-ipo-container">
                     <span
                       class="entry-chip-ipo"
@@ -593,7 +577,7 @@ export class EntryListItem extends LitElement {
                     </span>
                   </div>
                 `;
-              })}
+    })}
               ${when(primaryTag, () => html`
                 <div class="entry-chip-tag-container" data-entry-id="${this.entry.id}">
                   <span
@@ -610,15 +594,15 @@ export class EntryListItem extends LitElement {
                 </div>
               `)}
               ${map(this.entry.tags.slice(1), entryTag => {
-                const tag = this.store?.getTagById(entryTag.tagId);
-                return tag ? html`
+      const tag = this.store?.getTagById(entryTag.tagId);
+      return tag ? html`
                   <span
                     class="entry-chip entry-chip-tag"
                     style="--tag-color: ${getTagColor(tag.name)}">
                     ${tag.name}
                   </span>
                 ` : null;
-              })}
+    })}
             </div>
             <button
               class="entry-menu-btn"
