@@ -1,5 +1,5 @@
 import { generateId } from '../utils/helpers.js';
-import { IEntry, IEntryTag, EntryFormData } from '../types/index.js';
+import { IEntry, IEntryTag, EntryFormData, IpoCategory } from '../types/index.js';
 import { Tag } from './Tag.js';
 
 /**
@@ -16,6 +16,7 @@ export class Entry implements IEntry {
     latitude?: number;
     longitude?: number;
     locationName?: string;
+    ipoCategory?: IpoCategory;
     isArchived?: boolean;
     createdAt: string;
 
@@ -31,6 +32,7 @@ export class Entry implements IEntry {
         this.latitude = data.latitude;
         this.longitude = data.longitude;
         this.locationName = data.locationName;
+        this.ipoCategory = data.ipoCategory;
         this.isArchived = data.isArchived;
         this.createdAt = data.createdAt || new Date().toISOString();
     }
@@ -117,6 +119,7 @@ export class Entry implements IEntry {
             latitude: this.latitude,
             longitude: this.longitude,
             locationName: this.locationName,
+            ipoCategory: this.ipoCategory,
             isArchived: this.isArchived,
             createdAt: this.createdAt
         };

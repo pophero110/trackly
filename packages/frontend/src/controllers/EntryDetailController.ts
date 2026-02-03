@@ -2,6 +2,7 @@ import { ReactiveController, ReactiveControllerHost } from 'lit';
 import { StoreController } from './StoreController.js';
 import { Entry } from '../models/Entry.js';
 import { Tag } from '../models/Tag.js';
+import { IpoCategory } from '../types/index.js';
 import { debounce } from '../utils/helpers.js';
 import { extractHashtags } from '../utils/entryHelpers.js';
 import { URLStateManager } from '../utils/urlState.js';
@@ -312,6 +313,31 @@ export class EntryDetailController implements ReactiveController {
     } catch (error) {
       console.error('Error updating entry tag:', error);
       toast.error('Failed to update tag');
+    }
+  }
+
+  /**
+   * Update entry IPO category
+   */
+  async updateIpoCategory(ipoCategory: IpoCategory | null): Promise<void> {
+    if (!this.entry || !this.storeController.store) return;
+
+    // Optimistic update
+    this.entry = new Entry({
+      ...this.entry,
+      ipoCategory: ipoCategory || undefined
+    });
+    this.host.requestUpdate();
+
+    try {
+      await this.storeController.store.updateEntry(this.entry.id, {
+        ipoCategory
+      });
+    } catch (error) {
+      console.error('Error updating IPO category:', error);
+      toast.error('Failed to update IPO category');
+      // Reload entry to revert
+      this.loadEntry();
     }
   }
 

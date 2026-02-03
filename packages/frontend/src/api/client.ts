@@ -1,4 +1,4 @@
-import type { ITag, IEntry, AuthResponse, PaginatedEntriesResponse } from '@trackly/shared';
+import type { ITag, IEntry, AuthResponse, PaginatedEntriesResponse, IpoCategory } from '@trackly/shared';
 
 /**
  * API configuration
@@ -169,6 +169,7 @@ export class APIClient {
     latitude?: number;
     longitude?: number;
     locationName?: string;
+    ipoCategory?: IpoCategory;
   }): Promise<IEntry> {
     return this.request<IEntry>('/api/entries', {
       method: 'POST',
@@ -186,6 +187,7 @@ export class APIClient {
     latitude?: number;
     longitude?: number;
     locationName?: string;
+    ipoCategory?: IpoCategory | null;
   }, options?: { keepalive?: boolean }): Promise<IEntry> {
     return this.request<IEntry>(`/api/entries/${id}`, {
       method: 'PUT',

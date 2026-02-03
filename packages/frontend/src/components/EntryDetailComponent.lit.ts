@@ -217,6 +217,11 @@ export class EntryDetailComponent extends LitElement {
     }
   };
 
+  private handleIpoChange = async (e: CustomEvent): Promise<void> => {
+    const { ipoCategory } = e.detail;
+    await this.detailController.updateIpoCategory(ipoCategory);
+  };
+
   render() {
     // Ensure entry is loaded when store becomes available (handles page refresh)
     this.detailController.ensureLoaded();
@@ -250,7 +255,8 @@ export class EntryDetailComponent extends LitElement {
             .entryTags=${entryTags}
             .allTags=${allTags}
             @tag-change=${this.handleTagChange}
-            @menu-action=${this.handleMenuAction}>
+            @menu-action=${this.handleMenuAction}
+            @ipo-change=${this.handleIpoChange}>
           </entry-detail-header>
 
           <div class="title-container">

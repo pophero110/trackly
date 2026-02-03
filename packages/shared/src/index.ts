@@ -15,6 +15,7 @@ export type {
 
 // Entry types
 export type {
+  IpoCategory,
   IEntryTag,
   IEntry,
   EntryFormData,

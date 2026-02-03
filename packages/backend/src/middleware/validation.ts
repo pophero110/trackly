@@ -66,7 +66,8 @@ export const createEntrySchema = z.object({
   notes: z.string().optional().default(''),
   latitude: z.number().optional(),
   longitude: z.number().optional(),
-  locationName: z.string().optional()
+  locationName: z.string().optional(),
+  ipoCategory: z.enum(['input', 'process', 'output']).optional()
 });
 
 export const updateEntrySchema = z.object({
@@ -78,5 +79,6 @@ export const updateEntrySchema = z.object({
   notes: z.string().optional(),
   latitude: z.number().optional(),
   longitude: z.number().optional(),
-  locationName: z.string().optional()
+  locationName: z.string().optional(),
+  ipoCategory: z.enum(['input', 'process', 'output']).nullable().optional()
 });

@@ -32,6 +32,7 @@ function formatEntry(entry: any): IEntry {
     latitude: entry.latitude ?? undefined,
     longitude: entry.longitude ?? undefined,
     locationName: entry.locationName || undefined,
+    ipoCategory: entry.ipoCategory as 'input' | 'process' | 'output' | undefined,
     isArchived: entry.isArchived,
     createdAt: entry.createdAt.toISOString(),
     updatedAt: entry.updatedAt.toISOString()
@@ -271,7 +272,7 @@ router.get('/:id', async (req: AuthRequest, res, next): Promise<void> => {
 router.post('/', validate(createEntrySchema), async (req: AuthRequest, res, next): Promise<void> => {
   try {
     const userId = req.user!.id;
-    const { tagIds, title, timestamp, value, valueDisplay, notes, latitude, longitude, locationName } = req.body;
+    const { tagIds, title, timestamp, value, valueDisplay, notes, latitude, longitude, locationName, ipoCategory } = req.body;
 
     // Verify all tags exist and belong to user
     const tags = await prisma.tag.findMany({
@@ -306,6 +307,7 @@ router.post('/', validate(createEntrySchema), async (req: AuthRequest, res, next
         latitude: latitude ?? null,
         longitude: longitude ?? null,
         locationName: locationName || null,
+        ipoCategory: ipoCategory || null,
         userId,
         entryTags: {
           create: tagIds.map((tagId: string) => ({
@@ -375,6 +377,7 @@ router.put('/:id', validate(updateEntrySchema), async (req: AuthRequest, res, ne
     if (req.body.latitude !== undefined) updateData.latitude = req.body.latitude ?? null;
     if (req.body.longitude !== undefined) updateData.longitude = req.body.longitude ?? null;
     if (req.body.locationName !== undefined) updateData.locationName = req.body.locationName || null;
+    if (req.body.ipoCategory !== undefined) updateData.ipoCategory = req.body.ipoCategory || null;
 
     // Re-extract hashtags when notes or title change
     if (req.body.notes !== undefined || req.body.title !== undefined) {

@@ -180,6 +180,36 @@ export class EntryListItem extends LitElement {
         padding: 3px 8px;
       }
     }
+
+    .ipo-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 2px;
+      padding: 2px 6px;
+      border-radius: 10px;
+      font-size: 0.65rem;
+      font-weight: 600;
+      line-height: 1;
+    }
+
+    .ipo-badge.input {
+      background: rgba(59, 130, 246, 0.15);
+      color: #3B82F6;
+    }
+
+    .ipo-badge.process {
+      background: rgba(245, 158, 11, 0.15);
+      color: #F59E0B;
+    }
+
+    .ipo-badge.output {
+      background: rgba(16, 185, 129, 0.15);
+      color: #10B981;
+    }
+
+    .ipo-badge .ipo-icon {
+      font-size: 0.7rem;
+    }
   `;
 
   @property({ type: Object })
@@ -436,6 +466,12 @@ export class EntryListItem extends LitElement {
                   </span>
                 ` : null;
               })}
+              ${when(this.entry.ipoCategory, () => html`
+                <span class="ipo-badge ${this.entry.ipoCategory}">
+                  <span class="ipo-icon">${this.entry.ipoCategory === 'input' ? '↓' : this.entry.ipoCategory === 'process' ? '⚙' : '↑'}</span>
+                  ${this.entry.ipoCategory === 'input' ? 'In' : this.entry.ipoCategory === 'process' ? 'Pro' : 'Out'}
+                </span>
+              `)}
             </div>
             <button
               class="entry-menu-btn"

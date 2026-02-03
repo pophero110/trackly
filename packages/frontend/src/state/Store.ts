@@ -1,6 +1,6 @@
 import { Tag } from '../models/Tag.js';
 import { Entry } from '../models/Entry.js';
-import { ITag, IEntry, StoreListener, Unsubscribe } from '../types/index.js';
+import { ITag, IEntry, StoreListener, Unsubscribe, IpoCategory } from '../types/index.js';
 import { APIClient } from '../api/client.js';
 import { URLStateManager } from '../utils/urlState.js';
 import type { PaginationCursor } from '@trackly/shared';
@@ -227,7 +227,8 @@ export class Store {
         notes: entry.notes,
         latitude: entry.latitude,
         longitude: entry.longitude,
-        locationName: entry.locationName
+        locationName: entry.locationName,
+        ipoCategory: entry.ipoCategory
       });
 
       // Replace optimistic entry with real entry from server
@@ -260,7 +261,7 @@ export class Store {
     }
   }
 
-  async updateEntry(id: string, updates: { tagIds?: string[]; title?: string; timestamp?: string; value?: string | number | boolean; valueDisplay?: string; notes?: string; latitude?: number; longitude?: number; locationName?: string }, options?: { silent?: boolean; keepalive?: boolean }): Promise<void> {
+  async updateEntry(id: string, updates: { tagIds?: string[]; title?: string; timestamp?: string; value?: string | number | boolean; valueDisplay?: string; notes?: string; latitude?: number; longitude?: number; locationName?: string; ipoCategory?: IpoCategory | null }, options?: { silent?: boolean; keepalive?: boolean }): Promise<void> {
     // Optimistic update: Update entry in local state immediately
     const index = this.entries.findIndex(e => e.id === id);
     if (index !== -1) {
