@@ -39,15 +39,16 @@ export class ToastComponent extends LitElement {
 
     .toast-container {
       position: fixed;
-      bottom: 0;
-      right: 0;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
       z-index: 10000;
       pointer-events: none;
       display: flex;
       flex-direction: column;
       gap: 12px;
       padding: var(--base-size-16);
-      align-items: flex-end;
+      align-items: center;
     }
 
     .toast {
@@ -191,9 +192,10 @@ export class ToastComponent extends LitElement {
     /* Mobile: bottom center */
     @media (max-width: 768px) {
       .toast-container {
-        right: 0;
-        left: 0;
-        align-items: center;
+        top: auto;
+        bottom: 0;
+        left: 50%;
+        transform: translateX(-50%);
       }
 
       .toast {
