@@ -40,16 +40,14 @@ export class ToastComponent extends LitElement {
     .toast-container {
       position: fixed;
       bottom: 0;
-      left: 50%;
-      transform: translateX(-50%);
+      right: 0;
       z-index: 10000;
       pointer-events: none;
       display: flex;
       flex-direction: column;
       gap: 12px;
       padding: var(--base-size-16);
-      align-items: center;
-      justify-content: center;
+      align-items: flex-end;
     }
 
     .toast {
@@ -190,16 +188,17 @@ export class ToastComponent extends LitElement {
       background: rgba(255, 255, 255, 0.15);
     }
 
-    /* Mobile responsiveness */
+    /* Mobile: bottom center */
     @media (max-width: 768px) {
+      .toast-container {
+        right: 0;
+        left: 0;
+        align-items: center;
+      }
+
       .toast {
         min-width: unset;
         max-width: calc(100vw - 32px);
-      }
-
-      .toast-container {
-        padding: var(--base-size-16);
-        width: 100%;
       }
     }
   `;
