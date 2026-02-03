@@ -26,12 +26,7 @@ function formatEntry(entry: any): IEntry {
     tags,
     title: entry.title,
     timestamp: entry.timestamp.toISOString(),
-    value: entry.value || undefined,
-    valueDisplay: entry.valueDisplay || undefined,
     notes: entry.notes || '',
-    latitude: entry.latitude ?? undefined,
-    longitude: entry.longitude ?? undefined,
-    locationName: entry.locationName || undefined,
     ipoCategory: entry.ipoCategory as 'input' | 'process' | 'output' | undefined,
     isArchived: entry.isArchived,
     createdAt: entry.createdAt.toISOString(),
@@ -272,7 +267,7 @@ router.get('/:id', async (req: AuthRequest, res, next): Promise<void> => {
 router.post('/', validate(createEntrySchema), async (req: AuthRequest, res, next): Promise<void> => {
   try {
     const userId = req.user!.id;
-    const { tagIds, title, timestamp, value, valueDisplay, notes, latitude, longitude, locationName, ipoCategory } = req.body;
+    const { tagIds, title, timestamp, notes, ipoCategory } = req.body;
 
     // Verify all tags exist and belong to user
     const tags = await prisma.tag.findMany({
@@ -300,13 +295,8 @@ router.post('/', validate(createEntrySchema), async (req: AuthRequest, res, next
       data: {
         title,
         timestamp: new Date(timestamp),
-        value: value?.toString() || null,
-        valueDisplay: valueDisplay || null,
         notes: notes || '',
         hashtags,
-        latitude: latitude ?? null,
-        longitude: longitude ?? null,
-        locationName: locationName || null,
         ipoCategory: ipoCategory || null,
         userId,
         entryTags: {
@@ -371,12 +361,7 @@ router.put('/:id', validate(updateEntrySchema), async (req: AuthRequest, res, ne
     const updateData: any = {};
     if (req.body.title !== undefined) updateData.title = req.body.title;
     if (req.body.timestamp) updateData.timestamp = new Date(req.body.timestamp);
-    if (req.body.value !== undefined) updateData.value = req.body.value?.toString() || null;
-    if (req.body.valueDisplay !== undefined) updateData.valueDisplay = req.body.valueDisplay || null;
     if (req.body.notes !== undefined) updateData.notes = req.body.notes;
-    if (req.body.latitude !== undefined) updateData.latitude = req.body.latitude ?? null;
-    if (req.body.longitude !== undefined) updateData.longitude = req.body.longitude ?? null;
-    if (req.body.locationName !== undefined) updateData.locationName = req.body.locationName || null;
     if (req.body.ipoCategory !== undefined) updateData.ipoCategory = req.body.ipoCategory || null;
 
     // Re-extract hashtags when notes or title change

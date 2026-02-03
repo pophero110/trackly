@@ -61,12 +61,7 @@ export const createEntrySchema = z.object({
   tagIds: z.array(z.string().min(1)).min(1, 'At least one tag is required'),
   title: z.string().min(1, 'Title is required'),
   timestamp: z.string().datetime('Invalid timestamp'),
-  value: z.union([z.string(), z.number(), z.boolean()]).optional(),
-  valueDisplay: z.string().optional(),
   notes: z.string().optional().default(''),
-  latitude: z.number().optional(),
-  longitude: z.number().optional(),
-  locationName: z.string().optional(),
   ipoCategory: z.enum(['input', 'process', 'output']).optional()
 });
 
@@ -74,11 +69,6 @@ export const updateEntrySchema = z.object({
   tagIds: z.array(z.string().min(1)).optional(),
   title: z.string().min(1, 'Title cannot be blank').optional(),
   timestamp: z.string().datetime().optional(),
-  value: z.union([z.string(), z.number(), z.boolean()]).optional(),
-  valueDisplay: z.string().optional(),
   notes: z.string().optional(),
-  latitude: z.number().optional(),
-  longitude: z.number().optional(),
-  locationName: z.string().optional(),
   ipoCategory: z.enum(['input', 'process', 'output']).nullable().optional()
 });

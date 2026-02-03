@@ -225,12 +225,7 @@ export class Store {
         tagIds: entry.tagIds,
         title: entry.title,
         timestamp: entry.timestamp,
-        value: entry.value,
-        valueDisplay: entry.valueDisplay,
         notes: entry.notes,
-        latitude: entry.latitude,
-        longitude: entry.longitude,
-        locationName: entry.locationName,
         ipoCategory: entry.ipoCategory
       });
 
@@ -264,7 +259,7 @@ export class Store {
     }
   }
 
-  async updateEntry(id: string, updates: { tagIds?: string[]; title?: string; timestamp?: string; value?: string | number | boolean; valueDisplay?: string; notes?: string; latitude?: number; longitude?: number; locationName?: string; ipoCategory?: IpoCategory | null }, options?: { keepalive?: boolean }): Promise<void> {
+  async updateEntry(id: string, updates: { tagIds?: string[]; title?: string; timestamp?: string; notes?: string; ipoCategory?: IpoCategory | null }, options?: { keepalive?: boolean }): Promise<void> {
     // Optimistic update: Update entry in local state immediately
     const index = this.entries.findIndex(e => e.id === id);
     if (index !== -1) {

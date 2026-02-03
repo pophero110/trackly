@@ -82,12 +82,7 @@ export interface IEntry {
   tags: IEntryTag[];  // Many-to-many relationship with tags
   title: string;  // Mandatory title for the entry
   timestamp: string;
-  value?: string | number | boolean;
-  valueDisplay?: string;  // For storing fetched titles or display text
   notes: string;
-  latitude?: number;  // Location latitude
-  longitude?: number;  // Location longitude
-  locationName?: string;  // Optional location name (e.g., "San Francisco, CA")
   ipoCategory?: IpoCategory;  // IPO category (Input, Process, Output)
   isArchived?: boolean;  // Whether the entry is archived
   createdAt: string;
@@ -102,12 +97,7 @@ export interface TagFormData {
 export interface EntryFormData {
   title: string;
   timestamp: string;
-  value?: string | number | boolean;
-  valueDisplay?: string;
   notes?: string;
-  latitude?: number;
-  longitude?: number;
-  locationName?: string;
 }
 
 export type StoreListener = () => void;

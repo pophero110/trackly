@@ -163,12 +163,7 @@ export class APIClient {
     tagIds: string[];
     title: string;
     timestamp: string;
-    value?: string | number | boolean;
-    valueDisplay?: string;
     notes?: string;
-    latitude?: number;
-    longitude?: number;
-    locationName?: string;
     ipoCategory?: IpoCategory;
   }): Promise<IEntry> {
     return this.request<IEntry>('/api/entries', {
@@ -181,12 +176,7 @@ export class APIClient {
     tagIds?: string[];
     title?: string;
     timestamp?: string;
-    value?: string | number | boolean;
-    valueDisplay?: string;
     notes?: string;
-    latitude?: number;
-    longitude?: number;
-    locationName?: string;
     ipoCategory?: IpoCategory | null;
   }, options?: { keepalive?: boolean }): Promise<IEntry> {
     return this.request<IEntry>(`/api/entries/${id}`, {

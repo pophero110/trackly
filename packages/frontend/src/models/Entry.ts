@@ -10,12 +10,7 @@ export class Entry implements IEntry {
     tags: IEntryTag[];
     title: string;
     timestamp: string;
-    value?: string | number | boolean;
-    valueDisplay?: string;
     notes: string;
-    latitude?: number;
-    longitude?: number;
-    locationName?: string;
     ipoCategory?: IpoCategory;
     isArchived?: boolean;
     createdAt: string;
@@ -26,12 +21,7 @@ export class Entry implements IEntry {
         this.tags = data.tags || [];
         this.title = data.title;
         this.timestamp = data.timestamp;
-        this.value = data.value;
-        this.valueDisplay = data.valueDisplay;
         this.notes = data.notes || '';
-        this.latitude = data.latitude;
-        this.longitude = data.longitude;
-        this.locationName = data.locationName;
         this.ipoCategory = data.ipoCategory;
         this.isArchived = data.isArchived;
         this.createdAt = data.createdAt || new Date().toISOString();
@@ -52,12 +42,7 @@ export class Entry implements IEntry {
             tags,
             title: formData.title,
             timestamp: new Date(formData.timestamp).toISOString(),
-            value: formData.value,
-            valueDisplay: formData.valueDisplay,
-            notes: formData.notes?.trim() || '',
-            latitude: formData.latitude,
-            longitude: formData.longitude,
-            locationName: formData.locationName
+            notes: formData.notes?.trim() || ''
         });
     }
 
@@ -113,12 +98,7 @@ export class Entry implements IEntry {
             tags: this.tags,
             title: this.title,
             timestamp: this.timestamp,
-            value: this.value,
-            valueDisplay: this.valueDisplay,
             notes: this.notes,
-            latitude: this.latitude,
-            longitude: this.longitude,
-            locationName: this.locationName,
             ipoCategory: this.ipoCategory,
             isArchived: this.isArchived,
             createdAt: this.createdAt

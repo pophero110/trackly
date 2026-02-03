@@ -62,12 +62,7 @@ model Entry {
   id           String   @id @default(cuid())
   title        String   @default("") // Mandatory title for the entry
   timestamp    DateTime
-  value        String?
-  valueDisplay String?
   notes        String?
-  latitude     Float?   // Location latitude
-  longitude    Float?   // Location longitude
-  locationName String?  // Optional location name (e.g., "San Francisco, CA")
   hashtags     String[] @default([]) @map("tags") // Extracted hashtags for querying
   ipoCategory  String?  // IPO category: 'input', 'process', or 'output'
   isArchived   Boolean  @default(false)

@@ -42,10 +42,9 @@ export class EntryDetailFooter extends LitElement {
   };
 
   render() {
-    const hasLocation = this.entry.latitude && this.entry.longitude;
     const hasHashtags = this.hashtags.length > 0;
 
-    if (!hasLocation && !hasHashtags) {
+    if (!hasHashtags) {
       return html``;
     }
 
