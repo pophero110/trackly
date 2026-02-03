@@ -272,9 +272,11 @@ export class Store {
       const { tagIds, ...entryUpdates } = updates;
       this.entries[index] = new Entry({ ...this.entries[index], ...entryUpdates });
 
-      // Always notify subscribers of the optimistic update
-      // This ensures all components (like EntryList) re-render with the new data
-      this.notifyEntryChange();
+      // Skip notification for silent updates (e.g., auto-save flush on panel close)
+      // The local state is already up to date from previous edits
+      if (!options?.silent) {
+        this.notifyEntryChange();
+      }
 
       try {
         // Update via API in the background
@@ -287,11 +289,15 @@ export class Store {
         if (updates.timestamp) {
           this.sortEntriesLocally();
         }
-        this.notifyEntryChange();
+        if (!options?.silent) {
+          this.notifyEntryChange();
+        }
       } catch (error) {
         // If API call fails, rollback to original entry
         this.entries[index] = originalEntry;
-        this.notifyEntryChange();
+        if (!options?.silent) {
+          this.notifyEntryChange();
+        }
         throw error;
       }
     } else {

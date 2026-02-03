@@ -172,18 +172,34 @@ export class EntryListComponent extends LitElement {
   private observer: IntersectionObserver | null = null;
   private sentinelRef: Element | null = null;
   private lastTagFilters: string = '';
+  private lastHashtagFilters: string = '';
+  private lastSortValue: string = '';
 
   connectedCallback() {
     super.connectedCallback();
     this.lastTagFilters = URLStateManager.getTagFilters().join(',');
-    // Subscribe to URL changes for tag filter updates
+    this.lastHashtagFilters = URLStateManager.getHashtagFilters().join(',');
+    this.lastSortValue = `${URLStateManager.getSortBy()}-${URLStateManager.getSortOrder()}`;
+    // Subscribe to URL changes for filter/sort updates
     this.unsubscribeUrl = URLStateManager.subscribe(() => {
       const currentTags = URLStateManager.getTagFilters().join(',');
-      if (currentTags !== this.lastTagFilters) {
+      const currentHashtags = URLStateManager.getHashtagFilters().join(',');
+      const currentSort = `${URLStateManager.getSortBy()}-${URLStateManager.getSortOrder()}`;
+
+      const tagsChanged = currentTags !== this.lastTagFilters;
+      const hashtagsChanged = currentHashtags !== this.lastHashtagFilters;
+      const sortChanged = currentSort !== this.lastSortValue;
+
+      if (tagsChanged || hashtagsChanged) {
         this.lastTagFilters = currentTags;
+        this.lastHashtagFilters = currentHashtags;
         this.storeController.store?.resetPagination();
       }
-      this.requestUpdate();
+
+      if (tagsChanged || hashtagsChanged || sortChanged) {
+        this.lastSortValue = currentSort;
+        this.requestUpdate();
+      }
     });
 
     // Setup IntersectionObserver after first render
