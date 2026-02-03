@@ -9,7 +9,6 @@ export type ActionType = 'log-entry' | 'create-tag' | 'edit-tag' | 'clone-tag' |
 
 export class URLStateManager {
   private static listeners: StateChangeCallback[] = [];
-  private static originUrl: string | null = null;
 
   /**
    * Encode tag name for URL path (lowercase, replace spaces with hyphens)
@@ -162,37 +161,35 @@ export class URLStateManager {
 
   /**
    * Navigate to entry detail page
-   * Saves origin URL on first navigation, uses replaceState on subsequent navigations
+   * Appends id param to existing query params
    */
   static showEntryDetail(entryId: string): void {
+    const params = new URLSearchParams(window.location.search);
+    params.set('id', entryId);
+    const newURL = `${window.location.pathname}?${params.toString()}`;
+
     if (!URLStateManager.isOnEntryDetail()) {
-      // First time opening entry detail - save origin (current URL without ?search)
-      const currentUrl = new URL(window.location.href);
-      currentUrl.searchParams.delete('search');
-      URLStateManager.originUrl = currentUrl.pathname + currentUrl.search;
-      window.history.pushState(null, '', `/entries?id=${entryId}`);
+      window.history.pushState(null, '', newURL);
     } else {
       // Already on entry detail - replace instead of push
-      window.history.replaceState(null, '', `/entries?id=${entryId}`);
+      window.history.replaceState(null, '', newURL);
     }
 
     URLStateManager.notifyListeners();
   }
 
   /**
-   * Navigate back to origin URL (where user was before opening entry details)
+   * Navigate back by removing id param from query params
    */
   static navigateToOrigin(): void {
-    if (URLStateManager.originUrl) {
-      const origin = URLStateManager.originUrl;
-      URLStateManager.originUrl = null;
-      window.history.pushState(null, '', origin);
-      URLStateManager.notifyListeners();
-    } else {
-      // Fallback to /entries if no origin saved
-      window.history.pushState(null, '', '/entries');
-      URLStateManager.notifyListeners();
-    }
+    const params = new URLSearchParams(window.location.search);
+    params.delete('id');
+    const queryString = params.toString();
+    const newURL = queryString
+      ? `${window.location.pathname}?${queryString}`
+      : window.location.pathname;
+    window.history.pushState(null, '', newURL);
+    URLStateManager.notifyListeners();
   }
 
   /**
