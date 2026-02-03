@@ -49,7 +49,10 @@
       "Bash(railway variables:*)",
       "Bash(railway link:*)",
       "Bash(railway whoami:*)",
-      "Bash(pnpm run build:*)"
+      "Bash(pnpm run build:*)",
+      "Bash(npx tsc:*)",
+      "Bash(pnpm prisma migrate dev:*)",
+      "Bash(pnpm exec prisma migrate:*)"
     ],
     "deny": [],
     "ask": []

@@ -153,10 +153,11 @@ export class URLStateManager {
   }
 
   /**
-   * Check if currently on an entry detail page
+   * Check if currently on an entry detail page (/entries?id=...)
    */
   private static isOnEntryDetail(): boolean {
-    return /^\/entries\/[^/]+$/.test(window.location.pathname);
+    const params = new URLSearchParams(window.location.search);
+    return params.has('id');
   }
 
   /**
@@ -164,17 +165,15 @@ export class URLStateManager {
    * Saves origin URL on first navigation, uses replaceState on subsequent navigations
    */
   static showEntryDetail(entryId: string): void {
-    const path = `/entries/${entryId}`;
-
     if (!URLStateManager.isOnEntryDetail()) {
       // First time opening entry detail - save origin (current URL without ?search)
       const currentUrl = new URL(window.location.href);
       currentUrl.searchParams.delete('search');
       URLStateManager.originUrl = currentUrl.pathname + currentUrl.search;
-      window.history.pushState(null, '', path);
+      window.history.pushState(null, '', `/entries?id=${entryId}`);
     } else {
       // Already on entry detail - replace instead of push
-      window.history.replaceState(null, '', path);
+      window.history.replaceState(null, '', `/entries?id=${entryId}`);
     }
 
     URLStateManager.notifyListeners();

@@ -81,19 +81,16 @@ export class EntryDetailController implements ReactiveController {
    * Update controller state from URL
    */
   private updateFromUrl(): void {
-    const currentPath = window.location.pathname;
+    // Check if URL has ?id= query param for entry detail
+    const params = new URLSearchParams(window.location.search);
+    const newEntryId = params.get('id');
 
-    // Check if we're on entry detail page (/entries/:id)
-    if (!currentPath.startsWith('/entries/')) {
+    if (!newEntryId) {
       this.entryId = null;
       this.entry = null;
       this.host.requestUpdate();
       return;
     }
-
-    // Extract entry ID from URL (do this even if store isn't ready)
-    const pathSegments = currentPath.split('/').filter(Boolean);
-    const newEntryId = pathSegments[1] || null;
 
     if (newEntryId !== this.entryId) {
       // Flush any pending saves before switching entries

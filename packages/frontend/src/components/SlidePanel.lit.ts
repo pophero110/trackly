@@ -155,20 +155,18 @@ export class SlidePanel extends LitElement {
   }
 
   private updatePanelState(): void {
-    // Check if current path matches /entries/:id pattern
-    const path = window.location.pathname;
-    const entryDetailMatch = path.match(/^\/entries\/([^/]+)$/);
+    // Check if URL has ?id= query param for entry detail
+    const params = new URLSearchParams(window.location.search);
+    const entryId = params.get('id');
 
-    if (entryDetailMatch) {
-      const entryId = entryDetailMatch[1];
-
+    if (entryId) {
       // Only update if entry ID changed (avoid unnecessary re-renders)
       if (entryId !== this.currentEntryId) {
         this.currentEntryId = entryId;
         this.openPanel();
       }
     } else {
-      // Not on entry detail path - close panel if open
+      // No entry ID in URL - close panel if open
       if (this.currentEntryId !== null) {
         this.currentEntryId = null;
         this.closePanel();
