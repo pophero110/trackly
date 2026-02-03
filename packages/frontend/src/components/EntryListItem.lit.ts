@@ -34,8 +34,10 @@ export class EntryListItem extends LitElement {
     }
 
     .timeline-entry-card {
-      background: transparent;
-      border: 1px solid var(--border-light);
+      --card-bg: transparent;
+      --card-border: var(--border-light);
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
       border-radius: var(--radius-lg);
       padding: var(--base-size-16);
       box-shadow: var(--shadow-ambient);
@@ -47,6 +49,21 @@ export class EntryListItem extends LitElement {
 
     .timeline-entry-card:hover {
       border-color: var(--primary);
+    }
+
+    .timeline-entry-card.ipo-input {
+      --card-bg: rgba(59, 130, 246, 0.05);
+      --card-border: rgba(59, 130, 246, 0.2);
+    }
+
+    .timeline-entry-card.ipo-process {
+      --card-bg: rgba(245, 158, 11, 0.05);
+      --card-border: rgba(245, 158, 11, 0.2);
+    }
+
+    .timeline-entry-card.ipo-output {
+      --card-bg: rgba(16, 185, 129, 0.05);
+      --card-border: rgba(16, 185, 129, 0.2);
     }
 
     .timeline-entry-header {
@@ -554,8 +571,10 @@ export class EntryListItem extends LitElement {
     const notesTags = this.entry.notes ? extractHashtags(this.entry.notes) : [];
     const hashtags = [...new Set([...titleTags, ...notesTags])];
 
+    const ipoClass = this.entry.ipoCategory ? `ipo-${this.entry.ipoCategory}` : '';
+
     return html`
-        <div class="timeline-entry-card" @click=${this.handleCardClick}>
+        <div class="timeline-entry-card ${ipoClass}" @click=${this.handleCardClick}>
           <div class="timeline-entry-header">
             <div class="timeline-entry-primary">
               ${when(primaryTag, () => html`
