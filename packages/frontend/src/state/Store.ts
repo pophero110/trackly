@@ -292,15 +292,12 @@ export class Store {
         if (updates.timestamp) {
           this.sortEntriesLocally();
         }
-        if (!options?.silent) {
-          this.notifyEntryChange();
-        }
+        // Always notify after API success so list reflects saved changes
+        this.notifyEntryChange();
       } catch (error) {
         // If API call fails, rollback to original entry
         this.entries[index] = originalEntry;
-        if (!options?.silent) {
-          this.notifyEntryChange();
-        }
+        this.notifyEntryChange();
         throw error;
       }
     } else {
