@@ -44,17 +44,20 @@ export class Store {
   private async loadData(sortBy?: string, sortOrder?: 'asc' | 'desc'): Promise<void> {
     try {
       const hashtagFilters = URLStateManager.getHashtagFilters();
-      const [tagsData, entriesResponse] = await Promise.all([
-        APIClient.getTags(),
-        APIClient.getEntries({
-          sortBy,
-          sortOrder,
-          limit: 30,
-          hashtags: hashtagFilters.length > 0 ? hashtagFilters : undefined
-        })
-      ]);
 
+      // Fetch tags first so we can resolve tag name filters to IDs
+      const tagsData = await APIClient.getTags();
       this.tags = tagsData.map(data => new Tag(data));
+
+      const tagIds = this.getFilterTagIds();
+      const entriesResponse = await APIClient.getEntries({
+        tagIds,
+        sortBy,
+        sortOrder,
+        limit: 30,
+        hashtags: hashtagFilters.length > 0 ? hashtagFilters : undefined
+      });
+
       this.entries = entriesResponse.entries.map(data => new Entry(data));
       this.paginationState = {
         hasMore: entriesResponse.pagination.hasMore,
