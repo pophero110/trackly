@@ -35,7 +35,7 @@ export class EntryDetailEditor extends LitElement {
 
     /* ProseMirror table wrapper - required for table rendering */
     .ProseMirror .tableWrapper {
-      overflow-x: auto;
+      overflow-x: scroll;
       margin: 1em 0;
     }
 
@@ -43,11 +43,11 @@ export class EntryDetailEditor extends LitElement {
     .milkdown table {
       border-spacing: 0;
       border-collapse: collapse;
-      table-layout: fixed;
-      width: 100%;
+      table-layout: auto;
+      width: max-content;
+      min-width: 100%;
       margin-top: 0;
       margin-bottom: 16px;
-      overflow: hidden;
     }
 
     .ProseMirror td,
@@ -60,6 +60,7 @@ export class EntryDetailEditor extends LitElement {
       padding: 6px 13px;
       border: 1px solid var(--border);
       min-width: 1em;
+      white-space: nowrap;
     }
 
     /* Header row (first row with th cells) */
