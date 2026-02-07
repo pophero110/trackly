@@ -176,6 +176,20 @@ export class ToastComponent extends LitElement {
       }
     }
 
+    /* Light mode - explicit theme override (takes precedence over prefers-color-scheme) */
+    :host-context([data-theme="light"]) .toast {
+      background: white;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    :host-context([data-theme="light"]) .toast-action:hover {
+      background: rgba(0, 0, 0, 0.05);
+    }
+
+    :host-context([data-theme="light"]) .toast-action:active {
+      background: rgba(0, 0, 0, 0.1);
+    }
+
     /* Dark mode - explicit theme override */
     :host-context([data-theme="dark"]) .toast {
       background: var(--surface, #1f2937);
