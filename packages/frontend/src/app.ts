@@ -6,9 +6,6 @@ import './components/ModalPanel.lit.js'; // Lit version (self-registering)
 import './components/SlidePanel.lit.js'; // Lit version (self-registering)
 import './components/ToastComponent.lit.js'; // Lit version (self-registering)
 import './components/SearchModal.lit.js'; // Search modal (Cmd+K)
-import { TagCreateFormComponent } from './components/TagCreateFormComponent.js';
-import { TagEditFormComponent } from './components/TagEditFormComponent.js';
-import './components/TagListComponent.lit.js'; // Lit version (self-registering)
 import './components/EntryListComponent.lit.js'; // Lit version (self-registering)
 import './components/EntryDetailComponent.lit.js'; // Lit version (self-registering)
 import './components/AuthComponent.lit.js'; // Lit version (self-registering)
@@ -49,11 +46,9 @@ class TracklyApp {
 
     // Set up navigation links
     this.setupEntriesLink();
-    this.setupTagsLink();
   }
 
   private setupViewRouting(): void {
-    const tagGrid = document.querySelector('tag-list') as HTMLElement;
     const entryList = document.querySelector('entry-list') as HTMLElement;
     const panel = document.querySelector('modal-panel') as any;
 
@@ -66,8 +61,6 @@ class TracklyApp {
 
       if (entryTitle) {
         title = `${entryTitle} - Trackly`;
-      } else if (view === 'tags') {
-        title = 'Tags - Trackly';
       } else if (view === 'entries' && tagName) {
         title = `${tagName} - Trackly`;
       } else if (view === 'entries') {
@@ -79,12 +72,11 @@ class TracklyApp {
 
     const updateView = () => {
       const path = window.location.pathname;
-      const view = URLStateManager.getView();
       const tagSlug = URLStateManager.getSelectedTagName();
       const actionType = URLStateManager.getAction();
 
-      // Redirect home (/) to /entries
-      if (path === '/') {
+      // Redirect home (/) or /tags to /entries
+      if (path === '/' || path === '/tags') {
         URLStateManager.showHome();
         return;
       }
@@ -94,16 +86,8 @@ class TracklyApp {
       const params = new URLSearchParams(window.location.search);
       const entryId = params.get('id');
       if (entryId) {
-
-        // Show entry list in background (or tags if that was the previous view)
-        const previousView = sessionStorage.getItem('previousView') || 'entries';
-        if (previousView === 'tags') {
-          if (tagGrid) tagGrid.style.display = 'flex';
-          if (entryList) entryList.style.display = 'none';
-        } else {
-          if (tagGrid) tagGrid.style.display = 'none';
-          if (entryList) entryList.style.display = 'flex';
-        }
+        // Show entry list in background
+        if (entryList) entryList.style.display = 'flex';
 
         // Update page title
         if (this.store.getIsLoaded()) {
@@ -131,9 +115,8 @@ class TracklyApp {
       }
 
       // Handle view routing
-      if (view === 'entries' && tagSlug) {
+      if (tagSlug) {
         // Show entry list for specific tag
-        if (tagGrid) tagGrid.style.display = 'none';
         if (entryList) {
           entryList.style.display = 'flex';
 
@@ -157,23 +140,8 @@ class TracklyApp {
 
         // Update page title with tag name
         updatePageTitle('entries', tag?.name);
-      } else if (view === 'tags') {
-        // Show tag grid
-        if (tagGrid) {
-          tagGrid.style.display = 'flex';
-          // Force re-render when showing tag grid (Lit component)
-          (tagGrid as any).requestUpdate?.();
-        }
-        if (entryList) entryList.style.display = 'none';
-        if (this.store.getSelectedTagId() !== null) {
-          this.store.setSelectedTagId(null);
-        }
-
-        // Update page title
-        updatePageTitle('tags');
-      } else if (view === 'entries') {
+      } else {
         // All entries view (/entries)
-        if (tagGrid) tagGrid.style.display = 'none';
         if (entryList) {
           entryList.style.display = 'flex';
 
@@ -192,24 +160,6 @@ class TracklyApp {
 
         // Update page title
         updatePageTitle('entries');
-      } else {
-        // Fallback - show all recent entries
-        if (tagGrid) tagGrid.style.display = 'none';
-        if (entryList) {
-          entryList.style.display = 'flex';
-
-          // Sort entries locally if sort has changed (no API call)
-          const sortBy = URLStateManager.getSortBy() || undefined;
-          const sortOrder = URLStateManager.getSortOrder() || undefined;
-          if (sortBy !== lastSortBy || sortOrder !== lastSortOrder) {
-            lastSortBy = sortBy;
-            lastSortOrder = sortOrder;
-            this.store.sortEntries();
-          }
-        }
-        if (this.store.getSelectedTagId() !== null) {
-          this.store.setSelectedTagId(null);
-        }
       }
 
       // Handle panel state
@@ -248,69 +198,6 @@ class TracklyApp {
         formClone.style.display = 'block';
         panel.open('Log New Entry', formClone);
       }
-    } else if (actionType === 'create-tag') {
-      // Open create tag panel
-      const formTemplate = document.querySelector('#tag-create-form-template');
-      if (formTemplate && !panel.getIsOpen()) {
-        const formClone = formTemplate.cloneNode(true) as HTMLElement;
-        formClone.removeAttribute('id');
-        formClone.style.display = 'block';
-
-        const createForm = formClone as any;
-        if (createForm && typeof createForm.setCreateMode === 'function') {
-          createForm.setCreateMode();
-        }
-
-        panel.open('Create New Tag', formClone);
-      }
-    } else if (actionType === 'edit-tag') {
-      // Open edit tag panel
-      const editTagSlug = URLStateManager.getEditTagName();
-      if (editTagSlug) {
-        const formTemplate = document.querySelector('#tag-edit-form-template');
-        if (formTemplate && !panel.getIsOpen()) {
-          const formClone = formTemplate.cloneNode(true) as HTMLElement;
-          formClone.removeAttribute('id');
-          formClone.style.display = 'block';
-
-          panel.open('Edit Tag', formClone);
-
-          // Wait for element to be connected before calling setEditMode
-          setTimeout(() => {
-            const editForm = formClone as any;
-            if (editForm && typeof editForm.setEditMode === 'function') {
-              editForm.setEditMode(editTagSlug);
-            }
-          }, 0);
-        }
-      }
-    } else if (actionType === 'clone-tag') {
-      // Open clone tag panel
-      const cloneTagSlug = URLStateManager.getCloneTagName();
-      // Find tag by matching slug (lowercase with hyphens)
-      let tag = null;
-      if (cloneTagSlug) {
-        const tags = this.store.getTags();
-        tag = tags.find(t =>
-          t.name.toLowerCase().replace(/\s+/g, '-') === cloneTagSlug.toLowerCase()
-        ) || null;
-      }
-
-      if (tag) {
-        const formTemplate = document.querySelector('#tag-create-form-template');
-        if (formTemplate && !panel.getIsOpen()) {
-          const formClone = formTemplate.cloneNode(true) as HTMLElement;
-          formClone.removeAttribute('id');
-          formClone.style.display = 'block';
-
-          const createForm = formClone as any;
-          if (createForm && typeof createForm.setCloneMode === 'function') {
-            createForm.setCloneMode(tag);
-          }
-
-          panel.open('Clone Tag', formClone);
-        }
-      }
     } else {
       // No panel in URL, close if open
       if (panel.getIsOpen()) {
@@ -324,9 +211,6 @@ class TracklyApp {
     customElements.define('app-tabs', AppTabs);
     // modal-panel is registered via @customElement decorator in ModalPanel.lit.ts
     // slide-panel is registered via @customElement decorator in SlidePanel.lit.ts
-    customElements.define('tag-create-form', TagCreateFormComponent);
-    customElements.define('tag-edit-form', TagEditFormComponent);
-    // tag-list is registered via @customElement decorator in TagListComponent.lit.ts
     // entry-list is registered via @customElement decorator in EntryListComponent.lit.ts
     // entry-detail is registered via @customElement decorator in EntryDetailComponent.lit.ts
   }
@@ -406,17 +290,6 @@ class TracklyApp {
         e.preventDefault();
         // Navigate to entries view (home - all recent entries)
         URLStateManager.showHome();
-      });
-    }
-  }
-
-  private setupTagsLink(): void {
-    const tagsLink = document.getElementById('tags-link');
-    if (tagsLink) {
-      tagsLink.addEventListener('click', (e) => {
-        e.preventDefault();
-        // Navigate to tags grid view
-        URLStateManager.setView('tags');
       });
     }
   }

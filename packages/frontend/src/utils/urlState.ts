@@ -4,7 +4,7 @@
 
 type StateChangeCallback = () => void;
 
-export type ActionType = 'log-entry' | 'create-tag' | 'edit-tag' | 'clone-tag' | 'edit-entry' | null;
+export type ActionType = 'log-entry' | 'edit-entry' | null;
 
 export class URLStateManager {
   private static listeners: StateChangeCallback[] = [];
@@ -31,12 +31,8 @@ export class URLStateManager {
   /**
    * Parse the current pathname and return route info
    */
-  private static parsePathname(): { view: 'home' | 'tags' | 'entries' } {
+  private static parsePathname(): { view: 'home' | 'entries' } {
     const path = window.location.pathname;
-
-    if (path === '/tags') {
-      return { view: 'tags' };
-    }
 
     if (path === '/entries') {
       return { view: 'entries' };
@@ -57,7 +53,7 @@ export class URLStateManager {
   /**
    * Get current view from URL path
    */
-  static getView(): 'home' | 'tags' | 'entries' {
+  static getView(): 'home' | 'entries' {
     const { view } = URLStateManager.parsePathname();
     return view;
   }
@@ -69,25 +65,10 @@ export class URLStateManager {
     const params = new URLSearchParams(window.location.search);
     const action = params.get('action');
 
-    if (action === 'log-entry' || action === 'create-tag' || action === 'edit-tag' || action === 'clone-tag' || action === 'edit-entry') {
+    if (action === 'log-entry' || action === 'edit-entry') {
       return action;
     }
     return null;
-  }
-
-  /**
-   * Get tag name for editing from URL
-   */
-  static getEditTagName(): string | null {
-    const params = new URLSearchParams(window.location.search);
-    const encoded = params.get('edit');
-    return encoded ? URLStateManager.decodeTagName(encoded) : null;
-  }
-
-  static getCloneTagName(): string | null {
-    const params = new URLSearchParams(window.location.search);
-    const encoded = params.get('clone');
-    return encoded ? URLStateManager.decodeTagName(encoded) : null;
   }
 
   /**
@@ -109,14 +90,8 @@ export class URLStateManager {
   /**
    * Set current view in URL
    */
-  static setView(view: 'home' | 'tags' | 'entries'): void {
-    if (view === 'tags') {
-      URLStateManager.updatePath('/tags');
-    } else if (view === 'entries') {
-      URLStateManager.updatePath('/entries');
-    } else if (view === 'home') {
-      URLStateManager.updatePath('/entries');
-    }
+  static setView(view: 'home' | 'entries'): void {
+    URLStateManager.updatePath('/entries');
   }
 
   /**
@@ -128,15 +103,6 @@ export class URLStateManager {
     params.set('tag', slug);
     const newURL = `/entries?${params.toString()}`;
     window.history.pushState(null, '', newURL);
-    URLStateManager.notifyListeners();
-  }
-
-  /**
-   * Navigate back to tag grid
-   */
-  static showGrid(): void {
-    // Navigate to /tags with no query parameters (fresh state)
-    window.history.pushState(null, '', '/tags');
     URLStateManager.notifyListeners();
   }
 
@@ -185,25 +151,6 @@ export class URLStateManager {
       : window.location.pathname;
     window.history.pushState(null, '', newURL);
     URLStateManager.notifyListeners();
-  }
-
-  /**
-   * Open create tag panel
-   */
-  static openCreateTagPanel(): void {
-    const params = new URLSearchParams(window.location.search);
-    params.set('action', 'create-tag');
-    URLStateManager.updateURL(params);
-  }
-
-  /**
-   * Open edit tag panel
-   */
-  static openEditTagPanel(tagName: string): void {
-    const params = new URLSearchParams(window.location.search);
-    params.set('action', 'edit-tag');
-    params.set('edit', URLStateManager.encodeTagName(tagName));
-    URLStateManager.updateURL(params);
   }
 
   /**
@@ -364,47 +311,6 @@ export class URLStateManager {
    * Set sort parameters in URL (for entries)
    */
   static setSort(sortBy: string | null, sortOrder: 'asc' | 'desc' | null): void {
-    const params = new URLSearchParams(window.location.search);
-
-    if (sortBy) {
-      params.set('sortBy', sortBy);
-    } else {
-      params.delete('sortBy');
-    }
-
-    if (sortOrder) {
-      params.set('sortOrder', sortOrder);
-    } else {
-      params.delete('sortOrder');
-    }
-
-    URLStateManager.updateURL(params);
-  }
-
-  /**
-   * Get tag sort field from URL
-   * Note: Uses same parameter name as entries (sortBy) since they're on different routes
-   */
-  static getTagSortBy(): string | null {
-    const params = new URLSearchParams(window.location.search);
-    return params.get('sortBy');
-  }
-
-  /**
-   * Get tag sort order from URL
-   * Note: Uses same parameter name as entries (sortOrder) since they're on different routes
-   */
-  static getTagSortOrder(): 'asc' | 'desc' | null {
-    const params = new URLSearchParams(window.location.search);
-    const order = params.get('sortOrder');
-    return (order === 'asc' || order === 'desc') ? order : null;
-  }
-
-  /**
-   * Set tag sort parameters in URL
-   * Note: Uses same parameter names as entries (sortBy/sortOrder) since they're on different routes
-   */
-  static setTagSort(sortBy: string | null, sortOrder: 'asc' | 'desc' | null): void {
     const params = new URLSearchParams(window.location.search);
 
     if (sortBy) {
