@@ -87,6 +87,36 @@ export async function createMilkdownEditor(
 }
 
 /**
+ * Check if a table row is empty (contains only whitespace or ProseMirror trailing breaks)
+ */
+function isEmptyTableRow(row: HTMLTableRowElement): boolean {
+  const cells = row.querySelectorAll('th, td');
+  for (const cell of cells) {
+    const text = cell.textContent?.trim() || '';
+    if (text !== '') {
+      return false;
+    }
+  }
+  return true;
+}
+
+/**
+ * Remove empty header rows from tables in the container
+ * This fixes issues where pasting creates empty header rows
+ */
+function cleanupEmptyTableRows(container: HTMLElement): void {
+  const tables = container.querySelectorAll('table');
+  for (const table of tables) {
+    const headerRows = table.querySelectorAll('tr[data-is-header="true"]');
+    for (const row of headerRows) {
+      if (isEmptyTableRow(row as HTMLTableRowElement)) {
+        row.remove();
+      }
+    }
+  }
+}
+
+/**
  * Set up paste handler that properly handles markdown content with tables
  * This intercepts paste events and parses markdown tables correctly
  */
@@ -128,6 +158,11 @@ function setupMarkdownPasteHandler(editor: Editor, container: HTMLElement): void
         }
       });
     }
+
+    // Clean up empty header rows after paste (delayed to allow DOM update)
+    setTimeout(() => {
+      cleanupEmptyTableRows(container);
+    }, 100);
   }, true); // Use capture phase to intercept before Milkdown's handler
 }
 
