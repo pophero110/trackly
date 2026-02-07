@@ -15,6 +15,13 @@ import { listener, listenerCtx } from '@milkdown/plugin-listener';
 import { clipboard } from '@milkdown/plugin-clipboard';
 import { history } from '@milkdown/plugin-history';
 /**
+ * Remove empty lines at the start of markdown content
+ */
+function removeLeadingEmptyLines(text: string): string {
+  return text.replace(/^(\s*\n)+/, '');
+}
+
+/**
  * Check if text contains markdown table syntax
  */
 function containsMarkdownTable(text: string): boolean {
@@ -127,10 +134,13 @@ export async function createMilkdownEditor(
   initialValue: string,
   onChange?: (markdown: string) => void
 ): Promise<Editor> {
+  // Clean initial value
+  const cleanedInitialValue = removeLeadingEmptyLines(initialValue);
+
   const editor = await Editor.make()
     .config((ctx) => {
       ctx.set(rootCtx, container);
-      ctx.set(defaultValueCtx, initialValue);
+      ctx.set(defaultValueCtx, cleanedInitialValue);
 
       if (onChange) {
         // Use docUpdated instead of markdownUpdated to handle serialization errors
@@ -140,7 +150,9 @@ export async function createMilkdownEditor(
 
           try {
             const serializer = ctx.get(serializerCtx);
-            const markdown = serializer(doc);
+            let markdown = serializer(doc);
+            // Remove leading empty lines
+            markdown = removeLeadingEmptyLines(markdown);
             onChange(markdown);
           } catch (error) {
             // Handle table serialization errors gracefully
