@@ -86,6 +86,10 @@ export class EntryDetailController implements ReactiveController {
     const newEntryId = params.get('id');
 
     if (!newEntryId) {
+      // Flush any pending saves before clearing the entry
+      if (this.hasUnsavedChanges && this.entryId) {
+        this.flushPendingSaves();
+      }
       this.entryId = null;
       this.entry = null;
       this.host.requestUpdate();
@@ -95,7 +99,7 @@ export class EntryDetailController implements ReactiveController {
     if (newEntryId !== this.entryId) {
       // Flush any pending saves before switching entries
       if (this.hasUnsavedChanges && this.entryId) {
-        this.debouncedBackendSave?.flush();
+        this.flushPendingSaves();
       }
 
       this.entryId = newEntryId;
