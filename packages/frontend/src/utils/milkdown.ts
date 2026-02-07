@@ -200,35 +200,6 @@ function cleanupEmptyTableRows(container: HTMLElement): void {
 }
 
 /**
- * Check if a paragraph element is empty (contains only whitespace or trailing breaks)
- */
-function isEmptyParagraph(p: HTMLParagraphElement): boolean {
-  const text = p.textContent?.trim() || '';
-  if (text !== '') return false;
-  // Check if it only contains br.ProseMirror-trailingBreak
-  const children = p.children;
-  if (children.length === 0) return true;
-  if (children.length === 1 && children[0].classList.contains('ProseMirror-trailingBreak')) return true;
-  return false;
-}
-
-/**
- * Remove empty paragraphs at the start of the editor content
- */
-function cleanupLeadingEmptyParagraphs(container: HTMLElement): void {
-  const proseMirror = container.querySelector('.ProseMirror');
-  if (!proseMirror) return;
-
-  // Remove empty paragraphs at the start
-  let firstChild = proseMirror.firstElementChild;
-  while (firstChild && firstChild.tagName === 'P' && isEmptyParagraph(firstChild as HTMLParagraphElement)) {
-    const next = firstChild.nextElementSibling;
-    firstChild.remove();
-    firstChild = next;
-  }
-}
-
-/**
  * Set up paste handler that properly handles markdown content with tables
  * This intercepts paste events and parses markdown tables correctly
  */
@@ -300,9 +271,8 @@ function setupMarkdownPasteHandler(editor: Editor, container: HTMLElement): void
       return;
     }
 
-    // Clean up empty elements after paste (delayed to allow DOM update)
+    // Clean up empty header rows after paste (delayed to allow DOM update)
     setTimeout(() => {
-      cleanupLeadingEmptyParagraphs(container);
       cleanupEmptyTableRows(container);
     }, 100);
   }, true); // Use capture phase to intercept before Milkdown's handler
