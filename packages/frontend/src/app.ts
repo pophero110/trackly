@@ -1,7 +1,6 @@
 import { Store } from './state/Store.js';
 import { storeRegistry } from './state/StoreRegistry.js';
 import { URLStateManager } from './utils/urlState.js';
-import { AppTabs } from './components/AppTabs.js';
 import './components/ModalPanel.lit.js'; // Lit version (self-registering)
 import './components/SlidePanel.lit.js'; // Lit version (self-registering)
 import './components/ToastComponent.lit.js'; // Lit version (self-registering)
@@ -204,15 +203,6 @@ class TracklyApp {
         panel.close();
       }
     }
-  }
-
-  private registerComponents(): void {
-    // Register custom elements
-    customElements.define('app-tabs', AppTabs);
-    // modal-panel is registered via @customElement decorator in ModalPanel.lit.ts
-    // slide-panel is registered via @customElement decorator in SlidePanel.lit.ts
-    // entry-list is registered via @customElement decorator in EntryListComponent.lit.ts
-    // entry-detail is registered via @customElement decorator in EntryDetailComponent.lit.ts
   }
 
   private setupThemeToggle(): void {

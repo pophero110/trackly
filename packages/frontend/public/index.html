@@ -43,34 +43,6 @@
       flex-shrink: 0;
     }
 
-    .header-nav {
-      display: flex;
-      align-items: center;
-      gap: var(--base-size-16)
-    }
-
-    .nav-link {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-size: 0.9375rem;
-      font-weight: 500;
-      color: var(--text-secondary);
-      text-decoration: none;
-      border-radius: var(--radius-sm);
-      transition: var(--transition);
-      white-space: nowrap;
-    }
-
-    .nav-link:hover {
-      color: var(--text-primary);
-      background: var(--background);
-    }
-
-    .nav-link:active {
-      transform: scale(0.98);
-    }
-
     header h1 {
       font-size: 1.75rem;
       font-weight: 700;
@@ -134,13 +106,8 @@
   <div class="container">
     <header>
       <div class="header-content">
-        <div class="header-left">
-          <div class="header-text">
-            <h1><a href="#" id="logo-link" style="text-decoration: none; color: inherit;">Trackly</a></h1>
-          </div>
-          <nav class="header-nav">
-            <a href="#" id="entries-link" class="nav-link"><i class="ph-duotone ph-list-bullets"></i> Entries</a>
-          </nav>
+        <div class="header-text">
+          <h1><a href="#" id="logo-link" style="text-decoration: none; color: inherit;">Trackly</a></h1>
         </div>
         <div class="header-actions">
           <button id="theme-toggle-btn"><i class="ph-duotone ph-sun"></i></button>

@@ -22,8 +22,9 @@ export class SearchModal extends LitElement {
       left: 0;
       right: 0;
       bottom: 0;
-      background: rgba(0, 0, 0, 0.4);
-      backdrop-filter: blur(4px);
+      background: rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
       display: flex;
       align-items: flex-start;
       justify-content: center;
@@ -34,11 +35,12 @@ export class SearchModal extends LitElement {
     }
 
     .search-modal-container {
-      background: var(--surface, #fff);
-      border-radius: 12px;
+      background: var(--card-background);
+      border-radius: var(--radius-md, 16px);
+      border: 1px solid var(--border-light);
       width: 100%;
       max-width: 75ch;
-      box-shadow: 0 16px 70px rgba(0, 0, 0, 0.2);
+      box-shadow: var(--shadow-elevated);
       overflow: hidden;
       margin-left: auto;
       margin-right: auto;
@@ -47,13 +49,14 @@ export class SearchModal extends LitElement {
     .search-modal-input-wrapper {
       display: flex;
       align-items: center;
+      gap: 12px;
       padding: 16px;
-      border-bottom: 1px solid var(--border, #e0e0e0);
+      border-bottom: 1px solid var(--border-light);
     }
 
     .search-modal-icon {
       font-size: 1.25rem;
-      color: var(--text-secondary, #666);
+      color: var(--text-muted);
     }
 
     .search-input {
@@ -61,21 +64,22 @@ export class SearchModal extends LitElement {
       border: none;
       background: transparent;
       font-size: 1.125rem;
-      color: var(--text-primary, #333);
+      color: var(--text-primary);
       outline: none;
+      font-family: inherit;
     }
 
     .search-input::placeholder {
-      color: var(--text-tertiary, #999);
+      color: var(--text-muted);
     }
 
     .search-modal-kbd {
-      background: var(--background, #f5f5f5);
-      border: 1px solid var(--border, #e0e0e0);
+      background: var(--background);
+      border: 1px solid var(--border);
       border-radius: 4px;
       padding: 2px 6px;
       font-size: 0.75rem;
-      color: var(--text-secondary, #666);
+      color: var(--text-muted);
       font-family: inherit;
     }
 
@@ -87,7 +91,8 @@ export class SearchModal extends LitElement {
     .search-result-item {
       padding: 12px 16px;
       cursor: pointer;
-      border-bottom: 1px solid var(--border, #e0e0e0);
+      border-bottom: 1px solid var(--border-light);
+      transition: background 0.15s ease;
     }
 
     .search-result-item:last-child {
@@ -96,18 +101,18 @@ export class SearchModal extends LitElement {
 
     .search-result-item:hover,
     .search-result-item.selected {
-      background: var(--background, #f5f5f5);
+      background: var(--background);
     }
 
     .search-result-title {
       font-weight: 500;
-      color: var(--text-primary, #333);
+      color: var(--text-primary);
       margin-bottom: 4px;
     }
 
     .search-result-title mark {
-      background: var(--accent-subtle, #e3f2fd);
-      color: var(--accent, #1976d2);
+      background: rgba(59, 130, 246, 0.15);
+      color: var(--primary);
       padding: 0 2px;
       border-radius: 2px;
     }
@@ -117,15 +122,16 @@ export class SearchModal extends LitElement {
       align-items: center;
       gap: 8px;
       font-size: 0.875rem;
-      color: var(--text-secondary, #666);
+      color: var(--text-secondary);
     }
 
     .search-result-entity {
-      background: var(--accent-subtle, #e3f2fd);
-      color: var(--accent, #1976d2);
+      background: rgba(59, 130, 246, 0.1);
+      color: var(--primary);
       padding: 2px 8px;
       border-radius: 4px;
       font-size: 0.75rem;
+      font-weight: 500;
     }
 
     .search-result-preview {
@@ -136,8 +142,8 @@ export class SearchModal extends LitElement {
     }
 
     .search-result-preview mark {
-      background: var(--accent-subtle, #e3f2fd);
-      color: var(--accent, #1976d2);
+      background: rgba(59, 130, 246, 0.15);
+      color: var(--primary);
       padding: 0 2px;
       border-radius: 2px;
     }
@@ -146,7 +152,7 @@ export class SearchModal extends LitElement {
     .search-modal-hint {
       padding: 24px;
       text-align: center;
-      color: var(--text-secondary, #666);
+      color: var(--text-muted);
     }
   `;
 
