@@ -1,6 +1,6 @@
 import { html, LitElement, css } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
-import { createMilkdownEditor, destroyEditor } from '../utils/milkdown.js';
+import { createMilkdownEditor, destroyEditor, focusEditor } from '../utils/milkdown.js';
 import type { Editor } from '@milkdown/core';
 
 /**
@@ -261,6 +261,11 @@ export class EntryDetailEditor extends LitElement {
           }));
         }
       );
+
+      // Auto-focus the editor
+      if (this.milkdownEditor) {
+        focusEditor(this.milkdownEditor);
+      }
     } catch (error) {
       console.error('[EntryDetailEditor] Failed to initialize Milkdown:', error);
     }
