@@ -37,6 +37,89 @@ function containsMarkdownTable(text: string): boolean {
 }
 
 /**
+ * Check if text looks like CSV/TSV data
+ */
+function isCSVData(text: string): boolean {
+  const lines = text.trim().split('\n');
+  if (lines.length < 2) return false;
+
+  // Check if lines have consistent comma or tab separators
+  const firstLineCommas = (lines[0].match(/,/g) || []).length;
+  const firstLineTabs = (lines[0].match(/\t/g) || []).length;
+
+  if (firstLineCommas === 0 && firstLineTabs === 0) return false;
+
+  const separator = firstLineTabs > firstLineCommas ? '\t' : ',';
+  const expectedCols = (lines[0].match(new RegExp(separator === '\t' ? '\t' : ',', 'g')) || []).length + 1;
+
+  // Check that at least 2 lines have similar column count
+  let consistentLines = 0;
+  for (const line of lines.slice(0, 5)) {
+    const cols = (line.match(new RegExp(separator === '\t' ? '\t' : ',', 'g')) || []).length + 1;
+    if (Math.abs(cols - expectedCols) <= 1) consistentLines++;
+  }
+
+  return consistentLines >= 2;
+}
+
+/**
+ * Convert CSV/TSV text to markdown table
+ */
+function csvToMarkdownTable(text: string): string {
+  const lines = text.trim().split('\n');
+  if (lines.length === 0) return text;
+
+  // Detect separator (tab or comma)
+  const firstLineTabs = (lines[0].match(/\t/g) || []).length;
+  const firstLineCommas = (lines[0].match(/,/g) || []).length;
+  const separator = firstLineTabs > firstLineCommas ? '\t' : ',';
+
+  const rows: string[][] = [];
+
+  for (const line of lines) {
+    // Simple CSV parsing (handles basic quoted fields)
+    const cells: string[] = [];
+    let current = '';
+    let inQuotes = false;
+
+    for (let i = 0; i < line.length; i++) {
+      const char = line[i];
+      if (char === '"') {
+        inQuotes = !inQuotes;
+      } else if (char === separator && !inQuotes) {
+        cells.push(current.trim());
+        current = '';
+      } else {
+        current += char;
+      }
+    }
+    cells.push(current.trim());
+    rows.push(cells);
+  }
+
+  if (rows.length === 0) return text;
+
+  // Build markdown table
+  const colCount = Math.max(...rows.map(r => r.length));
+  const mdLines: string[] = [];
+
+  // Header row
+  const header = rows[0].map(cell => cell || '').concat(Array(colCount - rows[0].length).fill(''));
+  mdLines.push('| ' + header.join(' | ') + ' |');
+
+  // Separator row
+  mdLines.push('| ' + Array(colCount).fill('---').join(' | ') + ' |');
+
+  // Data rows
+  for (let i = 1; i < rows.length; i++) {
+    const row = rows[i].map(cell => cell || '').concat(Array(colCount - rows[i].length).fill(''));
+    mdLines.push('| ' + row.join(' | ') + ' |');
+  }
+
+  return mdLines.join('\n');
+}
+
+/**
  * Initialize Milkdown editor
  */
 export async function createMilkdownEditor(
@@ -128,6 +211,34 @@ function setupMarkdownPasteHandler(editor: Editor, container: HTMLElement): void
     const text = clipboardData.getData('text/plain');
     const html = clipboardData.getData('text/html');
 
+    // Check if this is CSV/TSV data and convert to markdown table
+    if (text && isCSVData(text)) {
+      event.preventDefault();
+      event.stopPropagation();
+
+      const markdownTable = csvToMarkdownTable(text);
+
+      editor.action((ctx) => {
+        try {
+          const view = ctx.get(editorViewCtx);
+          const parser = ctx.get(parserCtx);
+
+          const doc = parser(markdownTable);
+          if (doc && doc.content.size > 0) {
+            const { state } = view;
+            const tr = state.tr.replaceSelectionWith(doc, false);
+            view.dispatch(tr);
+          }
+        } catch (error) {
+          console.warn('[Milkdown] Error handling CSV paste:', error);
+          const view = ctx.get(editorViewCtx);
+          const tr = view.state.tr.insertText(text);
+          view.dispatch(tr);
+        }
+      });
+      return;
+    }
+
     // If the plain text contains markdown tables and we have HTML,
     // the HTML conversion might create malformed tables.
     // In this case, prefer to use the plain text as markdown.
@@ -157,6 +268,7 @@ function setupMarkdownPasteHandler(editor: Editor, container: HTMLElement): void
           view.dispatch(tr);
         }
       });
+      return;
     }
 
     // Clean up empty header rows after paste (delayed to allow DOM update)
