@@ -62,20 +62,28 @@ export class EntryDetailEditor extends LitElement {
       min-width: 1em;
     }
 
+    /* Header row (first row with th cells) */
     .ProseMirror th,
     .milkdown table th {
       font-weight: 600;
       background-color: var(--background);
     }
 
-    .ProseMirror tbody tr,
-    .milkdown table tbody tr {
+    /* All table rows - base background */
+    .ProseMirror tr,
+    .milkdown table tr {
       background-color: var(--card-background);
     }
 
-    /* Zebra striping - only for body rows */
-    .ProseMirror tbody tr:nth-child(2n),
-    .milkdown table tbody tr:nth-child(2n) {
+    /* Header row override */
+    .ProseMirror tr:first-child,
+    .milkdown table tr:first-child {
+      background-color: var(--background);
+    }
+
+    /* Zebra striping - every other data row (skip header, start from 3rd row) */
+    .ProseMirror tr:nth-child(2n+3),
+    .milkdown table tr:nth-child(2n+3) {
       background-color: var(--background);
     }
 
