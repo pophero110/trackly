@@ -41,21 +41,19 @@ export class EntryDetailEditor extends LitElement {
 
     .ProseMirror table,
     .milkdown table {
-      border-spacing: 0;
-      border-collapse: collapse;
-      table-layout: auto;
-      width: max-content;
-      min-width: 100%;
       margin-top: 0;
       margin-bottom: 16px;
       display: block;
-      overflow-x: scroll;
+      overflow-x: auto;
+      max-width: 100%;
     }
 
     .ProseMirror table tbody,
     .milkdown table tbody {
       display: table;
-      width: 100%;
+      border-spacing: 0;
+      border-collapse: collapse;
+      width: max-content;
     }
 
     .ProseMirror td,
