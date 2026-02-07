@@ -1,6 +1,7 @@
 import { Store } from './state/Store.js';
 import { storeRegistry } from './state/StoreRegistry.js';
-import { URLStateManager } from './utils/urlState.js';
+import { URLStateManager, ActionType } from './utils/urlState.js';
+import { RoutingController, createHostAdapter } from './controllers/RoutingController.js';
 import './components/ModalPanel.lit.js'; // Lit version (self-registering)
 import './components/SlidePanel.lit.js'; // Lit version (self-registering)
 import './components/ToastComponent.lit.js'; // Lit version (self-registering)
@@ -9,15 +10,36 @@ import './components/EntryListComponent.lit.js'; // Lit version (self-registerin
 import './components/EntryDetailComponent.lit.js'; // Lit version (self-registering)
 import './components/AuthComponent.lit.js'; // Lit version (self-registering)
 import { APIClient } from './api/client.js';
+import { ReactiveControllerHost } from 'lit';
 
 /**
  * Main application orchestrator
  */
 class TracklyApp {
   private store: Store;
+  private hostAdapter: ReactiveControllerHost & {
+    _connectControllers: () => void;
+    _disconnectControllers: () => void;
+  };
+  private routingController: RoutingController;
 
   constructor() {
     this.store = new Store();
+
+    // Create host adapter for the routing controller
+    this.hostAdapter = createHostAdapter({
+      requestUpdate: () => this.onRouteChange(),
+    });
+
+    // Create routing controller with sort tracking and page title updates
+    this.routingController = new RoutingController(this.hostAdapter, {
+      trackSortChanges: true,
+      onSortChange: () => {
+        this.store.sortEntries();
+      },
+      updatePageTitle: true,
+    });
+
     this.init();
   }
 
@@ -28,8 +50,11 @@ class TracklyApp {
     // Initialize URL state manager
     URLStateManager.init();
 
-    // Set up view routing
-    this.setupViewRouting();
+    // Connect the routing controller (starts URL subscription)
+    this.hostAdapter._connectControllers();
+
+    // Set up initial view
+    this.setupInitialView();
 
     // Set up theme toggle
     this.setupThemeToggle();
@@ -44,135 +69,49 @@ class TracklyApp {
     this.setupEntriesLink();
   }
 
-  private setupViewRouting(): void {
+  /**
+   * Called when route changes (via routing controller)
+   */
+  private onRouteChange(): void {
+    const state = this.routingController.state;
     const entryList = document.querySelector('entry-list') as HTMLElement;
     const panel = document.querySelector('modal-panel') as any;
 
-    // Track last loaded sort to prevent infinite reload loop
-    let lastSortBy: string | undefined = undefined;
-    let lastSortOrder: 'asc' | 'desc' | undefined = undefined;
+    // Redirect home (/) or /tags to /entries
+    if (state.pathname === '/' || state.pathname === '/tags') {
+      URLStateManager.showHome();
+      return;
+    }
 
-    const updatePageTitle = (view: string, tagName?: string, entryTitle?: string) => {
-      let title = 'Trackly';
+    // Show entry list (it's always visible in the background)
+    if (entryList) {
+      entryList.style.display = 'flex';
+    }
 
-      if (entryTitle) {
-        title = `${entryTitle} - Trackly`;
-      } else if (view === 'entries' && tagName) {
-        title = `${tagName} - Trackly`;
-      } else if (view === 'entries') {
-        title = 'Entries - Trackly';
+    // Handle tag selection
+    if (!state.entryId) {
+      const tag = this.routingController.getTag();
+      const targetTagId = tag ? tag.id : null;
+
+      // Only update if changed to avoid infinite loop
+      if (this.store.getSelectedTagId() !== targetTagId) {
+        this.store.setSelectedTagId(targetTagId);
       }
+    }
 
-      document.title = title;
-    };
-
-    const updateView = () => {
-      const path = window.location.pathname;
-      const tagSlug = URLStateManager.getSelectedTagName();
-      const actionType = URLStateManager.getAction();
-
-      // Redirect home (/) or /tags to /entries
-      if (path === '/' || path === '/tags') {
-        URLStateManager.showHome();
-        return;
-      }
-
-      // Check if we're on an entry detail page (?id= query param)
-      // SlidePanel now handles opening/closing automatically based on URL
-      const params = new URLSearchParams(window.location.search);
-      const entryId = params.get('id');
-      if (entryId) {
-        // Show entry list in background
-        if (entryList) entryList.style.display = 'flex';
-
-        // Update page title
-        if (this.store.getIsLoaded()) {
-          const entry = this.store.getEntryById(entryId);
-          if (entry) {
-            const primaryTag = entry.primaryTag;
-            const tag = primaryTag ? this.store.getTagById(primaryTag.tagId) : undefined;
-            const entryTitle = entry.notes ? entry.notes.split('\n')[0].trim().substring(0, 50) : tag?.name || 'Entry';
-            updatePageTitle('entry-detail', undefined, entryTitle);
-          }
-        }
-
-        // Still handle modal panel state for other forms
-        this.updatePanelState(actionType, panel);
-        return;
-      }
-
-      // Look up tag by slug (case-insensitive match)
-      let tag = null;
-      if (tagSlug && this.store.getIsLoaded()) {
-        const tags = this.store.getTags();
-        tag = tags.find(t =>
-          t.name.toLowerCase().replace(/\s+/g, '-') === tagSlug.toLowerCase()
-        ) || null;
-      }
-
-      // Handle view routing
-      if (tagSlug) {
-        // Show entry list for specific tag
-        if (entryList) {
-          entryList.style.display = 'flex';
-
-          // Sort entries locally if sort has changed (no API call)
-          const sortBy = URLStateManager.getSortBy() || undefined;
-          const sortOrder = URLStateManager.getSortOrder() || undefined;
-          if (sortBy !== lastSortBy || sortOrder !== lastSortOrder) {
-            lastSortBy = sortBy;
-            lastSortOrder = sortOrder;
-            this.store.sortEntries();
-          }
-        }
-
-        // Set tag ID if found, or null if still loading
-        const targetTagId = tag ? tag.id : null;
-
-        // Only update if changed to avoid infinite loop
-        if (this.store.getSelectedTagId() !== targetTagId) {
-          this.store.setSelectedTagId(targetTagId);
-        }
-
-        // Update page title with tag name
-        updatePageTitle('entries', tag?.name);
-      } else {
-        // All entries view (/entries)
-        if (entryList) {
-          entryList.style.display = 'flex';
-
-          // Sort entries locally if sort has changed (no API call)
-          const sortBy = URLStateManager.getSortBy() || undefined;
-          const sortOrder = URLStateManager.getSortOrder() || undefined;
-          if (sortBy !== lastSortBy || sortOrder !== lastSortOrder) {
-            lastSortBy = sortBy;
-            lastSortOrder = sortOrder;
-            this.store.sortEntries();
-          }
-        }
-        if (this.store.getSelectedTagId() !== null) {
-          this.store.setSelectedTagId(null);
-        }
-
-        // Update page title
-        updatePageTitle('entries');
-      }
-
-      // Handle panel state
-      this.updatePanelState(actionType, panel);
-    };
-
-    // Subscribe to URL changes
-    URLStateManager.subscribe(updateView);
-
-    // Subscribe to store changes (for when data loads)
-    this.store.subscribe(updateView);
-
-    // Initial view setup
-    updateView();
+    // Handle modal panel state for log-entry action
+    this.updatePanelState(state.action, panel);
   }
 
-  private updatePanelState(actionType: any, panel: any): void {
+  /**
+   * Set up initial view on app load
+   */
+  private setupInitialView(): void {
+    // Trigger initial route change
+    this.onRouteChange();
+  }
+
+  private updatePanelState(actionType: ActionType, panel: any): void {
     if (!panel) return;
 
     if (actionType === 'log-entry') {
