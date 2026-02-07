@@ -1,6 +1,7 @@
 import { css, html, LitElement } from 'lit';
 import { customElement, property, state, query } from 'lit/decorators.js';
 import { map } from 'lit/directives/map.js';
+import { when } from 'lit/directives/when.js';
 import { Entry } from '../models/Entry.js';
 import { Tag } from '../models/Tag.js';
 import { IEntryTag, IpoCategory } from '../types/index.js';
@@ -9,7 +10,14 @@ import { getTagColor } from '../utils/entryHelpers.js';
 import './DropdownMenuComponent.lit.js';
 import type { DropdownMenuComponent, DropdownMenuItem } from './DropdownMenuComponent.lit.js';
 
-type OpenDropdown = 'actions-menu' | 'tag-menu' | null;
+// IPO category configuration (shared with EntryListItem)
+const IPO_CONFIG = {
+  input: { icon: '↓', label: 'In', color: '#3B82F6' },
+  process: { icon: '⚙', label: 'Pro', color: '#F59E0B' },
+  output: { icon: '↑', label: 'Out', color: '#10B981' }
+} as const;
+
+type OpenDropdown = 'actions-menu' | 'tag-menu' | 'ipo-menu' | null;
 
 /**
  * EntryDetailHeader Lit Component
@@ -92,51 +100,43 @@ export class EntryDetailHeader extends LitElement {
       background: var(--background);
     }
 
-    .ipo-selector {
-      display: flex;
-      gap: 4px;
+    .entry-chip-ipo-container {
+      display: inline-block;
+      position: relative;
       margin-left: auto;
       margin-right: 8px;
     }
 
-    .ipo-btn {
-      display: flex;
+    .entry-chip-ipo {
+      --ipo-color: #6B7280;
+      display: inline-flex;
       align-items: center;
       gap: 4px;
-      padding: 4px 8px;
-      border: 1px solid var(--border-light);
+      padding: 3px 10px;
       border-radius: 12px;
-      background: transparent;
-      font-size: 0.7rem;
-      font-weight: 500;
+      font-size: 0.75rem;
+      font-weight: 600;
+      line-height: 1.4;
+      background: color-mix(in srgb, var(--ipo-color) 12%, transparent);
+      color: var(--ipo-color);
+      border: 1px solid color-mix(in srgb, var(--ipo-color) 30%, transparent);
       cursor: pointer;
       transition: all 0.2s;
-      color: var(--text-muted);
     }
 
-    .ipo-btn:hover {
-      border-color: var(--border);
-      background: var(--background);
+    .entry-chip-ipo:hover {
+      background: color-mix(in srgb, var(--ipo-color) 20%, transparent);
+      border-color: color-mix(in srgb, var(--ipo-color) 50%, transparent);
+      transform: translateY(-1px);
+      box-shadow: 0 2px 4px color-mix(in srgb, var(--ipo-color) 15%, transparent);
     }
 
-    .ipo-btn.selected {
-      color: white;
-      border-color: transparent;
+    .entry-chip-ipo svg {
+      margin-left: 4px;
+      vertical-align: middle;
     }
 
-    .ipo-btn.selected.input {
-      background: #3B82F6;
-    }
-
-    .ipo-btn.selected.process {
-      background: #F59E0B;
-    }
-
-    .ipo-btn.selected.output {
-      background: #10B981;
-    }
-
-    .ipo-btn .ipo-icon {
+    .entry-chip-ipo .ipo-icon {
       font-size: 0.8rem;
     }
   `;
@@ -158,6 +158,9 @@ export class EntryDetailHeader extends LitElement {
 
   @query('dropdown-menu[data-menu-type="tag"]')
   private tagMenu?: DropdownMenuComponent;
+
+  @query('dropdown-menu[data-menu-type="ipo"]')
+  private ipoMenu?: DropdownMenuComponent;
 
   private get actionsMenuItems(): DropdownMenuItem[] {
     return [
@@ -187,6 +190,29 @@ export class EntryDetailHeader extends LitElement {
       color: getTagColor(tag.name),
       data: tag
     }));
+  }
+
+  private get ipoMenuItems(): DropdownMenuItem[] {
+    return [
+      {
+        id: 'input',
+        label: `${IPO_CONFIG.input.icon} Input`,
+        color: IPO_CONFIG.input.color,
+        data: 'input'
+      },
+      {
+        id: 'process',
+        label: `${IPO_CONFIG.process.icon} Process`,
+        color: IPO_CONFIG.process.color,
+        data: 'process'
+      },
+      {
+        id: 'output',
+        label: `${IPO_CONFIG.output.icon} Output`,
+        color: IPO_CONFIG.output.color,
+        data: 'output'
+      }
+    ];
   }
 
   private handleMenuButtonClick = (e: MouseEvent): void => {
@@ -260,15 +286,42 @@ export class EntryDetailHeader extends LitElement {
     }
   };
 
-  private handleIpoClick = (category: IpoCategory | null): void => {
-    // Toggle: if already selected, deselect (set to null)
-    const newCategory = this.entry.ipoCategory === category ? null : category;
+  private handleIpoChipClick = (e: MouseEvent): void => {
+    e.stopPropagation();
+    const target = e.target as HTMLElement;
+    const ipoChip = target.closest('.entry-chip-ipo-container') as HTMLElement;
+
+    if (!this.ipoMenu || !ipoChip) return;
+
+    // Close other menus if open
+    if (this.openDropdown === 'actions-menu') {
+      this.actionsMenu?.close();
+    }
+    if (this.openDropdown === 'tag-menu') {
+      this.tagMenu?.close();
+    }
+
+    this.openDropdown = 'ipo-menu';
+    const rect = ipoChip.getBoundingClientRect();
+    this.ipoMenu.openAt(rect.left, rect.bottom + 4);
+  };
+
+  private handleIpoMenuAction = (e: CustomEvent): void => {
+    e.stopPropagation();
+    const { data } = e.detail;
+    const newCategory = data as IpoCategory;
 
     this.dispatchEvent(new CustomEvent('ipo-change', {
       detail: { ipoCategory: newCategory },
       bubbles: true,
       composed: true
     }));
+  };
+
+  private handleIpoMenuClose = (): void => {
+    if (this.openDropdown === 'ipo-menu') {
+      this.openDropdown = null;
+    }
   };
 
   render() {
@@ -302,29 +355,23 @@ export class EntryDetailHeader extends LitElement {
         <span class="entry-detail-timestamp">${formattedDate}</span>
       </div>
 
-      <div class="ipo-selector">
-        <button
-          class="ipo-btn input ${currentIpo === 'input' ? 'selected' : ''}"
-          @click=${() => this.handleIpoClick('input')}
-          title="Input: What goes in (calories, sleep, books read)">
-          <span class="ipo-icon">↓</span>
-          <span>In</span>
-        </button>
-        <button
-          class="ipo-btn process ${currentIpo === 'process' ? 'selected' : ''}"
-          @click=${() => this.handleIpoClick('process')}
-          title="Process: Internal state (mood, HRV, stress, focus)">
-          <span class="ipo-icon">⚙</span>
-          <span>Pro</span>
-        </button>
-        <button
-          class="ipo-btn output ${currentIpo === 'output' ? 'selected' : ''}"
-          @click=${() => this.handleIpoClick('output')}
-          title="Output: What comes out (tasks completed, work done)">
-          <span class="ipo-icon">↑</span>
-          <span>Out</span>
-        </button>
-      </div>
+      ${when(currentIpo, () => {
+        const ipoConfig = IPO_CONFIG[currentIpo!];
+        return html`
+          <div class="entry-chip-ipo-container">
+            <span
+              class="entry-chip-ipo"
+              style="--ipo-color: ${ipoConfig.color}"
+              @click=${this.handleIpoChipClick}>
+              <span class="ipo-icon">${ipoConfig.icon}</span>
+              ${ipoConfig.label}
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="6 9 12 15 18 9"></polyline>
+              </svg>
+            </span>
+          </div>
+        `;
+      })}
 
       <button class="entry-menu-btn" @click=${this.handleMenuButtonClick}>⋮</button>
 
@@ -344,6 +391,15 @@ export class EntryDetailHeader extends LitElement {
         .menuId=${'entry-detail-tag-menu'}
         @menu-action=${this.handleTagMenuAction}
         @menu-close=${this.handleTagMenuClose}>
+      </dropdown-menu>
+
+      <!-- IPO Category Menu -->
+      <dropdown-menu
+        data-menu-type="ipo"
+        .items=${this.ipoMenuItems}
+        .menuId=${'entry-detail-ipo-menu'}
+        @menu-action=${this.handleIpoMenuAction}
+        @menu-close=${this.handleIpoMenuClose}>
       </dropdown-menu>
     `;
   }
