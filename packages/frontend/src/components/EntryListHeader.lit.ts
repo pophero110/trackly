@@ -47,8 +47,8 @@ export class EntryListHeader extends LitElement {
       }
 
       .quick-entry-input {
-        padding: 8px 0 8px 0 !important;
-        text-align: center;
+        box-sizing: border-box;
+        padding: 8px 0 8px 8px !important;
         width: 100%;
       }
     }
@@ -102,7 +102,7 @@ export class EntryListHeader extends LitElement {
     }
 
     .quick-entry-container {
-      position: relative;
+      position: relative; 
     }
 
     .quick-entry-input {
@@ -119,6 +119,34 @@ export class EntryListHeader extends LitElement {
     .quick-entry-input:focus {
       border-color: var(--primary);
     }
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
 
     .quick-entry-input::placeholder {
       color: var(--text-secondary);
@@ -441,7 +469,7 @@ export class EntryListHeader extends LitElement {
             type="text"
             class="quick-entry-input"
             id="quick-entry-input"
-            placeholder="Add entry... (use # for tags)"
+            placeholder="Add entry..."
             autocomplete="off"
             @input=${this.handleQuickEntryInput}
             @keydown=${this.handleQuickEntryKeydown}

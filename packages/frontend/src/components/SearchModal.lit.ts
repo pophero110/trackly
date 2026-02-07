@@ -54,11 +54,6 @@ export class SearchModal extends LitElement {
       border-bottom: 1px solid var(--border-light);
     }
 
-    .search-modal-icon {
-      font-size: 1.25rem;
-      color: var(--text-muted);
-    }
-
     .search-input {
       flex: 1;
       border: none;
@@ -341,7 +336,6 @@ export class SearchModal extends LitElement {
       <div class="search-modal-backdrop" @click=${this.handleBackdropClick}>
         <div class="search-modal-container">
           <div class="search-modal-input-wrapper">
-            <i class="ph-duotone ph-magnifying-glass search-modal-icon"></i>
             <input
               type="text"
               class="search-input"

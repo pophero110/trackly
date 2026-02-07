@@ -68,14 +68,14 @@ export class EntryDetailEditor extends LitElement {
       background-color: var(--background-alt, #f6f8fa);
     }
 
-    .ProseMirror tr,
-    .milkdown table tr {
+    .ProseMirror tbody tr,
+    .milkdown table tbody tr {
       background-color: var(--background, #ffffff);
     }
 
-    /* Zebra striping */
-    .ProseMirror tr:nth-child(2n),
-    .milkdown table tr:nth-child(2n) {
+    /* Zebra striping - only for body rows */
+    .ProseMirror tbody tr:nth-child(2n),
+    .milkdown table tbody tr:nth-child(2n) {
       background-color: var(--background-subtle, #f6f8fa);
     }
 
@@ -115,12 +115,12 @@ export class EntryDetailEditor extends LitElement {
       .milkdown table th {
         background-color: #161b22;
       }
-      .ProseMirror tr,
-      .milkdown table tr {
+      .ProseMirror tbody tr,
+      .milkdown table tbody tr {
         background-color: #0d1117;
       }
-      .ProseMirror tr:nth-child(2n),
-      .milkdown table tr:nth-child(2n) {
+      .ProseMirror tbody tr:nth-child(2n),
+      .milkdown table tbody tr:nth-child(2n) {
         background-color: #161b22;
       }
       .ProseMirror td,
@@ -129,6 +129,25 @@ export class EntryDetailEditor extends LitElement {
       .milkdown table td {
         border-color: #30363d;
       }
+    }
+
+    :host-context([data-theme="dark"]) .ProseMirror th,
+    :host-context([data-theme="dark"]) .milkdown table th {
+      background-color: #161b22;
+    }
+    :host-context([data-theme="dark"]) .ProseMirror tbody tr,
+    :host-context([data-theme="dark"]) .milkdown table tbody tr {
+      background-color: #0d1117;
+    }
+    :host-context([data-theme="dark"]) .ProseMirror tbody tr:nth-child(2n),
+    :host-context([data-theme="dark"]) .milkdown table tbody tr:nth-child(2n) {
+      background-color: #161b22;
+    }
+    :host-context([data-theme="dark"]) .ProseMirror td,
+    :host-context([data-theme="dark"]) .ProseMirror th,
+    :host-context([data-theme="dark"]) .milkdown table th,
+    :host-context([data-theme="dark"]) .milkdown table td {
+      border-color: #30363d;
     }
 
     .milkdown:focus,
