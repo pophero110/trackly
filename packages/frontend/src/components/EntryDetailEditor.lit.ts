@@ -58,25 +58,25 @@ export class EntryDetailEditor extends LitElement {
       box-sizing: border-box;
       position: relative;
       padding: 6px 13px;
-      border: 1px solid var(--border, #d0d7de);
+      border: 1px solid var(--border);
       min-width: 1em;
     }
 
     .ProseMirror th,
     .milkdown table th {
       font-weight: 600;
-      background-color: var(--background-alt, #f6f8fa);
+      background-color: var(--background);
     }
 
     .ProseMirror tbody tr,
     .milkdown table tbody tr {
-      background-color: var(--background, #ffffff);
+      background-color: var(--card-background);
     }
 
     /* Zebra striping - only for body rows */
     .ProseMirror tbody tr:nth-child(2n),
     .milkdown table tbody tr:nth-child(2n) {
-      background-color: var(--background-subtle, #f6f8fa);
+      background-color: var(--background);
     }
 
     /* Column resize handle */
@@ -87,7 +87,7 @@ export class EntryDetailEditor extends LitElement {
       bottom: 0;
       width: 4px;
       z-index: 20;
-      background-color: var(--primary, #3b82f6);
+      background-color: var(--primary);
       pointer-events: none;
     }
 
@@ -107,47 +107,6 @@ export class EntryDetailEditor extends LitElement {
       bottom: 0;
       background: rgba(200, 200, 255, 0.4);
       pointer-events: none;
-    }
-
-    /* Dark Mode Adjustments */
-    @media (prefers-color-scheme: dark) {
-      .ProseMirror th,
-      .milkdown table th {
-        background-color: #161b22;
-      }
-      .ProseMirror tbody tr,
-      .milkdown table tbody tr {
-        background-color: #0d1117;
-      }
-      .ProseMirror tbody tr:nth-child(2n),
-      .milkdown table tbody tr:nth-child(2n) {
-        background-color: #161b22;
-      }
-      .ProseMirror td,
-      .ProseMirror th,
-      .milkdown table th,
-      .milkdown table td {
-        border-color: #30363d;
-      }
-    }
-
-    :host-context([data-theme="dark"]) .ProseMirror th,
-    :host-context([data-theme="dark"]) .milkdown table th {
-      background-color: #161b22;
-    }
-    :host-context([data-theme="dark"]) .ProseMirror tbody tr,
-    :host-context([data-theme="dark"]) .milkdown table tbody tr {
-      background-color: #0d1117;
-    }
-    :host-context([data-theme="dark"]) .ProseMirror tbody tr:nth-child(2n),
-    :host-context([data-theme="dark"]) .milkdown table tbody tr:nth-child(2n) {
-      background-color: #161b22;
-    }
-    :host-context([data-theme="dark"]) .ProseMirror td,
-    :host-context([data-theme="dark"]) .ProseMirror th,
-    :host-context([data-theme="dark"]) .milkdown table th,
-    :host-context([data-theme="dark"]) .milkdown table td {
-      border-color: #30363d;
     }
 
     .milkdown:focus,
