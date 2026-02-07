@@ -28,9 +28,6 @@ class TracklyApp {
     // Initialize URL state manager
     URLStateManager.init();
 
-    // Register all Web Components
-    this.registerComponents();
-
     // Set up view routing
     this.setupViewRouting();
 
