@@ -380,10 +380,14 @@ export class EntryDetailController implements ReactiveController {
 
   /**
    * Flush any pending saves (call before navigation/unload)
+   * Uses keepalive to ensure request completes even if page is closing
    */
   flushPendingSaves(): void {
     if (this.hasUnsavedChanges && this.entryId) {
-      this.debouncedBackendSave?.flush();
+      // Cancel the debounced timer
+      this.debouncedBackendSave?.cancel();
+      // Save immediately with keepalive to ensure it completes
+      this.saveToBackend(this.entryId, { keepalive: true });
     }
   }
 }
