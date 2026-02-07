@@ -48,6 +48,14 @@ export class EntryDetailEditor extends LitElement {
       min-width: 100%;
       margin-top: 0;
       margin-bottom: 16px;
+      display: block;
+      overflow-x: scroll;
+    }
+
+    .ProseMirror table tbody,
+    .milkdown table tbody {
+      display: table;
+      width: 100%;
     }
 
     .ProseMirror td,
