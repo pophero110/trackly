@@ -77,6 +77,25 @@ export class SlidePanel extends LitElement {
         left: 0;
         margin-left: 0;
       }
+
+      /* Swipe Handle/Header */
+      .panel-header {
+        width: 100%;
+        padding: 12px 0;
+        display: flex;
+        justify-content: center;
+        cursor: grab;
+        touch-action: pan-y; /* Allow vertical panning */
+        flex-shrink: 0;
+      }
+
+      .drag-handle {
+        width: 40px;
+        height: 4px;
+        background: var(--neutral-300, #e5e5e5);
+        border-radius: 2px;
+      }
+
     }
   `;
   @state()
@@ -84,6 +103,10 @@ export class SlidePanel extends LitElement {
 
   @state()
   private isActive: boolean = false;
+
+  // Touch tracking
+  private touchStartY: number = 0;
+  private readonly SWIPE_THRESHOLD = 50; // Minimum pixels to trigger close
 
   private unsubscribeUrl: (() => void) | null = null;
   private keydownHandler: ((e: KeyboardEvent) => void) | null = null;
@@ -174,6 +197,22 @@ export class SlidePanel extends LitElement {
     e.preventDefault();
   };
 
+  // --- Swipe Down Logic ---
+  private handleTouchStart(e: TouchEvent) {
+    this.touchStartY = e.touches[0].clientY;
+    console.log(this.touchStartY)
+  }
+
+  private handleTouchEnd(e: TouchEvent) {
+    const touchEndY = e.changedTouches[0].clientY;
+    const deltaY = touchEndY - this.touchStartY;
+
+    // If swiped down further than threshold, close panel
+    if (deltaY > this.SWIPE_THRESHOLD) {
+      this.navigateBack();
+    }
+  }
+
   // IMPORTANT: Sync the internal state to the HTML attribute
   // so that :host([active]) in your CSS actually finds it.
   updated(changedProperties) {
@@ -193,6 +232,11 @@ export class SlidePanel extends LitElement {
         @wheel=${this.preventScroll}
         @touchmove=${this.preventScroll}></div>
       <div class="body">
+        <div class="panel-header" 
+             @touchstart=${this.handleTouchStart}
+             @touchend=${this.handleTouchEnd}>
+          <div class="drag-handle"></div>
+        </div>
         <slot></slot>
       </div>
     `;
