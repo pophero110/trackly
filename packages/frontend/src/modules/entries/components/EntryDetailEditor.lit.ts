@@ -136,6 +136,10 @@ export class EntryDetailEditor extends LitElement {
       max-width: none;
     }
 
+    .milkdown .ProseMirror > *:first-child {
+      margin-top: 0;
+    }
+
     .milkdown h1 {
       font-size: 1.5rem;
       font-weight: 600;

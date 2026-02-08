@@ -17,7 +17,6 @@ import type { TagAutocompleteDropdown } from '../../tags/components/TagAutocompl
 // Phosphor icons web components
 import '@phosphor-icons/webcomponents/PhSortAscending';
 import '@phosphor-icons/webcomponents/PhTag';
-import '@phosphor-icons/webcomponents/PhMagnifyingGlass';
 
 type OpenSelectionMenu = 'sort' | 'tag-filter' | null;
 
@@ -32,10 +31,6 @@ export class EntryListHeader extends LitElement {
       :host {
         flex-direction: column-reverse;
         align-items: start !important;
-      }
-
-      .search-btn kbd {
-        display: none;
       }
 
       .quick-entry-container {
@@ -67,38 +62,6 @@ export class EntryListHeader extends LitElement {
       align-items: center;
       gap: 12px;
       flex-wrap: wrap;
-    }
-
-    .search-btn {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      padding: 6px 0;
-      border: none;
-      background: transparent;
-      color: var(--text-secondary);
-      cursor: pointer;
-      border-radius: var(--radius-sm);
-      transition: var(--transition);
-    }
-
-    .search-btn:hover {
-      color: var(--text-primary);
-      background: var(--background);
-    }
-
-    .search-btn ph-magnifying-glass {
-      font-size: 1rem;
-    }
-
-    .search-btn kbd {
-      background: var(--background, #f5f5f5);
-      border: 1px solid var(--border, #e0e0e0);
-      border-radius: 4px;
-      padding: 2px 6px;
-      font-size: 0.75rem;
-      color: var(--text-secondary, #666);
-      font-family: inherit;
     }
 
     .quick-entry-container {
@@ -400,13 +363,6 @@ export class EntryListHeader extends LitElement {
     this.openSelectionMenu = 'tag-filter';
   };
 
-  private handleSearchClick = () => {
-    const searchModal = document.querySelector('search-modal') as any;
-    if (searchModal?.open) {
-      searchModal.open();
-    }
-  };
-
   render() {
     // Sort options
     const sortOptions: SelectionOption[] = [
@@ -454,13 +410,6 @@ export class EntryListHeader extends LitElement {
               </selection-menu>
             `
     )}
-
-          <!-- Search Button -->
-          <button class="search-btn" @click=${this.handleSearchClick} title="Search">
-            <ph-magnifying-glass weight="duotone"></ph-magnifying-glass>
-            <span class="btn-label">Search</span>
-            <kbd class="shortcut">⌘K</kbd>
-          </button>
         </div>
 
         <!-- Quick Entry Input -->

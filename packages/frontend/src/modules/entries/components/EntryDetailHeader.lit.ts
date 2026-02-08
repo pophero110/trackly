@@ -12,6 +12,7 @@ import type { DropdownMenuComponent, DropdownMenuItem } from '../../../ui-kit/na
 
 // IPO category configuration (shared with EntryListItem)
 const IPO_CONFIG = {
+  undefined: { icon: '○', label: '?', color: '#6B7280' },
   input: { icon: '↓', label: 'In', color: '#3B82F6' },
   process: { icon: '⚙', label: 'Pro', color: '#F59E0B' },
   output: { icon: '↑', label: 'Out', color: '#10B981' }
@@ -103,8 +104,6 @@ export class EntryDetailHeader extends LitElement {
     .entry-chip-ipo-container {
       display: inline-block;
       position: relative;
-      margin-left: auto;
-      margin-right: 8px;
     }
 
     .entry-chip-ipo {
@@ -332,6 +331,23 @@ export class EntryDetailHeader extends LitElement {
 
     return html`
       <div class="entry-detail-tag-time">
+      ${(() => {
+        const ipoConfig = currentIpo ? IPO_CONFIG[currentIpo] : IPO_CONFIG.undefined;
+        return html`
+          <div class="entry-chip-ipo-container">
+            <span
+              class="entry-chip-ipo"
+              style="--ipo-color: ${ipoConfig.color}"
+              @click=${this.handleIpoChipClick}>
+              <span class="ipo-icon">${ipoConfig.icon}</span>
+              ${ipoConfig.label}
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="6 9 12 15 18 9"></polyline>
+              </svg>
+            </span>
+          </div>
+        `;
+      })()}
         ${primaryTag ? html`
           <div class="entry-chip-tag-container">
             <span
@@ -354,24 +370,6 @@ export class EntryDetailHeader extends LitElement {
         `)}
         <span class="entry-detail-timestamp">${formattedDate}</span>
       </div>
-
-      ${when(currentIpo, () => {
-        const ipoConfig = IPO_CONFIG[currentIpo!];
-        return html`
-          <div class="entry-chip-ipo-container">
-            <span
-              class="entry-chip-ipo"
-              style="--ipo-color: ${ipoConfig.color}"
-              @click=${this.handleIpoChipClick}>
-              <span class="ipo-icon">${ipoConfig.icon}</span>
-              ${ipoConfig.label}
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <polyline points="6 9 12 15 18 9"></polyline>
-              </svg>
-            </span>
-          </div>
-        `;
-      })}
 
       <button class="entry-menu-btn" @click=${this.handleMenuButtonClick}>⋮</button>
 

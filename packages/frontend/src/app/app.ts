@@ -67,6 +67,9 @@ class TracklyApp {
 
     // Set up navigation links
     this.setupEntriesLink();
+
+    // Set up search button
+    this.setupSearchButton();
   }
 
   /**
@@ -216,6 +219,18 @@ class TracklyApp {
         e.preventDefault();
         // Navigate to entries view (home - all recent entries)
         URLStateManager.showHome();
+      });
+    }
+  }
+
+  private setupSearchButton(): void {
+    const searchBtn = document.getElementById('search-btn');
+    if (searchBtn) {
+      searchBtn.addEventListener('click', () => {
+        const searchModal = document.querySelector('search-modal') as any;
+        if (searchModal?.open) {
+          searchModal.open();
+        }
       });
     }
   }

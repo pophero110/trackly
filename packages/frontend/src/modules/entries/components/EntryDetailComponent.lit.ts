@@ -30,6 +30,7 @@ export class EntryDetailComponent extends LitElement {
       padding: var(--base-size-24) !important;
       flex-direction: column;
       overscroll-behavior: contain;
+      gap: var(--base-size-8);
     }
 
     .title-container {
