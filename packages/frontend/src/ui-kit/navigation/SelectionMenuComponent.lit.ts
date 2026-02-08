@@ -36,7 +36,7 @@ export class SelectionMenuComponent extends LitElement {
       display: inline-flex;
       align-items: center;
       gap: 8px;
-      padding: 8px 0px;
+      padding: 0px;
       font-size: 0.875rem;
       font-weight: 500;
       color: var(--text-secondary, #666);

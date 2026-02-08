@@ -103,6 +103,7 @@ export class EntryListComponent extends LitElement {
     @media (max-width: 480px) {
       :host {
         padding: 0 16px !important;
+        gap: 0;
       }
     }
   `;
