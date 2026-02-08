@@ -19,41 +19,18 @@ export class EntryListComponent extends LitElement {
     :host {
       display: flex;
       flex-direction: column;
-      padding: 0 var(--base-size-16) !important;
-      gap: var(--base-size-24, 24px);
+      padding: 0 var(--base-size-8);
+      margin-top: var(--base-size-8);
+      gap: var(--base-size-16);
       align-items: center;
       justify-content: center;
       width: 100%;
     }
 
     /* Timeline styles */
-    .timeline-date-group {
+    .timeline-entries {
       display: grid;
       grid-template-columns: minmax(0, 75ch);
-      justify-content: center;
-      align-content: start;
-      margin-bottom: 48px;
-    }
-
-    .timeline-date-header {
-      position: sticky;
-      top: 0;
-      z-index: 10;
-      background: var(--background);
-      padding: 0 0 12px 0;
-      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-      font-size: 0.875rem;
-      font-weight: 600;
-      color: var(--text-secondary);
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      backdrop-filter: blur(8px);
-      -webkit-backdrop-filter: blur(8px);
-    }
-
-    .timeline-entries {
-      display: flex;
-      flex-direction: column;
       gap: var(--base-size-16, 16px);
     }
 
@@ -123,36 +100,9 @@ export class EntryListComponent extends LitElement {
     }
 
     /* Responsive styles */
-    @media (max-width: 768px) {
-      .timeline-date-header {
-        font-size: 0.8125rem;
-        padding: 0 0 10px 0;
-      }
-
-      .timeline-date-group {
-        margin-bottom: 32px;
-      }
-    }
-
     @media (max-width: 480px) {
       :host {
         padding: 0 16px !important;
-        gap: var(--base-size-16);
-      }
-
-      .timeline-entries {
-        padding-left: 0;
-        padding-right: 0;
-      }
-
-      .timeline-date-header {
-        font-size: 0.75rem;
-        padding: 0 0 8px 0;
-        text-align: left;
-      }
-
-      .timeline-date-group {
-        margin-bottom: 24px;
       }
     }
   `;
@@ -278,8 +228,6 @@ export class EntryListComponent extends LitElement {
       `;
     }
 
-    // Group entries by date using controller
-    const entriesByDate = this.listController.groupEntriesByDate(entries);
     const { hasMore, isLoadingMore } = this.listController.getPaginationState();
 
     return html`
@@ -288,24 +236,15 @@ export class EntryListComponent extends LitElement {
           .tagFilters=${tagFilters}
           .currentSortValue=${sortValue}>
         </entry-list-header>
+        <div class="timeline-entries">
           ${repeat(
-      Array.from(entriesByDate.entries()),
-      ([dateKey]) => dateKey,
-      ([dateKey, dateEntries]) => html`
-              <div class="timeline-date-group">
-                <div class="timeline-date-header">${dateKey}</div>
-                <div class="timeline-entries">
-                  ${repeat(
-        dateEntries,
-        (entry) => entry.id,
-        (entry) => html`
-                      <entry-list-item .entry=${entry}></entry-list-item>
-                    `
-      )}
-                </div>
-              </div>
+      entries,
+      (entry) => entry.id,
+      (entry) => html`
+              <entry-list-item .entry=${entry}></entry-list-item>
             `
     )}
+        </div>
         ${hasMore ? html`
           <div class="load-more-sentinel">
             ${isLoadingMore ? html`

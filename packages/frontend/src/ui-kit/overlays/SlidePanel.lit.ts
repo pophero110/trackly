@@ -12,33 +12,35 @@ import { URLStateManager } from '../../core/utils/urlState.js';
 export class SlidePanel extends LitElement {
   static styles = css`
     :host {
-      display: none;
-      visibility: hidden;
+      /* Always 'display' it so the transition can trigger, 
+         but hide it visually and from clicks */
+      display: block; 
+      position: fixed;
+      inset: 0;
+      z-index: 999;
       pointer-events: none;
+      visibility: hidden;
+      transition: visibility 0.3s;
     }
 
     :host([active]) {
-      display: block;
       visibility: visible;
       pointer-events: auto;
     }
 
     .backdrop {
       position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
+      inset: 0;
       background: rgba(0, 0, 0, 0.4);
       backdrop-filter: blur(4px);
       -webkit-backdrop-filter: blur(4px);
-      z-index: 999;
-      display: none;
+      opacity: 0;
+      transition: opacity 0.3s ease;
       touch-action: none;
     }
 
     :host([active]) .backdrop {
-      display: block;
+      opacity: 1;
     }
 
     .body {
@@ -56,31 +58,15 @@ export class SlidePanel extends LitElement {
       display: flex;
       flex-direction: column;
       overscroll-behavior: contain;
+
+      /* START STATE: Pushed down off-screen */
+      transform: translateY(100%);
+      transition: transform 0.35s cubic-bezier(0.25, 1, 0.5, 1);
     }
 
-    .close {
-      position: absolute;
-      top: var(--base-size-16, 16px);
-      right: var(--base-size-16, 16px);
-      background: transparent;
-      border: none;
-      color: var(--text-secondary, #666);
-      cursor: pointer;
-      font-size: 1.5rem;
-      padding: 8px;
-      border-radius: var(--radius-sm, 4px);
-      transition: var(--transition, 0.2s ease);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      width: 40px;
-      height: 40px;
-      z-index: 10;
-    }
-
-    .close:hover {
-      background: var(--background-secondary, #f0f0f0);
-      color: var(--text-primary, #000);
+    :host([active]) .body {
+      /* END STATE: Slide up to original position */
+      transform: translateY(0);
     }
 
     /* Mobile adjustments */
@@ -88,19 +74,11 @@ export class SlidePanel extends LitElement {
       .body {
         width: 100%;
         height: 90vh;
-        max-height: none;
-        border-radius: var(--radius-md, 8px) var(--radius-md, 8px) 0 0;
         left: 0;
         margin-left: 0;
       }
-
-      .close {
-        width: 44px;
-        height: 44px;
-      }
     }
   `;
-
   @state()
   private currentEntryId: string | null = null;
 

@@ -50,7 +50,6 @@ export class EntryListHeader extends LitElement {
 
     :host {
       display: flex;
-      margin-top: var(--base-size-16, 16px);
       justify-content: space-between;
       align-items: center;
       max-width: 75ch;
