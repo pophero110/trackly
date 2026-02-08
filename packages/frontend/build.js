@@ -23,7 +23,7 @@ const watchPlugin = {
 };
 
 const config = {
-  entryPoints: ['src/app.ts'],
+  entryPoints: ['src/app/app.ts'],
   bundle: true,
   outfile: 'public/dist/app.js',
   format: 'esm',
