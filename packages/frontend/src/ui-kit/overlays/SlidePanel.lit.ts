@@ -232,11 +232,11 @@ export class SlidePanel extends LitElement {
         @wheel=${this.preventScroll}
         @touchmove=${this.preventScroll}></div>
       <div class="body">
-        <div class="panel-header" 
-             @touchstart=${this.handleTouchStart}
-             @touchend=${this.handleTouchEnd}>
-          <div class="drag-handle"></div>
-        </div>
+        <!-- <div class="panel-header"  -->
+        <!--      @touchstart=${this.handleTouchStart} -->
+        <!--      @touchend=${this.handleTouchEnd}> -->
+        <!--   <div class="drag-handle"></div> -->
+        <!-- </div> -->
         <slot></slot>
       </div>
     `;
