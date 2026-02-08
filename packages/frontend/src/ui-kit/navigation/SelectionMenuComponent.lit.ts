@@ -11,8 +11,7 @@ export interface SelectionOption {
 
 /**
  * SelectionMenuComponent - Reusable single-selection dropdown
- * Used for sort dropdowns, filter dropdowns, etc.
- * Follows the same pattern as sort/tag filters
+ * Refactored for semantic naming and improved mobile UX.
  */
 @customElement('selection-menu')
 export class SelectionMenuComponent extends LitElement {
@@ -20,191 +19,186 @@ export class SelectionMenuComponent extends LitElement {
     :host {
       display: inline-block;
       position: relative;
+      font-family: var(--font-family, system-ui, -apple-system, sans-serif);
     }
 
+    /* Backdrop for closing menu on outside click/scroll */
     .backdrop {
       position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
+      inset: 0;
       z-index: 999;
       background: transparent;
-      overflow: hidden;
       touch-action: none;
     }
 
-    .btn-tag-filter {
+    /* Trigger Button (formerly .btn-tag-filter) */
+    .menu-trigger {
       display: inline-flex;
       align-items: center;
-      gap: 6px;
+      gap: 8px;
       padding: 8px 0px;
       font-size: 0.875rem;
       font-weight: 500;
-      color: var(--text-secondary);
+      color: var(--text-secondary, #666);
       background: transparent;
       border: none;
-      border-radius: var(--radius-sm);
+      border-radius: var(--radius-sm, 4px);
       cursor: pointer;
-      transition: var(--transition);
+      transition: all 0.2s ease;
       outline: none;
       max-width: 300px;
+      text-align: left;
     }
 
-    .btn-tag-filter:hover {
-      border-color: var(--text-muted);
-      color: var(--text-primary);
-      background: var(--background);
+    .menu-trigger:hover {
+      color: var(--text-primary, #000);
     }
 
-    .btn-tag-filter ::slotted(*) {
+    .menu-trigger[aria-expanded="true"] {
+      color: var(--text-primary, #000);
+    }
+
+    /* Icon Slot Styling */
+    ::slotted([slot="icon"]) {
       flex-shrink: 0;
-      font-size: 1rem;
-    }
-
-    slot[name="icon"] {
+      font-size: 1.1rem;
       display: flex;
       align-items: center;
     }
 
-    .tag-filter-menu {
+    /* Dropdown Menu (formerly .tag-filter-menu) */
+    .dropdown-container {
       position: absolute;
       top: 100%;
+      left: 0;
       margin-top: 4px;
-      background: var(--background);
-      border: none;
-      border-radius: var(--radius-sm);
-      box-shadow: var(--shadow-lg);
+      background: var(--background, #fff);
+      border-radius: var(--radius-md, 8px);
+      box-shadow: var(--shadow-lg, 0 10px 25px rgba(0,0,0,0.1));
       min-width: 200px;
       max-height: 300px;
       overflow-y: auto;
       z-index: 1000;
-      padding: 0;
-      left: 0px;
-      right: auto;
-      max-width: calc(-48px + 100vw);
+      padding: 4px;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
       overscroll-behavior: contain;
+      border: 1px solid var(--border-color, #eee);
     }
 
-    .tag-filter-option {
+    /* Hidden state */
+    :host(:not([open])) .dropdown-container {
+      display: none;
+    }
+
+    /* Menu Items (formerly .tag-filter-option) */
+    .menu-item {
       display: flex;
       align-items: center;
       gap: 10px;
-      padding: 8px var(--base-size-16, 16px);
+      padding: 10px 12px;
       cursor: pointer;
-      transition: var(--transition);
+      border-radius: var(--radius-sm, 4px);
+      transition: background 0.15s ease;
       user-select: none;
     }
 
-    .tag-filter-option:hover {
-      background: var(--background);
+    .menu-item:hover {
+      background: var(--bg-hover, #f5f5f5);
     }
 
-    .tag-filter-option input[type="checkbox"],
-    .tag-filter-option input[type="radio"] {
+    .menu-item input[type="radio"] {
       margin: 0;
       cursor: pointer;
+      accent-color: var(--brand-primary, #007aff);
+      width: 16px;
+      height: 16px;
     }
 
-    .tag-filter-option span {
+    .menu-item span {
       font-size: 0.875rem;
-      color: var(--text-primary);
+      color: var(--text-primary, #111);
       font-weight: 500;
     }
 
+    /* Mobile adjustments */
     @media (max-width: 480px) {
-      .btn-tag-filter {
+      .menu-trigger {
         min-height: 40px;
         padding: 7px 0px;
         font-size: 0.8125rem;
         max-width: 140px;
-        position: relative;
       }
 
-      .btn-tag-filter i {
-        margin: 0;
+      .dropdown-container {
+        min-width: 220px;
+        max-width: calc(100vw - 32px);
       }
     }
   `;
 
-  @property({ type: Array })
-  options: SelectionOption[] = [];
+  @property({ type: Array }) options: SelectionOption[] = [];
+  @property({ type: String }) selectedValue: string = '';
+  @property({ type: String }) title: string = '';
+  @property({ type: String }) clearOptionLabel: string = '';
 
-  @property({ type: String })
-  selectedValue: string = '';
-
-  @property({ type: String })
-  title: string = '';
-
-  @property({ type: String })
-  clearOptionLabel: string = ''; // If set, shows a "clear" option at top
-
-  @state()
-  private menuOpen: boolean = false;
+  @state() private menuOpen: boolean = false;
 
   private documentClickHandler?: (e: Event) => void;
   private documentScrollHandler?: (e: Event) => void;
 
   connectedCallback(): void {
     super.connectedCallback();
-    this.attachDocumentListener();
-    this.attachScrollListener();
+    this.attachEventListeners();
   }
 
   disconnectedCallback(): void {
     super.disconnectedCallback();
-    this.detachDocumentListener();
-    this.detachScrollListener();
+    this.detachEventListeners();
   }
 
-  private attachDocumentListener(): void {
-    this.documentClickHandler = (e: Event) => {
-      // Close menu if clicked outside this component
-      const path = e.composedPath();
-      if (!path.includes(this)) {
-        this.menuOpen = false;
+  protected updated(changedProperties: Map<string, any>) {
+    if (changedProperties.has('menuOpen')) {
+      if (this.menuOpen) {
+        this.setAttribute('open', '');
+      } else {
+        this.removeAttribute('open');
       }
-    };
-    document.addEventListener('click', this.documentClickHandler);
-  }
-
-  private detachDocumentListener(): void {
-    if (this.documentClickHandler) {
-      document.removeEventListener('click', this.documentClickHandler);
-      this.documentClickHandler = undefined;
     }
   }
 
-  private attachScrollListener(): void {
-    this.documentScrollHandler = (e: Event) => {
-      if (!this.menuOpen) return;
-
-      // Check if scrolling inside this component
-      const path = e.composedPath();
-      if (path.includes(this)) {
-        return;
+  private attachEventListeners(): void {
+    this.documentClickHandler = (e: Event) => {
+      if (!e.composedPath().includes(this)) {
+        this.close();
       }
-
-      // Close menu if scrolling outside
-      this.close();
     };
+
+    this.documentScrollHandler = (e: Event) => {
+      if (this.menuOpen && !e.composedPath().includes(this)) {
+        this.close();
+      }
+    };
+
+    document.addEventListener('click', this.documentClickHandler);
     document.addEventListener('scroll', this.documentScrollHandler, true);
   }
 
-  private detachScrollListener(): void {
+  private detachEventListeners(): void {
+    if (this.documentClickHandler) {
+      document.removeEventListener('click', this.documentClickHandler);
+    }
     if (this.documentScrollHandler) {
       document.removeEventListener('scroll', this.documentScrollHandler, true);
-      this.documentScrollHandler = undefined;
     }
   }
 
   private handleToggleMenu = (e: Event) => {
     e.stopPropagation();
-    const wasOpen = this.menuOpen;
     this.menuOpen = !this.menuOpen;
 
-    // Dispatch event when menu opens
-    if (this.menuOpen && !wasOpen) {
+    if (this.menuOpen) {
       this.dispatchEvent(new CustomEvent('menu-open', {
         bubbles: true,
         composed: true
@@ -212,90 +206,65 @@ export class SelectionMenuComponent extends LitElement {
     }
   };
 
-  /**
-   * Public method to close the menu from parent component
-   */
   public close(): void {
     this.menuOpen = false;
-    const menuContainer = this.shadowRoot?.querySelector('.tag-filter-menu') as HTMLElement;
-    if (menuContainer) {
-      menuContainer.scrollTop = 0;
-    }
+    const container = this.shadowRoot?.querySelector('.dropdown-container');
+    if (container) container.scrollTop = 0;
   }
 
-  private handleOptionChange = (e: Event) => {
-    const target = e.target as HTMLInputElement;
-    const value = target.value;
-
-    // Dispatch custom event with selected value
+  private handleOptionChange(value: string) {
     this.dispatchEvent(new CustomEvent('selection-change', {
       detail: { value },
       bubbles: true,
       composed: true
     }));
-
-    this.menuOpen = false;
-  };
-
-  private handleClearSelection = () => {
-    // Dispatch custom event with empty value
-    this.dispatchEvent(new CustomEvent('selection-change', {
-      detail: { value: '' },
-      bubbles: true,
-      composed: true
-    }));
-
-    this.menuOpen = false;
-  };
-
-  private handleBackdropClick = (e: MouseEvent) => {
-    e.stopPropagation();
     this.close();
-  };
-
-  private preventScroll = (e: Event) => {
-    e.preventDefault();
-  };
+  }
 
   render() {
-    // Find current selection label
     const currentOption = this.options.find(opt => opt.value === this.selectedValue);
     const currentLabel = currentOption?.label || (this.clearOptionLabel || 'Select...');
-
-    // Generate unique ID for radio group
     const radioGroupName = `selection-${this.title.replace(/\s+/g, '-').toLowerCase()}`;
 
     return html`
-      ${this.menuOpen ? html`<div class="backdrop" @click=${this.handleBackdropClick} @wheel=${this.preventScroll} @touchmove=${this.preventScroll}></div>` : ''}
+      ${this.menuOpen ? html`
+        <div class="backdrop" 
+          @click=${this.close} 
+          @wheel=${(e: Event) => e.preventDefault()} 
+          @touchmove=${(e: Event) => e.preventDefault()}>
+        </div>` : ''}
+
       <button
-        class="btn-tag-filter"
+        class="menu-trigger"
+        aria-haspopup="listbox"
+        aria-expanded="${this.menuOpen}"
         title="${this.title}"
         @click=${this.handleToggleMenu}>
         <slot name="icon"></slot>
         <span>${currentLabel}</span>
       </button>
-      <div
-        class="tag-filter-menu"
-        style="display: ${this.menuOpen ? 'block' : 'none'};">
+
+      <div class="dropdown-container" role="listbox">
         ${when(this.clearOptionLabel, () => html`
-          <label class="tag-filter-option">
+          <label class="menu-item">
             <input
               type="radio"
               name="${radioGroupName}"
               value=""
               .checked=${live(!this.selectedValue)}
-              @change=${this.handleClearSelection}>
+              @change=${() => this.handleOptionChange('')}>
             <span>${this.clearOptionLabel}</span>
           </label>
         `)}
+
         ${map(this.options, opt => html`
-          <label class="tag-filter-option">
+          <label class="menu-item">
             <input
               type="radio"
               name="${radioGroupName}"
               value="${opt.value}"
               .checked=${live(opt.value === this.selectedValue)}
-              @change=${this.handleOptionChange}>
+              @change=${() => this.handleOptionChange(opt.value)}>
             <span>${opt.label}</span>
           </label>
         `)}
