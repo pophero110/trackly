@@ -368,7 +368,7 @@ export class EntryDetailHeader extends LitElement {
             ${entryTag.tagName}
           </span>
         `)}
-        <span class="entry-detail-timestamp">${formattedDate}</span>
+        <!-- <span class="entry-detail-timestamp">${formattedDate}</span> -->
       </div>
 
       <button class="entry-menu-btn" @click=${this.handleMenuButtonClick}>⋮</button>
